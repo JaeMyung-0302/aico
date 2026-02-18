@@ -12,7 +12,7 @@ const seed = async () => {
   // 그룹 생성
   const group = await prisma.group.create({
     data: {
-      code: 'family2024',
+      code: '6712',
       name: '우리집',
     },
   })

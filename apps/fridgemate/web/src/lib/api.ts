@@ -1,7 +1,7 @@
 // fetch 기반 API client
 // groupId를 X-Group-Id 헤더로 전송
 
-const BASE_URL = '/api'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 // groupId를 가져오는 함수 (순환참조 방지를 위해 localStorage에서 직접 읽기)
 const getGroupId = (): string | null => {

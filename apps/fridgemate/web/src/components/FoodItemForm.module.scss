@@ -6,14 +6,18 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  padding: 0 8px;
 }
 
 .modal {
   width: 100%;
   max-width: 480px;
+  max-height: 85dvh;
   background-color: #fff;
   border-radius: 20px 20px 0 0;
-  padding: 24px 20px 32px;
+  padding: 20px 16px 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   animation: slideUp 0.3s ease;
 }
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { FormEvent } from 'react'
 import classNames from 'classnames/bind'
 import { useFoodItemStore } from '@/stores/useFoodItemStore'
@@ -27,6 +27,7 @@ export const FoodItemForm = ({
   onSuccess,
 }: FoodItemFormProps) => {
   const { createItem, updateItem } = useFoodItemStore()
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const [name, setName] = useState(editItem?.name ?? '')
   const [category, setCategory] = useState<FoodCategory>(editItem?.category ?? FoodCategory.OTHER)
@@ -88,9 +89,15 @@ export const FoodItemForm = ({
     e.stopPropagation()
   }, [])
 
+  const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 300)
+  }, [])
+
   return (
     <div className={cx('overlay')} onClick={handleOverlayClick}>
-      <div className={cx('modal')} onClick={handleModalClick}>
+      <div className={cx('modal')} ref={modalRef} onClick={handleModalClick}>
         <div className={cx('header')}>
           <h3 className={cx('title')}>{isEditing ? '식재료 수정' : '식재료 추가'}</h3>
           <button className={cx('closeBtn')} onClick={onClose} type="button">
@@ -109,6 +116,7 @@ export const FoodItemForm = ({
               placeholder="식재료 이름"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onFocus={handleFocus}
               autoFocus
             />
           </div>
@@ -119,6 +127,7 @@ export const FoodItemForm = ({
               className={cx('select')}
               value={category}
               onChange={(e) => setCategory(e.target.value as FoodCategory)}
+              onFocus={handleFocus}
             >
               {CATEGORY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -137,6 +146,7 @@ export const FoodItemForm = ({
                 placeholder="예: 3"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
+                onFocus={handleFocus}
                 min="0"
                 step="any"
               />
@@ -149,6 +159,7 @@ export const FoodItemForm = ({
                 placeholder="예: 개, kg"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
+                onFocus={handleFocus}
               />
             </div>
           </div>
@@ -160,6 +171,7 @@ export const FoodItemForm = ({
               type="date"
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
+              onFocus={handleFocus}
             />
           </div>
 
@@ -170,6 +182,7 @@ export const FoodItemForm = ({
               placeholder="메모 (선택)"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
+              onFocus={handleFocus}
               rows={2}
             />
           </div>

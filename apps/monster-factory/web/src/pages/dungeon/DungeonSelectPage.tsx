@@ -17,7 +17,7 @@ export const DungeonSelectPage = () => {
   const navigate = useNavigate()
   const { enterDungeon, loading } = useDungeonStore()
   const { energy, fetchEnergy } = useGameStore()
-  const { fetchMonster } = useMonsterStore()
+  const { fetchMonsters } = useMonsterStore()
   const [selectedFloor, setSelectedFloor] = useState(1)
   const [selectedDifficulty, setSelectedDifficulty] = useState<DungeonDifficulty>('Easy')
 
@@ -25,7 +25,7 @@ export const DungeonSelectPage = () => {
     try {
       await enterDungeon(selectedFloor, selectedDifficulty)
       fetchEnergy()
-      fetchMonster()
+      fetchMonsters()
       navigate('/dungeon/battle')
     } catch {
       // 에너지 부족 등

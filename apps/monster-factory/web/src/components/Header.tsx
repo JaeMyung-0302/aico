@@ -5,7 +5,7 @@ import styles from './Header.module.scss'
 
 export const Header = () => {
   const { signOut } = useAuthStore()
-  const { monster } = useMonsterStore()
+  const { activeMonster: monster } = useMonsterStore()
   const { energy } = useGameStore()
 
   return (

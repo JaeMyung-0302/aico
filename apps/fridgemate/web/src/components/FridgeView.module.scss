@@ -1,0 +1,510 @@
+// 전체 컨테이너 — 뷰포트를 채움
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 12px;
+  gap: 12px;
+}
+
+// 냉장고 선택 탭 (복수 냉장고)
+.fridgeTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fridgeTab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: #e8ecf1;
+  color: #666;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.fridgeTabActive {
+  background-color: #4a90d9;
+  color: #fff;
+}
+
+// === 냉장고 외형 ===
+
+.fridge {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #c8d0dc 0%, #b0b8c8 50%, #a0a8b8 100%);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+.fridgeHeader {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #444;
+  padding: 12px 12px 8px;
+  font-weight: 600;
+}
+
+// === 뒤로가기 + 열린 문 라벨 ===
+
+.fridgeBack {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #555;
+
+  &:active {
+    color: #333;
+  }
+}
+
+.doorLabel {
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  padding: 4px 12px 8px;
+}
+
+// === 닫힌 문 ===
+
+.closedDoors {
+  flex: 1;
+  display: grid;
+  padding: 10px;
+  gap: 6px;
+}
+
+// Samsung 양문형 — 좌우 2문
+.closedSideBySide {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+// LG 4도어 — 좌우(2) + 하단좌(1) + 하단우(1)
+.closedFourDoor {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 2fr 1fr 1fr;
+}
+
+.closedDoor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(180deg, #e4e8ee 0%, #d0d6e0 50%, #c4cad4 100%);
+  border-radius: 14px;
+  padding: 24px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.closedDoorFreezer {
+  background: linear-gradient(180deg, #dce8f0 0%, #c8d8e8 50%, #b8c8d8 100%);
+}
+
+// 닫힌 문 충전도 (아이템 수 기반)
+.closedDoorFillLevel1 {
+  background: linear-gradient(180deg, #e8ecf2 0%, #d4dae4 50%, #c8ced8 100%);
+}
+
+.closedDoorFillLevel2 {
+  background: linear-gradient(180deg, #e4eaf4 0%, #ced8e6 50%, #c0cad8 100%);
+}
+
+.closedDoorFillLevel3 {
+  background: linear-gradient(180deg, #dce4f0 0%, #c4d0e2 50%, #b8c4d4 100%);
+  border-color: rgba(74, 144, 217, 0.15);
+}
+
+.closedDoorFull {
+  grid-column: 1 / 3;
+}
+
+// 문 손잡이
+.closedDoorHandle {
+  width: 4px;
+  height: 36px;
+  background: linear-gradient(180deg, #b0b8c8, #98a0b0);
+  border-radius: 2px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+// Samsung: 손잡이 위치 (내쪽)
+.closedSideBySide {
+  .closedDoor:nth-child(1) .closedDoorHandle {
+    right: 10px;
+  }
+
+  .closedDoor:nth-child(2) .closedDoorHandle {
+    left: 10px;
+  }
+}
+
+// LG: 손잡이 위치
+.closedFourDoor {
+  .closedDoor:nth-child(1) .closedDoorHandle {
+    right: 10px;
+  }
+
+  .closedDoor:nth-child(2) .closedDoorHandle {
+    left: 10px;
+  }
+
+  // 하단 서랍: 가로 손잡이
+  .closedDoor:nth-child(3) .closedDoorHandle,
+  .closedDoor:nth-child(4) .closedDoorHandle {
+    width: 48px;
+    height: 4px;
+    top: 14px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+.closedDoorLabel {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.closedDoorInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.closedDoorCount {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+// === 열린 문 — 세부 칸 영역 ===
+
+.doorContent {
+  flex: 1;
+  display: flex;
+  padding: 4px 10px 10px;
+  min-height: 0;
+}
+
+// 2열 레이아웃 (Samsung 양문형 — 도어 + 본체)
+.twoColumnLayout {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+
+.fridgeColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+// 그리드 레이아웃 (LG 4도어)
+.gridLayout3x2 {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.gridLayout2x1 {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+  gap: 6px;
+}
+
+// === 칸 셀 ===
+
+.compartment {
+  flex: 1;
+  background: linear-gradient(180deg, #f8fbff 0%, #edf2f9 100%);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// 충전도 Level 0 (빈 칸)
+.fillLevel0 {
+  opacity: 0.6;
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, 0.15);
+  background: linear-gradient(180deg, #f0f2f5 0%, #e8eaee 100%);
+  box-shadow: none;
+}
+
+// 충전도 Level 1 (1-2개) — 기본 배경 유지
+
+// 충전도 Level 2 (3-5개)
+.fillLevel2 {
+  background: linear-gradient(180deg, #eef3fa 0%, #dde6f2 100%);
+  border-color: rgba(74, 144, 217, 0.2);
+}
+
+// 충전도 Level 3 (6개 이상)
+.fillLevel3 {
+  background: linear-gradient(180deg, #e3ecf7 0%, #cdd8ea 100%);
+  border-width: 2px;
+  border-color: rgba(74, 144, 217, 0.35);
+}
+
+// 유통기한 경고 (칸 전체)
+.compartmentExpiring {
+  border-color: rgba(231, 76, 60, 0.4);
+  box-shadow:
+    inset 0 0 0 1px rgba(231, 76, 60, 0.1),
+    0 1px 3px rgba(231, 76, 60, 0.12);
+}
+
+.compartmentFreezer {
+  background: linear-gradient(180deg, #e8f4fd, #d4ebf8);
+
+  &.fillLevel0 {
+    background: linear-gradient(180deg, #e0eaf2 0%, #d4dee8 100%);
+  }
+
+  &.fillLevel2 {
+    background: linear-gradient(180deg, #dcedf8 0%, #c4ddef 100%);
+  }
+
+  &.fillLevel3 {
+    background: linear-gradient(180deg, #cde3f5 0%, #b4d3ec 100%);
+  }
+}
+
+.compartmentDrawer {
+  flex: 0.5;
+}
+
+.compartmentShowcase {
+  background: linear-gradient(180deg, #fff8e1, #fff3cd);
+  border-color: #e8d5a0;
+
+  &.fillLevel0 {
+    background: linear-gradient(180deg, #f5f0e0 0%, #ece7d5 100%);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  &.fillLevel2 {
+    background: linear-gradient(180deg, #fff3cc 0%, #ffe8a8 100%);
+  }
+
+  &.fillLevel3 {
+    background: linear-gradient(180deg, #ffeebc 0%, #ffe09a 100%);
+  }
+}
+
+.compartmentLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #444;
+  line-height: 1.2;
+}
+
+.emptyPlus {
+  font-size: 1.2rem;
+  color: rgba(0, 0, 0, 0.2);
+  text-align: center;
+  line-height: 1;
+}
+
+.compartmentInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.itemCount {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+// 카테고리 이모지 미리보기
+.categoryPreview {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.6rem;
+  line-height: 1;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.categoryExtra {
+  font-size: 0.55rem;
+  color: #999;
+  margin-left: 1px;
+}
+
+// 하이라이트 (재료 추가 후 피드백) — opacity 기반 GPU 합성
+.compartmentHighlighted {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 12px rgba(74, 144, 217, 0.5);
+    animation: glowFade 0.6s ease 2;
+    pointer-events: none;
+  }
+}
+
+@keyframes glowFade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.warningDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #e74c3c;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+// === 기존 그리드 (ONE_DOOR, TWO_DOOR, MINI) ===
+
+.gridOneDoor {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.gridTwoDoor {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.gridMini {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+// ONE_DOOR 포지셔닝
+.oneDoorFridgeUpper { grid-row: 1; grid-column: 1; }
+.oneDoorFridgeLower { grid-row: 2; grid-column: 1; }
+.oneDoorFreezer { grid-row: 3; grid-column: 1; }
+.oneDoorDoor { grid-row: 1 / 4; grid-column: 2; }
+
+// TWO_DOOR 포지셔닝
+.twoDoorFridgeUpper { grid-row: 1; grid-column: 1; }
+.twoDoorFridgeLower { grid-row: 2; grid-column: 1; }
+.twoDoorVeggie { grid-row: 3; grid-column: 1; }
+.twoDoorFreezer { grid-row: 4; grid-column: 1; }
+.twoDoorDoor { grid-row: 1 / 3; grid-column: 2; }
+.twoDoorDrawer { grid-row: 3 / 5; grid-column: 2; }
+
+// MINI 포지셔닝
+.miniFridgeUpper { grid-row: 1; grid-column: 1; }
+.miniFreezer { grid-row: 2; grid-column: 1; }
+.miniDoor { grid-row: 1 / 3; grid-column: 2; }
+
+// === 비어있는 상태 ===
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #666;
+}
+
+.addButton {
+  padding: 10px 24px;
+  background-color: #4a90d9;
+  color: #fff;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: #3a7bc8;
+  }
+}

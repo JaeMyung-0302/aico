@@ -1,30 +1,54 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
-import type { Monster } from '@monster-factory/shared'
+import type { Monster, SummonType } from '@monster-factory/shared'
 
-interface MonsterState {
-  monster: Monster | null
-  loading: boolean
-  fetchMonster: () => Promise<void>
-  hatchMonster: () => Promise<Monster>
+interface SummonResponse {
+  monster: Monster
+  isNew: boolean
+  pityCounter: number
 }
 
-export const useMonsterStore = create<MonsterState>((set) => ({
-  monster: null,
+interface MonsterState {
+  monsters: Monster[]
+  activeMonster: Monster | null
+  loading: boolean
+  fetchMonsters: () => Promise<void>
+  summon: (summonType: SummonType) => Promise<SummonResponse>
+  releaseMonster: (id: string) => Promise<void>
+}
+
+export const useMonsterStore = create<MonsterState>((set, get) => ({
+  monsters: [],
+  activeMonster: null,
   loading: true,
 
-  fetchMonster: async () => {
+  fetchMonsters: async () => {
     try {
-      const monster = await api.get<Monster | null>('/monsters/me')
-      set({ monster, loading: false })
+      const monsters = await api.get<Monster[]>('/monsters')
+      const active = monsters.length > 0 ? monsters[0]! : null
+      set({ monsters, activeMonster: active, loading: false })
     } catch {
-      set({ monster: null, loading: false })
+      set({ monsters: [], activeMonster: null, loading: false })
     }
   },
 
-  hatchMonster: async () => {
-    const monster = await api.post<Monster>('/monsters/hatch')
-    set({ monster })
-    return monster
+  summon: async (summonType: SummonType) => {
+    const result = await api.post<SummonResponse>('/summon', { summonType })
+    const { monsters } = get()
+    set({
+      monsters: [result.monster, ...monsters],
+      activeMonster: get().activeMonster ?? result.monster,
+    })
+    return result
+  },
+
+  releaseMonster: async (id: string) => {
+    await api.delete(`/monsters/${id}`)
+    const { monsters, activeMonster } = get()
+    const updated = monsters.filter((m) => m.id !== id)
+    set({
+      monsters: updated,
+      activeMonster: activeMonster?.id === id ? (updated[0] ?? null) : activeMonster,
+    })
   },
 }))

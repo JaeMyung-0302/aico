@@ -1,0 +1,225 @@
+.page {
+  padding: 24px 16px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 24px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rowLabel {
+  font-size: 0.9375rem;
+  color: #1a1a2e;
+}
+
+.rowValue {
+  font-size: 0.875rem;
+  color: #95a5a6;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.fridgeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.fridgeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fridgeName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.fridgeType {
+  font-size: 0.75rem;
+  color: #95a5a6;
+}
+
+.fridgeActions {
+  display: flex;
+  gap: 6px;
+}
+
+.editBtn {
+  padding: 6px 14px;
+  background-color: #f0f0f0;
+  color: #555;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: #e0e0e0;
+  }
+}
+
+.deleteBtn {
+  padding: 6px 14px;
+  background-color: #fef5f5;
+  color: #e74c3c;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: #fde8e8;
+  }
+}
+
+.deleteWarning {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.deleteSave {
+  flex: 1;
+  padding: 10px;
+  background-color: #e74c3c;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.addFridgeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  color: #4a90d9;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 14px;
+  color: #e74c3c;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  background-color: #fff;
+  border-radius: 14px;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: #fef5f5;
+  }
+}
+
+// 수정 모달
+.editOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.editModal {
+  width: 100%;
+  max-width: 320px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 24px 20px;
+}
+
+.editTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a2e;
+}
+
+.editInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  outline: none;
+  margin-bottom: 16px;
+
+  &:focus {
+    border-color: #4a90d9;
+  }
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editCancel {
+  flex: 1;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.editSave {
+  flex: 1;
+  padding: 10px;
+  background-color: #4a90d9;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+}

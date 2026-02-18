@@ -5,7 +5,7 @@ import { executeBattle } from '../engine/combat.js'
 import { generateEnemy, calculateGoldReward } from '../engine/dungeon.js'
 import { generateEquipment } from '../engine/item-gen.js'
 import { DUNGEON_FLOORS } from '@monster-factory/shared'
-import type { DungeonDifficulty, MonsterStats } from '@monster-factory/shared'
+import type { DungeonDifficulty, MonsterStats, Skill, Element } from '@monster-factory/shared'
 import type { AuthRequest } from '../middleware/auth.js'
 
 export const dungeonRouter: IRouter = Router()
@@ -13,6 +13,7 @@ export const dungeonRouter: IRouter = Router()
 interface DungeonEnterBody {
   floor: number
   difficulty: DungeonDifficulty
+  monsterId?: string
 }
 
 // POST /api/dungeon/enter - 던전 입장
@@ -26,7 +27,7 @@ dungeonRouter.post('/enter', async (req: AuthRequest, res) => {
       return
     }
 
-    const { floor, difficulty } = req.body as DungeonEnterBody
+    const { floor, difficulty, monsterId } = req.body as DungeonEnterBody
 
     if (floor < 1 || floor > DUNGEON_FLOORS) {
       res.status(400).json({ error: 'Invalid floor' })
@@ -40,11 +41,11 @@ dungeonRouter.post('/enter', async (req: AuthRequest, res) => {
       return
     }
 
-    // 몬스터 조회
-    const monster = await prisma.monster.findFirst({
-      where: { userId: user.id },
-    })
-    if (!monster) {
+    // 몬스터 조회 (monsterId 지정 시 해당 몬스터, 아니면 첫 번째)
+    const monster = monsterId
+      ? await prisma.monster.findUnique({ where: { id: monsterId }, include: { species: { include: { speciesSkills: { include: { skill: true } } } } } })
+      : await prisma.monster.findFirst({ where: { userId: user.id }, include: { species: { include: { speciesSkills: { include: { skill: true } } } } } })
+    if (!monster || monster.userId !== user.id) {
       res.status(404).json({ error: 'Monster not found' })
       return
     }
@@ -58,11 +59,37 @@ dungeonRouter.post('/enter', async (req: AuthRequest, res) => {
       rec: monster.rec,
     }
 
-    // 적 생성 + 전투
+    // 플레이어 스킬 로드
+    const playerSkills: Skill[] = (monster.species?.speciesSkills ?? []).map((ss) => ({
+      id: ss.skill.id,
+      name: ss.skill.name,
+      element: ss.skill.element as Element,
+      category: ss.skill.category as Skill['category'],
+      power: ss.skill.power,
+      accuracy: ss.skill.accuracy,
+      cooldown: ss.skill.cooldown,
+      description: ss.skill.description,
+    }))
+
+    // 적 생성 + 적 스킬 로드 (적 속성 기반)
     const enemy = generateEnemy(playerStats, floor, difficulty)
+    const enemySkillRecords = await prisma.skill.findMany({
+      where: { element: enemy.element },
+    })
+    const enemySkills: Skill[] = enemySkillRecords.map((sk) => ({
+      id: sk.id,
+      name: sk.name,
+      element: sk.element as Element,
+      category: sk.category as Skill['category'],
+      power: sk.power,
+      accuracy: sk.accuracy,
+      cooldown: sk.cooldown,
+      description: sk.description,
+    }))
+
     const battleResult = executeBattle(
-      { stats: playerStats, element: monster.element as Parameters<typeof executeBattle>[0]['element'] },
-      enemy,
+      { stats: playerStats, element: monster.element as Element, skills: playerSkills },
+      { ...enemy, skills: enemySkills },
     )
 
     let goldReward = 0
@@ -101,6 +128,7 @@ dungeonRouter.post('/enter', async (req: AuthRequest, res) => {
       ...battleResult,
       goldReward,
       equipment,
+      enemyElement: enemy.element,
     })
   } catch {
     res.status(500).json({ error: 'Failed to enter dungeon' })

@@ -37,7 +37,7 @@ inventoryRouter.post('/equip', async (req: AuthRequest, res) => {
       return
     }
 
-    const { equipmentId } = req.body as { equipmentId: string }
+    const { equipmentId, monsterId } = req.body as { equipmentId: string; monsterId?: string }
 
     const equipment = await prisma.equipment.findUnique({
       where: { id: equipmentId },
@@ -47,10 +47,11 @@ inventoryRouter.post('/equip', async (req: AuthRequest, res) => {
       return
     }
 
-    const monster = await prisma.monster.findFirst({
-      where: { userId: user.id },
-    })
-    if (!monster) {
+    // monsterId 지정 시 해당 몬스터, 아니면 첫 번째
+    const monster = monsterId
+      ? await prisma.monster.findUnique({ where: { id: monsterId } })
+      : await prisma.monster.findFirst({ where: { userId: user.id } })
+    if (!monster || monster.userId !== user.id) {
       res.status(404).json({ error: 'Monster not found' })
       return
     }

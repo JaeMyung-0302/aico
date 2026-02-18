@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
-import type { BattleResult, DungeonDifficulty, Equipment } from '@monster-factory/shared'
+import type { BattleResult, DungeonDifficulty, Element, Equipment } from '@monster-factory/shared'
 
 interface DungeonResponse extends BattleResult {
   equipment: Equipment | null
+  enemyElement: Element
 }
 
 interface DungeonState {

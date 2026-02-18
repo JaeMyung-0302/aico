@@ -42,26 +42,18 @@ export const getUsedEnergyToday = async (userId: string): Promise<number> => {
 /**
  * 남은 에너지 조회
  */
-export const getRemainingEnergy = async (userId: string): Promise<number> => {
-  const used = await getUsedEnergyToday(userId)
-  return Math.max(0, MAX_ENERGY - used)
+export const getRemainingEnergy = async (_userId: string): Promise<number> => {
+  // DEV: 무한 에너지
+  return MAX_ENERGY
 }
 
 /**
  * 에너지 사용 시도
  */
 export const useEnergy = async (
-  userId: string,
-  activity: EnergyActivity,
+  _userId: string,
+  _activity: EnergyActivity,
 ): Promise<boolean> => {
-  const cost = ENERGY_COST[activity]
-  const remaining = await getRemainingEnergy(userId)
-
-  if (remaining < cost) return false
-
-  await prisma.energyLog.create({
-    data: { userId, activity },
-  })
-
+  // DEV: 항상 성공
   return true
 }

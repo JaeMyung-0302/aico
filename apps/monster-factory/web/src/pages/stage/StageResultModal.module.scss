@@ -1,0 +1,100 @@
+@use '@/styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal {
+  background: $bg-card;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.stageInfo {
+  font-size: 0.85rem;
+  color: $text-secondary;
+  margin: 0;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  font-size: 2rem;
+}
+
+.starFilled {
+  color: $gold;
+}
+
+.starEmpty {
+  color: $text-secondary;
+  opacity: 0.3;
+}
+
+.rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rewardItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(#fff, 0.05);
+  border-radius: 8px;
+}
+
+.rewardLabel {
+  color: $text-secondary;
+  font-size: 0.85rem;
+}
+
+.rewardValue {
+  color: $gold;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.synergy {
+  color: $accent-light;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeBtn {
+  margin-top: 8px;
+  padding: 12px 24px;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.8;
+  }
+}

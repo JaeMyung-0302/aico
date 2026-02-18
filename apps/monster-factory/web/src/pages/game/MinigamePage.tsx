@@ -20,7 +20,7 @@ const SCENE_MAP: Record<string, Phaser.Types.Scenes.SceneType> = {
 export const MinigamePage = () => {
   const navigate = useNavigate()
   const { currentMinigame, submitMinigameResult, fetchEnergy } = useGameStore()
-  const { fetchMonster } = useMonsterStore()
+  const { fetchMonsters } = useMonsterStore()
   const [gradeResult, setGradeResult] = useState<GradeResultType | null>(null)
 
   const scenes = useMemo(() => {
@@ -45,7 +45,7 @@ export const MinigamePage = () => {
       try {
         const result = await submitMinigameResult(minigameType, score, inputLog)
         setGradeResult(result)
-        fetchMonster()
+        fetchMonsters()
         fetchEnergy()
       } catch {
         navigate('/game')
@@ -56,7 +56,7 @@ export const MinigamePage = () => {
     return () => {
       eventBus.off('minigame:complete', handleComplete)
     }
-  }, [currentMinigame, navigate, submitMinigameResult, fetchMonster, fetchEnergy])
+  }, [currentMinigame, navigate, submitMinigameResult, fetchMonsters, fetchEnergy])
 
   const handleClose = () => {
     setGradeResult(null)

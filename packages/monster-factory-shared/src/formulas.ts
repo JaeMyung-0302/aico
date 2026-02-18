@@ -10,14 +10,26 @@ import {
 
 /**
  * 물리 데미지 계산
- * PhysDmg = (ATK × SkillPower) / (DEF_target × 0.5 + 10)
+ * PhysDmg = (ATK × SkillPower) / (DEF_target × 0.3 + 1)
  */
 export const calcPhysDamage = (
   atk: number,
   skillPower: number,
   defTarget: number,
 ): number => {
-  return Math.floor((atk * skillPower) / (defTarget * 0.5 + 10))
+  return Math.floor((atk * skillPower) / (defTarget * 0.3 + 1))
+}
+
+/**
+ * 마법 데미지 계산
+ * MagDmg = (INT × SkillPower) / (INT_target × 0.3 + 1)
+ */
+export const calcMagDamage = (
+  int: number,
+  skillPower: number,
+  intTarget: number,
+): number => {
+  return Math.floor((int * skillPower) / (intTarget * 0.3 + 1))
 }
 
 /**

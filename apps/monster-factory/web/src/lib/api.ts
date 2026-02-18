@@ -31,6 +31,27 @@ export const api = {
     return res.json() as Promise<T>
   },
 
+  delete: async <T>(path: string): Promise<T> => {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: 'DELETE',
+      headers,
+    })
+    if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`)
+    return res.json() as Promise<T>
+  },
+
+  put: async <T>(path: string, body?: unknown): Promise<T> => {
+    const headers = await getAuthHeaders()
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    })
+    if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`)
+    return res.json() as Promise<T>
+  },
+
   patch: async <T>(path: string, body?: unknown): Promise<T> => {
     const headers = await getAuthHeaders()
     const res = await fetch(`${BASE_URL}${path}`, {

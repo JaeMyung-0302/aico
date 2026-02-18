@@ -1,0 +1,105 @@
+@use '@/styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(#000, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glowCircle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  animation: pulse 0.8s ease-in-out;
+}
+
+.glowCommon {
+  box-shadow: 0 0 40px 20px rgba($item-normal, 0.6);
+  background: radial-gradient(circle, rgba($item-normal, 0.4) 0%, transparent 70%);
+}
+
+.glowUncommon {
+  box-shadow: 0 0 60px 30px rgba($item-uncommon, 0.6);
+  background: radial-gradient(circle, rgba($item-uncommon, 0.4) 0%, transparent 70%);
+}
+
+.glowRare {
+  box-shadow: 0 0 80px 40px rgba($item-rare, 0.6);
+  background: radial-gradient(circle, rgba($item-rare, 0.4) 0%, transparent 70%);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+.cardReveal {
+  animation: cardIn 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@keyframes cardIn {
+  0% {
+    transform: scale(0.5) rotateY(90deg);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+.newBadge {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: $gold;
+  text-shadow: 0 0 8px rgba($gold, 0.6);
+  animation: bounce 0.6s ease infinite alternate;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-4px);
+  }
+}
+
+.tapHint {
+  color: $text-secondary;
+  font-size: 0.8rem;
+  margin-top: 8px;
+  animation: fade 1s ease infinite alternate;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

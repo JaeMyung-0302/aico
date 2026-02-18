@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FridgeType {
+  ONE_DOOR
+  TWO_DOOR
+  SIDE_BY_SIDE
+  FOUR_DOOR
+  MINI
+}
+
+enum CompartmentType {
+  FRIDGE_UPPER
+  FRIDGE_LOWER
+  FREEZER
+  DOOR
+  DRAWER
+  VEGGIE
+}
+
+enum FoodCategory {
+  MEAT
+  SEAFOOD
+  DAIRY
+  VEGETABLE
+  SEASONING
+  BEVERAGE
+  SNACK
+  SIDE_DISH
+  OTHER
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  fridges   Fridge[]
+}
+
+model Fridge {
+  id           String        @id @default(uuid())
+  groupId      String
+  type         FridgeType
+  name         String
+  createdAt    DateTime      @default(now())
+  group        Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  compartments Compartment[]
+}
+
+model Compartment {
+  id        String          @id @default(uuid())
+  fridgeId  String
+  type      CompartmentType
+  label     String
+  position  Int
+  fridge    Fridge          @relation(fields: [fridgeId], references: [id], onDelete: Cascade)
+  foodItems FoodItem[]
+}
+
+model FoodItem {
+  id            String       @id @default(uuid())
+  compartmentId String
+  name          String
+  category      FoodCategory @default(OTHER)
+  quantity      Float?
+  unit          String?
+  expiryDate    DateTime?    @db.Date
+  memo          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  compartment   Compartment  @relation(fields: [compartmentId], references: [id], onDelete: Cascade)
+}

@@ -2,10 +2,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import styles from './BottomNav.module.scss'
 
 const TABS = [
-  { path: '/game', label: '홈' },
-  { path: '/minigame', label: '훈련' },
-  { path: '/dungeon', label: '던전' },
-  { path: '/inventory', label: '장비' },
+  { path: '/game', label: '홈', match: ['/game', '/'] },
+  { path: '/stages', label: '모험', match: ['/stages'] },
+  { path: '/summon', label: '소환', match: ['/summon'] },
+  { path: '/codex', label: '도감', match: ['/codex'] },
+  { path: '/monsters', label: '몬스터', match: ['/monsters'] },
 ]
 
 export const BottomNav = () => {
@@ -14,10 +15,10 @@ export const BottomNav = () => {
 
   return (
     <nav className={styles.nav}>
-      {TABS.map(({ path, label }) => (
+      {TABS.map(({ path, label, match }) => (
         <button
           key={path}
-          className={`${styles.tab} ${pathname === path ? styles.active : ''}`}
+          className={`${styles.tab} ${match.includes(pathname) ? styles.active : ''}`}
           onClick={() => navigate(path)}
         >
           {label}

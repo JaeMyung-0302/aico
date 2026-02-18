@@ -1,6 +1,7 @@
 import type { Element, MonsterStats, Personality } from './types/monster.js'
 import type { MiniGameGrade } from './types/game.js'
 import type { StatType } from './types/item.js'
+import type { Rarity } from './types/species.js'
 
 // 기본 스탯
 export const INITIAL_STAT_VALUE = 5
@@ -87,8 +88,71 @@ export const DUNGEON_GOLD_REWARD = {
 export const CRITICAL_MULTIPLIER = 1.5
 export const BASE_CRITICAL_RATE = 0.1
 
+// HP 배율 (전투 시 실효 HP = stats.hp * HP_MULTIPLIER)
+export const HP_MULTIPLIER = 5
+
+// 속성별 테마 색상 (배틀 UI, 실루엣 glow 등)
+export const ELEMENT_COLORS: Record<Element, string> = {
+  Chemical: '#4ade80',
+  Gear: '#94a3b8',
+  Neon: '#c084fc',
+  Nitro: '#fb923c',
+  Crystal: '#22d3ee',
+  Plasma: '#f472b6',
+} as const
+
 // 초기 골드
 export const INITIAL_GOLD = 100
+
+// === Dragon Village 리디자인 상수 ===
+
+// 최대 보유 몬스터 수
+export const MAX_MONSTERS = 20
+
+// 소환 비용
+export const SUMMON_COST = {
+  Gold: 300,
+  SummonStone: 1,
+  MultiStone: 10, // 10+1 소환
+} as const
+
+// 소환 확률 (rarity별)
+export const RARITY_RATES = {
+  Gold: { Common: 0.70, Uncommon: 0.22, Rare: 0.08 },
+  SummonStone: { Common: 0.40, Uncommon: 0.35, Rare: 0.25 },
+} as const
+
+// 천장 시스템 (Pity)
+export const PITY_THRESHOLD = 50 // 50회 연속 Rare 미획득 시 확정
+
+// 성격 → 희귀도 매핑
+export const PERSONALITY_RARITY: Record<Personality, Rarity> = {
+  Relaxed: 'Common',
+  Cautious: 'Common',
+  Tough: 'Common',
+  Brave: 'Uncommon',
+  Mischievous: 'Uncommon',
+  Unstable: 'Rare',
+} as const
+
+// 속성 시너지 (팀 전투)
+export const ELEMENT_SYNERGY = {
+  DUO: { minCount: 2, bonus: { atk: 1.05, def: 1.05 } },
+  TRIO: { minCount: 3, bonus: { atk: 1.10, def: 1.10 } },
+  RAINBOW: { minTypes: 3, bonus: { hp: 1.08 } },
+} as const
+
+// 스테이지 에너지 비용
+export const STAGE_ENERGY_COST = {
+  normal: 2,
+  boss: 3,
+} as const
+
+// 진화 골드 비용 (기본값, EvolutionPath 테이블에서 개별 설정 가능)
+export const EVOLUTION_GOLD_COST = 1000
+
+// 합성 골드 비용
+export const FUSION_GOLD_COST = 500
 
 // 초기 몬스터 스탯
 export const INITIAL_MONSTER_STATS: MonsterStats = {

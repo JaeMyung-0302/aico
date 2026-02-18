@@ -1,0 +1,107 @@
+.page {
+  padding: 24px 16px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #999;
+  font-size: 0.9375rem;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #999;
+}
+
+.group {
+  margin-bottom: 20px;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.groupDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotExpired {
+  background-color: #e74c3c;
+}
+
+.dotDanger {
+  background-color: #f39c12;
+}
+
+.dotWarning {
+  background-color: #f1c40f;
+}
+
+.groupLabel {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.groupCount {
+  font-size: 0.75rem;
+  color: #999;
+  margin-left: auto;
+}
+
+.alertItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.alertInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.alertMeta {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 2px;
+}

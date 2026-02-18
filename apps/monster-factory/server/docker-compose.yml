@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: monster-factory-db
+    environment:
+      POSTGRES_USER: monster
+      POSTGRES_PASSWORD: monster
+      POSTGRES_DB: monster_factory_dev
+    ports:
+      - '5434:5432'
+    volumes:
+      - monster_pgdata:/var/lib/postgresql/data
+
+volumes:
+  monster_pgdata:

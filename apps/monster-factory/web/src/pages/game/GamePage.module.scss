@@ -10,97 +10,39 @@
   gap: 20px;
 }
 
-.header {
+.activeCard {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
 }
 
-.name {
-  font-size: 1.2rem;
-}
-
-.element {
-  font-size: 0.8rem;
-  padding: 2px 8px;
-  background: rgba($accent, 0.2);
-  border-radius: 12px;
-  color: $accent-light;
-}
-
-.stage {
-  font-size: 0.8rem;
-  color: $gold;
-  font-weight: 600;
-}
-
-.sectionTitle {
-  font-size: 0.9rem;
-  color: $text-secondary;
-  margin-bottom: 8px;
-}
-
-.statsSection {
-  @include card;
-}
-
-.minigameSection {
-  @include card;
-}
-
-.minigameGrid {
+.actionGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.minigameBtn {
+.actionBtn {
   @include flex-center;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   padding: 16px 8px;
-  background: $bg-secondary;
+  background: $bg-card;
   border: 1px solid rgba(#fff, 0.1);
-  border-radius: 8px;
+  border-radius: 12px;
   color: $text-primary;
   cursor: pointer;
+  transition: transform 0.15s ease;
 
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  &:active:not(:disabled) {
+  &:active {
     transform: scale(0.97);
   }
 }
 
-.minigameLabel {
-  font-size: 0.85rem;
+.actionEmoji {
+  font-size: 1.5rem;
+}
+
+.actionLabel {
+  font-size: 0.8rem;
   font-weight: 600;
-}
-
-.minigameStat {
-  font-size: 0.7rem;
-  color: $text-secondary;
-}
-
-.dungeonSection {
-  @include card;
-}
-
-.dungeonBtn {
-  width: 100%;
-  padding: 16px;
-  background: $accent;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:active {
-    opacity: 0.9;
-  }
 }

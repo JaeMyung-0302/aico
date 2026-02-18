@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch --env-file=.env src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
     "lint": "eslint --max-warnings 0",
@@ -14,12 +14,13 @@
     "db:push": "prisma db push"
   },
   "dependencies": {
-    "express": "^4.21.0",
-    "socket.io": "^4.8.0",
-    "cors": "^2.8.5",
+    "@google/genai": "^1.41.0",
+    "@monster-factory/shared": "workspace:*",
     "@prisma/client": "^6.9.0",
     "@supabase/supabase-js": "^2.49.4",
-    "@monster-factory/shared": "workspace:*"
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "socket.io": "^4.8.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

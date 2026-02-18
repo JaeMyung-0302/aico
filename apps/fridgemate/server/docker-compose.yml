@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fridgemate-db
+    environment:
+      POSTGRES_USER: fridgemate
+      POSTGRES_PASSWORD: fridgemate
+      POSTGRES_DB: fridgemate_dev
+    ports:
+      - '5435:5432'
+    volumes:
+      - fridgemate_pgdata:/var/lib/postgresql/data
+
+volumes:
+  fridgemate_pgdata:

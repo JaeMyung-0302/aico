@@ -47,6 +47,10 @@ export interface Monster {
   personality: Personality
   stats: MonsterStats
   growthStage: GrowthStage
+  imageUrl: string | null
+  speciesId: string | null
+  speciesName: string | null
+  rarity: string | null // Rarity enum value (nullable for pre-species monsters)
   createdAt: string
   updatedAt: string
 }

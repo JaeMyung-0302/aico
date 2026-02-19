@@ -6,6 +6,7 @@ import { foodItemRouter } from './food-item.js'
 import { alertRouter } from './alert.js'
 import { pushRouter } from './push.js'
 import { recipeSuggestRouter } from './recipe-suggest.js'
+import { cookCompleteRouter } from './cook-complete.js'
 
 export const registerRoutes = (app: Express): void => {
   // 인증 (미들웨어 불필요)
@@ -16,6 +17,7 @@ export const registerRoutes = (app: Express): void => {
 
   // 인증 필요 라우트
   app.use('/api/fridges', groupAuth, recipeSuggestRouter)
+  app.use('/api/fridges', groupAuth, cookCompleteRouter)
   app.use('/api/fridges', groupAuth, fridgeRouter)
   app.use('/api', groupAuth, foodItemRouter)
   app.use('/api/alerts', groupAuth, alertRouter)

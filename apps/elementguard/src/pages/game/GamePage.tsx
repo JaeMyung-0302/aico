@@ -45,6 +45,11 @@ const GamePage = () => {
     setEvolutionModal(null)
   }, [])
 
+  const handleEvolutionDismiss = useCallback(() => {
+    setEvolutionModal(null)
+    eventBus.emit('evolution-dismiss')
+  }, [])
+
   useEffect(() => {
     reset()
 
@@ -99,6 +104,15 @@ const GamePage = () => {
   }, [reset, updateFromPhaser, setGameOver, setGameClear])
 
   useEffect(() => {
+    if (!evolutionModal) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleEvolutionDismiss()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [evolutionModal, handleEvolutionDismiss])
+
+  useEffect(() => {
     if (isGameOver || isGameClear) {
       navigate('/result')
     }
@@ -114,7 +128,7 @@ const GamePage = () => {
             <div className={cx('heroHpBar')}>
               <div
                 className={cx('heroHpFill')}
-                style={{ width: `${(heroState.currentHp / heroState.maxHp) * 100}%` }}
+                style={{ width: `${heroState.maxHp > 0 ? (heroState.currentHp / heroState.maxHp) * 100 : 0}%` }}
               />
             </div>
             {heroState.isDead && (
@@ -140,9 +154,15 @@ const GamePage = () => {
         </div>
       )}
       {evolutionModal && (
-        <div className={cx('evoOverlay')} onClick={() => setEvolutionModal(null)}>
-          <div className={cx('evoModal')} onClick={(e) => e.stopPropagation()}>
-            <h3 className={cx('evoTitle')}>진화 선택</h3>
+        <div className={cx('evoOverlay')} onClick={handleEvolutionDismiss}>
+          <div
+            className={cx('evoModal')}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="evo-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="evo-title" className={cx('evoTitle')}>진화 선택</h3>
             <div className={cx('evoBranches')}>
               {evolutionModal.branches.map((branch) => (
                 <button

@@ -31,7 +31,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
         .select('*')
         .eq('user_id', userId)
         .eq('class_type', cls)
-        .single()
+        .maybeSingle()
 
       if (data) {
         set({

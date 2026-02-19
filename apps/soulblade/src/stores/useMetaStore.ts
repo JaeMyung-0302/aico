@@ -30,7 +30,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
         .from('sb_profiles')
         .select('meta_gold, gems')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (profileError) throw profileError
 

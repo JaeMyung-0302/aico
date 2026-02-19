@@ -12,6 +12,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { path: '/select', label: '냉장고', icon: '🧊' },
+  { path: '/recipes', label: '레시피', icon: '🍳' },
   { path: '/alerts', label: '알림', icon: '⏰' },
   { path: '/settings', label: '설정', icon: '⚙️' },
 ]

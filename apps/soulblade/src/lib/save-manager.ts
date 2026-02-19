@@ -68,7 +68,7 @@ export const loadRemote = async (userId: string): Promise<SaveData | null> => {
       .from('sb_rpg_saves')
       .select('save_data')
       .eq('user_id', userId)
-      .single()
+      .maybeSingle()
 
     if (!data?.save_data) return null
     if (!isSaveData(data.save_data)) return null

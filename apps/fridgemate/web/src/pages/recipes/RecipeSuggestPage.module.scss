@@ -1,0 +1,189 @@
+.page {
+  padding: 24px 16px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.actionArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.suggestBtn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #4a90d9, #5096de);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.remaining {
+  font-size: 0.8125rem;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cachedBadge {
+  font-size: 0.6875rem;
+  color: #4a90d9;
+  background: rgba(74, 144, 217, 0.1);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #999;
+  font-size: 0.9375rem;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #999;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+}
+
+.errorText {
+  font-size: 0.9375rem;
+  color: #e74c3c;
+  text-align: center;
+}
+
+.retryBtn {
+  padding: 8px 20px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #333;
+
+  &:active {
+    background: #e0e0e0;
+  }
+}
+
+.recipeList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recipeCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  text-align: left;
+  transition: transform 0.15s;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.recipeName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.difficulty {
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+
+  &.easy {
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+  }
+
+  &.medium {
+    color: #f39c12;
+    background: rgba(243, 156, 18, 0.1);
+  }
+
+  &.hard {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+  }
+}
+
+.recipeDesc {
+  font-size: 0.8125rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.cookTime {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.ingredientMatch {
+  font-size: 0.75rem;
+  color: #4a90d9;
+  font-weight: 500;
+}

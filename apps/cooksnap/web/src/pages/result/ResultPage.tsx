@@ -214,7 +214,7 @@ const Result = () => {
                     <a
                       href={purchaseUrl}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener"
                       className={cx('coupangLink')}
                     >
                       구매
@@ -245,7 +245,7 @@ const Result = () => {
         <a
           href="https://link.coupang.com/a/dO2WLp"
           target="_blank"
-          rel="noopener noreferrer"
+          rel="noopener"
           className={cx('coupangBannerLink')}
         >
           쿠팡에서 최저가 확인하기
@@ -262,7 +262,7 @@ const Result = () => {
           <a
             href={purchaseLinks[0].purchaseUrl}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener"
             className={cx('cartButton')}
           >
             쿠팡에서 재료 구매하기

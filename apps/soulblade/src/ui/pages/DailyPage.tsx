@@ -29,7 +29,7 @@ export const DailyPage = () => {
           .from('sb_daily_progress')
           .select('consecutive_days, attendance_claimed')
           .eq('date', today)
-          .single()
+          .maybeSingle()
 
         setState({
           consecutiveDays: data?.consecutive_days ?? 0,

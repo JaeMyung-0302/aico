@@ -1,0 +1,235 @@
+.page {
+  padding: 24px 16px;
+}
+
+.backBtn {
+  font-size: 0.875rem;
+  color: #4a90d9;
+  margin-bottom: 16px;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.recipeName {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.difficulty {
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+
+  &.easy {
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+  }
+
+  &.medium {
+    color: #f39c12;
+    background: rgba(243, 156, 18, 0.1);
+  }
+
+  &.hard {
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+  }
+}
+
+.cookTime {
+  font-size: 0.8125rem;
+  color: #999;
+}
+
+.description {
+  font-size: 0.9375rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ingredientCount {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #4a90d9;
+  background: rgba(74, 144, 217, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.ingredientList {
+  list-style: none;
+}
+
+.ingredientItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  &.inFridge {
+    background: rgba(74, 144, 217, 0.04);
+  }
+}
+
+.ingredientStatus {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ingredientName {
+  flex: 1;
+  font-size: 0.9375rem;
+  color: #1a1a2e;
+}
+
+.ingredientAmount {
+  font-size: 0.8125rem;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.stepList {
+  list-style: none;
+  counter-reset: step;
+}
+
+.stepItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.stepNumber {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stepText {
+  flex: 1;
+  font-size: 0.9375rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 16px;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #999;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #4a90d9;
+  flex-shrink: 0;
+}
+
+.coupangLink {
+  font-size: 0.75rem;
+  color: #fff;
+  background: #e44d2e;
+  padding: 3px 10px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  text-decoration: none;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.cookCompleteArea {
+  position: sticky;
+  bottom: 72px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.cookCompleteHint {
+  font-size: 0.75rem;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.cookCompleteBtn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

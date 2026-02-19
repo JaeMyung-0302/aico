@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { prisma } from '../lib/prisma.js'
 import { suggestRecipes } from '../lib/gemini.js'
 import { GroupRequest } from '../middleware/group-auth.js'
-import { usageCheck } from '../middleware/usage-check.js'
+import { FREE_DAILY_LIMIT } from '../middleware/usage-check.js'
 import type { RecipeIngredient, RecipeSuggestion, RecipeSuggestResponse } from '../types/index.js'
 
 export const recipeSuggestRouter: RouterType = Router()
@@ -16,9 +16,18 @@ const buildIngredientHash = (names: string[]): string => {
   return crypto.createHash('sha256').update(sorted).digest('hex').slice(0, 16)
 }
 
+const getKSTToday = (): Date => {
+  const now = new Date()
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+  const yyyy = kst.getUTCFullYear()
+  const mm = kst.getUTCMonth()
+  const dd = kst.getUTCDate()
+  return new Date(Date.UTC(yyyy, mm, dd))
+}
+
 // POST /api/fridges/:fridgeId/recipe-suggest
-recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, res: Response): Promise<void> => {
-  const { groupId } = req as GroupRequest
+recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response): Promise<void> => {
+  const { groupId } = req as unknown as GroupRequest
   const fridgeId = req.params['fridgeId'] as string
 
   try {
@@ -46,7 +55,7 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, re
       return
     }
 
-    // 2. ingredientHash 생성 + 캐시 확인
+    // 2. ingredientHash 생성 + 캐시 확인 (usageCheck 전에 수행)
     const ingredientNames = allItems.map((item) => item.name)
     const ingredientHash = buildIngredientHash(ingredientNames)
     const cacheThreshold = new Date(Date.now() - CACHE_TTL_HOURS * 60 * 60 * 1000)
@@ -62,8 +71,7 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, re
 
     if (cached) {
       const cachedResponse = cached.response as unknown as { recipes: RecipeSuggestion[] }
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      const today = getKSTToday()
       const usage = await prisma.dailyUsage.findUnique({
         where: { groupId_date: { groupId, date: today } },
       })
@@ -71,16 +79,31 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, re
       const response: RecipeSuggestResponse = {
         recipes: cachedResponse.recipes,
         cached: true,
-        remainingCount: Math.max(0, 2 - (usage?.count ?? 0)),
+        remainingCount: Math.max(0, FREE_DAILY_LIMIT - (usage?.count ?? 0)),
       }
       res.json(response)
       return
     }
 
-    // 3. Gemini API 호출
+    // 3. 캐시 미스 → 사용량 확인
+    const today = getKSTToday()
+    const usage = await prisma.dailyUsage.findUnique({
+      where: { groupId_date: { groupId, date: today } },
+    })
+    const currentCount = usage?.count ?? 0
+
+    if (currentCount >= FREE_DAILY_LIMIT) {
+      res.status(403).json({
+        error: '오늘의 무료 추천 횟수를 모두 사용했습니다',
+        remainingCount: 0,
+      })
+      return
+    }
+
+    // 4. Gemini API 호출
     const foodItemInputs = allItems.map((item) => {
-      const now = new Date()
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000)
+      const todayStart = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()))
       const daysUntilExpiry = item.expiryDate
         ? Math.floor((new Date(item.expiryDate).getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24))
         : null
@@ -95,7 +118,7 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, re
 
     const geminiRecipes = await suggestRecipes(foodItemInputs)
 
-    // 4. inFridge 매칭
+    // 5. inFridge 매칭
     const fridgeNameSet = new Set(ingredientNames.map((n) => n.toLowerCase()))
     const recipes: RecipeSuggestion[] = geminiRecipes.map((recipe) => ({
       ...recipe,
@@ -105,12 +128,9 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, re
       })),
     }))
 
-    // 5. RecipeHistory 저장 + DailyUsage 증가
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    await Promise.all([
-      prisma.recipeHistory.create({
+    // 6. $transaction으로 RecipeHistory 저장 + DailyUsage 증가
+    const updatedUsage = await prisma.$transaction(async (tx) => {
+      await tx.recipeHistory.create({
         data: {
           groupId,
           fridgeId,
@@ -122,23 +142,20 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', usageCheck, async (req, re
           })),
           response: JSON.parse(JSON.stringify({ recipes })),
         },
-      }),
-      prisma.dailyUsage.upsert({
+      })
+
+      return tx.dailyUsage.upsert({
         where: { groupId_date: { groupId, date: today } },
         update: { count: { increment: 1 } },
         create: { groupId, date: today, count: 1 },
-      }),
-    ])
-
-    // 6. 잔여 횟수 계산
-    const updatedUsage = await prisma.dailyUsage.findUnique({
-      where: { groupId_date: { groupId, date: today } },
+      })
     })
 
+    // 7. 응답
     const response: RecipeSuggestResponse = {
       recipes,
       cached: false,
-      remainingCount: Math.max(0, 2 - (updatedUsage?.count ?? 0)),
+      remainingCount: Math.max(0, FREE_DAILY_LIMIT - updatedUsage.count),
     }
 
     res.json(response)

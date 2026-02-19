@@ -7,6 +7,8 @@ import { SetupPage } from '@/pages/setup/SetupPage'
 import { FridgePage } from '@/pages/fridge/FridgePage'
 import { AlertsPage } from '@/pages/alerts/AlertsPage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
+import { RecipeSuggestPage } from '@/pages/recipes/RecipeSuggestPage'
+import { RecipeDetailPage } from '@/pages/recipes/RecipeDetailPage'
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +36,8 @@ export const router = createBrowserRouter([
         element: <Layout />,
         children: [
           { path: '/fridge', element: <FridgePage /> },
+          { path: '/recipes', element: <RecipeSuggestPage /> },
+          { path: '/recipes/:index', element: <RecipeDetailPage /> },
           { path: '/alerts', element: <AlertsPage /> },
         ],
       },

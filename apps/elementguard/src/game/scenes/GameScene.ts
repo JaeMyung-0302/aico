@@ -97,6 +97,7 @@ export class GameScene extends Phaser.Scene {
     eventBus.on('hero-use-skill', this.handleHeroUseSkill as (...args: unknown[]) => void)
     eventBus.on('hero-select-element', this.handleHeroSelectElement as (...args: unknown[]) => void)
     eventBus.on('evolution-select', this.handleEvolutionSelect)
+    eventBus.on('evolution-dismiss', this.handleEvolutionDismiss)
 
     // 초기 상태 전달
     this.emitGameState()
@@ -106,6 +107,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
+    if (this.isEvolutionPaused) return
+
     // 디버프 시간 업데이트
     this.debuffs = updateDebuffs(this.debuffs, delta)
 
@@ -541,6 +544,7 @@ export class GameScene extends Phaser.Scene {
             if (canEvolve(result.resultUnit)) {
               const branches = getEvolutionBranches(result.resultUnit)
               if (branches) {
+                this.isEvolutionPaused = true
                 eventBus.emit('evolution-available', {
                   unitInstanceId: result.resultUnit.instanceId,
                   unitDataId: result.resultUnit.unitDataId,
@@ -740,6 +744,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleEvolutionSelect = (...args: unknown[]) => {
+    this.isEvolutionPaused = false
     const data = args[0] as { unitInstanceId: string; branchId: string }
     const unitIdx = this.placedUnits.findIndex((u) => u.instanceId === data.unitInstanceId)
     if (unitIdx < 0) return
@@ -763,6 +768,10 @@ export class GameScene extends Phaser.Scene {
     eventBus.emit('evolution-complete', { unitInstanceId: data.unitInstanceId, branchId: data.branchId })
   }
 
+  private handleEvolutionDismiss = () => {
+    this.isEvolutionPaused = false
+  }
+
   shutdown() {
     eventBus.off('growth-bonuses', this.handleGrowthBonuses as (...args: unknown[]) => void)
     eventBus.off('summon-unit', this.handleSummon)
@@ -771,6 +780,7 @@ export class GameScene extends Phaser.Scene {
     eventBus.off('hero-use-skill', this.handleHeroUseSkill as (...args: unknown[]) => void)
     eventBus.off('hero-select-element', this.handleHeroSelectElement as (...args: unknown[]) => void)
     eventBus.off('evolution-select', this.handleEvolutionSelect)
+    eventBus.off('evolution-dismiss', this.handleEvolutionDismiss)
     this.heroSystem.destroy()
     this.gridManager.destroy()
     this.units.clear()

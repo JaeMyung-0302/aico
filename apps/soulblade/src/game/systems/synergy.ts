@@ -37,8 +37,9 @@ export const calcEquipmentSynergies = (
  */
 export const calcTotalEquipmentStats = (
   equippedItems: readonly Equipment[],
-): Partial<CharacterStats> => {
+): Partial<CharacterStats> & { weaponPower: number } => {
   const total: Record<string, number> = {}
+  let weaponPower = 0
 
   // 개별 장비 스탯 합산
   for (const item of equippedItems) {
@@ -47,6 +48,7 @@ export const calcTotalEquipmentStats = (
         total[key] = (total[key] ?? 0) + value
       }
     }
+    weaponPower += item.weaponPower ?? 0
   }
 
   // 시너지 보너스 추가
@@ -60,5 +62,5 @@ export const calcTotalEquipmentStats = (
     }
   }
 
-  return total as Partial<CharacterStats>
+  return { ...(total as Partial<CharacterStats>), weaponPower }
 }

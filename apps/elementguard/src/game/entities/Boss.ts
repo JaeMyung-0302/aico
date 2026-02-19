@@ -11,8 +11,9 @@ export class BossEntity extends EnemyEntity {
     y: number,
     enemyData: EnemyData,
     scaledHp: number,
+    instanceId: string,
   ) {
-    super(scene, x, y, enemyData, scaledHp)
+    super(scene, x, y, enemyData, scaledHp, instanceId)
 
     // 보스 출현 연출
     this.setScale(0)

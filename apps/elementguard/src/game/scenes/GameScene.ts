@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import type { PlacedUnit, UnitGrade, Element } from '@/types'
+import type { PlacedUnit, UnitGrade, Element, ActiveDebuff, ActiveBuff, AbilityData, ReactionData } from '@/types'
 import { GridManager } from '@/game/systems/GridManager'
 import { generateSPath, getPathGridPositions, drawPath } from '@/game/systems/PathSystem'
 import { generateTerrainLayout, type TerrainTile } from '@/game/systems/TerrainSystem'
@@ -7,11 +7,20 @@ import { generateSpawnList, calculateWaveGold, isArtifactWave, isBossWave, isGam
 import { calculateDamage, findTarget } from '@/game/systems/CombatSystem'
 import { canMerge, executeMerge } from '@/game/systems/MergeSystem'
 import { calculateArtifactBonuses, type ArtifactBonuses } from '@/game/systems/ArtifactSystem'
+import { updateDebuffs, removeDebuffsForTarget, getEffectiveSpeed, isDisabled, getEffectiveAtkMultiplier, getEffectiveRangeBoost, getDotDamage } from '@/game/systems/DebuffSystem'
+import { checkReaction, canReact, recordReaction, clearCooldowns, applyReactionEffect } from '@/game/systems/ReactionSystem'
+import { getAbilityForUnit, applyAoe, applyChain, applyPierce, applySlow, applyArmorBreak, findHighestHpTarget, applyPassiveBuffs } from '@/game/systems/AbilitySystem'
+import { executeInfernoAbility, executeLeviathanAbility, executeTitanAbility } from '@/game/systems/BossAbilitySystem'
+import { getArmorReduction, getRegenRate } from '@/game/data/traits'
 import { UNITS, SUMMON_COST, SUMMON_PROBABILITIES, getGradeMultiplier, getUnitById } from '@/game/data/units'
+import { getFusionUnit } from '@/game/data/fusions'
 import { EnemyEntity } from '@/game/entities/Enemy'
 import { BossEntity } from '@/game/entities/Boss'
 import { UnitEntity } from '@/game/entities/Unit'
 import { Projectile } from '@/game/entities/Projectile'
+import { DamageText } from '@/game/entities/DamageText'
+import { HeroSystem } from '@/game/systems/HeroSystem'
+import type { SkillEffect } from '@/game/systems/HeroSkillSystem'
 import { eventBus } from '@/lib/event-bus'
 
 interface AttackCooldown {
@@ -29,6 +38,13 @@ export class GameScene extends Phaser.Scene {
   private projectiles: Projectile[] = []
   private attackCooldowns: AttackCooldown[] = []
   private artifactBonuses!: ArtifactBonuses
+  private debuffs: ActiveDebuff[] = []
+  private buffs: ActiveBuff[] = []
+  private lastBuffUpdateTime = 0
+  private enemyIdCounter = 0
+  private growthBonuses = { atkBonus: 0, maxHpBonus: 0, goldBonus: 0, luckBonus: 0 }
+  private dotTickAccumulator = 0
+  private heroSystem = new HeroSystem()
 
   // 게임 상태
   private currentWave = 0
@@ -66,10 +82,18 @@ export class GameScene extends Phaser.Scene {
     // 드래그 & 드롭 설정
     this.setupDragAndDrop()
 
+    // 성장 트리 보너스 수신
+    eventBus.on('growth-bonuses', this.handleGrowthBonuses as (...args: unknown[]) => void)
+
+    // 히어로 시스템 초기화 (기본: fire)
+    this.heroSystem.init(this, 'fire')
+
     // UI 이벤트 리스너
     eventBus.on('summon-unit', this.handleSummon)
     eventBus.on('start-wave', this.handleStartWave)
     eventBus.on('select-artifact', this.handleSelectArtifact as (...args: unknown[]) => void)
+    eventBus.on('hero-use-skill', this.handleHeroUseSkill as (...args: unknown[]) => void)
+    eventBus.on('hero-select-element', this.handleHeroSelectElement as (...args: unknown[]) => void)
 
     // 초기 상태 전달
     this.emitGameState()
@@ -79,21 +103,64 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
-    // 적 이동 + 도달 체크
+    // 디버프 시간 업데이트
+    this.debuffs = updateDebuffs(this.debuffs, delta)
+
+    // 패시브 버프 갱신 (매 1초)
+    if (time - this.lastBuffUpdateTime > 1000) {
+      this.buffs = applyPassiveBuffs(this.placedUnits, [])
+      this.lastBuffUpdateTime = time
+    }
+
+    // 적 이동 + 도달 체크 + regen + 디버프 시각 효과
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const enemy = this.enemies[i]
       if (!enemy || enemy.isDead) continue
 
-      const reached = enemy.moveAlongPath(this.path, delta)
+      // 슬로우 적용된 유효 속도
+      const effectiveSpd = getEffectiveSpeed(enemy.speed, enemy.instanceId, this.debuffs)
+      const reached = enemy.moveAlongPath(this.path, delta, effectiveSpd)
+
+      // 디버프 + 마킹 시각 효과
+      enemy.updateDebuffVisual(effectiveSpd < enemy.speed)
+      enemy.updateMarkVisuals(time)
+
+      // regen 특성: 초당 최대HP의 N% 회복
+      const regenRate = getRegenRate(enemy.enemyData.traits)
+      if (regenRate > 0) {
+        const regenAmount = (enemy.maxHp * regenRate * delta) / 1000
+        enemy.currentHp = Math.min(enemy.maxHp, enemy.currentHp + regenAmount)
+      }
+
       if (reached) {
         const damage = enemy.enemyData.type === 'boss' ? 20 : 5
         this.hp = Math.max(0, this.hp - damage)
+        this.debuffs = removeDebuffsForTarget(this.debuffs, enemy.instanceId)
+        enemy.clearMarks()
+        clearCooldowns(enemy.instanceId)
         enemy.playDeathAnimation(() => enemy.destroy())
         this.enemies.splice(i, 1)
 
         if (this.hp <= 0) {
           this.handleGameOver()
           return
+        }
+      }
+    }
+
+    // DoT 데미지 처리 (500ms 간격)
+    this.dotTickAccumulator += delta
+    if (this.dotTickAccumulator >= 500) {
+      this.dotTickAccumulator -= 500
+      for (let i = this.enemies.length - 1; i >= 0; i--) {
+        const enemy = this.enemies[i]
+        if (!enemy || enemy.isDead) continue
+        const dotDps = getDotDamage(enemy.instanceId, this.debuffs)
+        if (dotDps > 0) {
+          const tickDmg = Math.round(dotDps / 2)
+          if (tickDmg > 0 && enemy.takeDamage(tickDmg)) {
+            this.handleEnemyKill(enemy)
+          }
         }
       }
     }
@@ -114,6 +181,10 @@ export class GameScene extends Phaser.Scene {
       this.processUnitAttacks(time)
     }
 
+    // 히어로 시스템 업데이트 (자동공격, 피격, 스킬 쿨다운)
+    this.heroSystem.update(time, delta, this.enemies)
+    this.processHeroSkillEffects()
+
     // 웨이브 완료 체크
     if (this.isWaveActive && this.enemies.length === 0 && !this.waveSpawnTimer) {
       this.handleWaveComplete()
@@ -129,6 +200,9 @@ export class GameScene extends Phaser.Scene {
     for (const [instanceId, unitEntity] of this.units) {
       const placedUnit = this.placedUnits.find((u) => u.instanceId === instanceId)
       if (!placedUnit) continue
+
+      // 유닛 무력화 체크 (보스 능력 등)
+      if (isDisabled(instanceId, this.debuffs)) continue
 
       // 공격 쿨다운 체크
       const unitData = placedUnit.fusionElement
@@ -146,50 +220,211 @@ export class GameScene extends Phaser.Scene {
 
       if (time - cooldown.lastAttackTime < cooldownMs) continue
 
-      // 타겟 찾기
+      // 타겟 찾기 (능력에 따라 다른 타겟 선택)
       const worldPos = this.gridManager.getSlotWorldPosition(placedUnit.position)
       if (!worldPos) continue
 
-      const range = unitData?.range ?? 2.0
-      const target = findTarget(worldPos.x, worldPos.y, range, slotSize, this.enemies)
+      const baseRange = unitData?.range ?? 2.0
+      const rangeBoost = getEffectiveRangeBoost(instanceId, this.buffs)
+      const range = baseRange + rangeBoost
+
+      const ability = placedUnit.fusionElement
+        ? { type: 'none' as const, params: {} }
+        : getAbilityForUnit(placedUnit.unitDataId)
+
+      // wind-assassin: HP 높은 적 우선 타겟
+      const target = ability.type === 'prioritize_hp'
+        ? findHighestHpTarget(worldPos.x, worldPos.y, range, slotSize, this.enemies)
+        : findTarget(worldPos.x, worldPos.y, range, slotSize, this.enemies)
       if (!target) continue
 
-      // 데미지 계산
+      // 데미지 계산 (버프 + 성장 보너스 적용)
+      const atkMultiplier = getEffectiveAtkMultiplier(instanceId, this.buffs)
       const result = calculateDamage(
         placedUnit,
-        target.enemyData.element,
+        target.enemyData,
         this.placedUnits,
         this.terrains,
         this.artifactBonuses,
       )
+      const buffedDamage = Math.round(result.damage * atkMultiplier * (1 + this.growthBonuses.atkBonus))
+
+      // 마킹용 원소 결정 (융합 유닛: elements[0])
+      const markElement: Element = placedUnit.fusionElement
+        ? (getFusionUnit(placedUnit.fusionElement)?.elements[0] ?? 'fire')
+        : (unitData?.element ?? 'fire')
 
       // 투사체 발사
       const element = unitData?.element ?? 'fire'
       const proj = new Projectile(this, worldPos.x, worldPos.y, target.x, target.y, element)
       this.projectiles.push(proj)
 
-      // 데미지 적용
+      // 공격 애니메이션 + 데미지 텍스트
       unitEntity.playAttackAnimation()
-      const killed = target.takeDamage(result.damage)
+      new DamageText(this, target.x, target.y, buffedDamage, result.elementEffect)
+
+      if (result.elementEffect === 'immune') {
+        cooldown.lastAttackTime = time
+        continue
+      }
+
+      // 쉴드 흡수 체크
+      if (target.absorbShieldHit()) {
+        new DamageText(this, target.x, target.y, 0, 'neutral')
+        cooldown.lastAttackTime = time
+        continue
+      }
+
+      // armor 감소 + armor_break 디버프 반영
+      const armorReduction = getArmorReduction(target.enemyData.traits)
+      const finalDamage = Math.round(buffedDamage * (1 - armorReduction))
+      const killed = target.takeDamage(finalDamage)
+
+      // 유닛 능력 적용
+      this.applyUnitAbility(ability, target, finalDamage, slotSize)
 
       if (killed) {
-        this.score += target.enemyData.type === 'boss' ? 100 : 10
-        const reward = target.enemyData.reward
-        const bonusGold = Math.round(reward * this.artifactBonuses.goldBonus)
-        const eliteBonus = target.enemyData.type === 'elite'
-          ? Math.round(reward * this.artifactBonuses.eliteBounty)
-          : 0
-        this.gold += reward + bonusGold + eliteBonus
-
-        target.playDeathAnimation(() => {
-          const idx = this.enemies.indexOf(target)
-          if (idx >= 0) this.enemies.splice(idx, 1)
-          target.destroy()
-        })
+        this.handleEnemyKill(target)
+      } else {
+        // 원소 마킹 + 반응 판정 (살아있는 적만)
+        target.applyMark(markElement, time)
+        const reaction = checkReaction(target.getActiveMarks(time), time)
+        if (reaction && canReact(target.instanceId, reaction.type, time)) {
+          this.handleReaction(reaction, target, finalDamage, time)
+        }
       }
 
       cooldown.lastAttackTime = time
     }
+  }
+
+  private applyUnitAbility(
+    ability: AbilityData,
+    target: EnemyEntity,
+    damage: number,
+    slotSize: number,
+  ) {
+    switch (ability.type) {
+      case 'aoe': {
+        const aoeResults = applyAoe(target, damage, ability, this.enemies, slotSize)
+        for (const { enemy, aoeDamage } of aoeResults) {
+          if (enemy.absorbShieldHit()) continue
+          const armorRed = getArmorReduction(enemy.enemyData.traits)
+          const finalAoe = Math.round(aoeDamage * (1 - armorRed))
+          new DamageText(this, enemy.x, enemy.y, finalAoe, 'neutral')
+          const killed = enemy.takeDamage(finalAoe)
+          if (killed) this.handleEnemyKill(enemy)
+        }
+        break
+      }
+      case 'chain': {
+        const chainResult = applyChain(target, damage, ability, this.enemies, slotSize)
+        if (chainResult) {
+          const { enemy, chainDamage } = chainResult
+          if (!enemy.absorbShieldHit()) {
+            const armorRed = getArmorReduction(enemy.enemyData.traits)
+            const finalChain = Math.round(chainDamage * (1 - armorRed))
+            new DamageText(this, enemy.x, enemy.y, finalChain, 'neutral')
+            const killed = enemy.takeDamage(finalChain)
+            if (killed) this.handleEnemyKill(enemy)
+          }
+        }
+        break
+      }
+      case 'pierce': {
+        const pierceResult = applyPierce(target, damage, ability, this.enemies, slotSize)
+        if (pierceResult) {
+          const { enemy, pierceDamage } = pierceResult
+          if (!enemy.absorbShieldHit()) {
+            const armorRed = getArmorReduction(enemy.enemyData.traits)
+            const finalPierce = Math.round(pierceDamage * (1 - armorRed))
+            new DamageText(this, enemy.x, enemy.y, finalPierce, 'neutral')
+            const killed = enemy.takeDamage(finalPierce)
+            if (killed) this.handleEnemyKill(enemy)
+          }
+        }
+        break
+      }
+      case 'slow':
+        this.debuffs = applySlow(target.instanceId, ability, this.debuffs)
+        break
+      case 'debuff_armor':
+        this.debuffs = applyArmorBreak(target.instanceId, ability, this.debuffs)
+        break
+      default:
+        break
+    }
+  }
+
+  private startBossAbilityLoop(boss: BossEntity) {
+    const unitPositions = () =>
+      this.placedUnits.map((u) => {
+        const pos = this.gridManager.getSlotWorldPosition(u.position)
+        return { instanceId: u.instanceId, x: pos?.x ?? 0, y: pos?.y ?? 0 }
+      })
+
+    switch (boss.enemyData.id) {
+      case 'boss-inferno':
+        boss.startAbilityLoop(() => {
+          this.debuffs = executeInfernoAbility(this, unitPositions(), this.debuffs)
+        }, 3000)
+        break
+      case 'boss-leviathan':
+        boss.startAbilityLoop(() => {
+          this.debuffs = executeLeviathanAbility(this, boss, unitPositions(), this.enemies, this.debuffs)
+        }, 4000)
+        break
+      case 'boss-titan':
+        boss.startAbilityLoop(() => {
+          this.debuffs = executeTitanAbility(this, boss, unitPositions(), this.debuffs)
+        }, 5000)
+        break
+      default:
+        break
+    }
+  }
+
+  private handleReaction(reaction: ReactionData, target: EnemyEntity, referenceDamage: number, time: number) {
+    const result = applyReactionEffect(reaction, target, referenceDamage, this.enemies, this.debuffs)
+    this.debuffs = result.debuffs
+    target.clearMarks()
+    recordReaction(target.instanceId, reaction.type, time)
+
+    // 반응 데미지 적용
+    for (const event of result.damageEvents) {
+      new DamageText(this, event.enemy.x, event.enemy.y, event.damage, 'neutral')
+      if (event.enemy.takeDamage(event.damage)) {
+        this.handleEnemyKill(event.enemy)
+      }
+    }
+
+    // 반응명 텍스트 + 카메라 흔들림
+    DamageText.createReactionText(this, target.x, target.y, reaction.name, reaction.type)
+    this.cameras.main.shake(100, 0.005)
+
+    // 이벤트 발행
+    eventBus.emit('reaction_triggered', { type: reaction.type, enemyId: target.instanceId })
+  }
+
+  private handleEnemyKill(target: EnemyEntity) {
+    this.score += target.enemyData.type === 'boss' ? 100 : 10
+    const reward = target.enemyData.reward
+    const bonusGold = Math.round(reward * (this.artifactBonuses.goldBonus + this.growthBonuses.goldBonus))
+    const eliteBonus = target.enemyData.type === 'elite'
+      ? Math.round(reward * this.artifactBonuses.eliteBounty)
+      : 0
+    this.gold += reward + bonusGold + eliteBonus
+
+    // 디버프 + 마킹 + 쿨다운 정리
+    this.debuffs = removeDebuffsForTarget(this.debuffs, target.instanceId)
+    target.clearMarks()
+    clearCooldowns(target.instanceId)
+
+    target.playDeathAnimation(() => {
+      const idx = this.enemies.indexOf(target)
+      if (idx >= 0) this.enemies.splice(idx, 1)
+      target.destroy()
+    })
   }
 
   private handleSummon = () => {
@@ -203,9 +438,9 @@ export class GameScene extends Phaser.Scene {
 
     this.gold -= cost
 
-    // 등급 결정 (확률)
+    // 등급 결정 (확률 = 유물 + 성장 트리 행운)
     const roll = Math.random()
-    const luckBonus = this.artifactBonuses.summonLuck
+    const luckBonus = this.artifactBonuses.summonLuck + this.growthBonuses.luckBonus
     let grade: UnitGrade
     if (roll < (SUMMON_PROBABILITIES[3] ?? 0) + luckBonus) {
       grade = 3
@@ -341,6 +576,8 @@ export class GameScene extends Phaser.Scene {
     this.units.delete(instanceId)
     this.placedUnits = this.placedUnits.filter((u) => u.instanceId !== instanceId)
     this.attackCooldowns = this.attackCooldowns.filter((c) => c.instanceId !== instanceId)
+    // 버프 소스 정리
+    this.buffs = this.buffs.filter((b) => b.sourceId !== instanceId && b.targetId !== instanceId)
   }
 
   private handleStartWave = () => {
@@ -370,9 +607,16 @@ export class GameScene extends Phaser.Scene {
           const startPos = this.path[0]
           if (!startPos) { spawnIndex++; continue }
 
+          const enemyInstanceId = `enemy-${++this.enemyIdCounter}`
           const EntityClass = entry.enemy.type === 'boss' ? BossEntity : EnemyEntity
-          const enemy = new EntityClass(this, startPos.x, startPos.y, entry.enemy, entry.scaledHp)
+          const enemy = new EntityClass(this, startPos.x, startPos.y, entry.enemy, entry.scaledHp, enemyInstanceId)
           this.enemies.push(enemy)
+
+          // 보스 ability 루프 시작
+          if (enemy instanceof BossEntity) {
+            this.startBossAbilityLoop(enemy)
+          }
+
           spawnIndex++
         }
 
@@ -409,12 +653,18 @@ export class GameScene extends Phaser.Scene {
     eventBus.emit('wave-complete', this.currentWave)
   }
 
+  private handleGrowthBonuses = (bonuses: { atkBonus: number; maxHpBonus: number; goldBonus: number; luckBonus: number }) => {
+    this.growthBonuses = bonuses
+    this.maxHp = 100 + bonuses.maxHpBonus
+    this.hp = this.maxHp
+  }
+
   private handleSelectArtifact = (artifactId: string) => {
     this.ownedArtifacts.push(artifactId)
     this.artifactBonuses = calculateArtifactBonuses(this.ownedArtifacts)
 
-    // 최대 HP 보너스 적용
-    this.maxHp = 100 + this.artifactBonuses.maxHpBonus
+    // 최대 HP 보너스 적용 (유물 + 성장 트리)
+    this.maxHp = 100 + this.artifactBonuses.maxHpBonus + this.growthBonuses.maxHpBonus
     this.hp = Math.min(this.hp, this.maxHp)
   }
 
@@ -446,13 +696,42 @@ export class GameScene extends Phaser.Scene {
       score: this.score,
       unitCount: this.placedUnits.length,
       isWaveActive: this.isWaveActive,
+      heroState: this.heroSystem.getHeroState(),
     })
   }
 
+  // 히어로 스킬 디버프 효과를 DebuffSystem에 적용
+  private processHeroSkillEffects() {
+    const effects = this.heroSystem.getSkillSystem().consumePendingEffects()
+    for (const effect of effects) {
+      this.debuffs.push({
+        id: `hero-skill-${effect.type}-${effect.targetId}-${Date.now()}`,
+        type: effect.type === 'stun' ? 'stun' : 'slow',
+        targetId: effect.targetId,
+        value: effect.value,
+        remainingMs: effect.durationMs,
+        maxMs: effect.durationMs,
+      })
+    }
+  }
+
+  private handleHeroUseSkill = (skillIndex: number) => {
+    this.heroSystem.useSkill(skillIndex as 0 | 1, this.enemies)
+  }
+
+  private handleHeroSelectElement = (element: Element) => {
+    this.heroSystem.destroy()
+    this.heroSystem.init(this, element)
+  }
+
   shutdown() {
+    eventBus.off('growth-bonuses', this.handleGrowthBonuses as (...args: unknown[]) => void)
     eventBus.off('summon-unit', this.handleSummon)
     eventBus.off('start-wave', this.handleStartWave)
     eventBus.off('select-artifact', this.handleSelectArtifact as (...args: unknown[]) => void)
+    eventBus.off('hero-use-skill', this.handleHeroUseSkill as (...args: unknown[]) => void)
+    eventBus.off('hero-select-element', this.handleHeroSelectElement as (...args: unknown[]) => void)
+    this.heroSystem.destroy()
     this.gridManager.destroy()
     this.units.clear()
     this.enemies.forEach((e) => e.destroy())

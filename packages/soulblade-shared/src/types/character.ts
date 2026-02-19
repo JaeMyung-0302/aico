@@ -14,6 +14,14 @@ export interface CharacterStats {
 // 기본 공격 패턴
 export type BasicAttackPattern = 'melee_fan' | 'ranged_projectile' | 'aoe_circle' | 'mid_range_holy'
 
+// 직업 고유 패시브 타입
+export type ClassPassiveType = 'damage_reduction' | 'crit_damage_bonus' | 'skill_multiplier' | 'heal_on_kill'
+
+export interface ClassPassive {
+  readonly type: ClassPassiveType
+  readonly value: number
+}
+
 // 클래스별 설정
 export interface ClassConfig {
   readonly classType: CharacterClass
@@ -22,6 +30,7 @@ export interface ClassConfig {
   readonly basicAttackPattern: BasicAttackPattern
   readonly activeSkillId: string
   readonly description: string
+  readonly classPassive: ClassPassive
 }
 
 // 영구 스탯 (메타 성장)

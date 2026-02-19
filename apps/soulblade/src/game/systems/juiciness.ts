@@ -52,15 +52,18 @@ export const showDamageNumber = (
   y: number,
   damage: number,
   isCrit: boolean,
+  overrideColor?: string,
 ): void => {
-  const color = isCrit ? '#ffcc00' : '#ffffff'
-  const fontSize = isCrit ? '18px' : '14px'
-  const text = scene.add.text(x, y - 10, String(damage), {
+  const isPlayerHit = overrideColor === '#ff4444'
+  const color = overrideColor ?? (isCrit ? '#ffcc00' : '#ffffff')
+  const fontSize = isPlayerHit ? '20px' : isCrit ? '18px' : '14px'
+  const text = scene.add.text(x, y - 10, isPlayerHit ? `-${damage}` : String(damage), {
     fontSize,
-    color,
+    color: isPlayerHit ? '#ff6666' : color,
     fontFamily: 'monospace',
+    fontStyle: isPlayerHit || isCrit ? 'bold' : 'normal',
     stroke: '#000000',
-    strokeThickness: 2,
+    strokeThickness: isPlayerHit ? 4 : 2,
   })
   text.setOrigin(0.5)
   text.setDepth(20)

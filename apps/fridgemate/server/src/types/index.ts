@@ -80,6 +80,40 @@ export interface FoodItemResponse {
   updatedAt: string
 }
 
+// === Push Subscription ===
+
+export interface PushSubscriptionInput {
+  endpoint: string
+  keys: {
+    p256dh: string
+    auth: string
+  }
+}
+
+// === 레시피 추천 인터페이스 ===
+
+export interface RecipeIngredient {
+  name: string
+  amount: string
+  unit: string
+  inFridge: boolean
+}
+
+export interface RecipeSuggestion {
+  name: string
+  description: string
+  difficulty: 'easy' | 'medium' | 'hard'
+  cookTime: number // 분
+  ingredients: RecipeIngredient[]
+  steps: string[]
+}
+
+export interface RecipeSuggestResponse {
+  recipes: RecipeSuggestion[]
+  cached: boolean
+  remainingCount: number
+}
+
 // === Input 인터페이스 ===
 
 export interface CreateFoodItemInput {

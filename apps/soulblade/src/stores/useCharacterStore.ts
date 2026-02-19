@@ -24,11 +24,10 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   selectClass: (cls) => set({ selectedClass: cls }),
 
   fetchCharacter: async (userId, cls) => {
-    if (!supabase) return
     set({ loading: true })
     try {
       const { data } = await supabase
-        .from('characters')
+        .from('sb_characters')
         .select('*')
         .eq('user_id', userId)
         .eq('class_type', cls)
@@ -63,10 +62,9 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   },
 
   saveCharacter: async (userId) => {
-    if (!supabase) return
     const { selectedClass, permanentStats, masteryLevel, masteryExp } = get()
     const { error } = await supabase
-      .from('characters')
+      .from('sb_characters')
       .upsert({
         user_id: userId,
         class_type: selectedClass,

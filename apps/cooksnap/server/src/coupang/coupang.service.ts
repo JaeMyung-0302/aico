@@ -26,6 +26,12 @@ export class CoupangService {
   ) {
     this.accessKey = this.configService.get<string>('coupang.accessKey') || '';
     this.secretKey = this.configService.get<string>('coupang.secretKey') || '';
+
+    if (!this.accessKey || !this.secretKey) {
+      this.logger.warn(
+        'COUPANG_ACCESS_KEY 또는 COUPANG_SECRET_KEY가 설정되지 않았습니다. Deep Link API가 비활성화됩니다.',
+      );
+    }
   }
 
   // 레시피의 재료별 구매 링크 생성

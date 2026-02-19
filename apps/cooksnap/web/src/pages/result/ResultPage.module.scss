@@ -278,11 +278,26 @@
   flex-direction: column;
   margin-bottom: $spacing-xl;
   padding: $spacing-lg;
+}
 
-  iframe {
-    max-width: 100%;
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
+.coupangBannerLink {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  background-color: #346aff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border-radius: $radius-md;
+  transition: $transition-base;
+
+  &:hover {
+    background-color: #2554d9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(#346aff, 0.3);
   }
 }
 

@@ -17,11 +17,10 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   loading: false,
 
   fetchInventory: async (userId) => {
-    if (!supabase) return
     set({ loading: true })
     try {
       const { data, error } = await supabase
-        .from('equipment')
+        .from('sb_equipment')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -36,6 +35,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
         name: row.name,
         tags: row.tags ?? [],
         stats: row.stats ?? {},
+        weaponPower: row.weapon_power ?? 0,
         equippedBy: row.equipped_by,
       }))
 
@@ -48,7 +48,6 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   equipItem: async (itemId, characterId) => {
-    if (!supabase) return
     const { items } = get()
     const item = items.find((i) => i.id === itemId)
     if (!item) return
@@ -61,14 +60,14 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     try {
       if (existingEquipped) {
         const { error } = await supabase
-          .from('equipment')
+          .from('sb_equipment')
           .update({ equipped_by: null })
           .eq('id', existingEquipped.id)
         if (error) throw error
       }
 
       const { error } = await supabase
-        .from('equipment')
+        .from('sb_equipment')
         .update({ equipped_by: characterId })
         .eq('id', itemId)
       if (error) throw error
@@ -93,11 +92,10 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   unequipItem: async (itemId) => {
-    if (!supabase) return
     const { items } = get()
     try {
       const { error } = await supabase
-        .from('equipment')
+        .from('sb_equipment')
         .update({ equipped_by: null })
         .eq('id', itemId)
       if (error) throw error

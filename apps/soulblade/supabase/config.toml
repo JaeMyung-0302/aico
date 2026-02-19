@@ -1,14 +1,18 @@
-[project]
-id = "soulblade"
-name = "SoulBlade"
-
-[auth]
+[api]
 enabled = true
-site_url = "http://localhost:5176"
-additional_redirect_urls = ["http://localhost:5176"]
-
-[auth.external.google]
-enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
 [db]
 port = 54322
+major_version = 15
+
+[auth]
+enabled = true
+site_url = "http://localhost:5178"
+additional_redirect_urls = ["http://localhost:5178"]
+
+[auth.external.google]
+enabled = false

@@ -23,12 +23,11 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   loading: false,
 
   fetchMeta: async (userId) => {
-    if (!supabase) return
     set({ loading: true })
     try {
       // 프로필에서 메타 골드, 젬 조회
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('sb_profiles')
         .select('meta_gold, gems')
         .eq('id', userId)
         .single()
@@ -37,7 +36,7 @@ export const useMetaStore = create<MetaState>((set, get) => ({
 
       // 스킬 트리 노드 조회
       const { data: nodes } = await supabase
-        .from('skill_tree')
+        .from('sb_skill_tree')
         .select('*')
         .eq('user_id', userId)
 
@@ -66,7 +65,6 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   },
 
   purchaseUpgrade: async (statType) => {
-    if (!supabase) return false
     const { metaGold, permanentStats } = get()
     const currentLevel = permanentStats[statType]
     if (currentLevel >= MAX_PERMANENT_STAT_LEVEL) return false

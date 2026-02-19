@@ -1,8 +1,8 @@
 import Phaser from 'phaser'
 import type { CharacterClass, CharacterStats } from '@soulblade/shared'
-import type { StageId, Equipment, MapId, StatAllocationData } from '@soulblade/shared'
+import type { Equipment, MapId, StatAllocationData } from '@soulblade/shared'
 import type { PassiveSkillId } from '@soulblade/shared'
-import { STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES } from '@soulblade/shared'
+import { STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES, CLASS_CONFIGS, calcExpForLevel } from '@soulblade/shared'
 import { Player } from '../entities/Player'
 import { Monster } from '../entities/Monster'
 import { Projectile } from '../entities/Projectile'
@@ -17,8 +17,10 @@ import {
   processProjectileHit,
 } from '../systems/combat'
 import { ZoneSpawnManager } from '../systems/spawn-zone'
+import { calcTotalEquipmentStats } from '../systems/synergy'
 import { createEventState, checkEventTrigger, type MerchantItem } from '../systems/events'
 import { createLodState, updateLod, getLodConfig } from '../systems/lod'
+import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
 import { CAMERA_LERP, CAMERA_DEADZONE_X, CAMERA_DEADZONE_Y, DEATH_EXP_PENALTY } from '@soulblade/shared'
 
@@ -44,9 +46,10 @@ export class GameScene extends Phaser.Scene {
   private timerEvent: Phaser.Time.TimerEvent | null = null
 
   // 설정
-  private stageId: StageId = 'serpent_forest'
+  private initialMapId: MapId = 'town'
   private classType: CharacterClass = 'Warrior'
   private permanentStats: Partial<CharacterStats> = {}
+  private equippedItems: readonly Equipment[] = []
 
   // 골드
   private gold = 0
@@ -90,8 +93,23 @@ export class GameScene extends Phaser.Scene {
       this.permanentStats,
     )
 
+    // 장비 스탯 반영
+    if (this.equippedItems.length > 0) {
+      const equipStats = calcTotalEquipmentStats(this.equippedItems)
+      this.player.weaponPower = equipStats.weaponPower
+      if (equipStats.atk) this.player.atk += equipStats.atk
+      if (equipStats.def) this.player.def += equipStats.def
+      if (equipStats.hp) {
+        this.player.maxHp += equipStats.hp
+        this.player.hp += equipStats.hp
+      }
+      if (equipStats.spd) this.player.spd += equipStats.spd
+      if (equipStats.crit) this.player.crit += equipStats.crit
+      if (equipStats.critDmg) this.player.critDmg += equipStats.critDmg
+    }
+
     // 맵 로드 (장애물 + 포탈 + NPC 생성, 카메라 바운드 설정)
-    this.mapManager.loadMap(this.mapManager.getCurrentMapId(), this.player)
+    this.mapManager.loadMap(this.initialMapId, this.player)
 
     // 카메라: 플레이어 추적 + 데드존
     this.cameras.main.startFollow(this.player, true, CAMERA_LERP, CAMERA_LERP)
@@ -162,16 +180,28 @@ export class GameScene extends Phaser.Scene {
       this.physics.add.collider(this.eliteGroup, obstacles)
     }
 
-    // 타이머
-    this.timerEvent = this.time.addEvent({
-      delay: 1000,
-      callback: this.onSecondElapsed,
-      callbackScope: this,
-      loop: true,
-    })
+    // 타이머 (안전지대에서는 비활성화)
+    if (!this.mapManager.isSafeZone()) {
+      this.timerEvent = this.time.addEvent({
+        delay: 1000,
+        callback: this.onSecondElapsed,
+        callbackScope: this,
+        loop: true,
+      })
+    }
+
+    // 세이브 데이터에서 레벨/경험치/골드 복원
+    const saveState = useSaveStore.getState()
+    if (saveState.loaded && saveState.characterLevel > 1) {
+      this.player.level = saveState.characterLevel
+      this.player.exp = saveState.characterExp
+      this.player.expToNext = calcExpForLevel(saveState.characterLevel)
+    }
+    this.gold = saveState.loaded ? saveState.gold : 0
 
     // 초기 스탯 전달
     this.player.emitStatsUpdate()
+    eventBus.emit('hud:gold', { gold: this.gold })
   }
 
   update(time: number, delta: number): void {
@@ -281,14 +311,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onGameStart = (data: {
-    stageId: StageId
+    mapId: MapId
     classType: CharacterClass
     stats: CharacterStats
     equippedItems: readonly Equipment[]
   }): void => {
-    this.stageId = data.stageId
+    this.initialMapId = data.mapId
     this.classType = data.classType
     this.permanentStats = data.stats
+    this.equippedItems = data.equippedItems
     this.scene.restart()
   }
 
@@ -398,6 +429,23 @@ export class GameScene extends Phaser.Scene {
     // 존 스폰 재등록
     this.zoneSpawnManager.registerZones(this.mapManager.getZones())
 
+    // 타이머 토글: SafeZone 진입 시 파괴, 사냥터 진입 시 생성
+    if (this.mapManager.isSafeZone()) {
+      if (this.timerEvent) {
+        this.timerEvent.destroy()
+        this.timerEvent = null
+      }
+      this.elapsedSeconds = 0
+      eventBus.emit('hud:timer', { seconds: 0 })
+    } else if (!this.timerEvent) {
+      this.timerEvent = this.time.addEvent({
+        delay: 1000,
+        callback: this.onSecondElapsed,
+        callbackScope: this,
+        loop: true,
+      })
+    }
+
     // 맵 전환 시 자동 저장
     eventBus.emit('save:request')
 
@@ -506,7 +554,7 @@ export class GameScene extends Phaser.Scene {
   ): void => {
     const monster = enemy as unknown as Monster
     if (!monster.active) return
-    processEnemyDamage(this.player, monster)
+    processEnemyDamage(this.player, monster, this.combatState)
   }
 
   private onProjectileEnemyCollide = (
@@ -525,7 +573,7 @@ export class GameScene extends Phaser.Scene {
   ): void => {
     const elite = enemy as unknown as Monster
     if (!elite.active) return
-    processEnemyDamage(this.player, elite)
+    processEnemyDamage(this.player, elite, this.combatState)
   }
 
   private onProjectileEliteCollide = (

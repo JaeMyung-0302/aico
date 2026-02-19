@@ -3,8 +3,12 @@ import type { EquipmentGrade, EquipmentTag } from './types/equipment.js'
 import type { StageId } from './types/stage.js'
 import {
   BASE_EXP_PER_LEVEL,
+  DEF_FORMULA_BASE,
   EXP_GROWTH_RATE,
   GRADE_DROP_RATES,
+  LEVEL_FACTOR_COEFF,
+  LEVEL_FACTOR_MAX,
+  LEVEL_FACTOR_MIN,
   PERMANENT_STAT_BASE_COST,
   PERMANENT_STAT_COST_GROWTH,
   STAGE_META_GOLD_REWARD,
@@ -13,15 +17,24 @@ import {
 
 /**
  * 데미지 계산
- * Dmg = (ATK × skillPower) / (DEF × 0.3 + 1) × critMultiplier
+ * FinalDmg = max(1, floor((ATK + weaponPower) × skillMultiplier × (BASE/(BASE+DEF)) × levelFactor × critMultiplier))
  */
 export const calcDamage = (
   atk: number,
+  weaponPower: number,
   def: number,
-  skillPower: number,
+  skillMultiplier: number,
+  attackerLevel: number,
+  defenderLevel: number,
   critMultiplier: number,
 ): number => {
-  return Math.floor((atk * skillPower) / (def * 0.3 + 1) * critMultiplier)
+  const baseDmg = (atk + weaponPower) * skillMultiplier
+  const defReduction = DEF_FORMULA_BASE / (DEF_FORMULA_BASE + def)
+  const levelFactor = Math.max(
+    LEVEL_FACTOR_MIN,
+    Math.min(LEVEL_FACTOR_MAX, 1 + LEVEL_FACTOR_COEFF * (attackerLevel - defenderLevel)),
+  )
+  return Math.max(1, Math.floor(baseDmg * defReduction * levelFactor * critMultiplier))
 }
 
 /**

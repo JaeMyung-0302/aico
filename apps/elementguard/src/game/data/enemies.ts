@@ -93,6 +93,98 @@ export const ENEMIES: EnemyData[] = [
     reward: 6,
     type: 'elite',
   },
+  // 면역 적 (W11+ 등장, 특정 속성 공격 면역)
+  {
+    id: 'fire-imp-immune',
+    name: '수호 화염 임프',
+    element: 'fire',
+    baseHp: 60,
+    speed: 55,
+    reward: 3,
+    type: 'normal',
+    immuneElement: 'water', // 물 공격 면역
+  },
+  {
+    id: 'water-slime-immune',
+    name: '수호 물 슬라임',
+    element: 'water',
+    baseHp: 70,
+    speed: 45,
+    reward: 3,
+    type: 'normal',
+    immuneElement: 'earth', // 땅 공격 면역
+  },
+  {
+    id: 'thunder-wolf-immune',
+    name: '수호 번개 늑대',
+    element: 'thunder',
+    baseHp: 65,
+    speed: 65,
+    reward: 3,
+    type: 'normal',
+    immuneElement: 'wind', // 바람 공격 면역
+  },
+  // 특성 적 (W6+ 등장)
+  {
+    id: 'fire-drake-fast',
+    name: '질주 화염 드레이크',
+    element: 'fire',
+    baseHp: 100,
+    speed: 108, // 60 * 1.8
+    reward: 4,
+    type: 'elite',
+    traits: ['fast'],
+  },
+  {
+    id: 'earth-golem-armored',
+    name: '강철 골렘',
+    element: 'earth',
+    baseHp: 200,
+    speed: 25,
+    reward: 5,
+    type: 'elite',
+    traits: ['armored'],
+  },
+  {
+    id: 'water-serpent-regen',
+    name: '재생 물뱀',
+    element: 'water',
+    baseHp: 140,
+    speed: 40,
+    reward: 5,
+    type: 'elite',
+    traits: ['regen'],
+  },
+  {
+    id: 'wind-bat-swarm',
+    name: '박쥐 떼',
+    element: 'wind',
+    baseHp: 20, // HP 50%
+    speed: 85,
+    reward: 1, // reward 1/3
+    type: 'normal',
+    traits: ['swarm'],
+  },
+  {
+    id: 'thunder-lion-shielded',
+    name: '번개 방패사자',
+    element: 'thunder',
+    baseHp: 130,
+    speed: 55,
+    reward: 5,
+    type: 'elite',
+    traits: ['shielded'],
+  },
+  {
+    id: 'earth-turtle-armored-regen',
+    name: '불사 거북',
+    element: 'earth',
+    baseHp: 180,
+    speed: 30,
+    reward: 6,
+    type: 'elite',
+    traits: ['armored', 'regen'],
+  },
   // 보스 3종 (W10, W20, W30)
   {
     id: 'boss-inferno',
@@ -129,6 +221,6 @@ export const ENEMIES: EnemyData[] = [
 export const getEnemyById = (id: string): EnemyData | undefined =>
   ENEMIES.find((e) => e.id === id)
 
-// 웨이브별 체력 스케일링 (웨이브가 높을수록 적 체력 증가)
+// 웨이브별 체력 스케일링 (지수형: 후반부 급격한 난이도 상승)
 export const getWaveHpScale = (wave: number): number =>
-  1 + (wave - 1) * 0.15
+  Math.pow(1.08, wave - 1)

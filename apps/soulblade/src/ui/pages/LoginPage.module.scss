@@ -1,0 +1,71 @@
+.loginPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #e8d44d;
+  text-shadow: 0 0 20px rgba(232, 212, 77, 0.3);
+  letter-spacing: 0.1em;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #8892b0;
+  margin-top: -1rem;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.loginBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.google {
+  background: #ffffff;
+  color: #333333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.kakao {
+  background: #fee500;
+  color: #191919;
+  box-shadow: 0 2px 8px rgba(254, 229, 0, 0.3);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(254, 229, 0, 0.5);
+  }
+}

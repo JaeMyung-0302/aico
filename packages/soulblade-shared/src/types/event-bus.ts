@@ -2,7 +2,7 @@ import type { CharacterClass, CharacterStats } from './character.js'
 import type { Equipment } from './equipment.js'
 import type { MapId, NpcType } from './map.js'
 import type { PassiveSkillId, SkillEvolution } from './skill.js'
-import type { EventType, StageId } from './stage.js'
+import type { EventType } from './stage.js'
 import type { RunResult } from './run.js'
 
 // 스탯 배분 타입
@@ -102,7 +102,7 @@ export interface ReactToPhaserEvents {
     readonly itemIndex: number
   }
   readonly 'game:start': {
-    readonly stageId: StageId
+    readonly mapId: MapId
     readonly classType: CharacterClass
     readonly stats: CharacterStats
     readonly equippedItems: readonly Equipment[]

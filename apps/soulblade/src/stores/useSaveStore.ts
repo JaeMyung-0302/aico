@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { SaveData, CharacterClass, CharacterStats, MapId } from '@soulblade/shared'
 import { SAVE_VERSION } from '@soulblade/shared'
 import { saveLocal, loadLocal, saveRemote, loadRemote, mergeSaveData } from '@/lib/save-manager'
+import { supabase } from '@/lib/supabase'
 
 interface SaveState {
   // RPG 영구 데이터
@@ -48,7 +49,9 @@ export const useSaveStore = create<SaveState>((set, get) => ({
 
   load: async () => {
     const local = loadLocal()
-    const remote = await loadRemote('anonymous')
+    const { data: { user } } = await supabase.auth.getUser()
+    const userId = user?.id ?? ''
+    const remote = userId ? await loadRemote(userId) : null
     const merged = mergeSaveData(local, remote)
 
     if (merged) {
@@ -86,8 +89,12 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     saveLocal(saveData)
 
     // Supabase 비동기 저장 (fire-and-forget)
-    saveRemote('anonymous', saveData).catch(() => {
-      // 실패해도 무시 (localStorage가 1차)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.id) {
+        saveRemote(user.id, saveData).catch(() => {
+          // 실패해도 무시 (localStorage가 1차)
+        })
+      }
     })
   },
 

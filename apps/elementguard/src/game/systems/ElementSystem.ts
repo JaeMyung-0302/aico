@@ -1,4 +1,4 @@
-import type { Element, FusionElement } from '@/types'
+import type { Element, FusionElement, EnemyData } from '@/types'
 import { FUSION_ADVANTAGES } from '@/game/data/fusions'
 
 // 상성 순환: 불→바람→전기→땅→물→불
@@ -41,6 +41,10 @@ export const getFusionElementMultiplier = (
   if (advantages.includes(defender)) return ADVANTAGE_MULTIPLIER
   return NEUTRAL_MULTIPLIER
 }
+
+// 면역 판정
+export const isImmune = (attackerElement: Element, enemyData: EnemyData): boolean =>
+  enemyData.immuneElement === attackerElement
 
 // 상성 정보 조회
 export const getAdvantageElement = (element: Element): Element =>

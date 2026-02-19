@@ -1,6 +1,6 @@
 import type { CharacterClass, ClassConfig, PermanentStats } from './types/character.js'
 import type { EquipmentGrade, EquipmentTag, GradeStatRange, TagSynergyConfig } from './types/equipment.js'
-import type { StageId } from './types/stage.js'
+import type { MonsterType, StageId } from './types/stage.js'
 
 // === 클래스 설정 ===
 
@@ -8,34 +8,38 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
   Warrior: {
     classType: 'Warrior',
     baseStats: { hp: 120, atk: 15, def: 12, spd: 8, crit: 0.05, critDmg: 1.5 },
-    growthRates: { hp: 12, atk: 2.0, def: 1.5, spd: 0.5, crit: 0.002, critDmg: 0.02 },
+    growthRates: { hp: 15, atk: 2.0, def: 3.0, spd: 0.5, crit: 0.002, critDmg: 0.02 },
     basicAttackPattern: 'melee_fan',
     activeSkillId: 'warrior_whirlwind',
     description: '근접 부채꼴 공격. 높은 HP와 방어력.',
+    classPassive: { type: 'damage_reduction', value: 0.85 },
   },
   Archer: {
     classType: 'Archer',
     baseStats: { hp: 80, atk: 18, def: 6, spd: 12, crit: 0.15, critDmg: 2.0 },
-    growthRates: { hp: 8, atk: 2.5, def: 0.8, spd: 1.0, crit: 0.005, critDmg: 0.03 },
+    growthRates: { hp: 8, atk: 2.5, def: 0.8, spd: 1.5, crit: 0.008, critDmg: 0.03 },
     basicAttackPattern: 'ranged_projectile',
     activeSkillId: 'archer_rain',
     description: '원거리 투사체 공격. 높은 크리티컬.',
+    classPassive: { type: 'crit_damage_bonus', value: 1.3 },
   },
   Mage: {
     classType: 'Mage',
     baseStats: { hp: 70, atk: 20, def: 5, spd: 9, crit: 0.08, critDmg: 1.8 },
-    growthRates: { hp: 7, atk: 3.0, def: 0.5, spd: 0.6, crit: 0.003, critDmg: 0.025 },
+    growthRates: { hp: 7, atk: 4.0, def: 0.5, spd: 0.6, crit: 0.003, critDmg: 0.025 },
     basicAttackPattern: 'aoe_circle',
     activeSkillId: 'mage_meteor',
     description: '원형 범위 마법 공격. 최고 공격력.',
+    classPassive: { type: 'skill_multiplier', value: 1.4 },
   },
   Paladin: {
     classType: 'Paladin',
     baseStats: { hp: 100, atk: 12, def: 15, spd: 7, crit: 0.06, critDmg: 1.5 },
-    growthRates: { hp: 10, atk: 1.5, def: 2.0, spd: 0.4, crit: 0.002, critDmg: 0.02 },
+    growthRates: { hp: 10, atk: 1.5, def: 2.5, spd: 0.4, crit: 0.002, critDmg: 0.02 },
     basicAttackPattern: 'mid_range_holy',
     activeSkillId: 'paladin_judgment',
     description: '중거리 성스러운 타격. 최고 방어력 + 힐.',
+    classPassive: { type: 'heal_on_kill', value: 0.03 },
   },
 } as const
 
@@ -142,6 +146,25 @@ export const STAT_POINT_VALUES = {
   spd: 0.5,
   crit: 0.01,
 } as const
+
+// === 데미지 공식 ===
+
+// 몬스터 타입별 기본 DEF
+export const MONSTER_TYPE_BASE_DEF: Record<MonsterType, number> = {
+  normal: 3,
+  fast: 1,
+  tank: 8,
+  ranged: 2,
+  swarm: 1,
+} as const
+
+// 레벨 팩터 계수
+export const LEVEL_FACTOR_COEFF = 0.05
+export const LEVEL_FACTOR_MIN = 0.5
+export const LEVEL_FACTOR_MAX = 2.0
+
+// DEF 공식 기저값: DEF_FORMULA_BASE / (DEF_FORMULA_BASE + DEF)
+export const DEF_FORMULA_BASE = 100
 
 // === 전투 ===
 

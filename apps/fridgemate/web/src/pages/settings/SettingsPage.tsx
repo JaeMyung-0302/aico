@@ -4,6 +4,7 @@ import classNames from 'classnames/bind'
 import { useGroupStore } from '@/stores/useGroupStore'
 import { useFridgeStore } from '@/stores/useFridgeStore'
 import { FRIDGE_TYPE_LABELS } from '@/types'
+import { isPushSupported, isPushSubscribed, subscribeToPush, unsubscribeFromPush } from '@/lib/push'
 import styles from './SettingsPage.module.scss'
 
 const cx = classNames.bind(styles)
@@ -12,14 +13,38 @@ export const SettingsPage = () => {
   const navigate = useNavigate()
   const { groupId, groupName, logout } = useGroupStore()
   const { fridges, fetchFridges, updateFridge, deleteFridge } = useFridgeStore()
-
   const [editingFridgeId, setEditingFridgeId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [deletingFridgeId, setDeletingFridgeId] = useState<string | null>(null)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
 
   useEffect(() => {
     fetchFridges()
   }, [fetchFridges])
+
+  useEffect(() => {
+    if (!isPushSupported()) return
+    isPushSubscribed()
+      .then(setPushEnabled)
+      .catch(() => setPushEnabled(false))
+  }, [])
+
+  const handlePushToggle = useCallback(async () => {
+    if (pushLoading) return
+    setPushLoading(true)
+    try {
+      if (pushEnabled) {
+        const ok = await unsubscribeFromPush()
+        if (ok) setPushEnabled(false)
+      } else {
+        const ok = await subscribeToPush()
+        if (ok) setPushEnabled(true)
+      }
+    } finally {
+      setPushLoading(false)
+    }
+  }, [pushEnabled, pushLoading])
 
   const handleLogout = useCallback(() => {
     logout()
@@ -113,6 +138,27 @@ export const SettingsPage = () => {
           </button>
         </div>
       </div>
+
+      {/* Push 알림 */}
+      {isPushSupported() && (
+        <div className={cx('section')}>
+          <div className={cx('sectionTitle')}>알림</div>
+          <div className={cx('card')}>
+            <div className={cx('row', 'toggleRow')}>
+              <span className={cx('rowLabel')}>유통기한 Push 알림</span>
+              <button
+                type="button"
+                className={cx('toggleSwitch', { toggleOn: pushEnabled })}
+                onClick={handlePushToggle}
+                disabled={pushLoading}
+                aria-label={pushEnabled ? '알림 끄기' : '알림 켜기'}
+              >
+                <span className={cx('toggleKnob')} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 로그아웃 */}
       <button className={cx('logoutBtn')} onClick={handleLogout} type="button">

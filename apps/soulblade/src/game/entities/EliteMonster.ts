@@ -25,7 +25,9 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
   hp: number
   maxHp: number
   atk: number
+  def: number
   spd: number
+  level: number
   expReward: number
   goldReward: number
 
@@ -56,7 +58,9 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
     this.hp = Math.floor(baseConfig.hp * mutation.hpMultiplier)
     this.maxHp = this.hp
     this.atk = Math.floor(baseConfig.atk * mutation.atkMultiplier)
+    this.def = mutationType === 'armored' ? Math.floor(baseConfig.def * 1.5) : baseConfig.def
     this.spd = Math.floor(baseConfig.spd * mutation.spdMultiplier)
+    this.level = baseConfig.level
     this.expReward = Math.floor(baseConfig.expReward * 2.5)
     this.goldReward = Math.floor(baseConfig.goldReward * 3)
     this.splitCount = mutationType === 'splitting' ? 2 : 0
@@ -164,7 +168,9 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
     this.hp = Math.floor(baseConfig.hp * mutation.hpMultiplier)
     this.maxHp = this.hp
     this.atk = Math.floor(baseConfig.atk * mutation.atkMultiplier)
+    this.def = mutationType === 'armored' ? Math.floor(baseConfig.def * 1.5) : baseConfig.def
     this.spd = Math.floor(baseConfig.spd * mutation.spdMultiplier)
+    this.level = baseConfig.level
     this.expReward = Math.floor(baseConfig.expReward * 2.5)
     this.goldReward = Math.floor(baseConfig.goldReward * 3)
     this.splitCount = mutationType === 'splitting' ? 2 : 0

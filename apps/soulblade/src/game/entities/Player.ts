@@ -16,6 +16,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   spd: number
   crit: number
   critDmg: number
+  weaponPower: number
 
   // 레벨링
   level: number
@@ -63,6 +64,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.spd = base.spd + (perm.spd ?? 0)
     this.crit = base.crit + (perm.crit ?? 0)
     this.critDmg = base.critDmg + (perm.critDmg ?? 0)
+    this.weaponPower = 0
 
     this.level = 1
     this.exp = 0

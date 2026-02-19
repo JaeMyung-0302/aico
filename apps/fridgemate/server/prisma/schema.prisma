@@ -37,11 +37,24 @@ enum FoodCategory {
 }
 
 model Group {
+  id                String             @id @default(uuid())
+  code              String             @unique
+  name              String
+  createdAt         DateTime           @default(now())
+  fridges           Fridge[]
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
   id        String   @id @default(uuid())
-  code      String   @unique
-  name      String
+  groupId   String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
   createdAt DateTime @default(now())
-  fridges   Fridge[]
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
 }
 
 model Fridge {

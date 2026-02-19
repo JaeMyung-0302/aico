@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { registerRoutes } from './routes/index.js'
+import { startExpiryCron } from './services/expiry-cron.js'
 
 const CLIENT_ORIGIN = process.env['CLIENT_ORIGIN'] ?? 'http://localhost:5176'
 const corsOrigins = CLIENT_ORIGIN.split(',').map((o) => o.trim())
@@ -36,4 +37,5 @@ process.on('SIGTERM', () => {
 
 app.listen(PORT, () => {
   console.log(`FridgeMate server running on port ${PORT}`)
+  startExpiryCron()
 })

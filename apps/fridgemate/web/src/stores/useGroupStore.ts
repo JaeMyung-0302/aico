@@ -16,15 +16,17 @@ interface GroupState {
 interface GroupActions {
   verify: (code: string) => Promise<boolean>
   logout: () => void
-  restoreSession: () => void
 }
 
 type GroupStore = GroupState & GroupActions
 
+const initialGroupId = localStorage.getItem(STORAGE_KEY)
+const initialGroupName = localStorage.getItem(STORAGE_NAME_KEY)
+
 export const useGroupStore = create<GroupStore>((set) => ({
-  groupId: null,
-  groupName: null,
-  isAuthenticated: false,
+  groupId: initialGroupId,
+  groupName: initialGroupName,
+  isAuthenticated: !!initialGroupId,
   loading: false,
   error: null,
 
@@ -59,15 +61,4 @@ export const useGroupStore = create<GroupStore>((set) => ({
     })
   },
 
-  restoreSession: () => {
-    const groupId = localStorage.getItem(STORAGE_KEY)
-    const groupName = localStorage.getItem(STORAGE_NAME_KEY)
-    if (groupId) {
-      set({
-        groupId,
-        groupName,
-        isAuthenticated: true,
-      })
-    }
-  },
 }))

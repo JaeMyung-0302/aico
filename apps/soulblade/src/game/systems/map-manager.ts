@@ -21,6 +21,7 @@ export class MapManager {
   private scene: Phaser.Scene
   private currentMapId: MapId = 'town'
   private obstacles: Phaser.Physics.Arcade.StaticGroup | null = null
+  private decorations: Phaser.GameObjects.GameObject[] = []
   private portalObjects: PortalObject[] = []
   private npcObjects: NpcObject[] = []
 
@@ -48,12 +49,59 @@ export class MapManager {
     // 카메라 바운드
     this.scene.cameras.main.setBounds(0, 0, config.worldSize.width, config.worldSize.height)
 
-    // 장애물 생성
+    // 장애물 + 장식 생성
     this.obstacles = this.scene.physics.add.staticGroup()
     for (const obs of config.obstacles) {
-      const rect = this.scene.add.rectangle(obs.x, obs.y, obs.width, obs.height, obs.color)
-      rect.setAlpha(0.6)
-      this.obstacles.add(rect)
+      const alpha = obs.alpha ?? 0.6
+      const shapeType = obs.type ?? 'rect'
+      let gameObj: Phaser.GameObjects.GameObject
+
+      switch (shapeType) {
+        case 'circle': {
+          const r = obs.radius ?? obs.width / 2
+          const circle = this.scene.add.circle(obs.x, obs.y, r, obs.color, alpha)
+          circle.setDepth(1)
+          gameObj = circle
+          break
+        }
+        case 'triangle': {
+          const tri = this.scene.add.triangle(
+            obs.x, obs.y,
+            0, obs.height,
+            obs.width / 2, 0,
+            obs.width, obs.height,
+            obs.color, alpha,
+          )
+          tri.setDepth(1)
+          gameObj = tri
+          break
+        }
+        case 'ellipse': {
+          const ellipse = this.scene.add.ellipse(obs.x, obs.y, obs.width, obs.height, obs.color, alpha)
+          ellipse.setDepth(1)
+          gameObj = ellipse
+          break
+        }
+        default: {
+          const rect = this.scene.add.rectangle(obs.x, obs.y, obs.width, obs.height, obs.color)
+          rect.setAlpha(alpha)
+          rect.setDepth(1)
+          gameObj = rect
+          break
+        }
+      }
+
+      if (obs.collidable !== false) {
+        this.obstacles.add(gameObj)
+        // circle/ellipse: 물리 바디를 원형으로 보정
+        if (shapeType === 'circle') {
+          const body = (gameObj as Phaser.GameObjects.Shape).body as Phaser.Physics.Arcade.StaticBody
+          const r = obs.radius ?? obs.width / 2
+          body.setCircle(r)
+        }
+      } else {
+        this.decorations.push(gameObj)
+      }
     }
 
     // 장애물 ↔ 플레이어 충돌
@@ -76,6 +124,12 @@ export class MapManager {
       this.obstacles.clear(true, true)
       this.obstacles = null
     }
+
+    // 장식 제거
+    for (const deco of this.decorations) {
+      deco.destroy()
+    }
+    this.decorations = []
 
     // 포탈 제거
     for (const portal of this.portalObjects) {

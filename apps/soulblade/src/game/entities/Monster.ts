@@ -3,7 +3,9 @@ import Phaser from 'phaser'
 export interface MonsterConfig {
   readonly hp: number
   readonly atk: number
+  readonly def: number
   readonly spd: number
+  readonly level: number
   readonly expReward: number
   readonly goldReward: number
 }
@@ -12,7 +14,9 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
   hp: number
   maxHp: number
   atk: number
+  def: number
   spd: number
+  level: number
   expReward: number
   goldReward: number
 
@@ -36,7 +40,9 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     this.hp = config.hp
     this.maxHp = config.hp
     this.atk = config.atk
+    this.def = config.def
     this.spd = config.spd
+    this.level = config.level
     this.expReward = config.expReward
     this.goldReward = config.goldReward
 
@@ -116,7 +122,9 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     this.hp = config.hp
     this.maxHp = config.hp
     this.atk = config.atk
+    this.def = config.def
     this.spd = config.spd
+    this.level = config.level
     this.expReward = config.expReward
     this.goldReward = config.goldReward
     this.slowMultiplier = 0

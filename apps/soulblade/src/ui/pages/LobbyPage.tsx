@@ -19,7 +19,7 @@ export const LobbyPage = () => {
     useRunStore.setState({ classType: selectedClass })
     const config = CLASS_CONFIGS[selectedClass]
     eventBus.emit('game:start', {
-      stageId: 'serpent_forest',
+      mapId: 'town',
       classType: selectedClass,
       stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },
       equippedItems: [],

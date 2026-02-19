@@ -44,21 +44,33 @@ export const FLAME_CASTLE_MAP: WorldMapConfig = {
       position: { x: 60, y: WORLD_HEIGHT / 2 },
       size: { width: 60, height: 100 },
       targetMapId: 'town',
-      targetSpawnPoint: { x: WORLD_WIDTH - 300, y: WORLD_HEIGHT / 2 },
+      targetSpawnPoint: { x: 380, y: 660 },
       recommendedLevel: 30,
       label: '마을로 귀환',
     },
   ],
   npcs: [],
   obstacles: [
-    // 용암/기둥 장애물
-    { x: 300, y: 600, width: 40, height: 80, color: 0x8b4513 },
-    { x: 1200, y: 500, width: 40, height: 80, color: 0x8b4513 },
-    { x: 1800, y: 1000, width: 90, height: 25, color: 0xff4400 },
-    { x: 500, y: 2200, width: 60, height: 60, color: 0x8b4513 },
-    { x: 1600, y: 2800, width: 40, height: 80, color: 0x8b4513 },
-    { x: 900, y: 3200, width: 80, height: 25, color: 0xff4400 },
-    { x: 1100, y: 1800, width: 70, height: 25, color: 0xff4400 },
+    // 석기둥 (collidable)
+    { x: 450, y: 650, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
+    { x: 1400, y: 600, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
+    { x: 700, y: 1100, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
+    { x: 1000, y: 2500, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
+    // 용암 웅덩이 (not collidable)
+    { x: 300, y: 1300, width: 80, height: 80, color: 0xff4400, type: 'circle', radius: 40, collidable: false, alpha: 0.5 },
+    { x: 1500, y: 1500, width: 70, height: 70, color: 0xff4400, type: 'circle', radius: 35, collidable: false, alpha: 0.5 },
+    { x: 1800, y: 2300, width: 90, height: 90, color: 0xff4400, type: 'circle', radius: 45, collidable: false, alpha: 0.5 },
+    { x: 500, y: 3200, width: 70, height: 70, color: 0xff4400, type: 'circle', radius: 35, collidable: false, alpha: 0.5 },
+    // 횃불 (not collidable)
+    { x: 600, y: 850, width: 20, height: 30, color: 0xff6600, type: 'triangle', collidable: false, alpha: 0.7 },
+    { x: 1100, y: 850, width: 20, height: 30, color: 0xff6600, type: 'triangle', collidable: false, alpha: 0.7 },
+    { x: 400, y: 2000, width: 20, height: 30, color: 0xff6600, type: 'triangle', collidable: false, alpha: 0.7 },
+    { x: 1300, y: 1800, width: 20, height: 30, color: 0xff6600, type: 'triangle', collidable: false, alpha: 0.7 },
+    { x: 1700, y: 700, width: 20, height: 30, color: 0xffaa00, type: 'triangle', collidable: false, alpha: 0.6 },
+    // 균열 (not collidable)
+    { x: 200, y: 2500, width: 100, height: 8, color: 0x333333, type: 'rect', collidable: false, alpha: 0.4 },
+    { x: 800, y: 2800, width: 120, height: 8, color: 0x333333, type: 'rect', collidable: false, alpha: 0.4 },
+    { x: 1600, y: 1100, width: 90, height: 8, color: 0x333333, type: 'rect', collidable: false, alpha: 0.4 },
   ],
   isSafeZone: false,
 }

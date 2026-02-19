@@ -1,7 +1,7 @@
-import type { PlacedUnit, Element } from '@/types'
+import type { PlacedUnit, Element, ElementEffect, EnemyData } from '@/types'
 import { getUnitById, getGradeMultiplier } from '@/game/data/units'
 import { getFusionUnit } from '@/game/data/fusions'
-import { getElementMultiplier, getFusionElementMultiplier } from './ElementSystem'
+import { getElementMultiplier, getFusionElementMultiplier, isImmune } from './ElementSystem'
 import { getTerrainMultiplier, type TerrainTile } from './TerrainSystem'
 import { getSynergyMultiplier, countAdjacentUnits, hasRainbowSynergy } from './SynergySystem'
 import type { ArtifactBonuses } from './ArtifactSystem'
@@ -11,16 +11,19 @@ export interface DamageResult {
   damage: number
   isCrit: boolean
   elementMultiplier: number
+  elementEffect: ElementEffect
 }
 
 // 유닛의 최종 데미지 계산
 export const calculateDamage = (
   unit: PlacedUnit,
-  targetElement: Element,
+  enemyData: EnemyData,
   allUnits: PlacedUnit[],
   terrains: TerrainTile[],
   bonuses: ArtifactBonuses,
 ): DamageResult => {
+  const targetElement = enemyData.element
+
   // 1. 기본 공격력
   let baseAtk: number
   let unitElement: Element
@@ -33,6 +36,11 @@ export const calculateDamage = (
     const unitData = getUnitById(unit.unitDataId)
     baseAtk = unitData?.baseAtk ?? 10
     unitElement = unitData?.element ?? 'fire'
+  }
+
+  // 면역 체크 (해당 속성 공격 = 데미지 0)
+  if (isImmune(unitElement, enemyData)) {
+    return { damage: 0, isCrit: false, elementMultiplier: 0, elementEffect: 'immune' }
   }
 
   // 2. 등급 배율
@@ -91,7 +99,13 @@ export const calculateDamage = (
     * critMultiplier,
   )
 
-  return { damage, isCrit, elementMultiplier }
+  // 속성 효과 판별
+  const elementEffect: ElementEffect =
+    elementMultiplier > 1.0 ? 'effective'
+    : elementMultiplier < 1.0 ? 'resisted'
+    : 'neutral'
+
+  return { damage, isCrit, elementMultiplier, elementEffect }
 }
 
 // 가장 가까운 적 타겟 찾기 (사거리 내)

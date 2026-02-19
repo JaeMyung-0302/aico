@@ -1,19 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
-import type { MapId, NpcType, PassiveSkillId } from '@soulblade/shared'
+import type { MapId, NpcType, PassiveSkillId, StageId, StatAllocationData } from '@soulblade/shared'
 import { PhaserGame } from '@/ui/components/PhaserGame'
 import { VirtualJoystick } from '@/ui/components/VirtualJoystick'
 import { HUD } from '@/ui/components/HUD'
-import { StatAllocation } from '@/ui/components/StatAllocation'
 import { ActiveSkillButton } from '@/ui/components/ActiveSkillButton'
 import { PortalModal } from '@/ui/components/PortalModal'
 import { NpcShopModal } from '@/ui/components/NpcShopModal'
 import { NpcForgeModal } from '@/ui/components/NpcForgeModal'
 import { DeathModal } from '@/ui/components/DeathModal'
-import { InventoryPanel } from '@/ui/components/InventoryPanel'
-import { SkillPanel } from '@/ui/components/SkillPanel'
-import { StatPanel } from '@/ui/components/StatPanel'
+import { BottomTabBar } from '@/ui/components/BottomTabBar'
 import { useRunStore } from '@/stores/useRunStore'
 import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
@@ -44,7 +41,7 @@ export const GamePage = () => {
   const updateTimer = useRunStore((s) => s.updateTimer)
   const saveGame = useSaveStore((s) => s.save)
 
-  const [statPointData, setStatPointData] = useState<{ level: number; statPoints: number } | null>(null)
+  const [pendingStatPoints, setPendingStatPoints] = useState(0)
   const [portalData, setPortalData] = useState<{
     targetMapId: MapId
     label: string
@@ -56,9 +53,11 @@ export const GamePage = () => {
   const [openPanel, setOpenPanel] = useState<PanelType>(null)
   const [fullStats, setFullStats] = useState<FullStats | null>(null)
 
-  const handleStatClose = useCallback(() => {
-    setStatPointData(null)
-    eventBus.emit('game:resume')
+  const handleStatAllocate = useCallback((allocation: StatAllocationData) => {
+    const usedPoints = Object.values(allocation).reduce((sum, v) => sum + v, 0)
+    if (usedPoints <= 0) return
+    eventBus.emit('stat:allocate', allocation)
+    setPendingStatPoints((prev) => Math.max(0, prev - usedPoints))
   }, [])
 
   const handlePortalClose = useCallback(() => {
@@ -72,6 +71,25 @@ export const GamePage = () => {
   const handleDeathReturn = useCallback(() => {
     setIsDead(false)
   }, [])
+
+  const handleTabPress = useCallback((panel: 'inventory' | 'skill' | 'stat') => {
+    setOpenPanel((prev) => {
+      if (prev === panel) return null
+      eventBus.emit('ui:requestStats')
+      return panel
+    })
+  }, [])
+
+  // 페이지 종료/새로고침 시 자동 저장
+  useEffect(() => {
+    const onBeforeUnload = () => {
+      saveGame()
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload)
+    }
+  }, [saveGame])
 
   // 화살표키 이동 + A키 공격 + I/K/S 패널 토글
   useEffect(() => {
@@ -151,11 +169,9 @@ export const GamePage = () => {
   }, [])
 
   useEffect(() => {
-    // 레벨업 → 스탯 배분 모달 표시 + 게임 일시정지
+    // 레벨업 → 포인트 누적 (게임 일시정지 없음)
     const onLevelUp = (data: { level: number; statPoints: number }) => {
-      setStatPointData(data)
-      setOpenPanel(null) // 패널 닫기
-      eventBus.emit('game:pause')
+      setPendingStatPoints((prev) => prev + data.statPoints)
     }
 
     // 사망 → DeathModal 표시
@@ -165,7 +181,7 @@ export const GamePage = () => {
       eventBus.emit('game:pause')
     }
 
-    // 스탯 동기화
+    // 스탯 동기화 (UI + 영속 스토어)
     const onStatsUpdate = (data: {
       hp: number
       maxHp: number
@@ -174,6 +190,10 @@ export const GamePage = () => {
       expToNext: number
     }) => {
       updatePlayerStats(data)
+      useSaveStore.setState({
+        characterLevel: data.level,
+        characterExp: data.exp,
+      })
     }
 
     // 킬카운트 동기화
@@ -186,7 +206,7 @@ export const GamePage = () => {
       updateTimer(data.seconds)
     }
 
-    // 포탈 진입 → 모달 표시 + 게임 일시정지
+    // 포탈 진입 → 모달 표시 + 게임 일시정지 + 맵/위치 영속화
     const onPortalEnter = (data: {
       portalId: string
       targetMapId: MapId
@@ -194,6 +214,14 @@ export const GamePage = () => {
       recommendedLevel: number
       label: string
     }) => {
+      useSaveStore.setState({
+        currentMapId: data.targetMapId,
+        position: data.targetSpawnPoint,
+      })
+      // 사냥터 진입 시 stageId 설정 (보상 계산용)
+      if (data.targetMapId !== 'town') {
+        useRunStore.setState({ stageId: data.targetMapId as StageId })
+      }
       setPortalData({
         targetMapId: data.targetMapId,
         label: data.label,
@@ -210,9 +238,10 @@ export const GamePage = () => {
       eventBus.emit('game:pause')
     }
 
-    // 골드 동기화
+    // 골드 동기화 (UI + 영속 스토어)
     const onGoldUpdate = (data: { gold: number }) => {
       setGold(data.gold)
+      useSaveStore.setState({ gold: data.gold })
     }
 
     // 전체 스탯 수신 (패널용)
@@ -254,15 +283,8 @@ export const GamePage = () => {
     <div className={cx('gamePage')}>
       <PhaserGame />
       <HUD />
-      <VirtualJoystick />
-      {classType && <ActiveSkillButton classType={classType} />}
-      {statPointData && (
-        <StatAllocation
-          level={statPointData.level}
-          statPoints={statPointData.statPoints}
-          onClose={handleStatClose}
-        />
-      )}
+      {!openPanel && <VirtualJoystick />}
+      {!openPanel && classType && <ActiveSkillButton classType={classType} />}
       {portalData && (
         <PortalModal
           targetMapId={portalData.targetMapId}
@@ -280,15 +302,14 @@ export const GamePage = () => {
       {isDead && (
         <DeathModal onReturnToTown={handleDeathReturn} />
       )}
-      {openPanel === 'inventory' && fullStats && (
-        <InventoryPanel onClose={() => setOpenPanel(null)} />
-      )}
-      {openPanel === 'skill' && fullStats && (
-        <SkillPanel skills={fullStats.passiveSkills} onClose={() => setOpenPanel(null)} />
-      )}
-      {openPanel === 'stat' && fullStats && (
-        <StatPanel stats={fullStats} onClose={() => setOpenPanel(null)} />
-      )}
+      <BottomTabBar
+        openPanel={openPanel}
+        onTabPress={handleTabPress}
+        onClose={() => setOpenPanel(null)}
+        fullStats={fullStats}
+        pendingStatPoints={pendingStatPoints}
+        onStatAllocate={handleStatAllocate}
+      />
     </div>
   )
 }

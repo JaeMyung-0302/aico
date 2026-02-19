@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { HeroState } from '@/types'
 
 interface GameState {
   wave: number
@@ -11,6 +12,7 @@ interface GameState {
   artifacts: string[]
   isGameOver: boolean
   isGameClear: boolean
+  heroState: HeroState | null
 }
 
 interface GameActions {
@@ -32,6 +34,7 @@ const initialState: GameState = {
   artifacts: [],
   isGameOver: false,
   isGameClear: false,
+  heroState: null,
 }
 
 export const useGameStore = create<GameState & GameActions>((set) => ({

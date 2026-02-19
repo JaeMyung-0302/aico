@@ -41,13 +41,17 @@ export interface NpcConfig {
   readonly label: string
 }
 
-// 장애물 설정
+// 장애물/장식 설정
 export interface ObstacleConfig {
   readonly x: number
   readonly y: number
   readonly width: number
   readonly height: number
   readonly color: number
+  readonly type?: 'rect' | 'circle' | 'triangle' | 'ellipse'
+  readonly collidable?: boolean   // default true
+  readonly radius?: number        // circle/ellipse용
+  readonly alpha?: number         // 투명도 (default 0.6)
 }
 
 // 월드 맵 설정 (StageConfig 대체)

@@ -69,7 +69,7 @@ serve(async (req: Request) => {
 
     // 모든 캐릭터의 해당 스탯 레벨 조회
     const { data: characters, error: charError } = await adminClient
-      .from('characters')
+      .from('sb_characters')
       .select(`id, ${column}`)
       .eq('user_id', user.id)
 
@@ -92,7 +92,7 @@ serve(async (req: Request) => {
     const cost = calcCost(currentLevel)
 
     // 원자적 골드 차감 (TOCTOU 방지 — RPC가 잔액 검사 + 차감을 한 트랜잭션으로 처리)
-    const { data: remainingGold, error: goldError } = await adminClient.rpc('deduct_meta_gold', {
+    const { data: remainingGold, error: goldError } = await adminClient.rpc('sb_deduct_meta_gold', {
       p_user_id: user.id,
       p_amount: cost,
     })
@@ -108,12 +108,30 @@ serve(async (req: Request) => {
     const charIds = (characters ?? []).map((c: { id: string }) => c.id)
     if (charIds.length > 0) {
       const { error: upgradeError } = await adminClient
-        .from('characters')
+        .from('sb_characters')
         .update({ [column]: currentLevel + 1 })
         .in('id', charIds)
 
       if (upgradeError) {
-        return new Response(JSON.stringify({ error: 'Stat upgrade failed' }), {
+        // 스탯 업그레이드 실패 시 골드 롤백
+        const { error: rollbackError } = await adminClient.rpc('sb_increment_meta_gold', {
+          p_user_id: user.id,
+          p_amount: cost,
+        })
+
+        if (rollbackError) {
+          console.error('[CRITICAL] Gold rollback failed', {
+            userId: user.id,
+            amount: cost,
+            error: rollbackError.message,
+          })
+        }
+
+        const errorPayload = rollbackError
+          ? { error: 'Stat upgrade failed and rollback failed', rollbackFailed: true, userId: user.id, amount: cost }
+          : { error: 'Stat upgrade failed' }
+
+        return new Response(JSON.stringify(errorPayload), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })

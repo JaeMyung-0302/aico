@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import type { ZoneConfig, MonsterType, EliteMutationType } from '@soulblade/shared'
-import { CULLING_PADDING } from '@soulblade/shared'
+import { CULLING_PADDING, MONSTER_TYPE_BASE_DEF } from '@soulblade/shared'
 import { Monster } from '../entities/Monster'
 import type { MonsterConfig } from '../entities/Monster'
 import { EliteMonster } from '../entities/EliteMonster'
@@ -29,7 +29,9 @@ const getMonsterConfigByLevel = (level: number): MonsterConfig => {
   return {
     hp: Math.floor(10 * scale),
     atk: Math.floor(4 * scale),
+    def: Math.floor(MONSTER_TYPE_BASE_DEF.normal * (1 + 0.25 * (level - 1))),
     spd: Math.min(2 + Math.floor(level / 10), 6),
+    level,
     expReward: Math.floor(5 + level * 2),
     goldReward: Math.floor(2 + level),
   }
@@ -186,10 +188,13 @@ export class ZoneSpawnManager {
     const typeIdx = Phaser.Math.Between(0, zone.monsterTypes.length - 1)
     const monsterType = zone.monsterTypes[typeIdx] as MonsterType
     const mul = MONSTER_TYPE_MULTIPLIERS[monsterType]
+    const baseDef = MONSTER_TYPE_BASE_DEF[monsterType]
     const typedConfig: MonsterConfig = {
       hp: Math.floor(baseConfig.hp * mul.hp),
       atk: Math.floor(baseConfig.atk * mul.atk),
+      def: Math.floor(baseDef * (1 + 0.25 * (zone.monsterLevel - 1))),
       spd: Math.min(Math.floor(baseConfig.spd * mul.spd), 8),
+      level: zone.monsterLevel,
       expReward: baseConfig.expReward,
       goldReward: baseConfig.goldReward,
     }

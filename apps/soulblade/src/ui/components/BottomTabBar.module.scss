@@ -1,0 +1,92 @@
+.container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 95;
+  pointer-events: auto;
+}
+
+.panelContent {
+  background: rgba(15, 15, 35, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px 16px 0 0;
+  max-height: 40vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.panelHeader {
+  padding: 10px 14px 6px;
+}
+
+.panelTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.panelBody {
+  padding: 4px 14px 12px;
+}
+
+.tabBar {
+  display: flex;
+  background: rgba(10, 10, 30, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  height: 48px;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.15s;
+
+  &.active {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.badge {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  min-width: 16px;
+  height: 16px;
+  background: #ff4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}

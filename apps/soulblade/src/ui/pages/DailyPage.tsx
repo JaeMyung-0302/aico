@@ -23,15 +23,10 @@ export const DailyPage = () => {
 
   useEffect(() => {
     const fetchDaily = async () => {
-      if (!supabase) {
-        setState((prev) => ({ ...prev, loading: false }))
-        return
-      }
-
       try {
         const today = new Date().toISOString().split('T')[0]
         const { data } = await supabase
-          .from('daily_progress')
+          .from('sb_daily_progress')
           .select('consecutive_days, attendance_claimed')
           .eq('date', today)
           .single()
@@ -50,7 +45,6 @@ export const DailyPage = () => {
   }, [])
 
   const handleClaim = async () => {
-    if (!supabase) return
     setState((prev) => ({ ...prev, loading: true }))
 
     try {

@@ -23,7 +23,7 @@ export const ResultPage = () => {
     ? calcMetaGoldReward(stageId, survivedSeconds, stageDuration, bossKilled)
     : 0
 
-  const handleLobby = () => {
+  const handleReturnToTown = () => {
     endRun()
     navigate('/')
   }
@@ -63,8 +63,8 @@ export const ResultPage = () => {
         <button className={cx('button', 'primary')} onClick={handleRetry}>
           다시 도전
         </button>
-        <button className={cx('button', 'secondary')} onClick={handleLobby}>
-          로비로
+        <button className={cx('button', 'secondary')} onClick={handleReturnToTown}>
+          마을로
         </button>
       </div>
     </div>

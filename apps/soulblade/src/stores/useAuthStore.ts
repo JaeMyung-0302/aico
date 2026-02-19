@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session, Subscription } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
 interface AuthState {
@@ -9,9 +9,12 @@ interface AuthState {
   readonly initialized: boolean
   readonly initialize: () => Promise<void>
   readonly signInWithGoogle: () => Promise<void>
-  readonly signInAsGuest: () => Promise<void>
+  readonly signInWithKakao: () => Promise<void>
   readonly signOut: () => Promise<void>
+  readonly dispose: () => void
 }
+
+let authSubscription: Subscription | null = null
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -20,45 +23,60 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialized: false,
 
   initialize: async () => {
-    // 중복 호출 방지 (StrictMode double-mount 대응)
     if (get().initialized) return
-
-    if (!supabase) {
-      // 오프라인 모드: Supabase 미설정 시 로딩 해제
-      set({ loading: false, initialized: true })
-      return
-    }
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
       set({ session, user: session?.user ?? null, loading: false, initialized: true })
 
-      supabase.auth.onAuthStateChange((_event, session) => {
+      // 기존 구독 해제 후 새 구독 (HMR 대비)
+      authSubscription?.unsubscribe()
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         set({ session, user: session?.user ?? null })
       })
+      authSubscription = subscription
     } catch {
       set({ loading: false, initialized: true })
     }
   },
 
   signInWithGoogle: async () => {
-    if (!supabase) return
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    })
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      })
+      if (error) throw error
+    } catch {
+      // OAuth 리다이렉트 실패 시 무시 (브라우저 팝업 차단 등)
+    }
   },
 
-  signInAsGuest: async () => {
-    if (!supabase) return
-    const { data, error } = await supabase.auth.signInAnonymously()
-    if (error) throw error
-    set({ session: data.session, user: data.user })
+  signInWithKakao: async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'kakao',
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      })
+      if (error) throw error
+    } catch {
+      // OAuth 리다이렉트 실패 시 무시
+    }
   },
 
   signOut: async () => {
-    if (!supabase) return
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // signOut 실패 시에도 로컬 상태 정리
+    }
     set({ user: null, session: null })
+  },
+
+  dispose: () => {
+    authSubscription?.unsubscribe()
+    authSubscription = null
+    set({ user: null, session: null, loading: true, initialized: false })
   },
 }))

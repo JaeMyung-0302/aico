@@ -44,21 +44,33 @@ export const SERPENT_FOREST_MAP: WorldMapConfig = {
       position: { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT - 60 },
       size: { width: 100, height: 60 },
       targetMapId: 'town',
-      targetSpawnPoint: { x: WORLD_WIDTH / 2, y: 300 },
+      targetSpawnPoint: { x: 270, y: 200 },
       recommendedLevel: 1,
       label: '마을로 귀환',
     },
   ],
   npcs: [],
   obstacles: [
-    // 나무 장애물
-    { x: 300, y: 800, width: 50, height: 50, color: 0x2d5a27 },
-    { x: 900, y: 500, width: 60, height: 60, color: 0x2d5a27 },
-    { x: 1500, y: 700, width: 50, height: 50, color: 0x2d5a27 },
-    { x: 600, y: 1600, width: 70, height: 40, color: 0x3a6b32 },
-    { x: 1200, y: 2000, width: 50, height: 50, color: 0x2d5a27 },
-    { x: 400, y: 3000, width: 60, height: 60, color: 0x3a6b32 },
-    { x: 1800, y: 2800, width: 50, height: 50, color: 0x2d5a27 },
+    // 큰 나무 (존 사이, collidable)
+    { x: 250, y: 1150, width: 60, height: 60, color: 0x2d5a27, type: 'circle', radius: 30, collidable: true },
+    { x: 1800, y: 1150, width: 60, height: 60, color: 0x2d5a27, type: 'circle', radius: 30, collidable: true },
+    { x: 400, y: 2350, width: 60, height: 60, color: 0x2d5a27, type: 'circle', radius: 30, collidable: true },
+    { x: 1600, y: 2350, width: 60, height: 60, color: 0x2d5a27, type: 'circle', radius: 30, collidable: true },
+    // 바위 (collidable)
+    { x: 800, y: 1700, width: 70, height: 50, color: 0x666666, type: 'ellipse', collidable: true },
+    { x: 1700, y: 2500, width: 60, height: 45, color: 0x666666, type: 'ellipse', collidable: true },
+    // 덤불 (not collidable)
+    { x: 150, y: 600, width: 45, height: 45, color: 0x3a6b32, type: 'circle', radius: 22, collidable: false, alpha: 0.5 },
+    { x: 1900, y: 400, width: 40, height: 40, color: 0x3a6b32, type: 'circle', radius: 20, collidable: false, alpha: 0.5 },
+    { x: 500, y: 1500, width: 45, height: 45, color: 0x3a6b32, type: 'circle', radius: 22, collidable: false, alpha: 0.5 },
+    { x: 1400, y: 1800, width: 40, height: 40, color: 0x3a6b32, type: 'circle', radius: 20, collidable: false, alpha: 0.5 },
+    { x: 900, y: 3300, width: 45, height: 45, color: 0x3a6b32, type: 'circle', radius: 22, collidable: false, alpha: 0.5 },
+    // 풀 (not collidable)
+    { x: 700, y: 900, width: 25, height: 30, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
+    { x: 1300, y: 1000, width: 25, height: 30, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
+    { x: 300, y: 2700, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
+    { x: 1100, y: 2900, width: 25, height: 30, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
+    { x: 1600, y: 1400, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
   ],
   isSafeZone: false,
 }

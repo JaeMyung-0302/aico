@@ -44,20 +44,34 @@ export const ICE_CAVE_MAP: WorldMapConfig = {
       position: { x: WORLD_WIDTH - 60, y: WORLD_HEIGHT / 2 },
       size: { width: 60, height: 100 },
       targetMapId: 'town',
-      targetSpawnPoint: { x: 300, y: WORLD_HEIGHT / 2 },
+      targetSpawnPoint: { x: 160, y: 660 },
       recommendedLevel: 15,
       label: '마을로 귀환',
     },
   ],
   npcs: [],
   obstacles: [
-    // 빙하/얼음 장애물
-    { x: 500, y: 600, width: 70, height: 35, color: 0x88ccff },
-    { x: 1000, y: 1200, width: 50, height: 70, color: 0x88ccff },
-    { x: 300, y: 2000, width: 90, height: 30, color: 0x6699cc },
-    { x: 1600, y: 1800, width: 60, height: 60, color: 0x88ccff },
-    { x: 800, y: 3000, width: 55, height: 55, color: 0x6699cc },
-    { x: 1400, y: 2600, width: 70, height: 40, color: 0x88ccff },
+    // 종유석 (collidable)
+    { x: 400, y: 650, width: 35, height: 50, color: 0x88ccff, type: 'triangle', collidable: true },
+    { x: 900, y: 750, width: 40, height: 55, color: 0x88ccff, type: 'triangle', collidable: true },
+    { x: 1400, y: 900, width: 35, height: 50, color: 0x88ccff, type: 'triangle', collidable: true },
+    { x: 1100, y: 2600, width: 35, height: 50, color: 0x88ccff, type: 'triangle', collidable: true },
+    // 빙하 (collidable)
+    { x: 700, y: 1100, width: 80, height: 40, color: 0x6699cc, type: 'rect', collidable: true, alpha: 0.7 },
+    { x: 300, y: 1500, width: 70, height: 35, color: 0x6699cc, type: 'rect', collidable: true, alpha: 0.7 },
+    // 얼음 결정 (not collidable)
+    { x: 500, y: 900, width: 25, height: 30, color: 0xaaddff, type: 'triangle', collidable: false, alpha: 0.5 },
+    { x: 1100, y: 1300, width: 20, height: 25, color: 0xaaddff, type: 'triangle', collidable: false, alpha: 0.5 },
+    { x: 200, y: 1800, width: 25, height: 30, color: 0xaaddff, type: 'triangle', collidable: false, alpha: 0.5 },
+    { x: 400, y: 400, width: 20, height: 25, color: 0xaaddff, type: 'triangle', collidable: false, alpha: 0.5 },
+    { x: 1900, y: 2800, width: 25, height: 30, color: 0xaaddff, type: 'triangle', collidable: false, alpha: 0.5 },
+    // 얼음 웅덩이 (not collidable)
+    { x: 600, y: 1700, width: 80, height: 50, color: 0x4488bb, type: 'ellipse', collidable: false, alpha: 0.3 },
+    { x: 1500, y: 1200, width: 70, height: 45, color: 0x4488bb, type: 'ellipse', collidable: false, alpha: 0.3 },
+    { x: 1800, y: 2500, width: 90, height: 55, color: 0x4488bb, type: 'ellipse', collidable: false, alpha: 0.3 },
+    { x: 800, y: 2200, width: 75, height: 50, color: 0x4488bb, type: 'ellipse', collidable: false, alpha: 0.3 },
+    // 빙하 장식 (not collidable)
+    { x: 1700, y: 1600, width: 60, height: 30, color: 0x6699cc, type: 'rect', collidable: false, alpha: 0.4 },
   ],
   isSafeZone: false,
 }

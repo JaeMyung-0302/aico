@@ -45,6 +45,75 @@ export interface EnemyData {
   reward: number // 골드
   type: 'normal' | 'elite' | 'boss'
   specialAbility?: string
+  immuneElement?: Element // 면역 속성 (해당 속성 공격 = 데미지 0)
+  traits?: EnemyTrait[] // 적 특성 (armored, fast, regen, swarm, shielded)
+}
+
+// 속성 상성 효과 판별
+export type ElementEffect = 'effective' | 'resisted' | 'immune' | 'neutral'
+
+// === 유닛 능력 ===
+export type AbilityType = 'none' | 'aoe' | 'slow' | 'buff_atk' | 'buff_range' | 'chain' | 'pierce' | 'prioritize_hp' | 'debuff_armor'
+
+export interface AbilityData {
+  type: AbilityType
+  params: Record<string, number>
+}
+
+// === 적 특성 ===
+export type EnemyTrait = 'armored' | 'fast' | 'regen' | 'swarm' | 'shielded'
+
+export interface TraitConfig {
+  trait: EnemyTrait
+  value: number // 특성별 수치 (armor: 감소율, regen: 초당 %, shield: 히트 수)
+}
+
+// === 원소 반응 ===
+export type ReactionType =
+  | 'steam'
+  | 'firestorm'
+  | 'overload'
+  | 'magma'
+  | 'blizzard'
+  | 'electro'
+  | 'swamp_reaction'
+  | 'thunderstorm'
+  | 'sandstorm'
+  | 'quake'
+
+export interface ElementMark {
+  element: Element
+  appliedAt: number // timestamp (ms)
+}
+
+export interface ReactionData {
+  type: ReactionType
+  name: string
+  elements: [Element, Element]
+  effectType: string
+  value: number
+  duration: number // ms
+  description: string
+}
+
+// === 디버프/버프 ===
+export type DebuffType = 'slow' | 'stun' | 'disable' | 'armor_break' | 'dot' | 'evasion_zero' | 'atk_reduce'
+export type BuffType = 'atk_boost' | 'range_boost'
+
+export interface ActiveDebuff {
+  id: string
+  type: DebuffType
+  targetId: string
+  value: number
+  remainingMs: number
+  maxMs: number
+}
+
+export interface ActiveBuff {
+  type: BuffType
+  targetId: string
+  value: number
+  sourceId: string
 }
 
 // === 웨이브 ===
@@ -122,6 +191,47 @@ export interface PlacedUnit {
   grade: UnitGrade
   position: GridPosition
   fusionElement?: FusionElement
+  evolutionId?: string
+}
+
+// === 히어로 ===
+export interface HeroSkillData {
+  id: string
+  name: string
+  element: Element
+  type: 'attack' | 'utility'
+  damage: number // 0 for utility skills
+  cooldown: number // seconds
+  range: number // pixels
+  duration: number // effect duration (ms), 0 for instant
+  description: string
+}
+
+export interface HeroState {
+  element: Element
+  currentHp: number
+  maxHp: number
+  isDead: boolean
+  reviveTimer: number // remaining seconds, 0 if alive
+  skill1Cooldown: number // remaining seconds
+  skill2Cooldown: number // remaining seconds
+}
+
+// === 타워 진화 ===
+export interface EvolutionBranch {
+  id: string
+  name: string
+  unitDataId: string
+  baseAtk: number
+  atkSpeed: number
+  range: number
+  bonusEffect: string
+  description: string
+}
+
+export interface EvolutionData {
+  unitDataId: string
+  branches: [EvolutionBranch, EvolutionBranch]
 }
 
 // === 경제 ===

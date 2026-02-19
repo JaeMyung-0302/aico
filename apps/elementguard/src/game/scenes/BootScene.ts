@@ -38,6 +38,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createPlaceholderTextures() {
+    this.createHeroTextures()
     this.createUnitTextures()
     this.createFusionTextures()
     this.createEnemyTextures()
@@ -45,6 +46,42 @@ export class BootScene extends Phaser.Scene {
     this.createProjectileTexture()
     this.createGridTextures()
     this.createTerrainTextures()
+  }
+
+  private createHeroTextures() {
+    const elementColors: Record<Element, { main: number; accent: number }> = {
+      fire: { main: 0xff4444, accent: 0xff8844 },
+      water: { main: 0x4488ff, accent: 0x88bbff },
+      wind: { main: 0x44ff88, accent: 0x88ffbb },
+      thunder: { main: 0xffff44, accent: 0xffffaa },
+      earth: { main: 0x886644, accent: 0xaa8866 },
+    }
+
+    for (const [element, { main, accent }] of Object.entries(elementColors)) {
+      const g = this.add.graphics()
+      // 원형 바디 (유닛보다 큰 36x36)
+      g.fillStyle(main, 1)
+      g.fillCircle(18, 18, 14)
+      // 별 마커 (히어로 구분)
+      g.fillStyle(accent, 0.9)
+      const points = 5
+      for (let i = 0; i < points; i++) {
+        const angle = (Math.PI * 2 * i) / points - Math.PI / 2
+        g.fillCircle(
+          18 + Math.cos(angle) * 10,
+          18 + Math.sin(angle) * 10,
+          3,
+        )
+      }
+      // 중앙 코어 (흰색 발광)
+      g.fillStyle(0xffffff, 0.9)
+      g.fillCircle(18, 18, 5)
+      // 외곽선
+      g.lineStyle(2, 0xffffff, 0.8)
+      g.strokeCircle(18, 18, 14)
+      g.generateTexture(TEXTURE_KEYS.hero(element as Element), 36, 36)
+      g.destroy()
+    }
   }
 
   private createUnitTextures() {

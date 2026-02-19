@@ -42,7 +42,7 @@ export const MetaUpgradePage = () => {
   return (
     <div className={cx('page')}>
       <header className={cx('header')}>
-        <button className={cx('backBtn')} onClick={() => navigate('/lobby')}>
+        <button className={cx('backBtn')} onClick={() => navigate('/')}>
           ←
         </button>
         <h1 className={cx('title')}>영구 강화</h1>

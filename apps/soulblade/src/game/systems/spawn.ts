@@ -3,7 +3,7 @@ import type { WaveConfig, MonsterType, EliteMutationType } from '@soulblade/shar
 import { Monster } from '../entities/Monster'
 import type { MonsterConfig } from '../entities/Monster'
 import { EliteMonster } from '../entities/EliteMonster'
-import { MAX_CONCURRENT_MONSTERS } from '@soulblade/shared'
+import { MAX_CONCURRENT_MONSTERS, MONSTER_TYPE_BASE_DEF } from '@soulblade/shared'
 import { GAME_WIDTH, GAME_HEIGHT } from '../config'
 
 interface SpawnState {
@@ -39,11 +39,14 @@ const getSpawnInterval = (elapsedSeconds: number): number => {
 // 경과 시간에 따른 몬스터 스탯 스케일링
 const getMonsterConfig = (elapsedSeconds: number): MonsterConfig => {
   const scale = 1 + Math.floor(elapsedSeconds / 60) * 0.3
+  const level = Math.max(1, Math.floor(elapsedSeconds / 120) + 1)
 
   return {
     hp: Math.floor(8 * scale),
     atk: Math.floor(3 * scale),
+    def: 3,
     spd: Math.min(2 + Math.floor(elapsedSeconds / 120), 6),
+    level,
     expReward: Math.floor(5 + elapsedSeconds / 30),
     goldReward: Math.floor(2 + elapsedSeconds / 60),
   }
@@ -153,10 +156,13 @@ export const processWaveSpawn = (
   const typeIdx = Phaser.Math.Between(0, wave.monsterTypes.length - 1)
   const monsterType = wave.monsterTypes[typeIdx] as MonsterType
   const mul = MONSTER_TYPE_MULTIPLIERS[monsterType]
+  const baseDef = MONSTER_TYPE_BASE_DEF[monsterType]
   const typedConfig: MonsterConfig = {
     hp: Math.floor(baseConfig.hp * mul.hp),
     atk: Math.floor(baseConfig.atk * mul.atk),
+    def: Math.floor(baseDef * (1 + 0.25 * (baseConfig.level - 1))),
     spd: Math.min(Math.floor(baseConfig.spd * mul.spd), 8),
+    level: baseConfig.level,
     expReward: baseConfig.expReward,
     goldReward: baseConfig.goldReward,
   }

@@ -48,10 +48,9 @@ export const clearLocal = (): void => {
 
 // Supabase 비동기 저장 (write-through)
 export const saveRemote = async (userId: string, data: SaveData): Promise<void> => {
-  if (!supabase) return
   try {
     await supabase
-      .from('rpg_saves')
+      .from('sb_rpg_saves')
       .upsert({
         user_id: userId,
         save_data: data,
@@ -64,10 +63,9 @@ export const saveRemote = async (userId: string, data: SaveData): Promise<void> 
 
 // Supabase 로드
 export const loadRemote = async (userId: string): Promise<SaveData | null> => {
-  if (!supabase) return null
   try {
     const { data } = await supabase
-      .from('rpg_saves')
+      .from('sb_rpg_saves')
       .select('save_data')
       .eq('user_id', userId)
       .single()

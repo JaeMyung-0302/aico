@@ -3,7 +3,7 @@ import type { Player } from '../entities/Player'
 import { Monster } from '../entities/Monster'
 import { Projectile } from '../entities/Projectile'
 import type { ProjectileConfig } from '../entities/Projectile'
-import { calcDamage, BASE_ATTACK_COOLDOWN } from '@soulblade/shared'
+import { calcDamage, BASE_ATTACK_COOLDOWN, CLASS_CONFIGS } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import { spawnDeathParticles, showDamageNumber, screenShake } from './juiciness'
 
@@ -47,6 +47,14 @@ const handleKill = (
   }
   if (state.juicy.enableScreenShake) {
     screenShake(player.scene, 0.003, 80)
+  }
+
+  // 직업 패시브: heal_on_kill (Paladin)
+  const classPassive = CLASS_CONFIGS[player.classType].classPassive
+  if (classPassive.type === 'heal_on_kill') {
+    const heal = Math.floor(player.maxHp * classPassive.value)
+    player.hp = Math.min(player.hp + heal, player.maxHp)
+    player.emitStatsUpdate()
   }
 
   // vampire_touch 패시브
@@ -215,8 +223,12 @@ const attackRangedProjectile = (
     : player.facingAngle
 
   const isCrit = Math.random() < player.crit
-  const critMultiplier = isCrit ? player.critDmg : 1.0
-  const damage = calcDamage(player.atk, 0, 1.0, critMultiplier)
+  const passive = CLASS_CONFIGS[player.classType].classPassive
+  const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
+  const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
+  const targetDef = target?.def ?? 0
+  const targetLevel = target?.level ?? 1
+  const damage = calcDamage(player.atk, player.weaponPower, targetDef, 1.0, player.level, targetLevel, critMultiplier)
 
   const extraCount = player.passiveSkills.get('extra_projectile') ?? 0
   const totalProjectiles = 1 + extraCount
@@ -282,13 +294,7 @@ const attackMidRangeHoly = (
       const lateral = Math.abs(-dx * sinA + dy * cosA)
 
       if (forward > 0 && forward <= range && lateral <= width / 2) {
-        const killed = applyDamageToMonster(player, enemy, state)
-
-        // 팔라딘 특수: 처치 시 HP 회복
-        if (killed) {
-          const healAmount = Math.floor(player.maxHp * 0.02)
-          player.hp = Math.min(player.hp + healAmount, player.maxHp)
-        }
+        applyDamageToMonster(player, enemy, state)
       }
     }
   }
@@ -299,9 +305,12 @@ const applyDamageToMonster = (
   monster: Monster,
   state: CombatState,
 ): boolean => {
+  const passive = CLASS_CONFIGS[player.classType].classPassive
   const isCrit = Math.random() < player.crit
-  const critMultiplier = isCrit ? player.critDmg : 1.0
-  const damage = calcDamage(player.atk, monster.atk * 0.1, 1.0, critMultiplier)
+  const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
+  const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
+  const skillMul = passive.type === 'skill_multiplier' ? passive.value : 1.0
+  const damage = calcDamage(player.atk, player.weaponPower, monster.def, skillMul, player.level, monster.level, critMultiplier)
 
   // 데미지 텍스트 (LOD 조건)
   if (state.juicy.enableDamageNumbers) {
@@ -329,7 +338,11 @@ const applyDamageToMonster = (
 export const processEnemyDamage = (
   player: Player,
   monster: Monster,
+  state: CombatState,
 ): void => {
+  // 무적 상태면 데미지 텍스트도 표시하지 않음
+  if (player.invincible) return
+
   const dodgeLevel = player.passiveSkills.get('dodge_chance') ?? 0
   if (dodgeLevel > 0 && Math.random() < dodgeLevel * 0.05) return
 
@@ -339,7 +352,17 @@ export const processEnemyDamage = (
     monster.takeDamage(reflectDamage)
   }
 
-  const damage = Math.max(1, calcDamage(monster.atk, player.def, 1.0, 1.0))
+  const passive = CLASS_CONFIGS[player.classType].classPassive
+  const rawDamage = calcDamage(monster.atk, 0, player.def, 1.0, monster.level, player.level, 1.0)
+  const damage = passive.type === 'damage_reduction'
+    ? Math.floor(rawDamage * passive.value)
+    : rawDamage
+
+  // 피격 데미지 숫자 (빨간색)
+  if (state.juicy.enableDamageNumbers) {
+    showDamageNumber(player.scene, player.x, player.y, damage, false, '#ff4444')
+  }
+
   player.takeDamage(damage)
 }
 

@@ -12,7 +12,7 @@ export const SkillTreePage = () => {
   return (
     <div className={cx('page')}>
       <header className={cx('header')}>
-        <button className={cx('backBtn')} onClick={() => navigate('/lobby')}>
+        <button className={cx('backBtn')} onClick={() => navigate('/')}>
           ←
         </button>
         <h1 className={cx('title')}>스킬 진화 도감</h1>

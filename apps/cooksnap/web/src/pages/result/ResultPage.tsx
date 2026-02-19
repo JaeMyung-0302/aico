@@ -242,15 +242,14 @@ const Result = () => {
 
       {/* 쿠팡 파트너스 배너 (모든 유저) */}
       <div className={cx('coupangBanner')}>
-        <iframe
-          src="https://ads-partners.coupang.com/widgets.html?id=964330&template=carousel&trackingCode=AF5330853&subId=&width=320&height=320&tsource="
-          width="320"
-          height="320"
-          frameBorder="0"
-          scrolling="no"
-          referrerPolicy="unsafe-url"
-          title="쿠팡 파트너스 추천 상품"
-        />
+        <a
+          href="https://link.coupang.com/re/AFFTDP?lptag=AF5330853&subid=cooksnap_result&pageKey=0&itemId=0&vendorItemId=0"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cx('coupangBannerLink')}
+        >
+          쿠팡에서 최저가 확인하기
+        </a>
         <p className={cx('disclaimer')}>
           이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를
           제공받습니다.

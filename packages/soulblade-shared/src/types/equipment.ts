@@ -18,6 +18,7 @@ export interface Equipment {
   readonly name: string
   readonly tags: readonly EquipmentTag[]
   readonly stats: Partial<CharacterStats>
+  readonly weaponPower: number
   readonly equippedBy: string | null // character id
 }
 

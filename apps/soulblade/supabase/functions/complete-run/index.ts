@@ -190,7 +190,7 @@ serve(async (req: Request) => {
 
     // characterId 소유권 확인
     const { data: character, error: charError } = await adminClient
-      .from('characters')
+      .from('sb_characters')
       .select('id')
       .eq('id', payload.characterId)
       .eq('user_id', user.id)
@@ -229,7 +229,7 @@ serve(async (req: Request) => {
 
     const equipmentInserts = Array.from({ length: dropCount }, () => generateEquipment(user.id))
     const { data: droppedEquipment, error: equipError } = await adminClient
-      .from('equipment')
+      .from('sb_equipment')
       .insert(equipmentInserts)
       .select('id')
 
@@ -243,7 +243,7 @@ serve(async (req: Request) => {
     const equipmentIds = (droppedEquipment ?? []).map((e: { id: string }) => e.id)
 
     // game_runs 기록 (service_role로 INSERT)
-    const { error: runError } = await adminClient.from('game_runs').insert({
+    const { error: runError } = await adminClient.from('sb_game_runs').insert({
       user_id: user.id,
       character_id: payload.characterId,
       class_type: payload.classType,
@@ -266,7 +266,7 @@ serve(async (req: Request) => {
     }
 
     // 메타 골드 원자적 증가 (RPC)
-    const { error: goldError } = await adminClient.rpc('increment_meta_gold', {
+    const { error: goldError } = await adminClient.rpc('sb_increment_meta_gold', {
       p_user_id: user.id,
       p_amount: metaGoldEarned,
     })

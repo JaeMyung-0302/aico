@@ -61,7 +61,7 @@ serve(async (req: Request) => {
 
     // 오늘 출석 기록 조회
     const { data: todayRecord } = await adminClient
-      .from('daily_progress')
+      .from('sb_daily_progress')
       .select('*')
       .eq('user_id', user.id)
       .eq('date', today)
@@ -79,7 +79,7 @@ serve(async (req: Request) => {
     const yesterdayStr = getYesterday()
 
     const { data: yesterdayRecord } = await adminClient
-      .from('daily_progress')
+      .from('sb_daily_progress')
       .select('consecutive_days')
       .eq('user_id', user.id)
       .eq('date', yesterdayStr)
@@ -93,7 +93,7 @@ serve(async (req: Request) => {
     // 출석 기록 upsert
     if (todayRecord) {
       const { error: updateError } = await adminClient
-        .from('daily_progress')
+        .from('sb_daily_progress')
         .update({
           attendance_claimed: true,
           consecutive_days: newConsecutive,
@@ -108,7 +108,7 @@ serve(async (req: Request) => {
       }
     } else {
       const { error: insertError } = await adminClient
-        .from('daily_progress')
+        .from('sb_daily_progress')
         .insert({
           user_id: user.id,
           date: today,
@@ -125,7 +125,7 @@ serve(async (req: Request) => {
     }
 
     // 메타 골드 지급 (원자적)
-    const { data: newGold, error: goldError } = await adminClient.rpc('increment_meta_gold', {
+    const { data: newGold, error: goldError } = await adminClient.rpc('sb_increment_meta_gold', {
       p_user_id: user.id,
       p_amount: goldReward,
     })
@@ -135,12 +135,12 @@ serve(async (req: Request) => {
       const recordId = todayRecord?.id
       if (recordId) {
         await adminClient
-          .from('daily_progress')
+          .from('sb_daily_progress')
           .update({ attendance_claimed: false })
           .eq('id', recordId)
       } else {
         await adminClient
-          .from('daily_progress')
+          .from('sb_daily_progress')
           .delete()
           .eq('user_id', user.id)
           .eq('date', today)

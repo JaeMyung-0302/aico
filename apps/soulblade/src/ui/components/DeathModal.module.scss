@@ -1,0 +1,47 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 130;
+}
+
+.modal {
+  background: #1a1a2e;
+  border: 2px solid #cc3333;
+  border-radius: 12px;
+  padding: 32px 24px;
+  width: 85%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.title {
+  color: #cc3333;
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+}
+
+.penalty {
+  color: #ff6666;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.returnBtn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #2d5a27, #3a6b32);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

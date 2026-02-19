@@ -1,0 +1,103 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: linear-gradient(180deg, #2a1a3e 0%, #1a1a2e 100%);
+  border: 2px solid #9c27b0;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  color: #fff;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 900;
+  color: #f1c40f;
+  margin: 0 0 16px;
+  text-shadow: 0 2px 8px rgba(241, 196, 15, 0.4);
+}
+
+.evolutionCard {
+  background: rgba(156, 39, 176, 0.15);
+  border: 1px solid rgba(156, 39, 176, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.evolutionName {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ce93d8;
+  margin-bottom: 8px;
+}
+
+.evolutionDesc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.effect {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: #4caf50;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.acceptBtn {
+  flex: 1;
+  padding: 12px;
+  background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.rejectBtn {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}

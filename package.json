@@ -18,6 +18,11 @@
     "node": ">=18.12"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["prisma", "@nestjs/core", "puppeteer"]
+    "onlyBuiltDependencies": [
+      "prisma",
+      "@nestjs/core",
+      "puppeteer",
+      "bcrypt"
+    ]
   }
 }

@@ -1,0 +1,14 @@
+[project]
+id = "soulblade"
+name = "SoulBlade"
+
+[auth]
+enabled = true
+site_url = "http://localhost:5176"
+additional_redirect_urls = ["http://localhost:5176"]
+
+[auth.external.google]
+enabled = true
+
+[db]
+port = 54322

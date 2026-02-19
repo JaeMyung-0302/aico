@@ -1,0 +1,62 @@
+/**
+ * LOD (Level of Detail) 성능 최적화
+ * FPS 모니터링 → 4단계 품질 다운그레이드
+ */
+
+export type QualityLevel = 'full' | 'reduced' | 'minimal' | 'canvas'
+
+interface LodState {
+  fpsHistory: number[] // 게임 루프에서 성능상 mutable
+  currentQuality: QualityLevel
+  lastCheckTime: number
+}
+
+// FPS 샘플 수
+const FPS_SAMPLE_COUNT = 60
+// FPS 체크 간격 (ms)
+const CHECK_INTERVAL = 3000
+// 다운그레이드 임계값
+const DOWNGRADE_FPS = 25
+// 업그레이드 임계값
+const UPGRADE_FPS = 45
+
+// 품질 레벨 순서
+const QUALITY_ORDER: readonly QualityLevel[] = ['full', 'reduced', 'minimal', 'canvas']
+
+export const createLodState = (): LodState => ({
+  fpsHistory: [],
+  currentQuality: 'full',
+  lastCheckTime: 0,
+})
+
+// FPS 샘플 기록 + 품질 레벨 조정
+export const updateLod = (state: LodState, fps: number, time: number): QualityLevel => {
+  state.fpsHistory.push(fps)
+  if (state.fpsHistory.length > FPS_SAMPLE_COUNT) {
+    state.fpsHistory = state.fpsHistory.slice(-FPS_SAMPLE_COUNT)
+  }
+
+  if (time - state.lastCheckTime < CHECK_INTERVAL) return state.currentQuality
+  state.lastCheckTime = time
+
+  if (state.fpsHistory.length < 10) return state.currentQuality
+
+  const avgFps = state.fpsHistory.reduce((sum, f) => sum + f, 0) / state.fpsHistory.length
+  const currentIdx = QUALITY_ORDER.indexOf(state.currentQuality)
+
+  if (avgFps < DOWNGRADE_FPS && currentIdx < QUALITY_ORDER.length - 1) {
+    state.currentQuality = QUALITY_ORDER[currentIdx + 1] as QualityLevel
+  } else if (avgFps > UPGRADE_FPS && currentIdx > 0) {
+    state.currentQuality = QUALITY_ORDER[currentIdx - 1] as QualityLevel
+  }
+
+  return state.currentQuality
+}
+
+// 품질 레벨별 설정
+export const getLodConfig = (quality: QualityLevel) => ({
+  enableParticles: quality === 'full' || quality === 'reduced',
+  enableScreenShake: quality === 'full',
+  enableDamageNumbers: quality !== 'canvas',
+  maxMonsters: quality === 'full' ? 30 : quality === 'reduced' ? 20 : 15,
+})

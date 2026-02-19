@@ -1,0 +1,75 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.container {
+  text-align: center;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f1c40f;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 20px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:active {
+    transform: scale(0.97);
+    border-color: #f1c40f;
+    background: rgba(241, 196, 15, 0.1);
+  }
+}
+
+.icon {
+  font-size: 32px;
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.level {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3498db;
+}

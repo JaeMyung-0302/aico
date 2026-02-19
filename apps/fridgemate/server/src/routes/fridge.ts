@@ -18,7 +18,7 @@ fridgeRouter.get('/', async (req, res: Response): Promise<void> => {
         compartments: {
           orderBy: { position: 'asc' },
           include: {
-            foodItems: { select: { id: true, expiryDate: true } },
+            foodItems: { select: { id: true, name: true, expiryDate: true } },
           },
         },
       },
@@ -40,6 +40,7 @@ fridgeRouter.get('/', async (req, res: Response): Promise<void> => {
           const status = getExpiryStatus(item.expiryDate)
           return status !== ExpiryStatus.SAFE
         }),
+        foodItems: c.foodItems.map((fi) => ({ id: fi.id, name: fi.name, expiryDate: fi.expiryDate })),
       })),
     }))
 
@@ -58,7 +59,7 @@ fridgeRouter.get('/:id', async (req, res: Response): Promise<void> => {
         compartments: {
           orderBy: { position: 'asc' },
           include: {
-            foodItems: { select: { id: true, expiryDate: true } },
+            foodItems: { select: { id: true, name: true, expiryDate: true } },
           },
         },
       },
@@ -85,6 +86,7 @@ fridgeRouter.get('/:id', async (req, res: Response): Promise<void> => {
           const status = getExpiryStatus(item.expiryDate)
           return status !== ExpiryStatus.SAFE
         }),
+        foodItems: c.foodItems.map((fi) => ({ id: fi.id, name: fi.name, expiryDate: fi.expiryDate })),
       })),
     })
   } catch {
@@ -142,6 +144,7 @@ fridgeRouter.post('/', async (req, res: Response): Promise<void> => {
         position: c.position,
         itemCount: 0,
         hasExpiringItems: false,
+        foodItems: [],
       })),
     })
   } catch {

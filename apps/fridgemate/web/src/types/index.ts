@@ -64,6 +64,7 @@ export interface CompartmentResponse {
   position: number
   itemCount: number
   hasExpiringItems: boolean
+  foodItems: { id: string; name: string; expiryDate: string | null }[]
 }
 
 export interface FoodItemResponse {

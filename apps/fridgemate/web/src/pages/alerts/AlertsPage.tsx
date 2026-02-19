@@ -79,7 +79,11 @@ export const AlertsPage = () => {
       )}
 
       {alertGroups.map((group) => (
-        <div key={group.status} className={cx('group')}>
+        <div key={group.status} className={cx('group', {
+            groupExpired: group.status === ExpiryStatus.EXPIRED,
+            groupDanger: group.status === ExpiryStatus.DANGER,
+            groupWarning: group.status === ExpiryStatus.WARNING,
+          })}>
           <div className={cx('groupHeader')}>
             <span className={cx('groupDot', group.dotClass)} />
             <span className={cx('groupLabel')}>{group.label}</span>

@@ -27,7 +27,7 @@
   font-weight: 500;
   background-color: #e8ecf1;
   color: #666;
-  transition: all 0.2s;
+  transition: background-color 0.2s, color 0.2s, transform 0.2s;
 
   &:active {
     transform: scale(0.96);
@@ -45,12 +45,40 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #c8d0dc 0%, #b0b8c8 50%, #a0a8b8 100%);
+  background: linear-gradient(
+    180deg,
+    #d4dae4 0%,
+    #c0c8d4 20%,
+    #b4bcc8 50%,
+    #a8b0bc 80%,
+    #9ca4b0 100%
+  );
   border-radius: 20px;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  position: relative;
+
+  // 메탈릭 반사 하이라이트
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 40%;
+    height: 60%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    border-radius: 20px 20px 50% 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 .fridgeHeader {
@@ -59,6 +87,30 @@
   color: #444;
   padding: 12px 12px 8px;
   font-weight: 600;
+}
+
+// === 도어 전환 애니메이션 ===
+
+@keyframes doorOpen {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes doorClose {
+  0% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 // === 뒤로가기 + 열린 문 라벨 ===
@@ -70,6 +122,7 @@
   font-size: 0.8rem;
   font-weight: 500;
   color: #555;
+  animation: doorOpen 0.25s ease-out;
 
   &:active {
     color: #333;
@@ -82,6 +135,7 @@
   font-weight: 600;
   color: #333;
   padding: 4px 12px 8px;
+  animation: doorOpen 0.25s ease-out;
 }
 
 // === 닫힌 문 ===
@@ -91,6 +145,7 @@
   display: grid;
   padding: 10px;
   gap: 6px;
+  animation: doorClose 0.25s ease-out;
 }
 
 // Samsung 양문형 — 좌우 2문
@@ -111,16 +166,44 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: linear-gradient(180deg, #e4e8ee 0%, #d0d6e0 50%, #c4cad4 100%);
+  background: linear-gradient(
+    180deg,
+    #eef1f6 0%,
+    #e4e8ee 15%,
+    #d8dde6 50%,
+    #ccd2dc 85%,
+    #c4cad4 100%
+  );
   border-radius: 14px;
   padding: 24px 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    0 2px 10px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+
+  // 스테인리스 반사 효과
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 5%;
+    right: 50%;
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    border-radius: 14px 14px 50% 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
 
   &:active {
     transform: scale(0.98);
@@ -129,7 +212,21 @@
 }
 
 .closedDoorFreezer {
-  background: linear-gradient(180deg, #dce8f0 0%, #c8d8e8 50%, #b8c8d8 100%);
+  background: linear-gradient(
+    180deg,
+    #e0ecf6 0%,
+    #c8daea 30%,
+    #b4cce0 60%,
+    #a4bed6 100%
+  );
+
+  &::before {
+    background: linear-gradient(
+      180deg,
+      rgba(200, 220, 255, 0.15) 0%,
+      rgba(200, 220, 255, 0) 100%
+    );
+  }
 }
 
 // 닫힌 문 충전도 (아이템 수 기반)
@@ -152,13 +249,23 @@
 
 // 문 손잡이
 .closedDoorHandle {
-  width: 4px;
-  height: 36px;
-  background: linear-gradient(180deg, #b0b8c8, #98a0b0);
-  border-radius: 2px;
+  width: 5px;
+  height: 52px;
+  background: linear-gradient(
+    90deg,
+    #a0a8b8 0%,
+    #c4ccd8 40%,
+    #d0d8e0 50%,
+    #c4ccd8 60%,
+    #a0a8b8 100%
+  );
+  border-radius: 3px;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  box-shadow:
+    1px 1px 3px rgba(0, 0, 0, 0.15),
+    inset 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 // Samsung: 손잡이 위치 (내쪽)
@@ -218,6 +325,7 @@
   display: flex;
   padding: 4px 10px 10px;
   min-height: 0;
+  animation: doorOpen 0.3s ease-out;
 }
 
 // 2열 레이아웃 (Samsung 양문형 — 도어 + 본체)
@@ -255,17 +363,18 @@
 
 .compartment {
   flex: 1;
-  background: linear-gradient(180deg, #f8fbff 0%, #edf2f9 100%);
+  background: linear-gradient(180deg, #f8fbff 0%, #f0f4fa 40%, #e8edf5 100%);
   border-radius: 10px;
   padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   border: 1.5px solid rgba(255, 255, 255, 0.5);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 1px 3px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
@@ -276,13 +385,21 @@
   }
 }
 
-// 충전도 Level 0 (빈 칸)
+// 충전도 Level 0 (빈 칸) — 선반 패턴
 .fillLevel0 {
-  opacity: 0.6;
+  opacity: 0.65;
   border-style: dashed;
-  border-color: rgba(0, 0, 0, 0.15);
-  background: linear-gradient(180deg, #f0f2f5 0%, #e8eaee 100%);
-  box-shadow: none;
+  border-color: rgba(0, 0, 0, 0.12);
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 32%,
+      rgba(0, 0, 0, 0.03) 32%,
+      rgba(0, 0, 0, 0.03) 33%
+    ),
+    linear-gradient(180deg, #f0f2f5 0%, #e8eaee 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 // 충전도 Level 1 (1-2개) — 기본 배경 유지
@@ -293,11 +410,15 @@
   border-color: rgba(74, 144, 217, 0.2);
 }
 
-// 충전도 Level 3 (6개 이상)
+// 충전도 Level 3 (6개 이상) — 풍성한 느낌
 .fillLevel3 {
-  background: linear-gradient(180deg, #e3ecf7 0%, #cdd8ea 100%);
+  background: linear-gradient(180deg, #dce6f4 0%, #c4d2e8 50%, #b8c8de 100%);
   border-width: 2px;
   border-color: rgba(74, 144, 217, 0.35);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 4px rgba(74, 144, 217, 0.1);
 }
 
 // 유통기한 경고 (칸 전체)
@@ -309,40 +430,73 @@
 }
 
 .compartmentFreezer {
-  background: linear-gradient(180deg, #e8f4fd, #d4ebf8);
+  background: linear-gradient(180deg, #e0f0fd 0%, #c8e2f6 50%, #b8d8f2 100%);
+  border-color: rgba(100, 160, 220, 0.25);
 
   &.fillLevel0 {
-    background: linear-gradient(180deg, #e0eaf2 0%, #d4dee8 100%);
+    background:
+      repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 32%,
+        rgba(100, 160, 220, 0.04) 32%,
+        rgba(100, 160, 220, 0.04) 33%
+      ),
+      linear-gradient(180deg, #dce8f2 0%, #d0dcea 100%);
   }
 
   &.fillLevel2 {
-    background: linear-gradient(180deg, #dcedf8 0%, #c4ddef 100%);
+    background: linear-gradient(180deg, #d4eaf8 0%, #b8d6ee 100%);
   }
 
   &.fillLevel3 {
-    background: linear-gradient(180deg, #cde3f5 0%, #b4d3ec 100%);
+    background: linear-gradient(180deg, #c4e0f4 0%, #a8ceea 50%, #9cc4e4 100%);
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.05),
+      0 1px 4px rgba(100, 160, 220, 0.12);
   }
 }
 
 .compartmentDrawer {
   flex: 0.5;
+  border-top: 2px solid rgba(0, 0, 0, 0.06);
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 0 0 8px 8px;
 }
 
 .compartmentShowcase {
-  background: linear-gradient(180deg, #fff8e1, #fff3cd);
-  border-color: #e8d5a0;
+  background: linear-gradient(180deg, #fffcf0 0%, #fff6de 50%, #fff2cc 100%);
+  border-color: rgba(200, 170, 100, 0.3);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.08);
 
   &.fillLevel0 {
-    background: linear-gradient(180deg, #f5f0e0 0%, #ece7d5 100%);
+    background:
+      repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 32%,
+        rgba(200, 170, 100, 0.04) 32%,
+        rgba(200, 170, 100, 0.04) 33%
+      ),
+      linear-gradient(180deg, #f5f0e0 0%, #ece7d5 100%);
     border-color: rgba(0, 0, 0, 0.12);
   }
 
   &.fillLevel2 {
-    background: linear-gradient(180deg, #fff3cc 0%, #ffe8a8 100%);
+    background: linear-gradient(180deg, #fff4d0 0%, #ffe8a8 100%);
   }
 
   &.fillLevel3 {
-    background: linear-gradient(180deg, #ffeebc 0%, #ffe09a 100%);
+    background: linear-gradient(180deg, #fff0c0 0%, #ffe09a 50%, #ffd880 100%);
+    box-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.05),
+      0 1px 4px rgba(200, 170, 100, 0.15);
   }
 }
 
@@ -371,21 +525,74 @@
   color: #888;
 }
 
-// 카테고리 이모지 미리보기
-.categoryPreview {
+// 재료 칩 목록 — 세로 한 줄 + 세로 스크롤
+.chipList {
   display: flex;
-  align-items: center;
-  gap: 1px;
-  font-size: 0.6rem;
-  line-height: 1;
-  margin-top: 2px;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.categoryExtra {
-  font-size: 0.55rem;
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  padding: 3px 6px;
+  flex-shrink: 0;
+}
+
+.chipName {
+  font-size: 0.7rem;
+  color: #444;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.chipExpiry {
+  font-size: 0.6rem;
+  color: #888;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.chipExpiryWarning {
+  color: #e67e22;
+}
+
+.chipExpiryDanger {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.chipDelete {
+  font-size: 0.65rem;
   color: #999;
-  margin-left: 1px;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 2px;
+  border-radius: 3px;
+  background: none;
+  border: none;
+  transition: color 0.15s;
+
+  &:hover,
+  &:active {
+    color: #e74c3c;
+  }
 }
 
 // 하이라이트 (재료 추가 후 피드백) — opacity 기반 GPU 합성

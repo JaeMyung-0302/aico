@@ -1,0 +1,84 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: #1a1a2e;
+  border: 2px solid #d4a017;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.title {
+  color: #d4a017;
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.timer {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.itemCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: #16213e;
+  border: 1px solid #d4a017;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #1a3a5c;
+  }
+
+  &:active {
+    background: #1a4a6c;
+  }
+}
+
+.itemName {
+  color: #f0e68c;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.itemDesc {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.skipBtn {
+  padding: 8px 24px;
+  background: transparent;
+  border: 1px solid #666;
+  border-radius: 6px;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.85rem;
+
+  &:hover {
+    border-color: #999;
+    color: #bbb;
+  }
+}

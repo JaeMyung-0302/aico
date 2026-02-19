@@ -1,0 +1,120 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0;
+  color: #f1c40f;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.equipped {
+  margin-bottom: 20px;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.synergies {
+  background: rgba(156, 39, 176, 0.1);
+  border: 1px solid rgba(156, 39, 176, 0.25);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.synergyTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ce93d8;
+  margin: 0 0 8px;
+}
+
+.synergyItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.synergyTag {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.synergyBonus {
+  color: #4caf50;
+}
+
+.itemList {
+  margin-bottom: 20px;
+}
+
+.empty {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.itemCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.itemName {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.itemStats {
+  font-size: 11px;
+  color: #4caf50;
+}

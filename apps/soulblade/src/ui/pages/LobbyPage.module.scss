@@ -1,0 +1,139 @@
+.lobby {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 900;
+  color: #f1c40f;
+  text-shadow: 0 2px 8px rgba(241, 196, 15, 0.3);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 4px 0 32px;
+}
+
+.section {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.classList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.classCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+
+  &.selected {
+    border-color: #f1c40f;
+    background: rgba(241, 196, 15, 0.1);
+  }
+}
+
+.className {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.classDesc {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stageList {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.stageCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+
+  &.selected {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
+  }
+}
+
+.startButton {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #f1c40f, #e67e22);
+  border: none;
+  border-radius: 12px;
+  color: #1a1a2e;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.1s;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.menuList {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.menuButton {
+  flex: 1;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}

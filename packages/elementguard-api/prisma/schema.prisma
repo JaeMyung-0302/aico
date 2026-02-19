@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid()) @db.Uuid
+  email            String?   @unique
+  passwordHash     String?   @map("password_hash")
+  isGuest          Boolean   @default(true) @map("is_guest")
+  refreshTokenHash String?   @map("refresh_token_hash")
+  lastActiveAt     DateTime  @default(now()) @map("last_active_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  profile     Profile?
+  growthTree  GrowthTree?
+  gameRuns    GameRun[]
+  archives    Archive[]
+  leaderboard Leaderboard[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @map("user_id") @db.Uuid
+  displayName String   @default("Guest") @map("display_name")
+  gel         Int      @default(0)
+  exp         Int      @default(0)
+  level       Int      @default(1)
+  totalGames  Int      @default(0) @map("total_games")
+  bestScore   Int      @default(0) @map("best_score")
+  isGuest     Boolean  @default(true) @map("is_guest")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model GrowthTree {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @unique @map("user_id") @db.Uuid
+  attackLevel   Int      @default(0) @map("attack_level")
+  defenseLevel  Int      @default(0) @map("defense_level")
+  economyLevel  Int      @default(0) @map("economy_level")
+  luckLevel     Int      @default(0) @map("luck_level")
+  totalInvested Int      @default(0) @map("total_invested")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("growth_tree")
+}
+
+model GameRun {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  wave            Int      @default(0)
+  score           Int      @default(0)
+  isClear         Boolean  @default(false) @map("is_clear")
+  artifacts       String[] @default([])
+  durationSeconds Int      @default(0) @map("duration_seconds")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "idx_game_runs_user")
+  @@index([score(sort: Desc)], name: "idx_game_runs_score")
+  @@map("game_runs")
+}
+
+model Archive {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  itemType     String   @map("item_type")
+  itemId       String   @map("item_id")
+  discoveredAt DateTime @default(now()) @map("discovered_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId], name: "idx_archive_user")
+  @@map("archive")
+}
+
+model Leaderboard {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  displayName String   @map("display_name")
+  score       Int
+  wave        Int
+  weekStart   DateTime @map("week_start") @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([weekStart, score(sort: Desc)], name: "idx_leaderboard_week_score")
+  @@map("leaderboard")
+}

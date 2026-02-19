@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
+import { useFoodItemStore } from '@/stores/useFoodItemStore'
 import { FridgeView } from '@/components/FridgeView'
 import { CompartmentPanel } from '@/components/CompartmentPanel'
 import type { CompartmentResponse } from '@/types'
@@ -28,6 +29,15 @@ export const FridgePage = () => {
   const handleCompartmentClick = useCallback((compartment: CompartmentResponse) => {
     setActiveCompartment(compartment)
   }, [])
+
+  const handleDeleteItem = useCallback(async (itemId: string, compartmentId: string) => {
+    try {
+      await useFoodItemStore.getState().deleteItem(itemId, compartmentId)
+      await fetchFridges()
+    } catch {
+      // 에러는 store에서 처리됨
+    }
+  }, [fetchFridges])
 
   const handlePanelClose = useCallback(() => {
     const closedId = activeCompartment?.id ?? null
@@ -72,12 +82,13 @@ export const FridgePage = () => {
 
   return (
     <div className={cx('page')}>
-      <FridgeView onCompartmentClick={handleCompartmentClick} highlightedCompartmentId={highlightedCompartmentId} />
+      <FridgeView onCompartmentClick={handleCompartmentClick} onDeleteItem={handleDeleteItem} highlightedCompartmentId={highlightedCompartmentId} />
 
       {activeCompartment && (
         <CompartmentPanel
           compartment={activeCompartment}
           onClose={handlePanelClose}
+          onItemChange={fetchFridges}
         />
       )}
     </div>

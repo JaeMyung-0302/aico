@@ -1,0 +1,123 @@
+.container {
+  min-height: 100dvh;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.branches {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.branchCard {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.branchHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.icon {
+  font-size: 1.25rem;
+}
+
+.branchName {
+  font-weight: 600;
+  flex: 1;
+}
+
+.branchLevel {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.branchDesc {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 0.75rem;
+}
+
+.tierBar {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.tierDot {
+  width: 32px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+
+  &.active {
+    background: #44ff88;
+  }
+}
+
+.bonusInfo {
+  font-size: 0.8125rem;
+  color: #ccc;
+  margin-bottom: 0.75rem;
+}
+
+.nextBonus {
+  color: #44ff88;
+  margin-left: 0.25rem;
+}
+
+.upgradeButton {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid rgba(68, 255, 136, 0.3);
+  border-radius: 8px;
+  background: rgba(68, 255, 136, 0.1);
+  color: #44ff88;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(.disabled) {
+    background: rgba(68, 255, 136, 0.2);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #888;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+  }
+}

@@ -1,0 +1,92 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0;
+  color: #ce93d8;
+}
+
+.desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 20px;
+  line-height: 1.4;
+}
+
+.evolutionList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.evoCard {
+  background: rgba(156, 39, 176, 0.08);
+  border: 1px solid rgba(156, 39, 176, 0.2);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.evoName {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ce93d8;
+  margin-bottom: 4px;
+}
+
+.evoDesc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.evoReqs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.req {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.evoEffects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.effect {
+  font-size: 11px;
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}

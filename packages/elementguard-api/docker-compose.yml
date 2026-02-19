@@ -1,0 +1,15 @@
+services:
+  elementguard-db:
+    image: postgres:16-alpine
+    container_name: elementguard-db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: elementguard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - elementguard-pgdata:/var/lib/postgresql/data
+
+volumes:
+  elementguard-pgdata:

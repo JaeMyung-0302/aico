@@ -6,6 +6,7 @@ interface FridgeState {
   fridges: FridgeResponse[]
   activeFridgeId: string | null
   loading: boolean
+  initialLoaded: boolean
   error: string | null
 }
 
@@ -23,16 +24,22 @@ export const useFridgeStore = create<FridgeStore>((set, get) => ({
   fridges: [],
   activeFridgeId: null,
   loading: false,
+  initialLoaded: false,
   error: null,
 
   fetchFridges: async () => {
-    set({ loading: true, error: null })
+    if (!get().initialLoaded) {
+      set({ loading: true, error: null })
+    } else {
+      set({ error: null })
+    }
     try {
       const fridges = await api.get<FridgeResponse[]>('/fridges')
       const currentActive = get().activeFridgeId
       set({
         fridges,
         loading: false,
+        initialLoaded: true,
         // 활성 냉장고가 없으면 첫 번째 냉장고를 선택
         activeFridgeId: currentActive && fridges.some((f) => f.id === currentActive)
           ? currentActive

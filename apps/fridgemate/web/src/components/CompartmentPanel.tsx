@@ -12,9 +12,10 @@ const cx = classNames.bind(styles)
 interface CompartmentPanelProps {
   compartment: CompartmentResponse
   onClose: () => void
+  onItemChange?: () => void
 }
 
-export const CompartmentPanel = ({ compartment, onClose }: CompartmentPanelProps) => {
+export const CompartmentPanel = ({ compartment, onClose, onItemChange }: CompartmentPanelProps) => {
   const { items, loading, fetchItems, deleteItem } = useFoodItemStore()
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState<FoodItemResponse | null>(null)
@@ -32,8 +33,9 @@ export const CompartmentPanel = ({ compartment, onClose }: CompartmentPanelProps
   const handleDelete = useCallback(
     async (itemId: string) => {
       await deleteItem(itemId, compartment.id)
+      onItemChange?.()
     },
-    [deleteItem, compartment.id],
+    [deleteItem, compartment.id, onItemChange],
   )
 
   const handleEdit = useCallback((item: FoodItemResponse) => {
@@ -50,7 +52,8 @@ export const CompartmentPanel = ({ compartment, onClose }: CompartmentPanelProps
     setShowForm(false)
     setEditingItem(null)
     fetchItems(compartment.id)
-  }, [fetchItems, compartment.id])
+    onItemChange?.()
+  }, [fetchItems, compartment.id, onItemChange])
 
   const formatQuantity = (item: FoodItemResponse): string => {
     if (item.quantity === null) return ''

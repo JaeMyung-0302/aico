@@ -1,0 +1,59 @@
+.slot {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 80px;
+  transition: all 0.2s;
+
+  &.equipped {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-size: 11px;
+  color: #4caf50;
+}
+
+.empty {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  margin: auto;
+}

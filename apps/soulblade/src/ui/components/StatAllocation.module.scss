@@ -1,0 +1,131 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(20, 20, 40, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffd700;
+  text-align: center;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin: 0;
+}
+
+.remaining {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4fc3f7;
+  text-align: center;
+  margin: 0;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  width: 50px;
+}
+
+.perPoint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  width: 70px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffd700;
+  width: 24px;
+  text-align: center;
+}
+
+.confirmBtn {
+  margin-top: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #4fc3f7;
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:disabled {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    background: #29b6f6;
+  }
+}

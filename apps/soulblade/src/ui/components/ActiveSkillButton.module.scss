@@ -1,0 +1,47 @@
+.skillButton {
+  position: absolute;
+  bottom: 100px;
+  right: 40px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(241, 196, 15, 0.3);
+  border: 3px solid rgba(241, 196, 15, 0.6);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  z-index: 100;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &.cooldown {
+    background: rgba(100, 100, 100, 0.4);
+    border-color: rgba(150, 150, 150, 0.4);
+  }
+
+  &:active:not(.cooldown) {
+    transform: scale(0.92);
+    background: rgba(241, 196, 15, 0.5);
+  }
+}
+
+.cooldownOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  transition: height 0.1s linear;
+  pointer-events: none;
+}
+
+.label {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}

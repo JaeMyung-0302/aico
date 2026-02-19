@@ -49,22 +49,25 @@
 }
 
 .groupDot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .dotExpired {
   background-color: #e74c3c;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
 }
 
 .dotDanger {
   background-color: #f39c12;
+  box-shadow: 0 0 6px rgba(243, 156, 18, 0.4);
 }
 
 .dotWarning {
   background-color: #f1c40f;
+  box-shadow: 0 0 6px rgba(241, 196, 15, 0.3);
 }
 
 .groupLabel {
@@ -75,8 +78,11 @@
 
 .groupCount {
   font-size: 0.75rem;
-  color: #999;
+  color: #888;
   margin-left: auto;
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .alertItem {
@@ -87,6 +93,26 @@
   background-color: #fff;
   border-radius: 12px;
   margin-bottom: 8px;
+  border-left: 3px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+// 위험도별 좌측 컬러 바
+.groupExpired .alertItem {
+  border-left-color: #e74c3c;
+}
+
+.groupDanger .alertItem {
+  border-left-color: #f39c12;
+}
+
+.groupWarning .alertItem {
+  border-left-color: #f1c40f;
 }
 
 .alertInfo {

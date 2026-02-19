@@ -5,12 +5,16 @@
   justify-content: center;
   min-height: 100dvh;
   padding: 32px 24px;
-  background: linear-gradient(180deg, #4a90d9 0%, #3a7bc8 100%);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #5096de 0%, #4a90d9 30%, #3a7bc8 70%, #2d6ab0 100%);
 }
 
 .logo {
-  font-size: 4rem;
-  margin-bottom: 12px;
+  font-size: 4.5rem;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
 .title {
@@ -55,26 +59,32 @@
   &:focus {
     border-color: rgba(255, 255, 255, 0.7);
     background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
   }
 }
 
 .submitBtn {
   width: 100%;
-  padding: 14px;
-  background-color: #fff;
-  color: #4a90d9;
+  padding: 16px;
+  background: linear-gradient(180deg, #fff 0%, #f0f4f8 100%);
+  color: #3a7bc8;
   border-radius: 14px;
   font-size: 1rem;
   font-weight: 700;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.1);
 
   &:active {
     transform: scale(0.97);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    box-shadow: none;
   }
 }
 

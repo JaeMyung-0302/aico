@@ -4,17 +4,10 @@ import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
 import { FridgeType, FRIDGE_TYPE_LABELS } from '@/types'
 import type { FridgeResponse } from '@/types'
+import { FridgeTypeIcon } from '@/components/FridgeTypeIcon'
 import styles from './FridgeSelectPage.module.scss'
 
 const cx = classNames.bind(styles)
-
-const FRIDGE_TYPE_ICONS: Record<FridgeType, string> = {
-  [FridgeType.ONE_DOOR]: '🚪',
-  [FridgeType.TWO_DOOR]: '🧊',
-  [FridgeType.SIDE_BY_SIDE]: '📦',
-  [FridgeType.FOUR_DOOR]: '🫙',
-  [FridgeType.MINI]: '🧃',
-}
 
 const FridgeCard = ({
   fridge,
@@ -29,7 +22,7 @@ const FridgeCard = ({
   return (
     <button className={cx('card')} onClick={onClick} type="button">
       <div className={cx('cardIcon')}>
-        {FRIDGE_TYPE_ICONS[fridge.type] ?? '🧊'}
+        <FridgeTypeIcon type={fridge.type} size={48} />
       </div>
       <div className={cx('cardContent')}>
         <span className={cx('cardName')}>{fridge.name}</span>

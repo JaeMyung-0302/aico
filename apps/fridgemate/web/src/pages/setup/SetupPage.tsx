@@ -4,17 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
 import { FridgeType, FRIDGE_TYPE_LABELS, FRIDGE_TYPE_DESCRIPTIONS } from '@/types'
+import { FridgeTypeIcon } from '@/components/FridgeTypeIcon'
 import styles from './SetupPage.module.scss'
 
 const cx = classNames.bind(styles)
-
-const FRIDGE_TYPE_ICONS: Record<FridgeType, string> = {
-  [FridgeType.ONE_DOOR]: '🚪',
-  [FridgeType.TWO_DOOR]: '🧊',
-  [FridgeType.SIDE_BY_SIDE]: '📦',
-  [FridgeType.FOUR_DOOR]: '🫙',
-  [FridgeType.MINI]: '🧃',
-}
 
 const FRIDGE_TYPES = Object.values(FridgeType) as FridgeType[]
 
@@ -53,7 +46,7 @@ export const SetupPage = () => {
             onClick={() => setSelectedType(type)}
             type="button"
           >
-            <span className={cx('typeIcon')}>{FRIDGE_TYPE_ICONS[type]}</span>
+            <span className={cx('typeIcon')}><FridgeTypeIcon type={type} size={40} /></span>
             <span className={cx('typeName')}>{FRIDGE_TYPE_LABELS[type]}</span>
             <span className={cx('typeDesc')}>{FRIDGE_TYPE_DESCRIPTIONS[type]}</span>
           </button>

@@ -2,17 +2,18 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
-import { FridgeType, CompartmentType, getFillLevel } from '@/types'
+import { FridgeType, CompartmentType, getFillLevel, getDaysUntilExpiry } from '@/types'
 import type { CompartmentResponse, FridgeResponse } from '@/types'
-import { useFoodItemStore, getCategoryPreview } from '@/stores/useFoodItemStore'
 import styles from './FridgeView.module.scss'
 
 const cx = classNames.bind(styles)
 
 interface FridgeViewProps {
   onCompartmentClick: (compartment: CompartmentResponse) => void
+  onDeleteItem: (itemId: string, compartmentId: string) => void
   highlightedCompartmentId?: string | null
 }
+
 
 // === 도어 섹션 정의 (SIDE_BY_SIDE, FOUR_DOOR) ===
 
@@ -120,21 +121,36 @@ const CompartmentCell = ({
   compartment,
   fridgeType,
   onClick,
+  onDeleteItem,
   className,
   isHighlighted,
 }: {
   compartment: CompartmentResponse
   fridgeType: FridgeType
   onClick: () => void
+  onDeleteItem: (itemId: string, compartmentId: string) => void
   className?: string
   isHighlighted?: boolean
 }) => {
   const fillLevel = getFillLevel(compartment.itemCount)
-  const cachedItems = useFoodItemStore((s) => s.items[compartment.id])
-  const preview = cachedItems ? getCategoryPreview(cachedItems) : null
+
+  // 유통기한 가까운 순 정렬 (null은 맨 뒤)
+  const sortedItems = compartment.foodItems.slice().sort((a, b) => {
+    if (!a.expiryDate && !b.expiryDate) return 0
+    if (!a.expiryDate) return 1
+    if (!b.expiryDate) return -1
+    return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+  })
+
+  const formatExpiry = (expiryDate: string | null): string | null => {
+    const days = getDaysUntilExpiry(expiryDate)
+    if (days === null) return null
+    if (days <= 0) return 'D-day'
+    return `D-${days}`
+  }
 
   return (
-    <button
+    <div
       className={cx('compartment', className, FILL_LEVEL_CLASS[fillLevel], {
         compartmentFreezer: isFreezerZone(fridgeType, compartment.position, compartment.type),
         compartmentDrawer: isDrawerPosition(fridgeType, compartment.position),
@@ -143,28 +159,55 @@ const CompartmentCell = ({
         compartmentHighlighted: isHighlighted,
       })}
       onClick={onClick}
-      type="button"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
     >
       <span className={cx('compartmentLabel')}>{compartment.label}</span>
       {fillLevel === 0 ? (
         <span className={cx('emptyPlus')}>+</span>
       ) : (
         <>
-          {preview && preview.icons.length > 0 && (
-            <div className={cx('categoryPreview')}>
-              {preview.icons.map((icon, i) => (
-                <span key={i}>{icon}</span>
-              ))}
-              {preview.extraCount > 0 && <span className={cx('categoryExtra')}>+{preview.extraCount}</span>}
-            </div>
-          )}
+          <div className={cx('chipList')}>
+            {sortedItems.map((item) => {
+              const expiry = formatExpiry(item.expiryDate)
+              const days = getDaysUntilExpiry(item.expiryDate)
+              return (
+                <span key={item.id} className={cx('chip')}>
+                  <span className={cx('chipName')}>{item.name}</span>
+                  {expiry && (
+                    <span className={cx('chipExpiry', {
+                      chipExpiryDanger: days !== null && days <= 1,
+                      chipExpiryWarning: days !== null && days > 1 && days <= 3,
+                    })}>{expiry}</span>
+                  )}
+                  <button
+                    className={cx('chipDelete')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDeleteItem(item.id, compartment.id)
+                    }}
+                    type="button"
+                    aria-label={`${item.name} 삭제`}
+                  >
+                    ✕
+                  </button>
+                </span>
+              )
+            })}
+          </div>
           <div className={cx('compartmentInfo')}>
             <span className={cx('itemCount')}>{compartment.itemCount}개</span>
             {compartment.hasExpiringItems && <span className={cx('warningDot')} />}
           </div>
         </>
       )}
-    </button>
+    </div>
   )
 }
 
@@ -173,10 +216,12 @@ const CompartmentCell = ({
 const DoorSectionGrid = ({
   fridge,
   onCompartmentClick,
+  onDeleteItem,
   highlightedCompartmentId,
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
+  onDeleteItem: (itemId: string, compartmentId: string) => void
   highlightedCompartmentId?: string | null
 }) => {
   const [selectedDoor, setSelectedDoor] = useState<number | null>(null)
@@ -199,6 +244,7 @@ const DoorSectionGrid = ({
             compartment={comp}
             fridgeType={fridge.type}
             onClick={() => onCompartmentClick(comp)}
+            onDeleteItem={onDeleteItem}
             isHighlighted={comp.id === highlightedCompartmentId}
           />
         )
@@ -212,6 +258,7 @@ const DoorSectionGrid = ({
                 compartment={comp}
                 fridgeType={fridge.type}
                 onClick={() => onCompartmentClick(comp)}
+                onDeleteItem={onDeleteItem}
                 isHighlighted={comp.id === highlightedCompartmentId}
               />
             ))}
@@ -230,6 +277,7 @@ const DoorSectionGrid = ({
                   compartment={comp}
                   fridgeType={fridge.type}
                   onClick={() => onCompartmentClick(comp)}
+                  onDeleteItem={onDeleteItem}
                   isHighlighted={comp.id === highlightedCompartmentId}
                 />
               ))}
@@ -241,6 +289,7 @@ const DoorSectionGrid = ({
                   compartment={comp}
                   fridgeType={fridge.type}
                   onClick={() => onCompartmentClick(comp)}
+                  onDeleteItem={onDeleteItem}
                   isHighlighted={comp.id === highlightedCompartmentId}
                 />
               ))}
@@ -256,6 +305,7 @@ const DoorSectionGrid = ({
               compartment={comp}
               fridgeType={fridge.type}
               onClick={() => onCompartmentClick(comp)}
+              onDeleteItem={onDeleteItem}
               isHighlighted={comp.id === highlightedCompartmentId}
             />
           ))}
@@ -326,10 +376,12 @@ const DoorSectionGrid = ({
 const SimpleFridgeGrid = ({
   fridge,
   onCompartmentClick,
+  onDeleteItem,
   highlightedCompartmentId,
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
+  onDeleteItem: (itemId: string, compartmentId: string) => void
   highlightedCompartmentId?: string | null
 }) => {
   const gridClass = SIMPLE_GRID_CLASS[fridge.type]
@@ -348,6 +400,7 @@ const SimpleFridgeGrid = ({
                 compartment={compartment}
                 fridgeType={fridge.type}
                 onClick={() => onCompartmentClick(compartment)}
+                onDeleteItem={onDeleteItem}
                 className={getCompartmentPositionClass(fridge.type, compartment.position)}
                 isHighlighted={compartment.id === highlightedCompartmentId}
               />
@@ -360,7 +413,7 @@ const SimpleFridgeGrid = ({
 
 // === 메인 컴포넌트 ===
 
-export const FridgeView = ({ onCompartmentClick, highlightedCompartmentId }: FridgeViewProps) => {
+export const FridgeView = ({ onCompartmentClick, onDeleteItem, highlightedCompartmentId }: FridgeViewProps) => {
   const navigate = useNavigate()
   const { fridges, activeFridgeId, setActiveFridge } = useFridgeStore()
 
@@ -407,9 +460,9 @@ export const FridgeView = ({ onCompartmentClick, highlightedCompartmentId }: Fri
       {/* 냉장고 그리드 */}
       {activeFridge &&
         (DOOR_SECTIONS[activeFridge.type] ? (
-          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} highlightedCompartmentId={highlightedCompartmentId} />
+          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} />
         ) : (
-          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} highlightedCompartmentId={highlightedCompartmentId} />
+          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} />
         ))}
     </div>
   )

@@ -12,12 +12,13 @@
   align-items: center;
   justify-content: center;
   height: 56px;
-  background-color: #4a90d9;
+  background: linear-gradient(180deg, #5096de 0%, #4a90d9 100%);
   color: #fff;
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(74, 144, 217, 0.2);
 }
 
 .content {

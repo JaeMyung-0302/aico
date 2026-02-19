@@ -15,6 +15,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.41.0",
     "@prisma/client": "^6.9.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",

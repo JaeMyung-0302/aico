@@ -1,6 +1,7 @@
 import type { PlacedUnit, Element, ElementEffect, EnemyData } from '@/types'
 import { getUnitById, getGradeMultiplier } from '@/game/data/units'
 import { getFusionUnit } from '@/game/data/fusions'
+import { getEvolvedStats } from '@/game/systems/EvolutionSystem'
 import { getElementMultiplier, getFusionElementMultiplier, isImmune } from './ElementSystem'
 import { getTerrainMultiplier, type TerrainTile } from './TerrainSystem'
 import { getSynergyMultiplier, countAdjacentUnits, hasRainbowSynergy } from './SynergySystem'
@@ -24,7 +25,7 @@ export const calculateDamage = (
 ): DamageResult => {
   const targetElement = enemyData.element
 
-  // 1. 기본 공격력
+  // 1. 기본 공격력 (진화 스탯 우선 적용)
   let baseAtk: number
   let unitElement: Element
 
@@ -33,8 +34,9 @@ export const calculateDamage = (
     baseAtk = fusionData?.baseAtk ?? 20
     unitElement = fusionData?.elements[0] ?? 'fire'
   } else {
+    const evolvedStats = getEvolvedStats(unit)
     const unitData = getUnitById(unit.unitDataId)
-    baseAtk = unitData?.baseAtk ?? 10
+    baseAtk = evolvedStats?.baseAtk ?? unitData?.baseAtk ?? 10
     unitElement = unitData?.element ?? 'fire'
   }
 

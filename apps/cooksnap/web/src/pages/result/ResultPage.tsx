@@ -243,7 +243,7 @@ const Result = () => {
       {/* 쿠팡 파트너스 배너 (모든 유저) */}
       <div className={cx('coupangBanner')}>
         <a
-          href="https://link.coupang.com/re/AFFTDP?lptag=AF5330853&subid=cooksnap_result&pageKey=0&itemId=0&vendorItemId=0"
+          href="https://link.coupang.com/a/dO2WLp"
           target="_blank"
           rel="noopener noreferrer"
           className={cx('coupangBannerLink')}

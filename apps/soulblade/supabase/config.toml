@@ -15,4 +15,7 @@ site_url = "http://localhost:5178"
 additional_redirect_urls = ["http://localhost:5178"]
 
 [auth.external.google]
-enabled = false
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"

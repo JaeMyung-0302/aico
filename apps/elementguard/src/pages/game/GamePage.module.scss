@@ -9,3 +9,159 @@
   width: 100%;
   height: 100%;
 }
+
+.heroPanel {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  padding: 8px 16px;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.heroInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.heroElement {
+  font-size: 20px;
+}
+
+.heroHpBar {
+  width: 80px;
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.heroHpFill {
+  height: 100%;
+  background: #44ff44;
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+
+.reviveTimer {
+  font-size: 11px;
+  color: #ff8888;
+}
+
+.heroSkills {
+  display: flex;
+  gap: 8px;
+}
+
+.skillBtn {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #888;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active:not(.disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.cooldown {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 10px;
+  color: #ff8888;
+}
+
+// 진화 선택 모달
+.evoOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.evoModal {
+  background: #1a1a2e;
+  border: 2px solid #e94560;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 340px;
+}
+
+.evoTitle {
+  text-align: center;
+  color: #e94560;
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+
+.evoBranches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.evoBranch {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  &:active {
+    background: rgba(233, 69, 96, 0.2);
+    border-color: #e94560;
+  }
+}
+
+.evoBranchName {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffdd57;
+}
+
+.evoBranchDesc {
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+.evoBranchStats {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: #88ccff;
+  margin-top: 2px;
+}

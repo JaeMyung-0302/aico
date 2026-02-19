@@ -6,6 +6,7 @@ import { generateTerrainLayout, type TerrainTile } from '@/game/systems/TerrainS
 import { generateSpawnList, calculateWaveGold, isArtifactWave, isBossWave, isGameClear, TOTAL_WAVES } from '@/game/systems/WaveSystem'
 import { calculateDamage, findTarget } from '@/game/systems/CombatSystem'
 import { canMerge, executeMerge } from '@/game/systems/MergeSystem'
+import { canEvolve, getEvolutionBranches, evolveUnit } from '@/game/systems/EvolutionSystem'
 import { calculateArtifactBonuses, type ArtifactBonuses } from '@/game/systems/ArtifactSystem'
 import { updateDebuffs, removeDebuffsForTarget, getEffectiveSpeed, isDisabled, getEffectiveAtkMultiplier, getEffectiveRangeBoost, getDotDamage } from '@/game/systems/DebuffSystem'
 import { checkReaction, canReact, recordReaction, clearCooldowns, applyReactionEffect } from '@/game/systems/ReactionSystem'
@@ -45,6 +46,7 @@ export class GameScene extends Phaser.Scene {
   private growthBonuses = { atkBonus: 0, maxHpBonus: 0, goldBonus: 0, luckBonus: 0 }
   private dotTickAccumulator = 0
   private heroSystem = new HeroSystem()
+  private isEvolutionPaused = false
 
   // 게임 상태
   private currentWave = 0
@@ -94,6 +96,7 @@ export class GameScene extends Phaser.Scene {
     eventBus.on('select-artifact', this.handleSelectArtifact as (...args: unknown[]) => void)
     eventBus.on('hero-use-skill', this.handleHeroUseSkill as (...args: unknown[]) => void)
     eventBus.on('hero-select-element', this.handleHeroSelectElement as (...args: unknown[]) => void)
+    eventBus.on('evolution-select', this.handleEvolutionSelect)
 
     // 초기 상태 전달
     this.emitGameState()
@@ -533,6 +536,18 @@ export class GameScene extends Phaser.Scene {
             if (result.type === 'fusion') {
               eventBus.emit('fusion-success', result.resultUnit.fusionElement)
             }
+
+            // ★3 이상 도달 시 진화 가능 여부 확인
+            if (canEvolve(result.resultUnit)) {
+              const branches = getEvolutionBranches(result.resultUnit)
+              if (branches) {
+                eventBus.emit('evolution-available', {
+                  unitInstanceId: result.resultUnit.instanceId,
+                  unitDataId: result.resultUnit.unitDataId,
+                  branches,
+                })
+              }
+            }
           }
           return
         }
@@ -724,6 +739,30 @@ export class GameScene extends Phaser.Scene {
     this.heroSystem.init(this, element)
   }
 
+  private handleEvolutionSelect = (...args: unknown[]) => {
+    const data = args[0] as { unitInstanceId: string; branchId: string }
+    const unitIdx = this.placedUnits.findIndex((u) => u.instanceId === data.unitInstanceId)
+    if (unitIdx < 0) return
+
+    const unit = this.placedUnits[unitIdx]!
+    const evolved = evolveUnit(unit, data.branchId)
+    if (!evolved) return
+
+    this.placedUnits[unitIdx] = evolved
+
+    // 유닛 엔티티 갱신 (기존 제거 후 재생성)
+    const entity = this.units.get(data.unitInstanceId)
+    const worldPos = entity ? { x: entity.x, y: entity.y } : null
+    entity?.destroy()
+    this.units.delete(data.unitInstanceId)
+
+    if (worldPos) {
+      this.spawnUnitEntity(evolved)
+    }
+
+    eventBus.emit('evolution-complete', { unitInstanceId: data.unitInstanceId, branchId: data.branchId })
+  }
+
   shutdown() {
     eventBus.off('growth-bonuses', this.handleGrowthBonuses as (...args: unknown[]) => void)
     eventBus.off('summon-unit', this.handleSummon)
@@ -731,6 +770,7 @@ export class GameScene extends Phaser.Scene {
     eventBus.off('select-artifact', this.handleSelectArtifact as (...args: unknown[]) => void)
     eventBus.off('hero-use-skill', this.handleHeroUseSkill as (...args: unknown[]) => void)
     eventBus.off('hero-select-element', this.handleHeroSelectElement as (...args: unknown[]) => void)
+    eventBus.off('evolution-select', this.handleEvolutionSelect)
     this.heroSystem.destroy()
     this.gridManager.destroy()
     this.units.clear()

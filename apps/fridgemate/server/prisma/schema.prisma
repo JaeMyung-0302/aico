@@ -43,6 +43,7 @@ model Group {
   createdAt         DateTime           @default(now())
   fridges           Fridge[]
   pushSubscriptions PushSubscription[]
+  recipeHistories   RecipeHistory[]
 }
 
 model PushSubscription {
@@ -63,8 +64,9 @@ model Fridge {
   type         FridgeType
   name         String
   createdAt    DateTime      @default(now())
-  group        Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  compartments Compartment[]
+  group           Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  compartments    Compartment[]
+  recipeHistories RecipeHistory[]
 }
 
 model Compartment {
@@ -89,4 +91,28 @@ model FoodItem {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   compartment   Compartment  @relation(fields: [compartmentId], references: [id], onDelete: Cascade)
+}
+
+model RecipeHistory {
+  id             String   @id @default(uuid())
+  groupId        String
+  fridgeId       String
+  ingredientHash String
+  ingredients    Json
+  response       Json
+  createdAt      DateTime @default(now())
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  fridge         Fridge   @relation(fields: [fridgeId], references: [id], onDelete: Cascade)
+
+  @@index([fridgeId, ingredientHash, createdAt])
+  @@index([groupId, createdAt])
+}
+
+model DailyUsage {
+  id      String   @id @default(uuid())
+  groupId String
+  date    DateTime @db.Date
+  count   Int      @default(0)
+
+  @@unique([groupId, date])
 }

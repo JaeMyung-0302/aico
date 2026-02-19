@@ -33,13 +33,14 @@ export const canMerge = (unit1: PlacedUnit, unit2: PlacedUnit): boolean => {
   return false
 }
 
-// 같은 속성 합치기 → 등급 승급
+// 같은 속성 합치기 → 등급 승급 (진화 상태 보존)
 const upgradeUnit = (unit1: PlacedUnit, _unit2: PlacedUnit): PlacedUnit => ({
   instanceId: unit1.instanceId,
   unitDataId: unit1.unitDataId,
   grade: (unit1.grade + 1) as UnitGrade,
   position: unit1.position,
   fusionElement: unit1.fusionElement,
+  evolutionId: unit1.evolutionId,
 })
 
 // 합치기 실행

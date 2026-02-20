@@ -1,41 +1,39 @@
 .page {
-  padding: 24px 16px;
+  padding: $space-24 $space-16;
 }
 
 .title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 24px;
+  font-size: $font-size-title;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+  margin-bottom: $space-24;
 }
 
 .section {
-  margin-bottom: 24px;
+  margin-bottom: $space-24;
 }
 
 .sectionTitle {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #95a5a6;
+  font-size: $font-size-body-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
-  padding-left: 4px;
+  margin-bottom: $space-8;
+  padding-left: $space-4;
 }
 
 .card {
-  background-color: #fff;
-  border-radius: 14px;
+  @include card;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid #f5f5f5;
+  padding: $space-16;
+  border-bottom: 1px solid $color-gray-100;
 
   &:last-child {
     border-bottom: none;
@@ -43,13 +41,13 @@
 }
 
 .rowLabel {
-  font-size: 0.9375rem;
-  color: #1a1a2e;
+  font-size: $font-size-body-lg;
+  color: $color-gray-900;
 }
 
 .rowValue {
-  font-size: 0.875rem;
-  color: #95a5a6;
+  font-size: $font-size-body;
+  color: $color-gray-500;
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
@@ -57,8 +55,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid #f5f5f5;
+  padding: $space-16;
+  border-bottom: 1px solid $color-gray-100;
 
   &:last-child {
     border-bottom: none;
@@ -68,162 +66,133 @@
 .fridgeInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $space-2;
 }
 
 .fridgeName {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-900;
 }
 
 .fridgeType {
-  font-size: 0.75rem;
-  color: #95a5a6;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
 }
 
 .fridgeActions {
   display: flex;
-  gap: 6px;
+  gap: $space-6;
 }
 
 .editBtn {
-  padding: 6px 14px;
-  background-color: #f0f0f0;
-  color: #555;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
-
-  &:active {
-    background-color: #e0e0e0;
-  }
+  @include button-secondary;
+  padding: $space-6 $space-16;
+  font-size: $font-size-caption;
+  border-radius: $radius-sm;
 }
 
 .deleteBtn {
-  padding: 6px 14px;
-  background-color: #fef5f5;
-  color: #e74c3c;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
+  padding: $space-6 $space-16;
+  background-color: rgba($color-danger, 0.08);
+  color: $color-danger;
+  border-radius: $radius-sm;
+  font-size: $font-size-caption;
+  font-weight: $font-weight-semibold;
+  transition: background-color $transition-normal;
 
   &:active {
-    background-color: #fde8e8;
+    background-color: rgba($color-danger, 0.16);
   }
 }
 
 .deleteWarning {
-  font-size: 0.875rem;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 16px;
+  font-size: $font-size-body;
+  color: $color-gray-600;
+  line-height: $line-height-normal;
+  margin-bottom: $space-16;
 }
 
 .deleteSave {
+  @include button-danger;
   flex: 1;
-  padding: 10px;
-  background-color: #e74c3c;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #fff;
+  padding: $space-12;
+  font-size: $font-size-body;
 }
 
 .addFridgeBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: $space-6;
   width: 100%;
-  padding: 12px;
-  color: #4a90d9;
-  font-size: 0.875rem;
-  font-weight: 600;
+  padding: $space-12;
+  color: $color-primary-500;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semibold;
 }
 
 .logoutBtn {
+  @include card;
   width: 100%;
-  padding: 14px;
-  color: #e74c3c;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  background-color: #fff;
-  border-radius: 14px;
-  transition: background-color 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  padding: $space-16;
+  color: $color-danger;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-semibold;
+  transition: background-color $transition-normal;
 
   &:active {
-    background-color: #fef5f5;
+    background-color: rgba($color-danger, 0.04);
   }
 }
 
 // 수정 모달
 .editOverlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 300;
+  @include overlay;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: $space-24;
 }
 
 .editModal {
   width: 100%;
   max-width: 320px;
-  background-color: #fff;
-  border-radius: 16px;
-  padding: 24px 20px;
+  background-color: $color-bg-primary;
+  border-radius: $radius-lg;
+  padding: $space-24 $space-20;
+  box-shadow: $shadow-3;
 }
 
 .editTitle {
   font-size: 1.0625rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #1a1a2e;
+  font-weight: $font-weight-bold;
+  margin-bottom: $space-16;
+  color: $color-gray-900;
 }
 
 .editInput {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 0.9375rem;
-  outline: none;
-  margin-bottom: 16px;
-
-  &:focus {
-    border-color: #4a90d9;
-  }
+  @include input-field;
+  margin-bottom: $space-16;
 }
 
 .editActions {
   display: flex;
-  gap: 8px;
+  gap: $space-8;
 }
 
 .editCancel {
+  @include button-secondary;
   flex: 1;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #666;
+  padding: $space-12;
+  font-size: $font-size-body;
 }
 
 .editSave {
+  @include button-primary;
   flex: 1;
-  padding: 10px;
-  background-color: #4a90d9;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #fff;
+  padding: $space-12;
+  font-size: $font-size-body;
 }
 
 // Push 알림 토글
@@ -235,13 +204,13 @@
   position: relative;
   width: 48px;
   height: 28px;
-  background-color: #d0d0d0;
-  border-radius: 14px;
-  transition: background-color 0.2s;
+  background-color: $color-gray-300;
+  border-radius: $radius-full;
+  transition: background-color $transition-normal;
   flex-shrink: 0;
 
   &.toggleOn {
-    background-color: #4a90d9;
+    background-color: $color-primary-500;
   }
 
   &:disabled {
@@ -255,12 +224,17 @@
   left: 3px;
   width: 22px;
   height: 22px;
-  background-color: #fff;
+  background-color: $color-bg-primary;
   border-radius: 50%;
-  transition: transform 0.2s;
+  transition: transform $transition-normal;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 
   .toggleOn & {
     transform: translateX(20px);
   }
+}
+
+.pushError {
+  font-size: $font-size-body-sm;
+  color: $color-danger;
 }

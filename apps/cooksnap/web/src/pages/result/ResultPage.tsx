@@ -194,27 +194,12 @@ const Result = () => {
         </div>
       </div>
 
-      {/* 재료비 요약 카드 */}
-      {(prices || recipe.totalPrice) && (() => {
-        const total = prices
-          ? prices.reduce((sum, p) => sum + (p.price || 0), 0)
-          : recipe.totalPrice
-        if (!total) return null
-        return (
-        <div className={cx('priceCard')}>
-          <p className={cx('totalPrice')}>총 {formatPrice(total)}</p>
-          {recipe.savingsPercent && (
-            <p className={cx('savings')}>
-              외식 대비 {recipe.savingsPercent}% 절약
-            </p>
-          )}
-        </div>
-        )
-      })()}
-
       {/* 재료 리스트 */}
       <div className={cx('section')}>
         <h2 className={cx('sectionTitle')}>재료</h2>
+        <p className={cx('priceNotice')}>
+          가격은 한국농수산식품유통공사(KAMIS) 제공 소매가 기준이며, 실제 구매가와 차이가 있을 수 있습니다. 일부 가공식품은 시세가 제공되지 않습니다.
+        </p>
         <div className={cx('ingredientList')}>
           {recipe.ingredients.map((ingredient) => {
             const purchaseUrl = getLinkForIngredient(ingredient.id)
@@ -249,6 +234,19 @@ const Result = () => {
             )
           })}
         </div>
+        {/* 재료비 합계 */}
+        {(() => {
+          const total = prices
+            ? prices.reduce((sum, p) => sum + (p.price || 0), 0)
+            : recipe.totalPrice
+          if (!total) return null
+          return (
+            <div className={cx('priceSummary')}>
+              <span className={cx('priceSummaryLabel')}>총 재료비</span>
+              <span className={cx('priceSummaryValue')}>{formatPrice(total)}</span>
+            </div>
+          )
+        })()}
       </div>
 
       {/* 조리 단계 */}
@@ -281,10 +279,10 @@ const Result = () => {
       </div>
 
       {/* 쿠팡에서 재료 구매 (sticky) - Premium만 */}
-      {purchaseLinks?.[0] && user?.isPremium && (
+      {recipe.ingredients.length > 0 && user?.isPremium && (
         <div className={cx('stickyBottom')}>
           <a
-            href={purchaseLinks[0].purchaseUrl}
+            href={`https://www.coupang.com/np/search?component=&q=${encodeURIComponent(recipe.ingredients.map((i) => i.name).join(' '))}`}
             target="_blank"
             rel="noopener"
             className={cx('cartButton')}

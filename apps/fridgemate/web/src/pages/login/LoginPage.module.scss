@@ -4,30 +4,30 @@
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  padding: 32px 24px;
+  padding: $space-32 $space-24;
   background:
     radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
-    linear-gradient(180deg, #5096de 0%, #4a90d9 30%, #3a7bc8 70%, #2d6ab0 100%);
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.06) 0%, transparent 50%),
+    linear-gradient(180deg, #4a9af5 0%, $color-primary-500 30%, $color-primary-600 70%, $color-primary-700 100%);
 }
 
 .logo {
   font-size: 4.5rem;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+  margin-bottom: $space-16;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
 }
 
 .title {
   font-size: 1.75rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 4px;
+  font-weight: $font-weight-bold;
+  color: $color-bg-primary;
+  margin-bottom: $space-4;
 }
 
 .subtitle {
-  font-size: 0.9375rem;
+  font-size: $font-size-body-lg;
   color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 40px;
+  margin-bottom: $space-40;
 }
 
 .form {
@@ -35,21 +35,21 @@
   max-width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $space-12;
 }
 
 .input {
   width: 100%;
-  padding: 14px 18px;
+  padding: $space-16 $space-20;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 14px;
+  border-radius: $radius-lg;
   background-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: $color-bg-primary;
   font-size: 1.0625rem;
   text-align: center;
   letter-spacing: 0.1em;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color $transition-normal;
 
   &::placeholder {
     color: rgba(255, 255, 255, 0.5);
@@ -65,24 +65,22 @@
 
 .submitBtn {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(180deg, #fff 0%, #f0f4f8 100%);
-  color: #3a7bc8;
-  border-radius: 14px;
+  padding: $space-16;
+  background: $color-bg-primary;
+  color: $color-primary-600;
+  border-radius: $radius-lg;
   font-size: 1rem;
-  font-weight: 700;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: $font-weight-bold;
+  transition: transform $transition-normal, box-shadow $transition-normal;
+  box-shadow: $shadow-3;
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    box-shadow: $shadow-2;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
   }
@@ -90,14 +88,14 @@
 
 .error {
   color: #ffd6d6;
-  font-size: 0.8125rem;
+  font-size: $font-size-body-sm;
   text-align: center;
-  margin-top: 4px;
+  margin-top: $space-4;
 }
 
 .hint {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.75rem;
+  font-size: $font-size-caption;
   text-align: center;
-  margin-top: 8px;
+  margin-top: $space-8;
 }

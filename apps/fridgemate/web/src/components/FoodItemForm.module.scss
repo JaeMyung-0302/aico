@@ -1,24 +1,23 @@
 .overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 300;
+  @include overlay;
+  z-index: 400;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 0 8px;
+  padding: 0 $space-8;
 }
 
 .modal {
   width: 100%;
   max-width: 480px;
   max-height: 85dvh;
-  background-color: #fff;
-  border-radius: 20px 20px 0 0;
-  padding: 20px 16px 24px;
+  background-color: $color-bg-primary;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding: $space-20 $space-16 $space-24;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   animation: slideUp 0.3s ease;
+  box-shadow: $shadow-3;
 }
 
 @keyframes slideUp {
@@ -34,66 +33,60 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: $space-20;
 }
 
 .title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-size: $font-size-heading;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
 }
 
 .closeBtn {
-  padding: 4px;
-  font-size: 1.25rem;
-  color: #999;
+  padding: $space-4;
+  font-size: $font-size-title;
+  color: $color-gray-500;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $space-16;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: $space-6;
 }
 
 .label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #555;
+  font-size: $font-size-body-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-700;
 }
 
 .required {
-  color: #e74c3c;
-  margin-left: 2px;
+  color: $color-danger;
+  margin-left: $space-2;
 }
 
 .input,
 .select,
 .textarea {
-  padding: 10px 14px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 0.9375rem;
-  background-color: #fafafa;
-  transition: border-color 0.2s;
-  outline: none;
+  @include input-field;
+  background-color: $color-bg-secondary;
 
   &:focus {
-    border-color: #4a90d9;
-    background-color: #fff;
+    background-color: $color-bg-primary;
   }
 }
 
 .select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b95a1' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
+  background-position: right $space-16 center;
   padding-right: 36px;
 }
 
@@ -104,7 +97,7 @@
 
 .row {
   display: flex;
-  gap: 12px;
+  gap: $space-12;
 }
 
 .rowField {
@@ -112,22 +105,9 @@
 }
 
 .submitBtn {
+  @include button-primary;
   width: 100%;
-  padding: 14px;
-  background-color: #4a90d9;
-  color: #fff;
-  border-radius: 12px;
+  padding: $space-16;
   font-size: 1rem;
-  font-weight: 700;
-  margin-top: 4px;
-  transition: background-color 0.2s;
-
-  &:active {
-    background-color: #3a7bc8;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
+  margin-top: $space-4;
 }

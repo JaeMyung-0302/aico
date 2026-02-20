@@ -3,9 +3,9 @@ import type { Router as RouterType } from 'express'
 import crypto from 'crypto'
 import { prisma } from '../lib/prisma.js'
 import { suggestRecipes } from '../lib/gemini.js'
-import { getKSTToday } from '../lib/date.js'
+import { getKSTWeekStart } from '../lib/date.js'
 import { GroupRequest } from '../middleware/group-auth.js'
-import { FREE_DAILY_LIMIT } from '../middleware/usage-check.js'
+import { FREE_WEEKLY_LIMIT } from '../middleware/usage-check.js'
 import type { RecipeIngredient, RecipeSuggestion, RecipeSuggestResponse, RecipeSuggestRequest } from '../types/index.js'
 
 export const recipeSuggestRouter: RouterType = Router()
@@ -81,11 +81,13 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
       return
     }
 
-    // 2. ingredientHash 생성 + 캐시 확인 (usageCheck 전에 수행)
+    // 2. ingredientHash 생성 + 주간 시작일 계산
     const ingredientNames = targetItems.map((item) => item.name)
     const ingredientHash = buildIngredientHash(ingredientNames)
     const cacheThreshold = new Date(Date.now() - CACHE_TTL_HOURS * 60 * 60 * 1000)
+    const weekStart = getKSTWeekStart()
 
+    // 2.5. 캐시 확인
     const cached = await prisma.recipeHistory.findFirst({
       where: {
         fridgeId,
@@ -97,30 +99,28 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
 
     if (cached) {
       const cachedResponse = cached.response as unknown as { recipes: RecipeSuggestion[] }
-      const today = getKSTToday()
       const usage = await prisma.dailyUsage.findUnique({
-        where: { groupId_date: { groupId, date: today } },
+        where: { groupId_date: { groupId, date: weekStart } },
       })
 
       const response: RecipeSuggestResponse = {
         recipes: cachedResponse.recipes,
         cached: true,
-        remainingCount: Math.max(0, FREE_DAILY_LIMIT - (usage?.count ?? 0)),
+        remainingCount: Math.max(0, FREE_WEEKLY_LIMIT - (usage?.count ?? 0)),
       }
       res.json(response)
       return
     }
 
     // 3. 캐시 미스 → 사용량 확인
-    const today = getKSTToday()
     const usage = await prisma.dailyUsage.findUnique({
-      where: { groupId_date: { groupId, date: today } },
+      where: { groupId_date: { groupId, date: weekStart } },
     })
     const currentCount = usage?.count ?? 0
 
-    if (currentCount >= FREE_DAILY_LIMIT) {
+    if (currentCount >= FREE_WEEKLY_LIMIT) {
       res.status(403).json({
-        error: '오늘의 무료 추천 횟수를 모두 사용했습니다',
+        error: '이번 주 무료 추천 횟수를 모두 사용했습니다',
         remainingCount: 0,
       })
       return
@@ -171,9 +171,9 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
       })
 
       return tx.dailyUsage.upsert({
-        where: { groupId_date: { groupId, date: today } },
+        where: { groupId_date: { groupId, date: weekStart } },
         update: { count: { increment: 1 } },
-        create: { groupId, date: today, count: 1 },
+        create: { groupId, date: weekStart, count: 1 },
       })
     })
 
@@ -181,7 +181,7 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
     const response: RecipeSuggestResponse = {
       recipes,
       cached: false,
-      remainingCount: Math.max(0, FREE_DAILY_LIMIT - updatedUsage.count),
+      remainingCount: Math.max(0, FREE_WEEKLY_LIMIT - updatedUsage.count),
     }
 
     res.json(response)

@@ -1,25 +1,25 @@
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../lib/prisma.js'
-import { getKSTToday } from '../lib/date.js'
+import { getKSTWeekStart } from '../lib/date.js'
 import type { GroupRequest } from './group-auth.js'
 
-export const FREE_DAILY_LIMIT = 2
+export const FREE_WEEKLY_LIMIT = 2
 
 export const usageCheck = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { groupId } = req as GroupRequest
 
-  const today = getKSTToday()
+  const weekStart = getKSTWeekStart()
 
   try {
     const usage = await prisma.dailyUsage.findUnique({
-      where: { groupId_date: { groupId, date: today } },
+      where: { groupId_date: { groupId, date: weekStart } },
     })
 
     const currentCount = usage?.count ?? 0
 
-    if (currentCount >= FREE_DAILY_LIMIT) {
+    if (currentCount >= FREE_WEEKLY_LIMIT) {
       res.status(403).json({
-        error: '오늘의 무료 추천 횟수를 모두 사용했습니다',
+        error: '이번 주 무료 추천 횟수를 모두 사용했습니다',
         remainingCount: 0,
       })
       return

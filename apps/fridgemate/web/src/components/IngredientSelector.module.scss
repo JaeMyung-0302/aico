@@ -1,37 +1,37 @@
 .selector {
-  margin-bottom: 16px;
+  margin-bottom: $space-16;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: $space-12;
 }
 
 .label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-900;
 }
 
 .selectedCount {
-  font-size: 0.75rem;
-  color: #999;
-  font-weight: 400;
-  margin-left: 6px;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
+  font-weight: $font-weight-regular;
+  margin-left: $space-6;
 }
 
 .toggleAll {
-  font-size: 0.75rem;
-  color: #4a90d9;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(74, 144, 217, 0.08);
-  transition: background 0.15s;
+  font-size: $font-size-caption;
+  color: $color-primary-500;
+  padding: $space-4 $space-12;
+  border-radius: $space-6;
+  background: rgba($color-primary-500, 0.08);
+  transition: background $transition-fast;
 
   &:active {
-    background: rgba(74, 144, 217, 0.16);
+    background: rgba($color-primary-500, 0.16);
   }
 }
 
@@ -40,21 +40,21 @@
 .chipList {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $space-8;
   max-height: 200px;
   overflow-y: auto;
-  padding: 2px;
+  padding: $space-2;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
-  font-size: 0.8125rem;
-  border-radius: 20px;
-  background: #f0f0f0;
-  color: #666;
-  transition: all 0.15s;
+  padding: $space-6 $space-16;
+  font-size: $font-size-body-sm;
+  border-radius: $radius-full;
+  background: $color-gray-100;
+  color: $color-gray-600;
+  transition: all $transition-fast;
   user-select: none;
 
   &:active {
@@ -63,32 +63,32 @@
 }
 
 .chipSelected {
-  background: rgba(74, 144, 217, 0.12);
-  color: #4a90d9;
-  font-weight: 500;
-  box-shadow: inset 0 0 0 1.5px #4a90d9;
+  background: rgba($color-primary-500, 0.12);
+  color: $color-primary-500;
+  font-weight: $font-weight-medium;
+  box-shadow: inset 0 0 0 1.5px $color-primary-500;
 }
 
 // === Grouped view (items >= 10) ===
 
 .searchInput {
   width: 100%;
-  padding: 8px 12px;
-  font-size: 0.8125rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fafafa;
-  color: #1a1a2e;
-  margin-bottom: 10px;
+  padding: $space-8 $space-12;
+  font-size: $font-size-body-sm;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-sm;
+  background: $color-bg-secondary;
+  color: $color-gray-900;
+  margin-bottom: $space-12;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color $transition-fast;
 
   &::placeholder {
-    color: #bbb;
+    color: $color-gray-400;
   }
 
   &:focus {
-    border-color: #4a90d9;
+    border-color: $color-primary-500;
   }
 }
 
@@ -98,30 +98,30 @@
 }
 
 .noResult {
-  font-size: 0.8125rem;
-  color: #999;
+  font-size: $font-size-body-sm;
+  color: $color-gray-500;
   text-align: center;
-  padding: 16px 0;
+  padding: $space-16 0;
 }
 
 .categoryGroup {
-  margin-bottom: 4px;
+  margin-bottom: $space-4;
 }
 
 .categoryHeader {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 8px 4px;
-  font-size: 0.8125rem;
-  color: #1a1a2e;
+  padding: $space-8 $space-4;
+  font-size: $font-size-body-sm;
+  color: $color-gray-900;
   background: none;
-  border-bottom: 1px solid #f0f0f0;
-  gap: 6px;
-  transition: background 0.15s;
+  border-bottom: 1px solid $color-gray-100;
+  gap: $space-6;
+  transition: background $transition-fast;
 
   &:active {
-    background: #f8f8f8;
+    background: $color-gray-50;
   }
 }
 
@@ -131,21 +131,21 @@
 }
 
 .categoryLabel {
-  font-weight: 600;
+  font-weight: $font-weight-semibold;
   flex: 1;
   text-align: left;
 }
 
 .categoryCount {
-  font-size: 0.75rem;
-  color: #999;
-  font-weight: 400;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
+  font-weight: $font-weight-regular;
 }
 
 .chevron {
   font-size: 1rem;
-  color: #999;
-  transition: transform 0.2s;
+  color: $color-gray-500;
+  transition: transform $transition-normal;
   transform: rotate(0deg);
   flex-shrink: 0;
 }
@@ -157,21 +157,21 @@
 .categoryChipList {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 4px;
+  gap: $space-8;
+  padding: $space-8 $space-4;
 }
 
 .expandToggle {
   display: block;
   width: 100%;
-  padding: 4px 0;
-  font-size: 0.75rem;
-  color: #4a90d9;
+  padding: $space-4 0;
+  font-size: $font-size-caption;
+  color: $color-primary-500;
   text-align: center;
   background: none;
-  transition: color 0.15s;
+  transition: color $transition-fast;
 
   &:active {
-    color: #357abd;
+    color: $color-primary-600;
   }
 }

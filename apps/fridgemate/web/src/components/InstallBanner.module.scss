@@ -3,12 +3,12 @@
   bottom: 72px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 32px);
+  width: calc(100% - #{$space-32});
   max-width: 448px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-  padding: 16px;
+  background: $color-bg-primary;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-3;
+  padding: $space-16;
   z-index: 1000;
   animation: slideUp 0.3s ease-out;
 }
@@ -28,15 +28,15 @@
 .content {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: $space-12;
+  margin-bottom: $space-12;
 }
 
 .icon {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: $radius-md;
   overflow: hidden;
 
   img {
@@ -49,46 +49,39 @@
 .text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $space-2;
   min-width: 0;
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-900;
 }
 
 .desc {
-  font-size: 12px;
-  color: #888;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: $space-8;
 }
 
 .dismissBtn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
+  padding: $space-8 $space-16;
+  border-radius: $radius-sm;
   background: transparent;
-  color: #888;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+  color: $color-gray-500;
+  font-size: $font-size-body;
+  font-weight: $font-weight-medium;
 }
 
 .installBtn {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #4a90d9, #5096de);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(74, 144, 217, 0.3);
+  @include button-primary;
+  padding: $space-8 $space-20;
+  font-size: $font-size-body;
+  border-radius: $radius-sm;
 }

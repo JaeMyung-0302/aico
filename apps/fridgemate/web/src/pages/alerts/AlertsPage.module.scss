@@ -1,21 +1,21 @@
 .page {
-  padding: 24px 16px;
+  padding: $space-24 $space-16;
 }
 
 .title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 20px;
+  font-size: $font-size-title;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+  margin-bottom: $space-20;
 }
 
 .loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  color: #999;
-  font-size: 0.9375rem;
+  padding: $space-48;
+  color: $color-gray-500;
+  font-size: $font-size-body-lg;
 }
 
 .empty {
@@ -23,8 +23,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 48px 16px;
+  gap: $space-8;
+  padding: $space-48 $space-16;
   text-align: center;
 }
 
@@ -33,19 +33,19 @@
 }
 
 .emptyText {
-  font-size: 0.9375rem;
-  color: #999;
+  font-size: $font-size-body-lg;
+  color: $color-gray-500;
 }
 
 .group {
-  margin-bottom: 20px;
+  margin-bottom: $space-20;
 }
 
 .groupHeader {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: $space-8;
+  margin-bottom: $space-12;
 }
 
 .groupDot {
@@ -56,13 +56,13 @@
 }
 
 .dotExpired {
-  background-color: #e74c3c;
-  box-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
+  background-color: $color-danger;
+  box-shadow: 0 0 6px rgba($color-danger, 0.4);
 }
 
 .dotDanger {
-  background-color: #f39c12;
-  box-shadow: 0 0 6px rgba(243, 156, 18, 0.4);
+  background-color: $color-warning;
+  box-shadow: 0 0 6px rgba($color-warning, 0.4);
 }
 
 .dotWarning {
@@ -71,31 +71,31 @@
 }
 
 .groupLabel {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
 }
 
 .groupCount {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
   margin-left: auto;
-  background: #f0f0f0;
-  padding: 2px 8px;
-  border-radius: 10px;
+  background: $color-gray-100;
+  padding: $space-2 $space-8;
+  border-radius: $radius-md;
 }
 
 .alertItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background-color: #fff;
-  border-radius: 12px;
-  margin-bottom: 8px;
+  gap: $space-12;
+  padding: $space-12 $space-16;
+  background-color: $color-bg-primary;
+  border-radius: $radius-md;
+  margin-bottom: $space-8;
   border-left: 3px solid transparent;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: transform 0.15s;
+  box-shadow: $shadow-1;
+  transition: transform $transition-fast;
 
   &:active {
     transform: scale(0.99);
@@ -104,11 +104,11 @@
 
 // 위험도별 좌측 컬러 바
 .groupExpired .alertItem {
-  border-left-color: #e74c3c;
+  border-left-color: $color-danger;
 }
 
 .groupDanger .alertItem {
-  border-left-color: #f39c12;
+  border-left-color: $color-warning;
 }
 
 .groupWarning .alertItem {
@@ -121,13 +121,13 @@
 }
 
 .alertName {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-900;
 }
 
 .alertMeta {
-  font-size: 0.75rem;
-  color: #999;
-  margin-top: 2px;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
+  margin-top: $space-2;
 }

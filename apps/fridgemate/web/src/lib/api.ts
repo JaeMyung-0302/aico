@@ -9,8 +9,9 @@ const getGroupId = (): string | null => {
 }
 
 interface ApiError {
-  message: string
-  status: number
+  message?: string
+  error?: string
+  status?: number
 }
 
 export class ApiRequestError extends Error {
@@ -48,7 +49,7 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
     let errorMessage = `HTTP ${response.status}`
     try {
       const errorData = (await response.json()) as ApiError
-      errorMessage = errorData.message || errorMessage
+      errorMessage = errorData.error || errorData.message || errorMessage
     } catch {
       // JSON 파싱 실패 시 기본 메시지 사용
     }

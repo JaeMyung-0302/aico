@@ -3,6 +3,8 @@
  * FPS 모니터링 → 4단계 품질 다운그레이드
  */
 
+import type { JuicyConfig, CombatEffectLevel, AtmosphereDetail } from './combat'
+
 export type QualityLevel = 'full' | 'reduced' | 'minimal' | 'canvas'
 
 interface LodState {
@@ -53,8 +55,20 @@ export const updateLod = (state: LodState, fps: number, time: number): QualityLe
   return state.currentQuality
 }
 
+// 시각 이펙트 LOD 헬퍼
+const getAtmosphereDetail = (quality: QualityLevel): AtmosphereDetail =>
+  quality === 'full' ? 'full' : 'simplified'
+
+const getCombatEffectLevel = (quality: QualityLevel): CombatEffectLevel =>
+  quality === 'full' || quality === 'reduced'
+    ? 'enhanced'
+    : quality === 'minimal'
+      ? 'basic'
+      : 'none'
+
 // 품질 레벨별 설정
-export const getLodConfig = (quality: QualityLevel) => ({
+export const getLodConfig = (quality: QualityLevel): JuicyConfig => ({
+  // 기존 플래그
   enableParticles: quality === 'full' || quality === 'reduced',
   enableScreenShake: quality === 'full',
   enableDamageNumbers: quality !== 'canvas',
@@ -64,4 +78,14 @@ export const getLodConfig = (quality: QualityLevel) => ({
   enableEffectGlow: quality === 'full' || quality === 'reduced',
   enableHpBars: quality !== 'canvas',
   enableAttackAnim: quality === 'full' || quality === 'reduced',
+  // 시각적 깊이 이펙트 플래그 (full: 전부, reduced: 섀도우+패럴랙스+분위기, minimal/canvas: 비활성)
+  enableShadows: quality === 'full' || quality === 'reduced',
+  enableParallax: quality === 'full' || quality === 'reduced',
+  parallaxLayers: quality === 'full' ? 3 : quality === 'reduced' ? 2 : 0,
+  enableAtmosphere: quality === 'full' || quality === 'reduced',
+  atmosphereDetail: getAtmosphereDetail(quality),
+  enableEnvironmentParticles: quality === 'full',
+  enableEntityGlow: quality === 'full' || quality === 'reduced',
+  enableBreathTween: quality === 'full',
+  combatEffectLevel: getCombatEffectLevel(quality),
 })

@@ -18,6 +18,7 @@ export const SettingsPage = () => {
   const [deletingFridgeId, setDeletingFridgeId] = useState<string | null>(null)
   const [pushEnabled, setPushEnabled] = useState(false)
   const [pushLoading, setPushLoading] = useState(false)
+  const [pushError, setPushError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchFridges()
@@ -30,17 +31,34 @@ export const SettingsPage = () => {
       .catch(() => setPushEnabled(false))
   }, [])
 
+  useEffect(() => {
+    if (!pushError) return
+    const timer = setTimeout(() => setPushError(null), 3000)
+    return () => clearTimeout(timer)
+  }, [pushError])
+
   const handlePushToggle = useCallback(async () => {
     if (pushLoading) return
     setPushLoading(true)
+    setPushError(null)
     try {
       if (pushEnabled) {
         const ok = await unsubscribeFromPush()
-        if (ok) setPushEnabled(false)
+        if (ok) {
+          setPushEnabled(false)
+        } else {
+          setPushError('알림 해제에 실패했습니다')
+        }
       } else {
         const ok = await subscribeToPush()
-        if (ok) setPushEnabled(true)
+        if (ok) {
+          setPushEnabled(true)
+        } else {
+          setPushError('알림 설정에 실패했습니다. 브라우저 알림 권한을 확인해주세요.')
+        }
       }
+    } catch {
+      setPushError('알림 설정에 실패했습니다. 브라우저 알림 권한을 확인해주세요.')
     } finally {
       setPushLoading(false)
     }
@@ -156,6 +174,11 @@ export const SettingsPage = () => {
                 <span className={cx('toggleKnob')} />
               </button>
             </div>
+            {pushError && (
+              <div className={cx('row')}>
+                <span className={cx('pushError')}>{pushError}</span>
+              </div>
+            )}
           </div>
         </div>
       )}

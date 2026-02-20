@@ -20,6 +20,8 @@ import { ZoneSpawnManager } from '../systems/spawn-zone'
 import { calcTotalEquipmentStats } from '../systems/synergy'
 import { createEventState, checkEventTrigger, type MerchantItem } from '../systems/events'
 import { createLodState, updateLod, getLodConfig } from '../systems/lod'
+import { VisualFxManager } from '../systems/visual-fx'
+import { initAudio, playBgm, stopBgm, BGM_KEYS } from '../systems/audio'
 import { useRunStore } from '@/stores/useRunStore'
 import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
@@ -35,6 +37,7 @@ export class GameScene extends Phaser.Scene {
   private combatState = createCombatState()
   private eventState = createEventState()
   private lodState = createLodState()
+  private visualFx!: VisualFxManager
 
   // 현재 상인 아이템 (상인 이벤트 시 보관)
   private currentMerchantItems: readonly MerchantItem[] = []
@@ -122,8 +125,17 @@ export class GameScene extends Phaser.Scene {
       if (equipStats.critDmg) this.player.critDmg += equipStats.critDmg
     }
 
+    // 시각 이펙트 매니저 초기화 + combat 연동
+    this.visualFx = new VisualFxManager(this)
+    this.combatState.visualFx = this.visualFx
+
     // 맵 로드 (장애물 + 포탈 + NPC 생성, 카메라 바운드 설정)
     this.mapManager.loadMap(this.initialMapId, this.player)
+
+    // 시각 이펙트: 맵 로드 + 플레이어 섀도우
+    const initMapConfig = this.mapManager.getCurrentMapConfig()
+    this.visualFx.onMapLoad(this.initialMapId, initMapConfig.worldSize.width, initMapConfig.worldSize.height, this.combatState.juicy.parallaxLayers)
+    this.visualFx.attachPlayerShadow(this.player)
 
     // 카메라: 플레이어 추적 + 데드존
     this.cameras.main.startFollow(this.player, true, CAMERA_LERP, CAMERA_LERP)
@@ -223,6 +235,11 @@ export class GameScene extends Phaser.Scene {
     }
     this.gold = saveState.loaded ? saveState.gold : 0
 
+    // 오디오 초기화 + BGM 재생
+    initAudio(this)
+    const bgmKey = BGM_KEYS[this.initialMapId]
+    if (bgmKey) playBgm(bgmKey)
+
     // 초기 스탯 전달
     this.player.emitStatsUpdate()
     eventBus.emit('hud:gold', { gold: this.gold })
@@ -246,6 +263,9 @@ export class GameScene extends Phaser.Scene {
     const fps = this.game.loop.actualFps
     const quality = updateLod(this.lodState, fps, time)
     this.combatState.juicy = getLodConfig(quality)
+
+    // 시각 이펙트 업데이트 (섀도우 동기화 등)
+    this.visualFx.update(this.combatState.juicy, this.player, this.enemies, this.eliteGroup, this.cameras.main, delta)
 
     // 이동
     applyMovement(this.player, this.joystick)
@@ -345,6 +365,7 @@ export class GameScene extends Phaser.Scene {
     this.classType = data.classType
     this.permanentStats = data.stats
     this.equippedItems = data.equippedItems
+    stopBgm()
     this.scene.restart()
   }
 
@@ -435,11 +456,25 @@ export class GameScene extends Phaser.Scene {
     // 몬스터 전부 제거
     this.zoneSpawnManager.clearAll()
 
+    // BGM 정지
+    stopBgm()
+
+    // 시각 이펙트: 기존 맵 정리
+    this.visualFx.onMapUnload()
+
     // 기존 맵 언로드
     this.mapManager.unloadMap()
 
     // 새 맵 로드
     this.mapManager.loadMap(data.targetMapId, this.player)
+
+    // 시각 이펙트: 새 맵 로드
+    const newMapConfig = this.mapManager.getCurrentMapConfig()
+    this.visualFx.onMapLoad(data.targetMapId, newMapConfig.worldSize.width, newMapConfig.worldSize.height, this.combatState.juicy.parallaxLayers)
+
+    // 새 맵 BGM 재생
+    const newBgmKey = BGM_KEYS[data.targetMapId]
+    if (newBgmKey) playBgm(newBgmKey)
 
     // 플레이어를 포탈 지정 스폰 포인트로 이동
     this.player.setPosition(portalConfig.targetSpawnPoint.x, portalConfig.targetSpawnPoint.y)
@@ -635,6 +670,10 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.zoneSpawnManager) {
       this.zoneSpawnManager.clearAll()
+    }
+    stopBgm()
+    if (this.visualFx) {
+      this.visualFx.destroy()
     }
     if (this.mapManager) {
       this.mapManager.destroy()

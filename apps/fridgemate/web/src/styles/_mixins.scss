@@ -1,0 +1,123 @@
+@use "tokens" as *;
+
+// =============================================
+// FridgeMate Design Mixins
+// =============================================
+
+// 텍스트 말줄임
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// 카드 스타일
+@mixin card($radius: $radius-lg) {
+  background-color: $color-bg-primary;
+  border-radius: $radius;
+  box-shadow: $shadow-2;
+}
+
+// 바텀시트 오버레이
+@mixin overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 300;
+}
+
+// 바텀시트 패널
+@mixin bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: $color-bg-primary;
+  border-radius: $radius-xl $radius-xl 0 0;
+  box-shadow: $shadow-3;
+  z-index: 301;
+}
+
+// 핸들바
+@mixin handle-bar {
+  width: 36px;
+  height: 4px;
+  background-color: $color-gray-300;
+  border-radius: $radius-full;
+  margin: $space-8 auto $space-16;
+}
+
+// 버튼 기본
+@mixin button-base {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-md;
+  transition: background-color $transition-normal, opacity $transition-normal;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// Primary 버튼
+@mixin button-primary {
+  @include button-base;
+  background-color: $color-primary-500;
+  color: $color-bg-primary;
+
+  &:active:not(:disabled) {
+    background-color: $color-primary-600;
+  }
+}
+
+// Secondary 버튼
+@mixin button-secondary {
+  @include button-base;
+  background-color: $color-gray-100;
+  color: $color-gray-700;
+
+  &:active:not(:disabled) {
+    background-color: $color-gray-200;
+  }
+}
+
+// Danger 버튼
+@mixin button-danger {
+  @include button-base;
+  background-color: $color-danger;
+  color: $color-bg-primary;
+
+  &:active:not(:disabled) {
+    background-color: $color-danger-dark;
+  }
+}
+
+// Input 필드
+@mixin input-field {
+  width: 100%;
+  padding: $space-12 $space-16;
+  border: 1.5px solid $color-gray-200;
+  border-radius: $radius-md;
+  font-size: $font-size-body-lg;
+  background-color: $color-bg-primary;
+  outline: none;
+  transition: border-color $transition-fast;
+
+  &:focus {
+    border-color: $color-primary-500;
+  }
+
+  &::placeholder {
+    color: $color-gray-400;
+  }
+}

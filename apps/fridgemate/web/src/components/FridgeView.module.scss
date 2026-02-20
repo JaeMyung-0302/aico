@@ -3,14 +3,14 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 12px;
-  gap: 12px;
+  padding: $space-12;
+  gap: $space-12;
 }
 
 // 냉장고 선택 탭 (복수 냉장고)
 .fridgeTabs {
   display: flex;
-  gap: 8px;
+  gap: $space-8;
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -21,13 +21,13 @@
 
 .fridgeTab {
   flex-shrink: 0;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background-color: #e8ecf1;
-  color: #666;
-  transition: background-color 0.2s, color 0.2s, transform 0.2s;
+  padding: $space-8 $space-16;
+  border-radius: $radius-full;
+  font-size: $font-size-body;
+  font-weight: $font-weight-medium;
+  background-color: $color-gray-100;
+  color: $color-gray-600;
+  transition: background-color $transition-normal, color $transition-normal, transform $transition-normal;
 
   &:active {
     transform: scale(0.96);
@@ -35,11 +35,11 @@
 }
 
 .fridgeTabActive {
-  background-color: #4a90d9;
-  color: #fff;
+  background-color: $color-primary-500;
+  color: $color-bg-primary;
 }
 
-// === 냉장고 외형 ===
+// === 냉장고 외형 (메탈릭 효과 유지) ===
 
 .fridge {
   flex: 1;
@@ -53,7 +53,7 @@
     #a8b0bc 80%,
     #9ca4b0 100%
   );
-  border-radius: 20px;
+  border-radius: $radius-xl;
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.18),
     0 2px 8px rgba(0, 0, 0, 0.1),
@@ -75,7 +75,7 @@
       rgba(255, 255, 255, 0.12) 0%,
       rgba(255, 255, 255, 0) 100%
     );
-    border-radius: 20px 20px 50% 50%;
+    border-radius: $radius-xl $radius-xl 50% 50%;
     pointer-events: none;
     z-index: 0;
   }
@@ -84,9 +84,9 @@
 .fridgeHeader {
   text-align: center;
   font-size: 0.85rem;
-  color: #444;
-  padding: 12px 12px 8px;
-  font-weight: 600;
+  color: $color-gray-700;
+  padding: $space-12 $space-12 $space-8;
+  font-weight: $font-weight-semibold;
 }
 
 // === 도어 전환 애니메이션 ===
@@ -118,23 +118,23 @@
 .fridgeBack {
   display: flex;
   align-items: center;
-  padding: 10px 14px 0;
+  padding: $space-12 $space-16 0;
   font-size: 0.8rem;
-  font-weight: 500;
-  color: #555;
+  font-weight: $font-weight-medium;
+  color: $color-gray-700;
   animation: doorOpen 0.25s ease-out;
 
   &:active {
-    color: #333;
+    color: $color-gray-800;
   }
 }
 
 .doorLabel {
   text-align: center;
   font-size: 0.95rem;
-  font-weight: 600;
-  color: #333;
-  padding: 4px 12px 8px;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-800;
+  padding: $space-4 $space-12 $space-8;
   animation: doorOpen 0.25s ease-out;
 }
 
@@ -143,8 +143,8 @@
 .closedDoors {
   flex: 1;
   display: grid;
-  padding: 10px;
-  gap: 6px;
+  padding: $space-12;
+  gap: $space-6;
   animation: doorClose 0.25s ease-out;
 }
 
@@ -165,7 +165,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: $space-12;
   background: linear-gradient(
     180deg,
     #eef1f6 0%,
@@ -174,10 +174,10 @@
     #ccd2dc 85%,
     #c4cad4 100%
   );
-  border-radius: 14px;
-  padding: 24px 12px;
+  border-radius: $radius-lg;
+  padding: $space-24 $space-12;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform $transition-normal, box-shadow $transition-normal;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow:
@@ -200,7 +200,7 @@
       rgba(255, 255, 255, 0.15) 0%,
       rgba(255, 255, 255, 0) 100%
     );
-    border-radius: 14px 14px 50% 50%;
+    border-radius: $radius-lg $radius-lg 50% 50%;
     pointer-events: none;
     z-index: 0;
   }
@@ -240,7 +240,7 @@
 
 .closedDoorFillLevel3 {
   background: linear-gradient(180deg, #dce4f0 0%, #c4d0e2 50%, #b8c4d4 100%);
-  border-color: rgba(74, 144, 217, 0.15);
+  border-color: rgba($color-primary-500, 0.15);
 }
 
 .closedDoorFull {
@@ -303,19 +303,19 @@
 
 .closedDoorLabel {
   font-size: 1.1rem;
-  font-weight: 600;
-  color: #444;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-700;
 }
 
 .closedDoorInfo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: $space-6;
 }
 
 .closedDoorCount {
   font-size: 0.85rem;
-  color: #777;
+  color: $color-gray-600;
 }
 
 // === 열린 문 — 세부 칸 영역 ===
@@ -323,7 +323,7 @@
 .doorContent {
   flex: 1;
   display: flex;
-  padding: 4px 10px 10px;
+  padding: $space-4 $space-12 $space-12;
   min-height: 0;
   animation: doorOpen 0.3s ease-out;
 }
@@ -332,14 +332,14 @@
 .twoColumnLayout {
   flex: 1;
   display: flex;
-  gap: 6px;
+  gap: $space-6;
 }
 
 .fridgeColumn {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: $space-4;
 }
 
 // 그리드 레이아웃 (LG 4도어)
@@ -348,7 +348,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 6px;
+  gap: $space-6;
 }
 
 .gridLayout2x1 {
@@ -356,7 +356,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr;
-  gap: 6px;
+  gap: $space-6;
 }
 
 // === 칸 셀 ===
@@ -364,13 +364,13 @@
 .compartment {
   flex: 1;
   background: linear-gradient(180deg, #f8fbff 0%, #f0f4fa 40%, #e8edf5 100%);
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: $radius-md;
+  padding: $space-12;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform $transition-normal, box-shadow $transition-normal;
   border: 1.5px solid rgba(255, 255, 255, 0.5);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.06),
@@ -402,31 +402,29 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-// 충전도 Level 1 (1-2개) — 기본 배경 유지
-
 // 충전도 Level 2 (3-5개)
 .fillLevel2 {
   background: linear-gradient(180deg, #eef3fa 0%, #dde6f2 100%);
-  border-color: rgba(74, 144, 217, 0.2);
+  border-color: rgba($color-primary-500, 0.2);
 }
 
-// 충전도 Level 3 (6개 이상) — 풍성한 느낌
+// 충전도 Level 3 (6개 이상)
 .fillLevel3 {
   background: linear-gradient(180deg, #dce6f4 0%, #c4d2e8 50%, #b8c8de 100%);
   border-width: 2px;
-  border-color: rgba(74, 144, 217, 0.35);
+  border-color: rgba($color-primary-500, 0.35);
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 1px 4px rgba(74, 144, 217, 0.1);
+    0 1px 4px rgba($color-primary-500, 0.1);
 }
 
 // 유통기한 경고 (칸 전체)
 .compartmentExpiring {
-  border-color: rgba(231, 76, 60, 0.4);
+  border-color: rgba($color-danger, 0.4);
   box-shadow:
-    inset 0 0 0 1px rgba(231, 76, 60, 0.1),
-    0 1px 3px rgba(231, 76, 60, 0.12);
+    inset 0 0 0 1px rgba($color-danger, 0.1),
+    0 1px 3px rgba($color-danger, 0.12);
 }
 
 .compartmentFreezer {
@@ -464,7 +462,7 @@
     inset 0 3px 6px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 1px 3px rgba(0, 0, 0, 0.08);
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 $radius-sm $radius-sm;
 }
 
 .compartmentShowcase {
@@ -502,8 +500,8 @@
 
 .compartmentLabel {
   font-size: 0.7rem;
-  font-weight: 600;
-  color: #444;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-700;
   line-height: 1.2;
 }
 
@@ -522,15 +520,15 @@
 
 .itemCount {
   font-size: 0.7rem;
-  color: #888;
+  color: $color-gray-500;
 }
 
-// 재료 칩 목록 — 세로 한 줄 + 세로 스크롤
+// 재료 칩 목록
 .chipList {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-top: 4px;
+  margin-top: $space-4;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
@@ -546,63 +544,63 @@
 .chip {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: $space-4;
   background: rgba(0, 0, 0, 0.06);
-  border-radius: 6px;
-  padding: 3px 6px;
+  border-radius: $space-6;
+  padding: 3px $space-6;
   flex-shrink: 0;
 }
 
 .chipName {
   font-size: 0.7rem;
-  color: #444;
+  color: $color-gray-700;
   white-space: nowrap;
-  line-height: 1.3;
+  line-height: $line-height-tight;
 }
 
 .chipExpiry {
   font-size: 0.6rem;
-  color: #888;
+  color: $color-gray-500;
   white-space: nowrap;
   line-height: 1.2;
 }
 
 .chipExpiryWarning {
-  color: #e67e22;
+  color: $color-warning;
 }
 
 .chipExpiryDanger {
-  color: #e74c3c;
-  font-weight: 600;
+  color: $color-danger;
+  font-weight: $font-weight-semibold;
 }
 
 .chipDelete {
   font-size: 0.65rem;
-  color: #999;
+  color: $color-gray-500;
   cursor: pointer;
   line-height: 1;
   flex-shrink: 0;
   margin-left: auto;
-  padding: 2px;
+  padding: $space-2;
   border-radius: 3px;
   background: none;
   border: none;
-  transition: color 0.15s;
+  transition: color $transition-fast;
 
   &:hover,
   &:active {
-    color: #e74c3c;
+    color: $color-danger;
   }
 }
 
-// 하이라이트 (재료 추가 후 피드백) — opacity 기반 GPU 합성
+// 하이라이트 (재료 추가 후 피드백)
 .compartmentHighlighted {
   &::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: 0 0 12px rgba(74, 144, 217, 0.5);
+    box-shadow: 0 0 12px rgba($color-primary-500, 0.5);
     animation: glowFade 0.6s ease 2;
     pointer-events: none;
   }
@@ -622,7 +620,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #e74c3c;
+  background-color: $color-danger;
   animation: pulse 1.5s infinite;
 }
 
@@ -642,7 +640,7 @@
   display: grid;
   grid-template-columns: 3fr 1fr;
   grid-template-rows: repeat(3, 1fr);
-  gap: 6px;
+  gap: $space-6;
   flex: 1;
 }
 
@@ -650,7 +648,7 @@
   display: grid;
   grid-template-columns: 3fr 1fr;
   grid-template-rows: repeat(4, 1fr);
-  gap: 6px;
+  gap: $space-6;
   flex: 1;
 }
 
@@ -658,7 +656,7 @@
   display: grid;
   grid-template-columns: 3fr 1fr;
   grid-template-rows: repeat(2, 1fr);
-  gap: 6px;
+  gap: $space-6;
   flex: 1;
 }
 
@@ -688,8 +686,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 48px 16px;
+  gap: $space-12;
+  padding: $space-48 $space-16;
   text-align: center;
 }
 
@@ -698,20 +696,13 @@
 }
 
 .emptyText {
-  font-size: 0.9375rem;
-  color: #666;
+  font-size: $font-size-body-lg;
+  color: $color-gray-600;
 }
 
 .addButton {
-  padding: 10px 24px;
-  background-color: #4a90d9;
-  color: #fff;
-  border-radius: 24px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
-
-  &:active {
-    background-color: #3a7bc8;
-  }
+  @include button-primary;
+  padding: $space-12 $space-24;
+  font-size: $font-size-body;
+  border-radius: $radius-full;
 }

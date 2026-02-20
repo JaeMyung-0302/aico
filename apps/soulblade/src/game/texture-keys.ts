@@ -40,3 +40,17 @@ export const BG_TEXTURES: Record<MapId, string> = {
   ice_cave: 'bg_ice_cave',
   flame_castle: 'bg_flame_castle',
 }
+
+// 시각 이펙트 텍스처 키
+export const VFX_TEXTURES = {
+  vignette: 'vfx_vignette',
+  shadow: 'vfx_shadow',
+} as const
+
+// 맵별 패럴랙스 텍스처 키 (far/near 레이어)
+export const PARALLAX_TEXTURES: Record<MapId, { readonly far: string; readonly near: string }> = {
+  town: { far: 'parallax_town_far', near: 'parallax_town_near' },
+  serpent_forest: { far: 'parallax_forest_far', near: 'parallax_forest_near' },
+  ice_cave: { far: 'parallax_ice_far', near: 'parallax_ice_near' },
+  flame_castle: { far: 'parallax_flame_far', near: 'parallax_flame_near' },
+}

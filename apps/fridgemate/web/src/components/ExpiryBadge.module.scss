@@ -2,29 +2,29 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: $space-2 $space-8;
+  border-radius: $radius-md;
+  font-size: $font-size-caption;
+  font-weight: $font-weight-semibold;
   white-space: nowrap;
 }
 
 .safe {
-  background-color: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
+  background-color: rgba($color-success, 0.12);
+  color: $color-success;
 }
 
 .warning {
-  background-color: rgba(241, 196, 15, 0.15);
-  color: #c5a20a;
+  background-color: rgba($color-warning, 0.12);
+  color: $color-warning-dark;
 }
 
 .danger {
-  background-color: rgba(243, 156, 18, 0.15);
-  color: #f39c12;
+  background-color: rgba($color-warning, 0.12);
+  color: $color-warning;
 }
 
 .expired {
-  background-color: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+  background-color: rgba($color-danger, 0.12);
+  color: $color-danger;
 }

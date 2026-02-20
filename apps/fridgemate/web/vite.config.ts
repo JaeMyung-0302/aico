@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'FridgeMate - 냉장고 관리',
         short_name: 'FridgeMate',
         description: '스마트 냉장고 재료 관리 앱',
-        theme_color: '#4a90d9',
-        background_color: '#f5f5f5',
+        theme_color: '#3182f6',
+        background_color: '#f9fafb',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
@@ -82,6 +82,12 @@ export default defineConfig({
   css: {
     modules: {
       localsConvention: 'camelCase',
+    },
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "tokens" as *;\n@use "mixins" as *;\n`,
+        loadPaths: [path.resolve(__dirname, './src/styles')],
+      },
     },
   },
 })

@@ -18,7 +18,7 @@ const DIFFICULTY_LABELS: Record<RecipeSuggestion['difficulty'], string> = {
 
 export const RecipeSuggestPage = () => {
   const navigate = useNavigate()
-  const { activeFridgeId, fridges, setActiveFridge, fetchFridges } = useFridgeStore()
+  const { activeFridgeId, fridges, loading: fridgeLoading, setActiveFridge, fetchFridges } = useFridgeStore()
   const { recipes, cached, remainingCount, loading, error, suggestRecipes, fetchRemainingCount, clearRecipes } = useRecipeStore()
   const { items: foodItemDetails, fetchItems } = useFoodItemStore()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -106,7 +106,11 @@ export const RecipeSuggestPage = () => {
     <div className={cx('page')}>
       <h1 className={cx('title')}>AI 레시피 추천</h1>
 
-      {fridges.length >= 2 && (
+      {fridgeLoading && (
+        <div className={cx('loading')}>불러오는 중...</div>
+      )}
+
+      {!fridgeLoading && fridges.length >= 2 && (
         <div className={cx('fridgeSelector')}>
           {fridges.map((fridge) => (
             <button
@@ -122,7 +126,7 @@ export const RecipeSuggestPage = () => {
         </div>
       )}
 
-      {activeFridgeId && foodItems.length > 0 && (
+      {!fridgeLoading && activeFridgeId && foodItems.length > 0 && (
         <IngredientSelector
           items={foodItems}
           selectedIds={selectedIds}
@@ -135,18 +139,18 @@ export const RecipeSuggestPage = () => {
         <button
           className={cx('suggestBtn')}
           onClick={handleSuggest}
-          disabled={loading || !activeFridgeId || selectedIds.size === 0}
+          disabled={loading || !activeFridgeId || selectedIds.size === 0 || remainingCount === 0}
           type="button"
         >
           {loading ? '추천 중...' : '냉장고 재료로 추천받기'}
         </button>
         <p className={cx('remaining')}>
-          오늘 남은 횟수: {remainingCount}회
+          이번 주 남은 횟수: {remainingCount}회
           {cached && <span className={cx('cachedBadge')}>캐시</span>}
         </p>
       </div>
 
-      {!activeFridgeId && (
+      {!fridgeLoading && !activeFridgeId && (
         <div className={cx('empty')}>
           <span className={cx('emptyIcon')}>🧊</span>
           <p className={cx('emptyText')}>

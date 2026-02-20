@@ -4,7 +4,7 @@
   min-height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
-  background-color: #f5f7fa;
+  background-color: $color-bg-tertiary;
 }
 
 .header {
@@ -12,13 +12,12 @@
   align-items: center;
   justify-content: center;
   height: 56px;
-  background: linear-gradient(180deg, #5096de 0%, #4a90d9 100%);
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 700;
+  background-color: $color-primary-500;
+  color: $color-bg-primary;
+  font-size: $font-size-heading;
+  font-weight: $font-weight-bold;
   letter-spacing: -0.02em;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(74, 144, 217, 0.2);
 }
 
 .content {

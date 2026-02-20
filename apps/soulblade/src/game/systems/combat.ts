@@ -1,44 +1,72 @@
 import Phaser from 'phaser'
 import type { Player } from '../entities/Player'
 import { Monster } from '../entities/Monster'
+import { EliteMonster } from '../entities/EliteMonster'
 import { Projectile } from '../entities/Projectile'
 import type { ProjectileConfig } from '../entities/Projectile'
 import { calcDamage, BASE_ATTACK_COOLDOWN, CLASS_CONFIGS } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import { spawnDeathParticles, showDamageNumber, screenShake } from './juiciness'
+import type { VisualFxManager } from './visual-fx'
+
+export type CombatEffectLevel = 'enhanced' | 'basic' | 'none'
+export type AtmosphereDetail = 'full' | 'simplified'
 
 export interface JuicyConfig {
   readonly enableParticles: boolean
   readonly enableScreenShake: boolean
   readonly enableDamageNumbers: boolean
+  readonly maxMonsters: number
   readonly effectLayers: number
   readonly deathParticles: number
   readonly enableEffectGlow: boolean
   readonly enableHpBars: boolean
   readonly enableAttackAnim: boolean
+  // 시각적 깊이 이펙트 플래그
+  readonly enableShadows: boolean
+  readonly enableParallax: boolean
+  readonly parallaxLayers: number
+  readonly enableAtmosphere: boolean
+  readonly atmosphereDetail: AtmosphereDetail
+  readonly enableEnvironmentParticles: boolean
+  readonly enableEntityGlow: boolean
+  readonly enableBreathTween: boolean
+  readonly combatEffectLevel: CombatEffectLevel
 }
 
 const DEFAULT_JUICY: JuicyConfig = {
   enableParticles: true,
   enableScreenShake: true,
   enableDamageNumbers: true,
+  maxMonsters: 30,
   effectLayers: 4,
   deathParticles: 12,
   enableEffectGlow: true,
   enableHpBars: true,
   enableAttackAnim: true,
+  enableShadows: true,
+  enableParallax: true,
+  parallaxLayers: 3,
+  enableAtmosphere: true,
+  atmosphereDetail: 'full',
+  enableEnvironmentParticles: true,
+  enableEntityGlow: true,
+  enableBreathTween: true,
+  combatEffectLevel: 'enhanced',
 }
 
 interface CombatState {
   lastAttackTime: number
   killCount: number
   juicy: JuicyConfig
+  visualFx: VisualFxManager | null
 }
 
 export const createCombatState = (): CombatState => ({
   lastAttackTime: 0,
   killCount: 0,
   juicy: DEFAULT_JUICY,
+  visualFx: null,
 })
 
 // 킬 후처리 (공통)
@@ -57,6 +85,12 @@ const handleKill = (
   }
   if (state.juicy.enableScreenShake) {
     screenShake(player.scene, 0.003, 80)
+  }
+
+  // 사망 강화 이펙트 (충격파/잔류 글로우)
+  if (state.visualFx) {
+    const entityType = monster instanceof EliteMonster ? 'elite' as const : 'normal' as const
+    state.visualFx.onEntityDeath(monster.x, monster.y, entityType, state.juicy.combatEffectLevel)
   }
 
   // 직업 패시브: heal_on_kill (Paladin)
@@ -461,6 +495,11 @@ const applyDamageToMonster = (
     showDamageNumber(player.scene, monster.x, monster.y, damage, isCrit)
   }
 
+  // 히트 스파크 이펙트
+  if (state.visualFx) {
+    state.visualFx.onEntityHit(monster.x, monster.y, isCrit, state.juicy.combatEffectLevel)
+  }
+
   const killed = monster.takeDamage(damage)
 
   if (killed) {
@@ -522,6 +561,11 @@ export const processProjectileHit = (
   // 데미지 텍스트 (LOD 조건)
   if (state.juicy.enableDamageNumbers) {
     showDamageNumber(player.scene, monster.x, monster.y, projectile.damage, false)
+  }
+
+  // 히트 스파크 이펙트
+  if (state.visualFx) {
+    state.visualFx.onEntityHit(monster.x, monster.y, false, state.juicy.combatEffectLevel)
   }
 
   const killed = monster.takeDamage(projectile.damage)

@@ -1,47 +1,47 @@
 .page {
-  padding: 24px 16px;
+  padding: $space-24 $space-16;
   min-height: calc(100dvh - 56px - 64px);
 }
 
 .title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin-bottom: 4px;
+  font-size: $font-size-title;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+  margin-bottom: $space-4;
 }
 
 .subtitle {
-  font-size: 0.875rem;
-  color: #95a5a6;
-  margin-bottom: 24px;
+  font-size: $font-size-body;
+  color: $color-gray-500;
+  margin-bottom: $space-24;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $space-12;
 }
 
 .card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 16px;
-  background-color: #fff;
-  border: 2px solid #e8ecf1;
-  border-radius: 16px;
+  gap: $space-16;
+  padding: $space-20 $space-16;
+  background-color: $color-bg-primary;
+  border: 2px solid $color-gray-200;
+  border-radius: $radius-lg;
   text-align: left;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform $transition-normal, border-color $transition-normal, box-shadow $transition-normal;
+  box-shadow: $shadow-1;
 
   &:active {
     transform: scale(0.98);
-    border-color: #4a90d9;
+    border-color: $color-primary-500;
   }
 
   &:hover {
-    border-color: #4a90d9;
-    box-shadow: 0 4px 16px rgba(74, 144, 217, 0.15);
+    border-color: $color-primary-500;
+    box-shadow: 0 4px 16px rgba($color-primary-500, 0.12);
   }
 }
 
@@ -53,37 +53,37 @@
 .cardContent {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: $space-2;
   flex: 1;
   min-width: 0;
 }
 
 .cardName {
   font-size: 1rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
 }
 
 .cardType {
-  font-size: 0.75rem;
-  color: #4a90d9;
-  font-weight: 600;
+  font-size: $font-size-caption;
+  color: $color-primary-500;
+  font-weight: $font-weight-semibold;
 }
 
 .cardInfo {
-  font-size: 0.75rem;
-  color: #999;
-  margin-top: 2px;
+  font-size: $font-size-caption;
+  color: $color-gray-500;
+  margin-top: $space-2;
 }
 
 .cardWarning {
-  color: #e74c3c;
-  font-weight: 600;
+  color: $color-danger;
+  font-weight: $font-weight-semibold;
 }
 
 .cardArrow {
   font-size: 1.5rem;
-  color: #ccc;
+  color: $color-gray-300;
   flex-shrink: 0;
 }
 
@@ -91,50 +91,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  color: #999;
-  font-size: 0.9375rem;
+  padding: $space-48;
+  color: $color-gray-500;
+  font-size: $font-size-body-lg;
 }
 
 .error {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 48px 24px;
+  gap: $space-12;
+  padding: $space-48 $space-24;
   text-align: center;
-  color: #e74c3c;
-  font-size: 0.875rem;
+  color: $color-danger;
+  font-size: $font-size-body;
 }
 
 .retryBtn {
-  padding: 8px 20px;
-  background-color: #4a90d9;
-  color: #fff;
-  border-radius: 20px;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  @include button-primary;
+  padding: $space-8 $space-20;
+  font-size: $font-size-body-sm;
+  border-radius: $radius-full;
 }
 
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 48px 16px;
+  gap: $space-12;
+  padding: $space-48 $space-16;
   text-align: center;
-  color: #999;
+  color: $color-gray-500;
 }
 
 .addBtn {
-  padding: 10px 24px;
-  background-color: #4a90d9;
-  color: #fff;
-  border-radius: 24px;
-  font-size: 0.875rem;
-  font-weight: 600;
-
-  &:active {
-    background-color: #3a7bc8;
-  }
+  @include button-primary;
+  padding: $space-12 $space-24;
+  font-size: $font-size-body;
+  border-radius: $radius-full;
 }

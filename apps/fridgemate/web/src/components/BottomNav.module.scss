@@ -9,9 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background-color: #fff;
-  border-top: none;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  background-color: $color-bg-primary;
+  border-top: 1px solid $color-gray-100;
   z-index: 100;
 }
 
@@ -19,20 +18,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 16px;
-  color: #95a5a6;
+  gap: $space-2;
+  padding: $space-8 $space-16;
+  color: $color-gray-400;
   font-size: 0.625rem;
-  transition: color 0.2s;
-  border-radius: 8px;
+  transition: color $transition-normal;
+  border-radius: $radius-sm;
 
   &:active {
-    background-color: #f0f0f0;
+    background-color: $color-gray-50;
   }
 }
 
 .tabActive {
-  color: #4a90d9;
+  color: $color-primary-500;
+  background-color: rgba($color-primary-500, 0.08);
+  border-radius: $radius-md;
 }
 
 .icon {

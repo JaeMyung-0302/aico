@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { PLAYER_SPRITESHEET_KEYS, PLAYER_ANIM_KEYS, MONSTER_TEXTURES, PROJECTILE_TEXTURE, BG_TEXTURES } from '../texture-keys'
+import { PLAYER_SPRITESHEET_KEYS, PLAYER_ANIM_KEYS, MONSTER_TEXTURES, PROJECTILE_TEXTURE, BG_TEXTURES, VFX_TEXTURES, PARALLAX_TEXTURES } from '../texture-keys'
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -11,6 +11,12 @@ export class BootScene extends Phaser.Scene {
     this.createMonsterTextures()
     this.createProjectileTexture()
     this.createBackgroundTextures()
+    this.createVfxTextures()
+    this.loadAudio()
+  }
+
+  private loadAudio(): void {
+    this.load.audio('bgm_town', 'assets/Whispers_of_the_Verdant_Glade.mp3')
   }
 
   create(): void {
@@ -604,5 +610,171 @@ export class BootScene extends Phaser.Scene {
     g.strokePath()
     g.generateTexture(BG_TEXTURES.flame_castle, 32, 32)
     g.destroy()
+  }
+
+  // --- 시각 이펙트 텍스처 ---
+
+  private createVfxTextures(): void {
+    this.createVignetteTexture()
+    this.createParallaxTextures()
+  }
+
+  // 비네팅 마스크 (540x960): 가장자리가 어두운 방사형 그래디언트
+  private createVignetteTexture(): void {
+    const w = 540
+    const h = 960
+    const g = this.make.graphics({ x: 0, y: 0 }, false)
+    const cx = w / 2
+    const cy = h / 2
+    const maxR = Math.sqrt(cx * cx + cy * cy)
+
+    // 방사형 그래디언트: 중심=투명, 가장자리=어둡게
+    const steps = 12
+    for (let i = steps; i >= 0; i--) {
+      const ratio = i / steps
+      const alpha = (1 - ratio) * (1 - ratio) * 0.8 // 제곱 커브로 자연스러운 비네팅
+      g.fillStyle(0x000000, alpha)
+      g.fillEllipse(cx, cy, maxR * 2 * ratio, maxR * 2 * ratio)
+    }
+
+    g.generateTexture(VFX_TEXTURES.vignette, w, h)
+    g.destroy()
+  }
+
+  // 맵별 패럴랙스 텍스처 (64x64 타일)
+  private createParallaxTextures(): void {
+    this.createParallaxTown()
+    this.createParallaxForest()
+    this.createParallaxIce()
+    this.createParallaxFlame()
+  }
+
+  // 마을: far=먼 건물 실루엣, near=돌담 장식
+  private createParallaxTown(): void {
+    const g = this.make.graphics({ x: 0, y: 0 }, false)
+    // far: 먼 건물 실루엣
+    g.fillStyle(0x2a2a22, 1)
+    g.fillRect(0, 0, 64, 64)
+    g.fillStyle(0x3a3a30, 0.5)
+    g.fillRect(4, 30, 12, 34)
+    g.fillTriangle(4, 30, 10, 22, 16, 30)
+    g.fillRect(28, 36, 16, 28)
+    g.fillTriangle(28, 36, 36, 26, 44, 36)
+    g.fillRect(52, 40, 10, 24)
+    g.generateTexture(PARALLAX_TEXTURES.town.far, 64, 64)
+    g.destroy()
+
+    const g2 = this.make.graphics({ x: 0, y: 0 }, false)
+    // near: 돌담/울타리 장식
+    g2.fillStyle(0x2a2a22, 1)
+    g2.fillRect(0, 0, 64, 64)
+    g2.fillStyle(0x444438, 0.4)
+    g2.fillRect(0, 48, 64, 2)
+    g2.fillRect(8, 42, 4, 8)
+    g2.fillRect(24, 42, 4, 8)
+    g2.fillRect(40, 42, 4, 8)
+    g2.fillRect(56, 42, 4, 8)
+    g2.generateTexture(PARALLAX_TEXTURES.town.near, 64, 64)
+    g2.destroy()
+  }
+
+  // 뱀의 숲: far=나무 실루엣, near=덩굴/나뭇잎
+  private createParallaxForest(): void {
+    const g = this.make.graphics({ x: 0, y: 0 }, false)
+    g.fillStyle(0x0d1a0d, 1)
+    g.fillRect(0, 0, 64, 64)
+    g.fillStyle(0x1a2e1a, 0.6)
+    // 나무 줄기
+    g.fillRect(10, 20, 6, 44)
+    g.fillRect(42, 24, 8, 40)
+    // 나무 관 (원형)
+    g.fillStyle(0x223a22, 0.5)
+    g.fillCircle(13, 16, 12)
+    g.fillCircle(46, 18, 14)
+    g.fillCircle(30, 10, 10)
+    g.generateTexture(PARALLAX_TEXTURES.serpent_forest.far, 64, 64)
+    g.destroy()
+
+    const g2 = this.make.graphics({ x: 0, y: 0 }, false)
+    g2.fillStyle(0x0d1a0d, 1)
+    g2.fillRect(0, 0, 64, 64)
+    // 덩굴 선
+    g2.lineStyle(2, 0x2a4422, 0.4)
+    g2.beginPath()
+    g2.moveTo(0, 12)
+    g2.lineTo(20, 18)
+    g2.lineTo(40, 10)
+    g2.lineTo(64, 16)
+    g2.strokePath()
+    // 나뭇잎 점
+    g2.fillStyle(0x336633, 0.3)
+    g2.fillCircle(16, 14, 3)
+    g2.fillCircle(48, 12, 2)
+    g2.fillCircle(32, 50, 3)
+    g2.generateTexture(PARALLAX_TEXTURES.serpent_forest.near, 64, 64)
+    g2.destroy()
+  }
+
+  // 얼음 동굴: far=종유석 실루엣, near=빙결 파편
+  private createParallaxIce(): void {
+    const g = this.make.graphics({ x: 0, y: 0 }, false)
+    g.fillStyle(0x0d1a2a, 1)
+    g.fillRect(0, 0, 64, 64)
+    // 종유석 (위에서 아래로)
+    g.fillStyle(0x1a3355, 0.5)
+    g.fillTriangle(8, 0, 14, 24, 20, 0)
+    g.fillTriangle(32, 0, 36, 18, 40, 0)
+    g.fillTriangle(50, 0, 56, 30, 62, 0)
+    // 석순 (아래에서 위로)
+    g.fillTriangle(18, 64, 24, 44, 30, 64)
+    g.fillTriangle(44, 64, 48, 50, 52, 64)
+    g.generateTexture(PARALLAX_TEXTURES.ice_cave.far, 64, 64)
+    g.destroy()
+
+    const g2 = this.make.graphics({ x: 0, y: 0 }, false)
+    g2.fillStyle(0x0d1a2a, 1)
+    g2.fillRect(0, 0, 64, 64)
+    // 빙결 파편/결정
+    g2.fillStyle(0x4488cc, 0.2)
+    g2.fillTriangle(10, 20, 14, 12, 18, 20)
+    g2.fillTriangle(40, 40, 44, 32, 48, 40)
+    g2.fillStyle(0x6699dd, 0.15)
+    g2.fillRect(24, 50, 8, 3)
+    g2.fillRect(4, 38, 6, 2)
+    g2.generateTexture(PARALLAX_TEXTURES.ice_cave.near, 64, 64)
+    g2.destroy()
+  }
+
+  // 화염의 성: far=성벽 실루엣, near=불꽃/연기
+  private createParallaxFlame(): void {
+    const g = this.make.graphics({ x: 0, y: 0 }, false)
+    g.fillStyle(0x1a0d0d, 1)
+    g.fillRect(0, 0, 64, 64)
+    // 성벽 실루엣
+    g.fillStyle(0x2a1a1a, 0.6)
+    g.fillRect(0, 32, 16, 32)
+    g.fillRect(0, 26, 16, 6)
+    g.fillRect(24, 28, 20, 36)
+    g.fillTriangle(24, 28, 34, 18, 44, 28)
+    g.fillRect(50, 34, 14, 30)
+    g.generateTexture(PARALLAX_TEXTURES.flame_castle.far, 64, 64)
+    g.destroy()
+
+    const g2 = this.make.graphics({ x: 0, y: 0 }, false)
+    g2.fillStyle(0x1a0d0d, 1)
+    g2.fillRect(0, 0, 64, 64)
+    // 불꽃 점
+    g2.fillStyle(0xff4400, 0.12)
+    g2.fillCircle(12, 16, 3)
+    g2.fillCircle(44, 48, 4)
+    g2.fillStyle(0xff8800, 0.08)
+    g2.fillCircle(30, 30, 3)
+    g2.fillCircle(56, 12, 2)
+    // 연기 흔적
+    g2.fillStyle(0x332222, 0.2)
+    g2.fillCircle(20, 40, 5)
+    g2.fillCircle(50, 28, 4)
+    g2.generateTexture(PARALLAX_TEXTURES.flame_castle.near, 64, 64)
+    g2.destroy()
   }
 }

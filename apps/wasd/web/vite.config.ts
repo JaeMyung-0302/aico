@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png'],
       manifest: {
-        name: 'WASD - 토리의 모험',
+        name: 'WASD - 협동 파티 게임',
         short_name: 'WASD',
         description: '1~4명이 키를 나눠 하나의 캐릭터를 조종하는 협동 게임',
         theme_color: '#0a0a1a',

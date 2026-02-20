@@ -9,6 +9,15 @@ max_rows = 1000
 port = 54322
 major_version = 15
 
+[functions.claim-daily]
+verify_jwt = false
+
+[functions.complete-run]
+verify_jwt = false
+
+[functions.purchase-upgrade]
+verify_jwt = false
+
 [auth]
 enabled = true
 site_url = "http://localhost:5178"

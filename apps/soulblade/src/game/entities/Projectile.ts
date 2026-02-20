@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { PROJECTILE_TEXTURE } from '../texture-keys'
 
 export interface ProjectileConfig {
   readonly speed: number
@@ -13,7 +14,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private lifetimeTimer: number
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'projectile')
+    super(scene, x, y, PROJECTILE_TEXTURE)
 
     scene.add.existing(this)
     scene.physics.add.existing(this)
@@ -33,6 +34,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     config: ProjectileConfig,
   ): void => {
     this.setPosition(x, y)
+    this.setRotation(angle)
     this.damage = config.damage
     this.piercing = config.piercing
     this.lifetimeTimer = config.lifetime

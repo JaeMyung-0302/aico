@@ -1,8 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
 import { useRecipeStore } from '@/stores/useRecipeStore'
+import { useFoodItemStore } from '@/stores/useFoodItemStore'
+import { IngredientSelector } from '@/components/IngredientSelector'
 import type { RecipeSuggestion } from '@/types'
 import styles from './RecipeSuggestPage.module.scss'
 
@@ -16,13 +18,85 @@ const DIFFICULTY_LABELS: Record<RecipeSuggestion['difficulty'], string> = {
 
 export const RecipeSuggestPage = () => {
   const navigate = useNavigate()
-  const { activeFridgeId } = useFridgeStore()
-  const { recipes, cached, remainingCount, loading, error, suggestRecipes } = useRecipeStore()
+  const { activeFridgeId, fridges, setActiveFridge, fetchFridges } = useFridgeStore()
+  const { recipes, cached, remainingCount, loading, error, suggestRecipes, fetchRemainingCount, clearRecipes } = useRecipeStore()
+  const { items: foodItemDetails, fetchItems } = useFoodItemStore()
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const initializedFridgeRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    fetchFridges()
+  }, [fetchFridges])
+
+  // compartment별 FoodItemResponse 로드 (category 포함)
+  useEffect(() => {
+    const fridge = fridges.find((f) => f.id === activeFridgeId)
+    if (!fridge) return
+    const currentItems = useFoodItemStore.getState().items
+    fridge.compartments.forEach((c) => {
+      if (!currentItems[c.id]) {
+        fetchItems(c.id)
+      }
+    })
+  }, [fridges, activeFridgeId, fetchItems])
+
+  const foodItems = useMemo(() => {
+    const fridge = fridges.find((f) => f.id === activeFridgeId)
+    if (!fridge) return []
+    return fridge.compartments.flatMap((c) => {
+      const details = foodItemDetails[c.id] ?? []
+      const detailMap = new Map(details.map((d) => [d.id, d]))
+      return c.foodItems.map((item) => {
+        const detail = detailMap.get(item.id)
+        return { ...item, category: detail?.category }
+      })
+    })
+  }, [fridges, activeFridgeId, foodItemDetails])
+
+  useEffect(() => {
+    if (initializedFridgeRef.current === activeFridgeId) return
+    if (foodItems.length === 0) return
+    initializedFridgeRef.current = activeFridgeId
+    setSelectedIds(new Set(foodItems.map((item) => item.id)))
+  }, [foodItems, activeFridgeId])
+
+  useEffect(() => {
+    fetchRemainingCount()
+  }, [fetchRemainingCount])
+
+  const handleToggle = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const handleToggleAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === foodItems.length) {
+        return new Set()
+      }
+      return new Set(foodItems.map((item) => item.id))
+    })
+  }, [foodItems])
 
   const handleSuggest = useCallback(async () => {
-    if (!activeFridgeId) return
-    await suggestRecipes(activeFridgeId)
-  }, [activeFridgeId, suggestRecipes])
+    if (!activeFridgeId || selectedIds.size === 0) return
+    const ids = selectedIds.size === foodItems.length ? undefined : [...selectedIds]
+    await suggestRecipes(activeFridgeId, ids)
+  }, [activeFridgeId, selectedIds, foodItems.length, suggestRecipes])
+
+  const handleFridgeSelect = useCallback((id: string) => {
+    if (id === activeFridgeId) return
+    setActiveFridge(id)
+    initializedFridgeRef.current = null
+    clearRecipes()
+  }, [activeFridgeId, setActiveFridge, clearRecipes])
 
   const handleRecipeClick = useCallback((index: number) => {
     navigate(`/recipes/${index}`)
@@ -32,11 +106,36 @@ export const RecipeSuggestPage = () => {
     <div className={cx('page')}>
       <h1 className={cx('title')}>AI 레시피 추천</h1>
 
+      {fridges.length >= 2 && (
+        <div className={cx('fridgeSelector')}>
+          {fridges.map((fridge) => (
+            <button
+              key={fridge.id}
+              className={cx('fridgeChip', { fridgeChipActive: fridge.id === activeFridgeId })}
+              onClick={() => handleFridgeSelect(fridge.id)}
+              type="button"
+              aria-current={fridge.id === activeFridgeId ? 'true' : undefined}
+            >
+              {fridge.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {activeFridgeId && foodItems.length > 0 && (
+        <IngredientSelector
+          items={foodItems}
+          selectedIds={selectedIds}
+          onToggle={handleToggle}
+          onToggleAll={handleToggleAll}
+        />
+      )}
+
       <div className={cx('actionArea')}>
         <button
           className={cx('suggestBtn')}
           onClick={handleSuggest}
-          disabled={loading || !activeFridgeId}
+          disabled={loading || !activeFridgeId || selectedIds.size === 0}
           type="button"
         >
           {loading ? '추천 중...' : '냉장고 재료로 추천받기'}

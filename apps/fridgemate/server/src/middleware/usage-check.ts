@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../lib/prisma.js'
+import { getKSTToday } from '../lib/date.js'
 import type { GroupRequest } from './group-auth.js'
 
 export const FREE_DAILY_LIMIT = 2
@@ -7,8 +8,7 @@ export const FREE_DAILY_LIMIT = 2
 export const usageCheck = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const { groupId } = req as GroupRequest
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = getKSTToday()
 
   try {
     const usage = await prisma.dailyUsage.findUnique({

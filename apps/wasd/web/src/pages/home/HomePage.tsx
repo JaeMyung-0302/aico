@@ -96,7 +96,8 @@ const HomePage = () => {
   return (
     <div className={cx('container')}>
       <h1 className={cx('title')}>WASD</h1>
-      <p className={cx('subtitle')}>협동 파티 게임</p>
+      <p className={cx('subtitle')}>토리의 모험</p>
+      <p className={cx('description')}>1~4명이 키를 나눠 하나의 캐릭터를 조종하는 협동 게임</p>
 
       <div className={cx('form')}>
         <input

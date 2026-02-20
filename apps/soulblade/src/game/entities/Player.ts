@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import type { CharacterClass, CharacterStats, BasicAttackPattern, StatAllocationData } from '@soulblade/shared'
 import type { PassiveSkillId } from '@soulblade/shared'
 import { CLASS_CONFIGS, calcExpForLevel, STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES } from '@soulblade/shared'
+import { PLAYER_SPRITESHEET_KEYS, PLAYER_ANIM_KEYS } from '../texture-keys'
 import { eventBus } from '@/lib/event-bus'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -34,6 +35,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private holyShieldTimer: number
   private holyShieldInterval: number
 
+  // 공격 애니메이션 재생 중 플래그
+  isAttacking: boolean
+
   // 상태
   invincible: boolean
   private invincibleTimer: number
@@ -45,7 +49,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     classType: CharacterClass,
     permanentStats?: Partial<CharacterStats>,
   ) {
-    super(scene, x, y, 'player')
+    super(scene, x, y, PLAYER_SPRITESHEET_KEYS[classType], 0)
     this.classType = classType
 
     const config = CLASS_CONFIGS[classType]
@@ -78,11 +82,36 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.holyShieldTimer = 0
     this.holyShieldInterval = 0
 
+    this.isAttacking = false
+
     this.invincible = false
     this.invincibleTimer = 0
 
     this.setCollideWorldBounds(true)
     this.setDepth(10)
+
+    // spritesheet body 크기 명시 (32×48 유지)
+    const body = this.body as Phaser.Physics.Arcade.Body
+    body.setSize(32, 48)
+
+    // idle 애니메이션 자동 재생
+    this.play(PLAYER_ANIM_KEYS[classType].idle)
+  }
+
+  // 공격 애니메이션 재생 (LOD enableAttackAnim 조건)
+  playAttackAnim = (enableAttackAnim: boolean): void => {
+    if (!enableAttackAnim || !this.active) return
+    this.isAttacking = true
+    this.off(Phaser.Animations.Events.ANIMATION_COMPLETE) // 기존 리스너 제거 (중복 방지)
+    this.play(PLAYER_ANIM_KEYS[this.classType].attack)
+    this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.isAttacking = false
+      if (!this.active) return
+      // 이동 중이면 walk, 아니면 idle
+      const body = this.body as Phaser.Physics.Arcade.Body
+      const isMoving = body.velocity.x !== 0 || body.velocity.y !== 0
+      this.play(isMoving ? PLAYER_ANIM_KEYS[this.classType].walk : PLAYER_ANIM_KEYS[this.classType].idle)
+    })
   }
 
   takeDamage = (amount: number): void => {

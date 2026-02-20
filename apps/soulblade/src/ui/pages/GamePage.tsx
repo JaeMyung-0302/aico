@@ -40,6 +40,7 @@ export const GamePage = () => {
   const updateKillCount = useRunStore((s) => s.updateKillCount)
   const updateTimer = useRunStore((s) => s.updateTimer)
   const saveGame = useSaveStore((s) => s.save)
+  const saveLoaded = useSaveStore((s) => s.loaded)
 
   const [pendingStatPoints, setPendingStatPoints] = useState(0)
   const [portalData, setPortalData] = useState<{
@@ -181,7 +182,7 @@ export const GamePage = () => {
       eventBus.emit('game:pause')
     }
 
-    // 스탯 동기화 (UI + 영속 스토어)
+    // 스탯 동기화 (UI + 영속 스토어) + 레벨업 시 자동 저장
     const onStatsUpdate = (data: {
       hp: number
       maxHp: number
@@ -195,6 +196,7 @@ export const GamePage = () => {
       expToNext: number
     }) => {
       updatePlayerStats(data)
+      const prevLevel = useSaveStore.getState().characterLevel
       useSaveStore.setState({
         characterLevel: data.level,
         characterExp: data.exp,
@@ -207,6 +209,10 @@ export const GamePage = () => {
           critDmg: data.critDmg,
         },
       })
+      // 레벨 변경 감지 시 즉시 저장 (statsUpdate 이후이므로 최신 데이터 보장)
+      if (data.level > prevLevel) {
+        saveGame()
+      }
     }
 
     // 킬카운트 동기화
@@ -291,6 +297,11 @@ export const GamePage = () => {
       eventBus.off('save:request', onSaveRequest)
     }
   }, [navigate, updatePlayerStats, updateKillCount, updateTimer, saveGame])
+
+  // 세이브 데이터 로드 완료 전까지 PhaserGame 렌더링 차단 (Race Condition 방지)
+  if (!saveLoaded) {
+    return <div className={cx('gamePage')} />
+  }
 
   return (
     <div className={cx('gamePage')}>

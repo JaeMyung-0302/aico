@@ -30,7 +30,7 @@
 
 .hpFill {
   height: 100%;
-  background: linear-gradient(90deg, #cc2222, #991111);
+  background: linear-gradient(90deg, var(--hp-color), var(--hp-dark));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transition: width 0.2s ease;
 }

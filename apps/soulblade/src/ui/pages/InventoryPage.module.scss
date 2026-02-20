@@ -1,7 +1,9 @@
+@use '../../styles/mixins' as *;
+
 .page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--bg-darkest) 0%, var(--bg-dark) 100%);
+  color: var(--text-primary);
   padding: 20px;
 }
 
@@ -15,24 +17,23 @@
 .backBtn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--text-gold);
   font-size: 24px;
   cursor: pointer;
   padding: 4px 8px;
 }
 
 .title {
-  font-size: 22px;
-  font-weight: 900;
+  @include fantasy-title(1.4rem);
   margin: 0;
-  color: #f1c40f;
 }
 
 .sectionTitle {
+  font-family: var(--font-fantasy);
   font-size: 15px;
   font-weight: 700;
   margin: 0 0 10px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gold-mid);
 }
 
 .equipped {
@@ -46,9 +47,9 @@
 }
 
 .synergies {
-  background: rgba(156, 39, 176, 0.1);
+  background: rgba(156, 39, 176, 0.08);
   border: 1px solid rgba(156, 39, 176, 0.25);
-  border-radius: 10px;
+  border-radius: 4px;
   padding: 12px;
   margin-bottom: 20px;
 }
@@ -56,7 +57,7 @@
 .synergyTitle {
   font-size: 13px;
   font-weight: 700;
-  color: #ce93d8;
+  color: var(--grade-epic);
   margin: 0 0 8px;
 }
 
@@ -68,11 +69,11 @@
 }
 
 .synergyTag {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
 }
 
 .synergyBonus {
-  color: #4caf50;
+  color: var(--text-success);
 }
 
 .itemList {
@@ -81,7 +82,7 @@
 
 .empty {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-secondary);
   text-align: center;
   padding: 20px;
 }
@@ -93,16 +94,20 @@
 }
 
 .itemCard {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(139, 115, 50, 0.3);
+  border-radius: 4px;
   padding: 10px;
-  color: #fff;
+  color: var(--text-primary);
   cursor: pointer;
   text-align: left;
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  &:hover {
+    border-color: var(--gold-dark);
+  }
 
   &:active {
     transform: scale(0.97);
@@ -116,5 +121,5 @@
 
 .itemStats {
   font-size: 11px;
-  color: #4caf50;
+  color: var(--text-success);
 }

@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import type { BossType } from '@soulblade/shared'
+import { MONSTER_TEXTURES } from '../texture-keys'
 import { eventBus } from '@/lib/event-bus'
 
 interface BossConfig {
@@ -32,7 +33,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
     y: number,
     config: BossConfig,
   ) {
-    super(scene, x, y, 'monster')
+    super(scene, x, y, MONSTER_TEXTURES.boss)
 
     scene.add.existing(this)
     scene.physics.add.existing(this)
@@ -47,9 +48,6 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
     this.expReward = Math.floor(config.hp * 0.5)
     this.goldReward = Math.floor(config.hp * 0.3)
 
-    // 보스 크기 2배
-    this.setScale(2)
-    this.setTint(0xff4444)
     this.setCollideWorldBounds(true)
     this.setDepth(6)
 
@@ -92,7 +90,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
     // 피격 플래시
     this.setTint(0xffffff)
     this.scene.time.delayedCall(100, () => {
-      if (this.active) this.setTint(0xff4444)
+      if (this.active) this.clearTint()
     })
 
     this.emitHpUpdate()

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import classNames from 'classnames/bind'
 import type { DeathEvent } from '@wasd/shared'
-import DeathTimeline from './DeathTimeline'
 import styles from './DeathLog.module.scss'
 
 const cx = classNames.bind(styles)
@@ -38,7 +37,6 @@ const DeathLog = ({ deathEvent, onDismiss }: DeathLogProps) => {
             ? `범인: ${deathEvent.culpritNickname}`
             : '범인 불명'}
         </p>
-        <DeathTimeline log={deathEvent.log} culpritId={deathEvent.culpritId} />
       </div>
     </div>
   )

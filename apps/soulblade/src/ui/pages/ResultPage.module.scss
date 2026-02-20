@@ -1,7 +1,9 @@
+@use '../../styles/mixins' as *;
+
 .result {
   min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--bg-darkest) 0%, var(--bg-dark) 100%);
+  color: var(--text-primary);
   padding: 60px 20px;
   display: flex;
   flex-direction: column;
@@ -9,18 +11,15 @@
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 900;
-  color: #f1c40f;
-  text-shadow: 0 2px 8px rgba(241, 196, 15, 0.3);
+  @include fantasy-title(2rem);
   margin: 0 0 32px;
 }
 
 .stats {
+  @include fantasy-panel;
   width: 100%;
   max-width: 340px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: 4px;
   padding: 20px;
   margin-bottom: 32px;
 }
@@ -33,7 +32,7 @@
   &.highlight {
     .label,
     .value {
-      color: #f1c40f;
+      color: var(--gold-bright);
       font-size: 18px;
     }
   }
@@ -41,17 +40,18 @@
 
 .label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
 }
 
 .value {
   font-size: 16px;
   font-weight: 700;
+  color: var(--gold-light);
 }
 
 .divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(139, 115, 50, 0.3);
   margin: 8px 0;
 }
 
@@ -64,26 +64,26 @@
 }
 
 .button {
+  @include metal-button;
   width: 100%;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: 4px;
   font-size: 16px;
   font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.1s;
+  text-align: center;
 
   &:active {
     transform: scale(0.97);
   }
 
   &.primary {
-    background: linear-gradient(135deg, #f1c40f, #e67e22);
-    color: #1a1a2e;
+    color: var(--gold-glow);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   }
 
   &.secondary {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
+    background: transparent;
+    border: 2px solid var(--gold-dark);
+    color: var(--text-gold);
   }
 }

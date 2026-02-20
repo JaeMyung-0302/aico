@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import type { EliteMutationType } from '@soulblade/shared'
 import type { MonsterConfig } from './Monster'
+import { MONSTER_TEXTURES } from '../texture-keys'
+import { createHpBar, updateHpBar, destroyHpBar, type HpBarConfig } from '../systems/hp-bar'
 
 // 엘리트 변이 설정
 interface EliteMutation {
@@ -31,6 +33,10 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
   expReward: number
   goldReward: number
 
+  // HP 바
+  private hpBar: Phaser.GameObjects.Graphics | null = null
+  private hpBarConfig: HpBarConfig
+
   // 상태 효과
   slowMultiplier = 0
   private dotDamage = 0
@@ -47,7 +53,7 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
     baseConfig: MonsterConfig,
     mutationType: EliteMutationType,
   ) {
-    super(scene, x, y, 'monster')
+    super(scene, x, y, MONSTER_TEXTURES.elite)
 
     scene.add.existing(this)
     scene.physics.add.existing(this)
@@ -69,6 +75,9 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
     this.setTint(mutation.tint)
     this.setCollideWorldBounds(true)
     this.setDepth(6)
+
+    this.hpBarConfig = { width: 32, height: 4, yOffset: -6, showBorder: true, borderColor: mutation.tint }
+    this.hpBar = createHpBar(scene, this.hpBarConfig)
   }
 
   // AI: 변이 타입별 행동
@@ -103,6 +112,9 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
 
     this.hp -= finalDamage
 
+    // HP 바 표시 (피격 시)
+    if (this.hpBar) this.hpBar.setAlpha(1)
+
     this.setTint(0xffffff)
     this.scene.time.delayedCall(100, () => {
       if (this.active) this.setTint(MUTATIONS[this.mutationType].tint)
@@ -128,7 +140,7 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
   }
 
   // 매 프레임 효과 업데이트
-  updateEffects = (delta: number): void => {
+  updateEffects = (delta: number, enableHpBars = true): void => {
     if (this.dotTimer > 0) {
       this.dotTimer -= delta
       this.dotTickTimer += delta
@@ -141,12 +153,32 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
         this.dotTickTimer = 0
       }
     }
+
+    // HP 바 위치 동기화 (LOD 조건)
+    if (!enableHpBars) {
+      if (this.hpBar) this.hpBar.setAlpha(0)
+    } else if (this.hpBar && this.hpBar.alpha > 0) {
+      updateHpBar(this.hpBar, this.x, this.y, this.hp / this.maxHp, this.hpBarConfig)
+    }
   }
 
   // splitting 변이: 분열 가능 여부
   canSplit = (): boolean => this.splitCount > 0
 
   getSplitCount = (): number => this.splitCount
+
+  // setVisible override: hpBar 동기화 (clearAll 경로 대응)
+  setVisible(value: boolean): this {
+    super.setVisible(value)
+    if (this.hpBar) this.hpBar.setVisible(value)
+    return this
+  }
+
+  // Phaser destroy lifecycle: Graphics 정리 (scene.restart/shutdown 대응)
+  preDestroy(): void {
+    destroyHpBar(this.hpBar)
+    this.hpBar = null
+  }
 
   private die(): void {
     this.setActive(false)
@@ -185,5 +217,13 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
     this.setActive(true)
     this.setVisible(true)
     if (this.body) this.body.enable = true
+
+    // HP 바 리셋
+    this.hpBarConfig = { width: 32, height: 4, yOffset: -6, showBorder: true, borderColor: mutation.tint }
+    if (this.hpBar) {
+      this.hpBar.clear() // 이전 mutation 색상 draw command 제거
+      this.hpBar.setVisible(true)
+      this.hpBar.setAlpha(0)
+    }
   }
 }

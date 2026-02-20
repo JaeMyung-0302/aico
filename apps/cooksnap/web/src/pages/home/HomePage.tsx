@@ -141,7 +141,7 @@ const Landing = () => {
       <Helmet>
         <title>CookSnap - 영상 붙여넣으면, 재료비부터 주문까지</title>
         <meta name="description" content="숏폼 레시피 영상 URL 하나로 레시피, 재료, 가격, 주문까지 원스톱. Instagram Reels, TikTok, YouTube Shorts 지원." />
-        <link rel="canonical" href="https://aico-cooksnap-web.vercel.app/" />
+        <link rel="canonical" href="https://aico-cooksnap.vercel.app/" />
       </Helmet>
       <h1 className={cx('headline')}>
         영상 붙여넣으면,

@@ -27,13 +27,13 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid #f1c40f;
+  border: 2px solid var(--gold-bright);
   object-fit: cover;
 }
 
 .avatarFallback {
-  background: rgba(241, 196, 15, 0.2);
-  color: #f1c40f;
+  background: rgba(212, 168, 67, 0.2);
+  color: var(--gold-bright);
   font-size: 14px;
   font-weight: 700;
   display: flex;
@@ -45,36 +45,41 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: rgba(15, 15, 35, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--gold-dark);
+  border-radius: 4px;
   padding: 12px;
   min-width: 200px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .dropdownEmail {
   margin: 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   word-break: break-all;
 }
 
 .dropdownSignOut {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--bg-panel);
+  border: 1px solid rgba(139, 115, 50, 0.3);
+  border-radius: 2px;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   padding: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--gold-dark);
+  }
 
   &:active {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-panel-hover);
   }
 }

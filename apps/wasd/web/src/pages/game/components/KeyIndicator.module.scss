@@ -26,6 +26,8 @@
   user-select: none;
   touch-action: manipulation;
 
+  transition: transform 0.08s ease, background 0.08s ease, box-shadow 0.08s ease;
+
   &.active {
     background: #0f3460;
     color: #00d4ff;
@@ -33,14 +35,16 @@
     box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
   }
 
+  &.pressed {
+    transform: scale(0.85);
+    background: #1a5090;
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.6), inset 0 0 8px rgba(0, 212, 255, 0.2);
+    border-color: #40e0ff;
+  }
+
   &.disabled {
     opacity: 0.3;
     pointer-events: none;
-  }
-
-  &.active:active {
-    background: #1a5090;
-    transform: scale(0.92);
   }
 }
 

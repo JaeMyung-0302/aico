@@ -1,3 +1,5 @@
+@use '../../styles/mixins' as *;
+
 .container {
   position: absolute;
   bottom: 0;
@@ -8,9 +10,10 @@
 }
 
 .panelContent {
-  background: rgba(15, 15, 35, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px 16px 0 0;
+  @include fantasy-panel;
+  @include fantasy-scrollbar;
+  border-radius: 0;
+  border-bottom: none;
   max-height: 40vh;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -31,11 +34,11 @@
 
 .panelHeader {
   padding: 10px 14px 6px;
+  border-bottom: 1px solid rgba(139, 115, 50, 0.2);
 }
 
 .panelTitle {
-  font-size: 14px;
-  font-weight: 700;
+  @include fantasy-title(14px);
 }
 
 .panelBody {
@@ -44,8 +47,8 @@
 
 .tabBar {
   display: flex;
-  background: rgba(10, 10, 30, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-overlay);
+  border-top: 2px solid var(--gold-dark);
   height: 48px;
 }
 
@@ -57,20 +60,23 @@
   position: relative;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 700;
+  font-family: var(--font-fantasy);
   letter-spacing: 0.5px;
   cursor: pointer;
   touch-action: manipulation;
-  transition: color 0.15s;
+  transition: all 0.15s;
 
   &.active {
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--gold-bright);
+    background: rgba(139, 115, 50, 0.1);
+    box-shadow: inset 0 2px 0 var(--gold-mid);
   }
 
   &:active {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(139, 115, 50, 0.15);
   }
 }
 
@@ -80,7 +86,7 @@
   right: 12px;
   min-width: 16px;
   height: 16px;
-  background: #ff4444;
+  background: var(--text-danger);
   color: #fff;
   font-size: 10px;
   font-weight: 700;

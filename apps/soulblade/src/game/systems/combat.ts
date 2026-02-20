@@ -11,12 +11,22 @@ export interface JuicyConfig {
   readonly enableParticles: boolean
   readonly enableScreenShake: boolean
   readonly enableDamageNumbers: boolean
+  readonly effectLayers: number
+  readonly deathParticles: number
+  readonly enableEffectGlow: boolean
+  readonly enableHpBars: boolean
+  readonly enableAttackAnim: boolean
 }
 
 const DEFAULT_JUICY: JuicyConfig = {
   enableParticles: true,
   enableScreenShake: true,
   enableDamageNumbers: true,
+  effectLayers: 4,
+  deathParticles: 12,
+  enableEffectGlow: true,
+  enableHpBars: true,
+  enableAttackAnim: true,
 }
 
 interface CombatState {
@@ -42,8 +52,8 @@ const handleKill = (
   eventBus.emit('hud:killCount', { count: state.killCount })
 
   // 사망 파티클 + 화면 흔들림 (LOD 조건)
-  if (state.juicy.enableParticles) {
-    spawnDeathParticles(player.scene, monster.x, monster.y)
+  if (state.juicy.enableParticles && state.juicy.deathParticles > 0) {
+    spawnDeathParticles(player.scene, monster.x, monster.y, state.juicy.deathParticles, state.juicy.enableEffectGlow)
   }
   if (state.juicy.enableScreenShake) {
     screenShake(player.scene, 0.003, 80)
@@ -91,52 +101,189 @@ const handleKill = (
 
 // --- 공격 이펙트 ---
 
-// 부채꼴 슬래시 (Warrior)
-const showSlashEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: number): void => {
+// 부채꼴 슬래시 (Warrior) — 멀티레이어 잔상 + 글로우
+const showSlashEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: number, juicy: JuicyConfig): void => {
   const g = scene.add.graphics()
   g.setDepth(15)
-  const baseAngle = facingAngle
+  const ba = facingAngle
+  const layers = juicy.effectLayers
 
+  // Layer 1: 외곽 글로우 (full/reduced)
+  if (juicy.enableEffectGlow) {
+    g.lineStyle(8, 0x4488ff, 0.15)
+    g.beginPath()
+    g.arc(x, y, 62, ba - 0.9, ba + 0.9)
+    g.strokePath()
+  }
+
+  // Layer 2: 메인 슬래시
   g.lineStyle(4, 0xffffff, 0.9)
   g.beginPath()
-  g.arc(x, y, 55, baseAngle - 0.8, baseAngle + 0.8)
+  g.arc(x, y, 55, ba - 0.8, ba + 0.8)
   g.strokePath()
 
-  g.lineStyle(2, 0x88ccff, 0.6)
-  g.beginPath()
-  g.arc(x, y, 40, baseAngle - 0.6, baseAngle + 0.6)
-  g.strokePath()
+  // Layer 3: 내부 트레일
+  if (layers >= 2) {
+    g.lineStyle(2, 0x88ccff, 0.6)
+    g.beginPath()
+    g.arc(x, y, 42, ba - 0.6, ba + 0.6)
+    g.strokePath()
+  }
 
-  scene.tweens.add({ targets: g, alpha: 0, duration: 150, onComplete: () => g.destroy() })
+  scene.tweens.add({ targets: g, alpha: 0, duration: 180, onComplete: () => g.destroy() })
+
+  // Layer 4: 잔상 + 스파크 (full only)
+  if (layers >= 4) {
+    const afterG = scene.add.graphics()
+    afterG.setDepth(15)
+    afterG.lineStyle(3, 0xaaddff, 0.35)
+    afterG.beginPath()
+    afterG.arc(x, y, 50, ba - 0.75, ba + 0.75)
+    afterG.strokePath()
+    scene.tweens.add({ targets: afterG, alpha: 0, duration: 250, delay: 40, onComplete: () => afterG.destroy() })
+
+    // 스파크 입자
+    for (let i = 0; i < 5; i++) {
+      const sa = ba + (i / 4 - 0.5) * 1.6
+      const sx = x + Math.cos(sa) * 55
+      const sy = y + Math.sin(sa) * 55
+      const spark = scene.add.circle(sx, sy, 1.5, 0xffffff, 0.8)
+      spark.setDepth(15)
+      scene.tweens.add({
+        targets: spark,
+        x: sx + Math.cos(sa) * 18,
+        y: sy + Math.sin(sa) * 18,
+        alpha: 0,
+        scale: 0.2,
+        duration: 200,
+        onComplete: () => spark.destroy(),
+      })
+    }
+  }
 }
 
-// AoE 서클 (Mage)
-const showAoeEffect = (scene: Phaser.Scene, x: number, y: number, radius: number): void => {
+// AoE 마법진 (Mage) — 동심원 + 확산 파동 + 스파크
+const showAoeEffect = (scene: Phaser.Scene, x: number, y: number, radius: number, juicy: JuicyConfig): void => {
   const g = scene.add.graphics()
   g.setDepth(15)
+  const layers = juicy.effectLayers
 
+  // Layer 1: 내부 글로우
+  g.fillStyle(0x6633cc, 0.12)
+  g.fillCircle(x, y, radius * 0.6)
+
+  // Layer 2: 메인 마법진 원
   g.lineStyle(3, 0x9966ff, 0.8)
   g.strokeCircle(x, y, radius)
-  g.fillStyle(0x9966ff, 0.15)
+  g.fillStyle(0x9966ff, 0.08)
   g.fillCircle(x, y, radius)
 
-  scene.tweens.add({ targets: g, alpha: 0, duration: 250, onComplete: () => g.destroy() })
+  // Layer 3: 내부 룬 원 + 마크
+  if (layers >= 2) {
+    g.lineStyle(1.5, 0xbb88ff, 0.5)
+    g.strokeCircle(x, y, radius * 0.65)
+
+    // 룬 마크
+    const runeCount = 6
+    for (let i = 0; i < runeCount; i++) {
+      const angle = (i / runeCount) * Math.PI * 2
+      const rx = x + Math.cos(angle) * radius * 0.82
+      const ry = y + Math.sin(angle) * radius * 0.82
+      g.fillStyle(0xbb88ff, 0.5)
+      g.fillRect(rx - 2, ry - 1, 4, 2)
+    }
+  }
+
+  scene.tweens.add({ targets: g, alpha: 0, duration: 280, onComplete: () => g.destroy() })
+
+  // Layer 4: 확산 파동 + 스파크 (full only)
+  if (layers >= 4) {
+    const waveG = scene.add.graphics()
+    waveG.setDepth(15)
+    waveG.lineStyle(2, 0xcc99ff, 0.4)
+    waveG.strokeCircle(x, y, radius * 0.3)
+    scene.tweens.add({
+      targets: waveG,
+      scaleX: 3.5,
+      scaleY: 3.5,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => waveG.destroy(),
+    })
+
+    // 스파크 입자
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2
+      const sx = x + Math.cos(angle) * radius * 0.8
+      const sy = y + Math.sin(angle) * radius * 0.8
+      const spark = scene.add.circle(sx, sy, 2, 0xcc88ff, 0.7)
+      spark.setDepth(15)
+      scene.tweens.add({
+        targets: spark,
+        x: sx + Math.cos(angle) * 25,
+        y: sy + Math.sin(angle) * 25,
+        alpha: 0,
+        scale: 0.3,
+        duration: 300,
+        delay: 50,
+        onComplete: () => spark.destroy(),
+      })
+    }
+  }
 }
 
-// 성스러운 직사각형 (Paladin)
-const showHolyEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: number, range: number, width: number): void => {
+// 성스러운 빛 (Paladin) — 황금 성광 + 십자 + 입자
+const showHolyEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: number, range: number, width: number, juicy: JuicyConfig): void => {
   const g = scene.add.graphics()
   g.setDepth(15)
+  const layers = juicy.effectLayers
 
-  const rectX = x + Math.cos(facingAngle) * range / 2 - range / 2
-  const rectY = y + Math.sin(facingAngle) * range / 2 - width / 2
+  const cosA = Math.cos(facingAngle)
+  const sinA = Math.sin(facingAngle)
+  const rectX = x + cosA * range / 2 - range / 2
+  const rectY = y + sinA * range / 2 - width / 2
 
-  g.fillStyle(0xffdd44, 0.25)
+  // Layer 1: 성스러운 빛 사각형
+  g.fillStyle(0xffdd44, 0.2)
   g.fillRect(rectX, rectY, range, width)
   g.lineStyle(2, 0xffdd44, 0.8)
   g.strokeRect(rectX, rectY, range, width)
 
-  scene.tweens.add({ targets: g, alpha: 0, duration: 200, onComplete: () => g.destroy() })
+  // Layer 2: 내부 십자 패턴
+  if (layers >= 2) {
+    const cx = rectX + range / 2
+    const cy = rectY + width / 2
+    g.fillStyle(0xffee66, 0.3)
+    g.fillRect(cx - 2, cy - width / 2, 4, width) // 세로
+    g.fillRect(cx - range * 0.3, cy - 2, range * 0.6, 4) // 가로
+  }
+
+  // Layer 3: 외곽 글로우
+  if (juicy.enableEffectGlow) {
+    g.fillStyle(0xffdd44, 0.06)
+    g.fillRect(rectX - 4, rectY - 4, range + 8, width + 8)
+  }
+
+  scene.tweens.add({ targets: g, alpha: 0, duration: 220, onComplete: () => g.destroy() })
+
+  // Layer 4: 성스러운 입자 (full only)
+  if (layers >= 4) {
+    for (let i = 0; i < 6; i++) {
+      const px = rectX + Math.random() * range
+      const py = rectY + Math.random() * width
+      const spark = scene.add.circle(px, py, 1.5, 0xffee88, 0.8)
+      spark.setDepth(15)
+      scene.tweens.add({
+        targets: spark,
+        y: py - 20 - Math.random() * 15,
+        alpha: 0,
+        scale: 0.3,
+        duration: 350,
+        delay: Math.random() * 100,
+        onComplete: () => spark.destroy(),
+      })
+    }
+  }
 }
 
 /**
@@ -159,25 +306,27 @@ export const processAttack = (
   state.lastAttackTime = time
   const allGroups = [enemies, ...extraGroups]
 
+  // 공격 애니메이션 재생 (LOD 조건)
+  player.playAttackAnim(state.juicy.enableAttackAnim)
+
   switch (player.attackPattern) {
     case 'melee_fan':
-      showSlashEffect(player.scene, player.x, player.y, player.facingAngle)
+      showSlashEffect(player.scene, player.x, player.y, player.facingAngle, state.juicy)
       attackMeleeFan(player, allGroups, state)
       break
     case 'ranged_projectile': {
-      const nearest = findNearestEnemy(player, allGroups)
-      attackRangedProjectile(player, nearest, projectiles, state)
+      attackRangedProjectile(player, projectiles, state)
       break
     }
     case 'aoe_circle': {
       const aoeBoost = player.passiveSkills.get('aoe_range_up') ?? 0
       const effectiveRange = 180 + aoeBoost * 20
-      showAoeEffect(player.scene, player.x, player.y, effectiveRange)
+      showAoeEffect(player.scene, player.x, player.y, effectiveRange, state.juicy)
       attackAoeCircle(player, allGroups, state)
       break
     }
     case 'mid_range_holy':
-      showHolyEffect(player.scene, player.x, player.y, player.facingAngle, 150, 60)
+      showHolyEffect(player.scene, player.x, player.y, player.facingAngle, 150, 60, state.juicy)
       attackMidRangeHoly(player, allGroups, state)
       break
   }
@@ -211,24 +360,19 @@ const attackMeleeFan = (
   }
 }
 
-// Archer: 원거리 투사체 (타겟 없으면 바라보는 방향으로 발사)
+// Archer: 원거리 투사체 (바라보는 방향으로 발사, 짧은 사거리)
 const attackRangedProjectile = (
   player: Player,
-  target: Monster | null,
   projectiles: Phaser.Physics.Arcade.Group,
   _state: CombatState,
 ): void => {
-  const angle = target
-    ? Phaser.Math.Angle.Between(player.x, player.y, target.x, target.y)
-    : player.facingAngle
+  const angle = player.facingAngle
 
   const isCrit = Math.random() < player.crit
   const passive = CLASS_CONFIGS[player.classType].classPassive
   const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
   const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
-  const targetDef = target?.def ?? 0
-  const targetLevel = target?.level ?? 1
-  const damage = calcDamage(player.atk, player.weaponPower, targetDef, 1.0, player.level, targetLevel, critMultiplier)
+  const damage = calcDamage(player.atk, player.weaponPower, 0, 1.0, player.level, 1, critMultiplier)
 
   const extraCount = player.passiveSkills.get('extra_projectile') ?? 0
   const totalProjectiles = 1 + extraCount
@@ -243,7 +387,7 @@ const attackRangedProjectile = (
       speed: 400,
       damage,
       piercing: (player.passiveSkills.get('pierce_shot') ?? 0) > 0,
-      lifetime: 1500,
+      lifetime: 500,
     })
   }
 }

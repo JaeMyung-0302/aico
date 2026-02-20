@@ -9,6 +9,34 @@
   margin-bottom: 20px;
 }
 
+.fridgeSelector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.fridgeChip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  border-radius: 20px;
+  background: #f0f0f0;
+  color: #666;
+  transition: all 0.15s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.fridgeChipActive {
+  background: #1a1a2e;
+  color: #fff;
+  font-weight: 500;
+}
+
 .actionArea {
   display: flex;
   flex-direction: column;

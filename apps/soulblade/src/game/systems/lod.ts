@@ -59,4 +59,9 @@ export const getLodConfig = (quality: QualityLevel) => ({
   enableScreenShake: quality === 'full',
   enableDamageNumbers: quality !== 'canvas',
   maxMonsters: quality === 'full' ? 30 : quality === 'reduced' ? 20 : 15,
+  effectLayers: quality === 'full' ? 4 : quality === 'reduced' ? 2 : 1,
+  deathParticles: quality === 'full' ? 12 : quality === 'reduced' ? 8 : quality === 'minimal' ? 4 : 0,
+  enableEffectGlow: quality === 'full' || quality === 'reduced',
+  enableHpBars: quality !== 'canvas',
+  enableAttackAnim: quality === 'full' || quality === 'reduced',
 })

@@ -20,6 +20,7 @@ import { ZoneSpawnManager } from '../systems/spawn-zone'
 import { calcTotalEquipmentStats } from '../systems/synergy'
 import { createEventState, checkEventTrigger, type MerchantItem } from '../systems/events'
 import { createLodState, updateLod, getLodConfig } from '../systems/lod'
+import { useRunStore } from '@/stores/useRunStore'
 import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
 import { CAMERA_LERP, CAMERA_DEADZONE_X, CAMERA_DEADZONE_Y, DEATH_EXP_PENALTY } from '@soulblade/shared'
@@ -79,6 +80,19 @@ export class GameScene extends Phaser.Scene {
     this.elapsedSeconds = 0
     this.joystick = { x: 0, y: 0 }
     this.deathEmitted = false
+
+    // 스토어에서 초기 설정 읽기 (game:start 이벤트가 씬 생성 전에 발생하여 유실되는 경우 대비)
+    // 우선순위: 1) game:start 이벤트 (씬 재시작) → 2) useRunStore (첫 진입) → 3) useSaveStore (fallback)
+    const runState = useRunStore.getState()
+    const saveInit = useSaveStore.getState()
+    if (runState.classType !== null) {
+      this.classType = runState.classType
+    } else if (saveInit.loaded && saveInit.classLocked) {
+      this.classType = saveInit.characterClass
+    }
+    if (saveInit.loaded) {
+      this.initialMapId = saveInit.currentMapId
+    }
 
     // MapManager 초기화
     this.mapManager = new MapManager(this)
@@ -272,10 +286,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 몬스터 AI + 효과 업데이트
+    const hpBarsEnabled = this.combatState.juicy.enableHpBars
     for (const child of this.enemies.getChildren()) {
       const monster = child as Monster
       if (monster.active) {
-        monster.updateEffects(delta)
+        monster.updateEffects(delta, hpBarsEnabled)
         monster.chasePlayer(this.player.x, this.player.y)
         monster.slowMultiplier = 0 // chasePlayer 이후 리셋 (다음 프레임에 frozen_aura가 재적용)
       }
@@ -285,7 +300,7 @@ export class GameScene extends Phaser.Scene {
     for (const child of this.eliteGroup.getChildren()) {
       const elite = child as EliteMonster
       if (elite.active) {
-        elite.updateEffects(delta)
+        elite.updateEffects(delta, hpBarsEnabled)
         elite.chasePlayer(this.player.x, this.player.y)
         elite.slowMultiplier = 0
       }
@@ -487,8 +502,10 @@ export class GameScene extends Phaser.Scene {
     eventBus.emit('hud:gold', { gold: this.gold })
   }
 
-  // NPC 닫기 → 게임 재개
+  // NPC 닫기 → 리스폰 위치로 이동 + 게임 재개
   private onNpcClose = (): void => {
+    const spawn = this.mapManager.getCurrentMapConfig().playerSpawn
+    this.player.setPosition(spawn.x, spawn.y)
     this.scene.resume()
   }
 

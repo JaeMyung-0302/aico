@@ -1,8 +1,10 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import type { GameState, TileMap, Position } from '@wasd/shared'
 import { TILE_SIZE } from '@wasd/shared'
+import type { EffectsState } from '@/game/types'
 import { useCanvas } from '@/hooks/useCanvas'
 import { renderFrame } from '@/game/renderer'
+import { updateEffects } from '@/game/render-effects'
 import {
   createInterpolationState,
   updateInterpolationState,
@@ -11,6 +13,7 @@ import {
 } from '@/game/interpolation'
 
 const TOUCH_UI_HEIGHT = 160
+const DT = 1 / 60
 
 const isTouchDevice = 'ontouchstart' in globalThis
 
@@ -31,9 +34,10 @@ const calcCameraOffset = (
 interface GameCanvasProps {
   gameState: GameState
   tileMap: TileMap
+  effectsRef: React.MutableRefObject<EffectsState>
 }
 
-const GameCanvas = ({ gameState, tileMap }: GameCanvasProps) => {
+const GameCanvas = ({ gameState, tileMap, effectsRef }: GameCanvasProps) => {
   const interpRef = useRef(createInterpolationState(gameState.position))
   const prevStateRef = useRef<GameState | null>(null)
   const collectedSetRef = useRef(new Set(gameState.collectedCoins))
@@ -81,7 +85,21 @@ const GameCanvas = ({ gameState, tileMap }: GameCanvasProps) => {
       ? calcCameraOffset(renderPosition, canvasWidth, canvasHeight, mapWidth, mapHeight)
       : { x: 0, y: 0 }
 
-    renderFrame(ctx, tileMapRef.current, state, renderPosition, collectedSetRef.current, cameraOffset)
+    // Update effects (particles physics, shake expiry)
+    effectsRef.current = updateEffects(effectsRef.current, DT)
+
+    const timestamp = performance.now()
+    renderFrame(
+      ctx,
+      tileMapRef.current,
+      state,
+      renderPosition,
+      collectedSetRef.current,
+      cameraOffset,
+      state.stage,
+      timestamp,
+      effectsRef.current,
+    )
   }, canvasWidth, canvasHeight)
 
   return <canvas ref={canvasRef} style={{ display: 'block', imageRendering: 'pixelated' }} />

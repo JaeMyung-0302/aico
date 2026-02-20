@@ -4,10 +4,11 @@
 }
 
 .heading {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #888;
+  color: #5a6080;
   margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
 }
 
 .list {
@@ -22,18 +23,28 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #16213e;
+  background: #0d1b3a;
   border-radius: 8px;
+  border: 1px solid #1a2a4a;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #2a3a5a;
+  }
 }
 
 .nickname {
   font-weight: 600;
+  color: #ccd6f6;
 }
 
 .hostBadge {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   padding: 0.2rem 0.5rem;
   background: #e94560;
   border-radius: 4px;
   color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
 }

@@ -3,9 +3,10 @@ import type { Router as RouterType } from 'express'
 import crypto from 'crypto'
 import { prisma } from '../lib/prisma.js'
 import { suggestRecipes } from '../lib/gemini.js'
+import { getKSTToday } from '../lib/date.js'
 import { GroupRequest } from '../middleware/group-auth.js'
 import { FREE_DAILY_LIMIT } from '../middleware/usage-check.js'
-import type { RecipeIngredient, RecipeSuggestion, RecipeSuggestResponse } from '../types/index.js'
+import type { RecipeIngredient, RecipeSuggestion, RecipeSuggestResponse, RecipeSuggestRequest } from '../types/index.js'
 
 export const recipeSuggestRouter: RouterType = Router()
 
@@ -15,15 +16,6 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 const buildIngredientHash = (names: string[]): string => {
   const sorted = [...names].sort().join(',')
   return crypto.createHash('sha256').update(sorted).digest('hex').slice(0, 16)
-}
-
-const getKSTToday = (): Date => {
-  const now = new Date()
-  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
-  const yyyy = kst.getUTCFullYear()
-  const mm = kst.getUTCMonth()
-  const dd = kst.getUTCDate()
-  return new Date(Date.UTC(yyyy, mm, dd))
 }
 
 // POST /api/fridges/:fridgeId/recipe-suggest
@@ -61,8 +53,36 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
       return
     }
 
+    // 1.5. selectedItemIds 처리
+    const { selectedItemIds } = (req.body ?? {}) as RecipeSuggestRequest
+
+    if (selectedItemIds !== undefined) {
+      if (
+        !Array.isArray(selectedItemIds) ||
+        selectedItemIds.length > 100 ||
+        !selectedItemIds.every((id) => typeof id === 'string' && UUID_REGEX.test(id))
+      ) {
+        res.status(400).json({ error: 'selectedItemIds must be an array of valid UUIDs (max 100)' })
+        return
+      }
+      if (selectedItemIds.length === 0) {
+        res.status(400).json({ error: '최소 1개 이상의 재료를 선택해주세요' })
+        return
+      }
+    }
+
+    const selectedIdSet = selectedItemIds ? new Set(selectedItemIds) : null
+    const targetItems = selectedIdSet
+      ? allItems.filter((item) => selectedIdSet.has(item.id))
+      : allItems
+
+    if (targetItems.length === 0) {
+      res.status(400).json({ error: '선택한 재료가 냉장고에 존재하지 않습니다' })
+      return
+    }
+
     // 2. ingredientHash 생성 + 캐시 확인 (usageCheck 전에 수행)
-    const ingredientNames = allItems.map((item) => item.name)
+    const ingredientNames = targetItems.map((item) => item.name)
     const ingredientHash = buildIngredientHash(ingredientNames)
     const cacheThreshold = new Date(Date.now() - CACHE_TTL_HOURS * 60 * 60 * 1000)
 
@@ -107,7 +127,7 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
     }
 
     // 4. Gemini API 호출
-    const foodItemInputs = allItems.map((item) => {
+    const foodItemInputs = targetItems.map((item) => {
       const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000)
       const todayStart = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()))
       const daysUntilExpiry = item.expiryDate
@@ -141,7 +161,7 @@ recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response)
           groupId,
           fridgeId,
           ingredientHash,
-          ingredients: allItems.map((i) => ({
+          ingredients: targetItems.map((i) => ({
             name: i.name,
             category: i.category,
             expiryDate: i.expiryDate,

@@ -11,13 +11,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@wasd/shared": "workspace:*",
+    "classnames": "^2.5.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.6.1",
     "socket.io-client": "^4.8.0",
-    "classnames": "^2.5.1",
-    "zustand": "^5.0.5",
-    "@wasd/shared": "workspace:*"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -28,6 +28,7 @@
     "eslint": "^9.39.1",
     "sass": "^1.89.1",
     "typescript": "^5.9.2",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

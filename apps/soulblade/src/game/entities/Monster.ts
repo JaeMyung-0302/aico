@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import { MONSTER_TEXTURES } from '../texture-keys'
+import { createHpBar, updateHpBar, destroyHpBar, type HpBarConfig } from '../systems/hp-bar'
 
 export interface MonsterConfig {
   readonly hp: number
@@ -20,6 +22,10 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
   expReward: number
   goldReward: number
 
+  // HP 바
+  private hpBar: Phaser.GameObjects.Graphics | null = null
+  private readonly hpBarConfig: HpBarConfig = { width: 24, height: 3, yOffset: -4, showBorder: false }
+
   // 상태 효과
   slowMultiplier = 0
   private dotDamage = 0
@@ -32,7 +38,7 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     y: number,
     config: MonsterConfig,
   ) {
-    super(scene, x, y, 'monster')
+    super(scene, x, y, MONSTER_TEXTURES.normal)
 
     scene.add.existing(this)
     scene.physics.add.existing(this)
@@ -48,6 +54,8 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
 
     this.setCollideWorldBounds(true)
     this.setDepth(5)
+
+    this.hpBar = createHpBar(scene, this.hpBarConfig)
   }
 
   // AI: 플레이어 추적 (slow 적용)
@@ -66,6 +74,9 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
 
   takeDamage = (amount: number): boolean => {
     this.hp -= amount
+
+    // HP 바 표시 (피격 시)
+    if (this.hpBar) this.hpBar.setAlpha(1)
 
     // 피격 플래시
     this.setTint(0xff0000)
@@ -93,7 +104,7 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
   }
 
   // 매 프레임 효과 업데이트
-  updateEffects = (delta: number): void => {
+  updateEffects = (delta: number, enableHpBars = true): void => {
     // DoT 처리 (1초마다 틱)
     if (this.dotTimer > 0) {
       this.dotTimer -= delta
@@ -108,6 +119,25 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
+    // HP 바 위치 동기화 (LOD 조건)
+    if (!enableHpBars) {
+      if (this.hpBar) this.hpBar.setAlpha(0)
+    } else if (this.hpBar && this.hpBar.alpha > 0) {
+      updateHpBar(this.hpBar, this.x, this.y, this.hp / this.maxHp, this.hpBarConfig)
+    }
+  }
+
+  // setVisible override: hpBar 동기화 (clearAll 경로 대응)
+  setVisible(value: boolean): this {
+    super.setVisible(value)
+    if (this.hpBar) this.hpBar.setVisible(value)
+    return this
+  }
+
+  // Phaser destroy lifecycle: Graphics 정리 (scene.restart/shutdown 대응)
+  preDestroy(): void {
+    destroyHpBar(this.hpBar)
+    this.hpBar = null
   }
 
   private die(): void {
@@ -135,5 +165,11 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     this.setVisible(true)
     if (this.body) this.body.enable = true
     this.clearTint()
+
+    // HP 바 리셋
+    if (this.hpBar) {
+      this.hpBar.setVisible(true)
+      this.hpBar.setAlpha(0) // 피격 전 숨김
+    }
   }
 }

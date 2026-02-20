@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#1a1a3a"/>
+    </linearGradient>
+    <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a5a"/>
+      <stop offset="100%" stop-color="#2a2a4a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="80" fill="url(#bg)"/>
+  <!-- W key -->
+  <rect x="193" y="80" width="80" height="80" rx="12" fill="url(#key)" stroke="#00d4ff" stroke-width="3"/>
+  <text x="233" y="135" text-anchor="middle" font-family="monospace" font-size="40" font-weight="bold" fill="#00d4ff">W</text>
+  <!-- A key -->
+  <rect x="100" y="180" width="80" height="80" rx="12" fill="url(#key)" stroke="#00d4ff" stroke-width="3"/>
+  <text x="140" y="235" text-anchor="middle" font-family="monospace" font-size="40" font-weight="bold" fill="#00d4ff">A</text>
+  <!-- S key -->
+  <rect x="193" y="180" width="80" height="80" rx="12" fill="url(#key)" stroke="#00d4ff" stroke-width="3"/>
+  <text x="233" y="235" text-anchor="middle" font-family="monospace" font-size="40" font-weight="bold" fill="#00d4ff">S</text>
+  <!-- D key -->
+  <rect x="286" y="180" width="80" height="80" rx="12" fill="url(#key)" stroke="#00d4ff" stroke-width="3"/>
+  <text x="326" y="235" text-anchor="middle" font-family="monospace" font-size="40" font-weight="bold" fill="#00d4ff">D</text>
+  <!-- Character circle -->
+  <circle cx="256" cy="370" r="50" fill="#ff6b35" opacity="0.9"/>
+  <circle cx="256" cy="370" r="35" fill="#ffaa00"/>
+  <!-- Eyes -->
+  <circle cx="243" cy="362" r="6" fill="#1a1a3a"/>
+  <circle cx="269" cy="362" r="6" fill="#1a1a3a"/>
+  <!-- Smile -->
+  <path d="M243 378 Q256 390 269 378" stroke="#1a1a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Title -->
+  <text x="256" y="460" text-anchor="middle" font-family="monospace" font-size="28" font-weight="bold" fill="#ffffff" opacity="0.8">토리의 모험</text>
+</svg>

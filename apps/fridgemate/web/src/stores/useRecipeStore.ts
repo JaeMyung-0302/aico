@@ -15,8 +15,13 @@ interface CookCompleteResponse {
   requestedCount: number
 }
 
+interface RemainingResponse {
+  remainingCount: number
+}
+
 interface RecipeActions {
-  suggestRecipes: (fridgeId: string) => Promise<void>
+  fetchRemainingCount: () => Promise<void>
+  suggestRecipes: (fridgeId: string, selectedItemIds?: string[]) => Promise<void>
   cookComplete: (fridgeId: string, usedIngredients: string[]) => Promise<void>
   clearRecipes: () => void
 }
@@ -30,10 +35,20 @@ export const useRecipeStore = create<RecipeStore>((set) => ({
   loading: false,
   error: null,
 
-  suggestRecipes: async (fridgeId: string) => {
+  fetchRemainingCount: async () => {
+    try {
+      const data = await api.get<RemainingResponse>('/usage/remaining')
+      set({ remainingCount: data.remainingCount })
+    } catch {
+      // 실패 시 기본값 유지
+    }
+  },
+
+  suggestRecipes: async (fridgeId: string, selectedItemIds?: string[]) => {
     set({ loading: true, error: null })
     try {
-      const data = await api.post<RecipeSuggestResponse>(`/fridges/${fridgeId}/recipe-suggest`)
+      const body = selectedItemIds ? { selectedItemIds } : undefined
+      const data = await api.post<RecipeSuggestResponse>(`/fridges/${fridgeId}/recipe-suggest`, body)
       set({
         recipes: data.recipes,
         cached: data.cached,

@@ -1,25 +1,24 @@
+@use '../../styles/mixins' as *;
+
 .loginPage {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(180deg, var(--bg-darkest) 0%, var(--bg-dark) 50%, #0d0c0a 100%);
   padding: 2rem;
   gap: 2rem;
 }
 
 .title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #e8d44d;
-  text-shadow: 0 0 20px rgba(232, 212, 77, 0.3);
+  @include fantasy-title(2.5rem);
   letter-spacing: 0.1em;
 }
 
 .subtitle {
   font-size: 0.9rem;
-  color: #8892b0;
+  color: var(--text-secondary);
   margin-top: -1rem;
 }
 
@@ -39,7 +38,7 @@
   width: 100%;
   padding: 0.875rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;

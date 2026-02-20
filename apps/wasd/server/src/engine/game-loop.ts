@@ -177,7 +177,7 @@ export class GameLoop {
 
     this.timeoutId = setTimeout(() => {
       this.timeoutId = null;
-      this.state = new ServerGameState(nextStage, this.state.deaths);
+      this.state = new ServerGameState(nextStage, this.state.deaths, this.state.startTime);
       this.obstacleManager = new ObstacleManager(
         STAGE_OBSTACLES[nextStage - 1] ?? []
       );

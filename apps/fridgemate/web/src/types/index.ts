@@ -105,6 +105,12 @@ export interface RecipeSuggestResponse {
   remainingCount: number
 }
 
+// === Request 인터페이스 ===
+
+export interface RecipeSuggestRequest {
+  selectedItemIds?: string[]
+}
+
 // === Input 인터페이스 ===
 
 export interface CreateFoodItemInput {

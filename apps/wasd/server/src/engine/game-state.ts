@@ -48,7 +48,7 @@ export class ServerGameState {
   pendingInputs: InputEntry[]
   obstacles: Obstacle[]
 
-  constructor(stage: number, carryDeaths = 0) {
+  constructor(stage: number, carryDeaths = 0, carryStartTime = 0) {
     const tileMap = STAGES[stage - 1]
     if (!tileMap) throw new Error(`Invalid stage: ${stage}`)
 
@@ -61,7 +61,7 @@ export class ServerGameState {
     this.coins = 0
     this.totalCoins = countCoins(tileMap)
     this.collectedCoins = new Set()
-    this.startTime = Date.now()
+    this.startTime = carryStartTime || Date.now()
     this.phase = 'playing'
     this.pendingInputs = []
     this.obstacles = []

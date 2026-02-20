@@ -1,39 +1,33 @@
+@use '../../styles/mixins' as *;
+
 .daily {
   min-height: 100vh;
-  background: #0a0a1a;
-  color: white;
+  background: var(--bg-darkest);
+  color: var(--text-primary);
   padding: 20px;
 }
 
 .backBtn {
+  @include metal-button;
   padding: 8px 16px;
-  background: transparent;
-  border: 1px solid #555;
-  border-radius: 6px;
-  color: #aaa;
-  cursor: pointer;
+  border-radius: 2px;
   margin-bottom: 16px;
-
-  &:hover {
-    border-color: #888;
-    color: #fff;
-  }
 }
 
 .title {
+  @include fantasy-title(1.5rem);
   text-align: center;
-  font-size: 1.5rem;
   margin-bottom: 8px;
 }
 
 .streak {
   text-align: center;
-  color: #f0e68c;
+  color: var(--gold-light);
   font-size: 0.95rem;
   margin-bottom: 24px;
 
   strong {
-    color: #ffd700;
+    color: var(--gold-glow);
     font-size: 1.1rem;
   }
 }
@@ -51,30 +45,30 @@
   align-items: center;
   gap: 4px;
   padding: 12px 8px;
-  background: #16213e;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(139, 115, 50, 0.3);
+  border-radius: 4px;
   position: relative;
 
   &.past {
-    background: #1a3a2a;
-    border-color: #27ae60;
+    background: rgba(68, 204, 68, 0.06);
+    border-color: var(--text-success);
   }
 
   &.today {
-    border-color: #f0e68c;
-    box-shadow: 0 0 8px rgba(240, 230, 140, 0.3);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 8px rgba(212, 168, 67, 0.3);
   }
 }
 
 .dayNum {
   font-size: 0.8rem;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
 .reward {
   font-size: 0.95rem;
-  color: #ffd700;
+  color: var(--gold-glow);
   font-weight: bold;
 }
 
@@ -82,26 +76,21 @@
   position: absolute;
   top: 4px;
   right: 6px;
-  color: #27ae60;
+  color: var(--text-success);
   font-size: 0.75rem;
   font-weight: bold;
 }
 
 .claimBtn {
+  @include metal-button;
   display: block;
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #f0c040, #e6a010);
-  border: none;
-  border-radius: 8px;
-  color: #1a1a2e;
+  border-radius: 2px;
   font-size: 1rem;
   font-weight: bold;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.9;
-  }
+  text-align: center;
+  color: var(--gold-glow);
 
   &:disabled {
     opacity: 0.5;

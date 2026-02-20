@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { Loading } from '@repo/ui'
 import useRedirectUrl from '@/hooks/useRedirectUrl'
 import PremiumModal from '@/components/PremiumModal'
-import type { Recipe, PurchaseLink } from '@/types/recipe'
+import type { Recipe, PriceInfo, PurchaseLink } from '@/types/recipe'
 import styles from './ResultPage.module.scss'
 
 const cx = classnames.bind(styles)
@@ -82,6 +82,17 @@ const Result = () => {
     }
   }
 
+  // KAMIS 시세 조회 (레시피 로딩 완료 후)
+  const { data: prices } = useQuery<PriceInfo[]>({
+    queryKey: ['prices', id],
+    queryFn: async () => {
+      const { data } = await api.get(`/recipes/${id}/prices`)
+      return data
+    },
+    enabled: !!recipe,
+    staleTime: 6 * 60 * 60 * 1000, // 6시간 (서버 캐시와 동일)
+  })
+
   // 구매 링크 조회 (레시피 로딩 완료 후)
   const { data: purchaseLinks } = useQuery<PurchaseLink[]>({
     queryKey: ['purchaseLinks', id],
@@ -91,6 +102,13 @@ const Result = () => {
     },
     enabled: !!recipe,
   })
+
+  // 재료별 KAMIS 시세 매핑
+  const getPriceForIngredient = (ingredientId: string): number | null => {
+    if (!prices) return null
+    const found = prices.find((p) => p.ingredientId === ingredientId)
+    return found?.price ?? null
+  }
 
   // 재료별 구매 링크 매핑
   const getLinkForIngredient = (ingredientId: string): string | null => {
@@ -138,11 +156,11 @@ const Result = () => {
       <Helmet>
         <title>{recipe.title} - CookSnap</title>
         <meta name="description" content={`${recipe.title} 레시피 - 재료비 ${recipe.totalPrice ? `${recipe.totalPrice.toLocaleString()}원` : '확인'}, 재료 ${recipe.ingredients.length}가지`} />
-        <link rel="canonical" href={`https://aico-cooksnap-web.vercel.app/result/${id}`} />
+        <link rel="canonical" href={`https://aico-cooksnap.vercel.app/result/${id}`} />
         <meta property="og:title" content={`${recipe.title} - CookSnap`} />
         <meta property="og:description" content={`재료 ${recipe.ingredients.length}가지${recipe.totalPrice ? `, 총 ${recipe.totalPrice.toLocaleString()}원` : ''}`} />
         {recipe.thumbnailUrl && <meta property="og:image" content={recipe.thumbnailUrl} />}
-        <meta property="og:url" content={`https://aico-cooksnap-web.vercel.app/result/${id}`} />
+        <meta property="og:url" content={`https://aico-cooksnap.vercel.app/result/${id}`} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       {/* 레시피 헤더 */}
@@ -177,16 +195,22 @@ const Result = () => {
       </div>
 
       {/* 재료비 요약 카드 */}
-      {recipe.totalPrice && (
+      {(prices || recipe.totalPrice) && (() => {
+        const total = prices
+          ? prices.reduce((sum, p) => sum + (p.price || 0), 0)
+          : recipe.totalPrice
+        if (!total) return null
+        return (
         <div className={cx('priceCard')}>
-          <p className={cx('totalPrice')}>총 {formatPrice(recipe.totalPrice)}</p>
+          <p className={cx('totalPrice')}>총 {formatPrice(total)}</p>
           {recipe.savingsPercent && (
             <p className={cx('savings')}>
               외식 대비 {recipe.savingsPercent}% 절약
             </p>
           )}
         </div>
-      )}
+        )
+      })()}
 
       {/* 재료 리스트 */}
       <div className={cx('section')}>
@@ -208,7 +232,7 @@ const Result = () => {
                 </div>
                 <div className={cx('ingredientActions')}>
                   <span className={cx('ingredientPrice')}>
-                    {formatPrice(ingredient.estimatedPrice)}
+                    {formatPrice(getPriceForIngredient(ingredient.id) ?? ingredient.estimatedPrice)}
                   </span>
                   {purchaseUrl && (
                     <a

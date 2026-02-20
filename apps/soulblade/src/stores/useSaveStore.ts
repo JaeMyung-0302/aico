@@ -13,11 +13,13 @@ interface SaveState {
   readonly currentMapId: MapId
   readonly position: { readonly x: number; readonly y: number }
   readonly gold: number
+  readonly classLocked: boolean
   readonly loaded: boolean
 
   // 액션
   readonly load: () => Promise<void>
   readonly save: (overrides?: Partial<SaveData>) => void
+  readonly lockClass: (classType: CharacterClass) => void
   readonly updateFromGame: (data: {
     level: number
     exp: number
@@ -45,6 +47,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
   currentMapId: 'town',
   position: { x: 1080, y: 1920 },
   gold: 0,
+  classLocked: false,
   loaded: false,
 
   load: async () => {
@@ -63,6 +66,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
         currentMapId: merged.currentMapId,
         position: merged.position,
         gold: merged.gold,
+        classLocked: merged.classLocked ?? false,
         loaded: true,
       })
     } else {
@@ -81,6 +85,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
       currentMapId: state.currentMapId,
       position: state.position,
       gold: state.gold,
+      classLocked: state.classLocked,
       lastSavedAt: new Date().toISOString(),
       ...overrides,
     }
@@ -96,6 +101,11 @@ export const useSaveStore = create<SaveState>((set, get) => ({
         })
       }
     })
+  },
+
+  lockClass: (classType) => {
+    set({ classLocked: true, characterClass: classType })
+    get().save()
   },
 
   updateFromGame: (data) => {

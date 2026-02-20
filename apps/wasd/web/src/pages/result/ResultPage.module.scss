@@ -6,17 +6,20 @@
   padding: 2rem;
   background: #0a0a1a;
   color: #eee;
+  background-image:
+    radial-gradient(circle at 50% 30%, rgba(0, 212, 255, 0.06) 0%, transparent 50%);
 }
 
 .card {
   text-align: center;
   padding: 48px 64px;
-  background: #16213e;
+  background: rgba(22, 33, 62, 0.9);
   border-radius: 16px;
   border: 2px solid #0f3460;
-  box-shadow: 0 0 60px rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 60px rgba(0, 212, 255, 0.1), 0 20px 60px rgba(0, 0, 0, 0.4);
   max-width: 400px;
   width: 100%;
+  animation: cardReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .title {
@@ -24,7 +27,8 @@
   font-weight: 800;
   color: #00d4ff;
   margin: 0 0 8px;
-  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(0, 212, 255, 0.2);
+  animation: titleGlow 2s ease-in-out infinite;
 }
 
 .subtitle {
@@ -45,6 +49,16 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  opacity: 0;
+  animation: statReveal 0.4s ease-out forwards;
+
+  &:nth-child(1) {
+    animation-delay: 0.3s;
+  }
+
+  &:nth-child(2) {
+    animation-delay: 0.5s;
+  }
 }
 
 .statLabel {
@@ -62,6 +76,7 @@
 
   &.danger {
     color: #e94560;
+    text-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
   }
 }
 
@@ -74,9 +89,48 @@
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  opacity: 0;
+  animation: statReveal 0.4s ease-out 0.7s forwards;
 
   &:hover {
-    background: #c73a52;
+    background: #ff5070;
+    box-shadow: 0 4px 20px rgba(233, 69, 96, 0.35);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes statReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(0, 212, 255, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(0, 212, 255, 0.7), 0 0 60px rgba(0, 212, 255, 0.3);
   }
 }

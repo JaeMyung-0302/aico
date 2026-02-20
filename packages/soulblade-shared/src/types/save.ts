@@ -13,5 +13,6 @@ export interface SaveData {
   readonly currentMapId: MapId
   readonly position: { readonly x: number; readonly y: number }
   readonly gold: number
+  readonly classLocked: boolean
   readonly lastSavedAt: string // ISO 8601
 }

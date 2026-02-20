@@ -1,18 +1,15 @@
+@use '../../styles/mixins' as *;
+
 .overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include dark-overlay;
   z-index: 120;
 }
 
 .modal {
-  background: #1a1a2e;
-  border: 2px solid #44cc44;
-  border-radius: 12px;
-  padding: 24px;
+  @include fantasy-panel;
+  @include corner-decoration;
+  border-radius: 4px;
+  padding: var(--modal-padding);
   width: 85%;
   max-width: 380px;
 }
@@ -22,19 +19,21 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  border-bottom: 1px solid rgba(139, 115, 50, 0.3);
+  padding-bottom: 12px;
 }
 
 .title {
-  color: #44cc44;
-  font-size: 1.3rem;
+  @include fantasy-title(1.3rem);
 }
 
 .gold {
-  color: #ffd700;
+  color: var(--gold-glow);
   font-size: 0.9rem;
 }
 
 .itemList {
+  @include fantasy-scrollbar;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -50,8 +49,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(139, 115, 50, 0.2);
+  border-radius: 2px;
+
+  &:hover {
+    border-color: var(--gold-dark);
+  }
 }
 
 .itemInfo {
@@ -61,29 +65,23 @@
 }
 
 .itemName {
-  color: #eee;
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 .itemDesc {
-  color: #888;
+  color: var(--text-secondary);
   font-size: 0.75rem;
 }
 
 .buyBtn {
+  @include metal-button;
   padding: 8px 14px;
-  background: #2d7a2d;
-  border: none;
-  border-radius: 6px;
-  color: #ffd700;
+  border-radius: 2px;
+  color: var(--gold-glow);
   font-size: 0.85rem;
   font-weight: bold;
-  cursor: pointer;
   white-space: nowrap;
-
-  &:hover {
-    opacity: 0.9;
-  }
 
   &.disabled {
     opacity: 0.4;
@@ -96,14 +94,14 @@
   width: 100%;
   padding: 12px;
   background: transparent;
-  border: 1px solid #666;
-  border-radius: 8px;
-  color: #999;
+  border: 1px solid rgba(139, 115, 50, 0.4);
+  border-radius: 2px;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   cursor: pointer;
 
   &:hover {
-    border-color: #999;
-    color: #ccc;
+    border-color: var(--gold-dark);
+    color: var(--text-primary);
   }
 }

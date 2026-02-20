@@ -21,25 +21,45 @@ export const hitStop = (scene: Phaser.Scene, durationMs = 50): void => {
   }, durationMs)
 }
 
-// 사망 파티클
-export const spawnDeathParticles = (scene: Phaser.Scene, x: number, y: number): void => {
-  const colors = [0xff4444, 0xff8800, 0xffcc00]
+// 사망 파티클 — LOD 연동: 파티클 수/크기/색상 다양화
+export const spawnDeathParticles = (
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  count = 6,
+  enableGlow = false,
+): void => {
+  const colors = [0xff4444, 0xff6633, 0xff8800, 0xffaa00, 0xffcc00, 0xffdd66]
 
-  for (let i = 0; i < 6; i++) {
+  // 글로우 바닥 이펙트 (full/reduced)
+  if (enableGlow) {
+    const glow = scene.add.circle(x, y, 12, 0xff6600, 0.25)
+    glow.setDepth(15)
+    scene.tweens.add({
+      targets: glow,
+      scale: 2.5,
+      alpha: 0,
+      duration: 350,
+      onComplete: () => glow.destroy(),
+    })
+  }
+
+  for (let i = 0; i < count; i++) {
     const color = colors[i % colors.length] as number
-    const particle = scene.add.circle(x, y, 3, color)
+    const size = 2 + Math.random() * 3 // 크기 변이 (2~5)
+    const particle = scene.add.circle(x, y, size, color)
     particle.setDepth(15)
 
-    const angle = (Math.PI * 2 * i) / 6
-    const speed = 80 + Math.random() * 60
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4
+    const speed = 70 + Math.random() * 80
 
     scene.tweens.add({
       targets: particle,
       x: x + Math.cos(angle) * speed,
       y: y + Math.sin(angle) * speed,
       alpha: 0,
-      scale: 0.3,
-      duration: 300 + Math.random() * 200,
+      scale: 0.2,
+      duration: 300 + Math.random() * 300,
       onComplete: () => particle.destroy(),
     })
   }

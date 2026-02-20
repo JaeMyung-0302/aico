@@ -4,4 +4,4 @@ Disallow: /auth
 Disallow: /mypage
 Disallow: /result
 
-Sitemap: https://aico-cooksnap-web.vercel.app/sitemap.xml
+Sitemap: https://aico-cooksnap.vercel.app/sitemap.xml

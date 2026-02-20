@@ -1,7 +1,9 @@
+@use '../../styles/mixins' as *;
+
 .lobby {
   min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--bg-darkest) 0%, var(--bg-dark) 100%);
+  color: var(--text-primary);
   padding: 40px 20px;
   display: flex;
   flex-direction: column;
@@ -9,104 +11,231 @@
 }
 
 .title {
-  font-size: 36px;
-  font-weight: 900;
-  color: #f1c40f;
-  text-shadow: 0 2px 8px rgba(241, 196, 15, 0.3);
+  @include fantasy-title(2.25rem);
   margin: 0;
 }
 
 .subtitle {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   margin: 4px 0 32px;
 }
 
-.section {
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 24px;
-}
-
 .sectionTitle {
+  font-family: var(--font-fantasy);
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gold-mid);
+}
+
+// ===== 신규 플레이어: 2-column 선택 레이아웃 =====
+
+.selectionLayout {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin-bottom: 16px;
+}
+
+.selectionLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.selectionRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .classList {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
-.classCard {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px;
-  color: #fff;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s;
-
-  &.selected {
-    border-color: #f1c40f;
-    background: rgba(241, 196, 15, 0.1);
-  }
-}
-
-.className {
-  display: block;
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.classDesc {
-  display: block;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.stageList {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-}
-
-.stageCard {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px 8px;
-  color: #fff;
-  font-size: 14px;
+.classTab {
+  flex: 1;
+  background: var(--bg-panel);
+  border: 1px solid rgba(139, 115, 50, 0.3);
+  border-radius: 4px;
+  padding: 8px 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  text-align: center;
   transition: all 0.2s;
 
+  &:hover {
+    border-color: var(--gold-dark);
+    color: var(--text-primary);
+  }
+
   &.selected {
-    border-color: #3498db;
-    background: rgba(52, 152, 219, 0.1);
+    border-color: var(--gold-bright);
+    background: rgba(212, 168, 67, 0.1);
+    color: var(--text-gold);
   }
 }
 
-.startButton {
+.classDetail {
+  @include fantasy-panel;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.detailDesc {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.detailStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.statRow {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.detailPassive {
+  border-top: 1px solid rgba(139, 115, 50, 0.2);
+  padding-top: 8px;
+}
+
+.passiveLabel {
+  display: block;
+  font-size: 11px;
+  color: var(--gold-mid);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.passiveValue {
+  font-size: 12px;
+  color: var(--text-gold);
+}
+
+// ===== 확정 확인 UI =====
+
+.confirmGroup {
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+.confirmText {
+  font-size: 13px;
+  color: var(--text-danger-light);
+  margin: 0 0 12px;
+}
+
+.confirmButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmButton {
+  @include metal-button;
+  flex: 1;
+  padding: 14px;
+  border-radius: 4px;
+  font-family: var(--font-fantasy);
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--gold-glow);
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.cancelButton {
+  @include metal-button;
+  flex: 1;
+  padding: 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+// ===== 기존 플레이어: 잠금 정보 =====
+
+.lockedInfo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
   width: 100%;
   max-width: 400px;
+  margin-bottom: 16px;
+  @include fantasy-panel;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.lockedDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lockedClass {
+  font-family: var(--font-fantasy);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+
+.lockedLevel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-gold);
+}
+
+.lockedStat {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.lockedPassive {
+  font-size: 12px;
+  color: var(--gold-mid);
+}
+
+.lockedGold {
+  font-size: 12px;
+  color: var(--text-system);
+}
+
+// ===== 공통 =====
+
+.startButton {
+  @include metal-button;
+  width: 100%;
+  max-width: 520px;
   padding: 16px;
   margin-top: 16px;
-  background: linear-gradient(135deg, #f1c40f, #e67e22);
-  border: none;
-  border-radius: 12px;
-  color: #1a1a2e;
+  border-radius: 4px;
+  font-family: var(--font-fantasy);
   font-size: 18px;
   font-weight: 900;
-  cursor: pointer;
-  transition: transform 0.1s;
+  color: var(--gold-glow);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 
   &:active {
     transform: scale(0.97);
@@ -122,16 +251,12 @@
 }
 
 .menuButton {
+  @include metal-button;
   flex: 1;
   padding: 12px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
 
   &:active {
     transform: scale(0.97);

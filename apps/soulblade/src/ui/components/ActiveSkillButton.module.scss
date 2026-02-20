@@ -5,9 +5,12 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(241, 196, 15, 0.3);
-  border: 3px solid rgba(241, 196, 15, 0.6);
-  color: #fff;
+  background: radial-gradient(circle, rgba(26, 24, 21, 0.8) 0%, rgba(10, 10, 12, 0.9) 100%);
+  border: 3px solid var(--gold-mid);
+  box-shadow:
+    inset 0 0 0 1px rgba(139, 115, 50, 0.3),
+    0 0 8px rgba(212, 168, 67, 0.2);
+  color: var(--text-gold);
   font-size: 14px;
   font-weight: 900;
   display: flex;
@@ -17,16 +20,18 @@
   touch-action: none;
   z-index: 100;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
 
   &.cooldown {
-    background: rgba(100, 100, 100, 0.4);
-    border-color: rgba(150, 150, 150, 0.4);
+    background: rgba(10, 10, 12, 0.7);
+    border-color: var(--gold-dark);
+    box-shadow: none;
   }
 
   &:active:not(.cooldown) {
     transform: scale(0.92);
-    background: rgba(241, 196, 15, 0.5);
+    border-color: var(--gold-light);
+    box-shadow: 0 0 12px rgba(212, 168, 67, 0.5);
   }
 }
 
@@ -35,7 +40,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   transition: height 0.1s linear;
   pointer-events: none;
 }
@@ -43,5 +48,6 @@
 .label {
   position: relative;
   z-index: 1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  font-family: var(--font-fantasy);
 }

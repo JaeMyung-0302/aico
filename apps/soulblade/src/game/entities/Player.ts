@@ -230,6 +230,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     eventBus.emit('player:statsUpdate', {
       hp: this.hp,
       maxHp: this.maxHp,
+      atk: this.atk,
+      def: this.def,
+      spd: this.spd,
+      crit: this.crit,
+      critDmg: this.critDmg,
       level: this.level,
       exp: this.exp,
       expToNext: this.expToNext,

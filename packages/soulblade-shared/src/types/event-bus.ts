@@ -27,6 +27,11 @@ export interface PhaserToReactEvents {
   readonly 'player:statsUpdate': {
     readonly hp: number
     readonly maxHp: number
+    readonly atk: number
+    readonly def: number
+    readonly spd: number
+    readonly crit: number
+    readonly critDmg: number
     readonly level: number
     readonly exp: number
     readonly expToNext: number

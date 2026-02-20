@@ -1,0 +1,104 @@
+// 금장 프레임
+@mixin gold-frame {
+  border: 2px solid var(--gold-dark);
+  box-shadow:
+    inset 0 0 0 1px rgba(139, 115, 50, 0.3),
+    0 0 10px rgba(0, 0, 0, 0.6);
+}
+
+// 판타지 패널 (반투명 + 금장)
+@mixin fantasy-panel {
+  background: var(--bg-overlay);
+  @include gold-frame;
+}
+
+// 상태 바 프레임
+@mixin status-bar-frame {
+  border: 1px solid var(--gold-dark);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+}
+
+// 금속 버튼
+@mixin metal-button {
+  background: linear-gradient(180deg, #3a3428 0%, #1a1815 50%, #0a0906 100%);
+  border: 1px solid var(--gold-dark);
+  color: var(--text-gold);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--gold-mid);
+    box-shadow: 0 0 6px rgba(212, 168, 67, 0.3);
+  }
+
+  &:active {
+    background: linear-gradient(180deg, #0a0906 0%, #1a1815 100%);
+  }
+}
+
+// 오버레이 배경
+@mixin dark-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 판타지 스크롤바
+@mixin fantasy-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-darkest);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--gold-dark);
+    border-radius: 3px;
+  }
+}
+
+// 판타지 제목
+@mixin fantasy-title($size: 1.5rem) {
+  font-family: var(--font-fantasy);
+  font-size: $size;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-shadow: 0 2px 8px rgba(212, 168, 67, 0.3);
+}
+
+// 코너 장식 (::before/::after 패턴)
+@mixin corner-decoration {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-color: var(--gold-mid);
+  }
+
+  &::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid;
+    border-left: 2px solid;
+  }
+
+  &::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+  }
+}

@@ -185,6 +185,11 @@ export const GamePage = () => {
     const onStatsUpdate = (data: {
       hp: number
       maxHp: number
+      atk: number
+      def: number
+      spd: number
+      crit: number
+      critDmg: number
       level: number
       exp: number
       expToNext: number
@@ -193,6 +198,14 @@ export const GamePage = () => {
       useSaveStore.setState({
         characterLevel: data.level,
         characterExp: data.exp,
+        characterStats: {
+          hp: data.maxHp,
+          atk: data.atk,
+          def: data.def,
+          spd: data.spd,
+          crit: data.crit,
+          critDmg: data.critDmg,
+        },
       })
     }
 

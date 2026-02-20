@@ -10,6 +10,7 @@ import type { RecipeIngredient, RecipeSuggestion, RecipeSuggestResponse } from '
 export const recipeSuggestRouter: RouterType = Router()
 
 const CACHE_TTL_HOURS = 24
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const buildIngredientHash = (names: string[]): string => {
   const sorted = [...names].sort().join(',')
@@ -29,6 +30,11 @@ const getKSTToday = (): Date => {
 recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response): Promise<void> => {
   const { groupId } = req as unknown as GroupRequest
   const fridgeId = req.params['fridgeId'] as string
+
+  if (!UUID_REGEX.test(fridgeId)) {
+    res.status(400).json({ error: 'Invalid fridge ID' })
+    return
+  }
 
   try {
     // 1. 냉장고의 전체 재료 조회

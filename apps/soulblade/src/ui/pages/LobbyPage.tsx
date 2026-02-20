@@ -4,6 +4,7 @@ import classnames from 'classnames/bind'
 import type { CharacterClass } from '@soulblade/shared'
 import { CLASS_CONFIGS, EMPTY_PERMANENT_STATS } from '@soulblade/shared'
 import { useRunStore } from '@/stores/useRunStore'
+import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
 import styles from './LobbyPage.module.scss'
 
@@ -18,8 +19,11 @@ export const LobbyPage = () => {
   const handleStart = () => {
     useRunStore.setState({ classType: selectedClass })
     const config = CLASS_CONFIGS[selectedClass]
+    const saveState = useSaveStore.getState()
+    const hasSave = saveState.loaded && saveState.characterClass === selectedClass && saveState.characterLevel > 1
+
     eventBus.emit('game:start', {
-      mapId: 'town',
+      mapId: hasSave ? saveState.currentMapId : 'town',
       classType: selectedClass,
       stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },
       equippedItems: [],

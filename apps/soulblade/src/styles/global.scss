@@ -1,3 +1,8 @@
+@use 'variables';
+@use 'animations';
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
 *,
 *::before,
 *::after {
@@ -11,9 +16,9 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a2e;
-  color: #fff;
+  font-family: var(--font-body);
+  background: var(--bg-darkest);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
@@ -23,6 +28,22 @@ body {
 #root {
   width: 100%;
   height: 100%;
+}
+
+// 전역 판타지 스크롤바
+* {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bg-darkest);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--gold-dark);
+    border-radius: 3px;
+  }
 }
 
 button {

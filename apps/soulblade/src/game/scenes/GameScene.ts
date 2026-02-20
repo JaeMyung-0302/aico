@@ -190,12 +190,22 @@ export class GameScene extends Phaser.Scene {
       })
     }
 
-    // 세이브 데이터에서 레벨/경험치/골드 복원
+    // 세이브 데이터에서 레벨/경험치/전투 스탯/골드 복원
     const saveState = useSaveStore.getState()
     if (saveState.loaded && saveState.characterLevel > 1) {
       this.player.level = saveState.characterLevel
       this.player.exp = saveState.characterExp
       this.player.expToNext = calcExpForLevel(saveState.characterLevel)
+
+      // 전투 스탯 복원 (레벨업·상점·대장간 보너스 포함)
+      const saved = saveState.characterStats
+      this.player.maxHp = saved.hp
+      this.player.hp = saved.hp
+      this.player.atk = saved.atk
+      this.player.def = saved.def
+      this.player.spd = saved.spd
+      this.player.crit = saved.crit
+      this.player.critDmg = saved.critDmg
     }
     this.gold = saveState.loaded ? saveState.gold : 0
 

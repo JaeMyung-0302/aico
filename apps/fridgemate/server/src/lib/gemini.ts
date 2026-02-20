@@ -99,6 +99,12 @@ export const suggestRecipes = async (items: FoodItemInput[]): Promise<GeminiReci
       throw new Error('Invalid recipe response structure')
     }
 
+    for (const r of parsed.recipes) {
+      if (!r.name || !r.difficulty || !r.cookTime || !Array.isArray(r.ingredients) || !Array.isArray(r.steps)) {
+        throw new Error(`Invalid recipe: missing required fields in "${r.name ?? 'unknown'}"`)
+      }
+    }
+
     return parsed.recipes
   }
 

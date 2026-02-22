@@ -15,6 +15,8 @@ import { createProjectileGeometry } from '../models/projectile-geometry'
 
 const MAX_INSTANCES = 30
 const tempObject = new Object3D()
+// Billboard 16×6에 맞춘 스케일 (지오메트리 길이 14 → 시각 16px)
+const MODEL_SCALE = 1.14
 
 export const Projectile3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
@@ -41,7 +43,7 @@ export const Projectile3D = () => {
 
       tempObject.position.set(p.body.x, -p.body.y, 0)
       tempObject.rotation.set(0, 0, -p.angle)
-      tempObject.scale.set(1, 1, 1)
+      tempObject.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE)
       tempObject.updateMatrix()
       mesh.setMatrixAt(idx, tempObject.matrix)
       idx++

@@ -13,6 +13,9 @@ import type { Group, MeshLambertMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createBossModel } from '../models/boss-model'
 
+// 보스 시각 크기 (모델 높이 54 → 시각 ~81px, 몬스터 대비 2.5배)
+const MODEL_SCALE = 1.5
+
 export const Boss3D = () => {
   const groupRef = useRef<Group>(null)
   const animRef = useRef({ timer: 0 })
@@ -64,7 +67,7 @@ export const Boss3D = () => {
 
     // 대기: 호흡 + 팔 진자
     const breath = Math.sin(anim.timer * 1.5) * 0.015
-    groupRef.current.scale.set(1, 1 + breath, 1)
+    groupRef.current.scale.set(MODEL_SCALE, MODEL_SCALE * (1 + breath), MODEL_SCALE)
     const armSwing = Math.sin(anim.timer * 2) * 0.3
     if (rightArm) rightArm.rotation.x = armSwing
     if (leftArm) leftArm.rotation.x = -armSwing
@@ -81,10 +84,11 @@ export const Boss3D = () => {
         break
       case 'aoe':
         groupRef.current.rotation.x = 0
+        const pulse = Math.sin(anim.timer * 10) * 0.05
         groupRef.current.scale.set(
-          1 + Math.sin(anim.timer * 10) * 0.05,
-          1 + breath + Math.sin(anim.timer * 10) * 0.05,
-          1 + Math.sin(anim.timer * 10) * 0.05,
+          MODEL_SCALE * (1 + pulse),
+          MODEL_SCALE * (1 + breath + pulse),
+          MODEL_SCALE * (1 + pulse),
         )
         break
       case 'summon': {

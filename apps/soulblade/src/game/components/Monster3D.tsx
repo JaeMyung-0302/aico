@@ -15,6 +15,8 @@ import { createMonsterGeometry } from '../models/monster-geometry'
 
 const MAX_INSTANCES = 60
 const tempObject = new Object3D()
+// Billboard 32×32에 맞춘 스케일 (지오메트리 높이 17 → 시각 32px)
+const MODEL_SCALE = 1.88
 
 export const Monster3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
@@ -41,7 +43,7 @@ export const Monster3D = () => {
 
       tempObject.position.set(m.body.x, -m.body.y, 0)
       tempObject.rotation.set(0, 0, 0)
-      tempObject.scale.set(1, 1, 1)
+      tempObject.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE)
       tempObject.updateMatrix()
       mesh.setMatrixAt(idx, tempObject.matrix)
       idx++

@@ -16,6 +16,8 @@ import { createEliteGeometry } from '../models/elite-geometry'
 const MAX_INSTANCES = 20
 const tempObject = new Object3D()
 const tempColor = new Color()
+// Billboard 32×32에 맞춘 스케일 (지오메트리 높이 27 → 시각 32px)
+const MODEL_SCALE = 1.19
 
 export const Elite3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
@@ -42,7 +44,8 @@ export const Elite3D = () => {
 
       tempObject.position.set(e.body.x, -e.body.y, 0)
       tempObject.rotation.set(0, 0, 0)
-      tempObject.scale.set(e.scale, e.scale, e.scale)
+      const s = e.scale * MODEL_SCALE
+      tempObject.scale.set(s, s, s)
       tempObject.updateMatrix()
       mesh.setMatrixAt(idx, tempObject.matrix)
 

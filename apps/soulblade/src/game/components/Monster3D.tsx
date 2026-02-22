@@ -6,7 +6,7 @@
  * drawcall 1로 최대 60마리 동시 렌더링
  */
 
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Object3D, MeshLambertMaterial } from 'three'
 import type { InstancedMesh } from 'three'
@@ -20,6 +20,13 @@ export const Monster3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
   const geometry = useMemo(() => createMonsterGeometry(), [])
   const material = useMemo(() => new MeshLambertMaterial({ vertexColors: true }), [])
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose()
+      material.dispose()
+    }
+  }, [geometry, material])
 
   useFrame(() => {
     const mesh = meshRef.current

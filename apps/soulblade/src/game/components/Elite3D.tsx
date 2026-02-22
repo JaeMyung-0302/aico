@@ -6,7 +6,7 @@
  * mutation 색상 틴트: instanceColor × vertexColor
  */
 
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Object3D, Color, MeshLambertMaterial } from 'three'
 import type { InstancedMesh } from 'three'
@@ -21,6 +21,13 @@ export const Elite3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
   const geometry = useMemo(() => createEliteGeometry(), [])
   const material = useMemo(() => new MeshLambertMaterial({ vertexColors: true }), [])
+
+  useEffect(() => {
+    return () => {
+      geometry.dispose()
+      material.dispose()
+    }
+  }, [geometry, material])
 
   useFrame(() => {
     const mesh = meshRef.current

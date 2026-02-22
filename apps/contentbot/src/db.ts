@@ -40,24 +40,35 @@ export const getDb = (): Database.Database => {
   `);
 
   // 기존 DB가 'news' source를 지원하지 않으면 테이블 재생성 (데이터 보존)
+  let needsMigration = false;
   try {
+    db.exec(`SAVEPOINT migration_check`);
     db.exec(`INSERT INTO keywords (keyword, source, score, used) VALUES ('__migration_test__', 'news', 0, 0)`);
-    db.exec(`DELETE FROM keywords WHERE keyword = '__migration_test__'`);
+    db.exec(`ROLLBACK TO migration_check`);
+    db.exec(`RELEASE migration_check`);
   } catch {
-    db.exec(`
-      ALTER TABLE keywords RENAME TO keywords_old;
-      CREATE TABLE keywords (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        keyword TEXT NOT NULL,
-        source TEXT NOT NULL CHECK(source IN ('naver', 'google', 'news')),
-        score REAL NOT NULL DEFAULT 0,
-        used INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
-      );
-      INSERT INTO keywords SELECT * FROM keywords_old;
-      DROP TABLE keywords_old;
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_keywords_keyword_source ON keywords(keyword, source);
-    `);
+    needsMigration = true;
+    try { db.exec(`ROLLBACK TO migration_check`); db.exec(`RELEASE migration_check`); } catch { /* savepoint already released */ }
+  }
+
+  if (needsMigration) {
+    const migrate = db.transaction(() => {
+      db.exec(`ALTER TABLE keywords RENAME TO keywords_old`);
+      db.exec(`
+        CREATE TABLE keywords (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          keyword TEXT NOT NULL,
+          source TEXT NOT NULL CHECK(source IN ('naver', 'google', 'news')),
+          score REAL NOT NULL DEFAULT 0,
+          used INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+        )
+      `);
+      db.exec(`INSERT INTO keywords SELECT * FROM keywords_old`);
+      db.exec(`DROP TABLE keywords_old`);
+      db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_keywords_keyword_source ON keywords(keyword, source)`);
+    });
+    migrate();
     console.log("[DB] keywords 테이블 마이그레이션 완료: 'news' source 추가");
   }
 

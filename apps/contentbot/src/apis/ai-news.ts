@@ -44,9 +44,11 @@ export const fetchAiNews = async (): Promise<Keyword[]> => {
     NEWS_QUERIES.map((q) => fetchNewsForQuery(q))
   );
 
-  const keywords = results.flatMap((result) =>
-    result.status === "fulfilled" ? result.value : []
-  );
+  const keywords = results.flatMap((result, i) => {
+    if (result.status === "fulfilled") return result.value;
+    console.error(`[AI News] "${NEWS_QUERIES[i]}" 수집 실패:`, result.reason);
+    return [];
+  });
 
   console.log(`[AI News] 수집: ${keywords.length}개`);
   return keywords;

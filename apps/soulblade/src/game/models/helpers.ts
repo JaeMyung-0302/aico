@@ -40,6 +40,8 @@ export const mergeAndCenter = (geometries: BufferGeometry[]): BufferGeometry => 
     throw new Error('mergeAndCenter: geometries 배열이 비어있음')
   }
   const merged = mergeGeometries(geometries, false)
+  // 입력 geometry는 merged에 복사되었으므로 GPU 메모리 해제
+  for (const geo of geometries) geo.dispose()
   if (!merged) {
     throw new Error('mergeGeometries failed: geometries의 attribute 구조가 일치하지 않음')
   }

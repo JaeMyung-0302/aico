@@ -1,7 +1,8 @@
 import { Router, Response } from 'express'
 import type { Router as RouterType } from 'express'
 import { prisma } from '../lib/prisma.js'
-import { GroupRequest } from '../middleware/group-auth.js'
+import { AuthRequest } from '../middleware/auth.js'
+import { groupAdmin } from '../middleware/group-admin.js'
 import { COMPARTMENT_PRESETS, getExpiryStatus, ExpiryStatus } from '../types/index.js'
 import type { FridgeType } from '../types/index.js'
 
@@ -9,7 +10,7 @@ export const fridgeRouter: RouterType = Router()
 
 // GET /api/fridges — 그룹의 냉장고 목록
 fridgeRouter.get('/', async (req, res: Response): Promise<void> => {
-  const { groupId } = req as GroupRequest
+  const { groupId } = req as AuthRequest
 
   try {
     const fridges = await prisma.fridge.findMany({
@@ -94,9 +95,9 @@ fridgeRouter.get('/:id', async (req, res: Response): Promise<void> => {
   }
 })
 
-// POST /api/fridges — 냉장고 생성 + 칸 자동생성
-fridgeRouter.post('/', async (req, res: Response): Promise<void> => {
-  const { groupId } = req as GroupRequest
+// POST /api/fridges — 냉장고 생성 + 칸 자동생성 (관리자만)
+fridgeRouter.post('/', groupAdmin, async (req, res: Response): Promise<void> => {
+  const { groupId } = req as AuthRequest
   const { type, name } = req.body as { type?: FridgeType; name?: string }
 
   if (!type || !name) {
@@ -152,8 +153,8 @@ fridgeRouter.post('/', async (req, res: Response): Promise<void> => {
   }
 })
 
-// PUT /api/fridges/:id — 냉장고 수정 (이름 변경)
-fridgeRouter.put('/:id', async (req, res: Response): Promise<void> => {
+// PUT /api/fridges/:id — 냉장고 수정 (이름 변경, 관리자만)
+fridgeRouter.put('/:id', groupAdmin, async (req, res: Response): Promise<void> => {
   const { name } = req.body as { name?: string }
 
   if (!name) {
@@ -173,8 +174,8 @@ fridgeRouter.put('/:id', async (req, res: Response): Promise<void> => {
   }
 })
 
-// DELETE /api/fridges/:id — 냉장고 삭제 (cascade)
-fridgeRouter.delete('/:id', async (req, res: Response): Promise<void> => {
+// DELETE /api/fridges/:id — 냉장고 삭제 (cascade, 관리자만)
+fridgeRouter.delete('/:id', groupAdmin, async (req, res: Response): Promise<void> => {
   try {
     await prisma.fridge.delete({ where: { id: req.params['id'] as string } })
     res.status(204).send()

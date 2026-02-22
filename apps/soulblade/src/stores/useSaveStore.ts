@@ -14,12 +14,13 @@ interface SaveState {
   readonly position: { readonly x: number; readonly y: number }
   readonly gold: number
   readonly classLocked: boolean
+  readonly characterName: string
   readonly loaded: boolean
 
   // 액션
   readonly load: () => Promise<void>
   readonly save: (overrides?: Partial<SaveData>) => void
-  readonly lockClass: (classType: CharacterClass) => void
+  readonly lockClass: (classType: CharacterClass, characterName: string) => void
   readonly updateFromGame: (data: {
     level: number
     exp: number
@@ -48,6 +49,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
   position: { x: 1080, y: 1920 },
   gold: 0,
   classLocked: false,
+  characterName: '',
   loaded: false,
 
   load: async () => {
@@ -67,6 +69,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
         position: merged.position,
         gold: merged.gold,
         classLocked: merged.classLocked ?? false,
+        characterName: merged.characterName ?? '',
         loaded: true,
       })
     } else {
@@ -86,6 +89,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
       position: state.position,
       gold: state.gold,
       classLocked: state.classLocked,
+      characterName: state.characterName || undefined,
       lastSavedAt: new Date().toISOString(),
       ...overrides,
     }
@@ -103,8 +107,8 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     })
   },
 
-  lockClass: (classType) => {
-    set({ classLocked: true, characterClass: classType })
+  lockClass: (classType, characterName) => {
+    set({ classLocked: true, characterClass: classType, characterName })
     get().save()
   },
 

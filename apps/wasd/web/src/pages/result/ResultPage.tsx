@@ -25,6 +25,8 @@ const ResultPage = () => {
     navigate('/')
   }
 
+  const { ranking, myRank } = gameResult
+
   return (
     <div className={cx('container')}>
       <div className={cx('card')}>
@@ -43,6 +45,38 @@ const ResultPage = () => {
             </span>
           </div>
         </div>
+
+        {ranking && ranking.length > 0 && (
+          <div className={cx('ranking')}>
+            <h2 className={cx('rankingTitle')}>
+              랭킹
+              {myRank != null && (
+                <span className={cx('myRankBadge')}>#{myRank}</span>
+              )}
+            </h2>
+            <div className={cx('rankingList')}>
+              <div className={cx('rankingHeader')}>
+                <span className={cx('rankCol')}>#</span>
+                <span className={cx('nameCol')}>닉네임</span>
+                <span className={cx('timeCol')}>시간</span>
+                <span className={cx('deathCol')}>사망</span>
+                <span className={cx('playerCol')}>인원</span>
+              </div>
+              {ranking.map((entry, index) => (
+                <div
+                  key={`${entry.clearedAt}-${index}`}
+                  className={cx('rankingRow', { highlight: myRank === index + 1 })}
+                >
+                  <span className={cx('rankCol')}>{index + 1}</span>
+                  <span className={cx('nameCol')}>{entry.nicknames.join(', ')}</span>
+                  <span className={cx('timeCol')}>{formatTime(entry.elapsedTime)}</span>
+                  <span className={cx('deathCol')}>{entry.deaths}</span>
+                  <span className={cx('playerCol')}>{entry.playerCount}P</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button className={cx('homeButton')} onClick={handleHome}>
           메인으로 돌아가기

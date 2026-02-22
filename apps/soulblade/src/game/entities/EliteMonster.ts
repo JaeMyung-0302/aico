@@ -3,6 +3,7 @@ import type { EliteMutationType } from '@soulblade/shared'
 import type { MonsterConfig } from './Monster'
 import { MONSTER_TEXTURES } from '../texture-keys'
 import { createHpBar, updateHpBar, destroyHpBar, type HpBarConfig } from '../systems/hp-bar'
+import { createEliteLabel, updateEliteLabel, syncEliteLabel, destroyEntityLabel } from '../systems/entity-label'
 
 // 엘리트 변이 설정
 interface EliteMutation {
@@ -36,6 +37,9 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
   // HP 바
   private hpBar: Phaser.GameObjects.Graphics | null = null
   private hpBarConfig: HpBarConfig
+
+  // 레벨 라벨
+  private levelLabel: Phaser.GameObjects.Text | null = null
 
   // 상태 효과
   slowMultiplier = 0
@@ -78,6 +82,7 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
 
     this.hpBarConfig = { width: 32, height: 4, yOffset: -6, showBorder: true, borderColor: mutation.tint }
     this.hpBar = createHpBar(scene, this.hpBarConfig)
+    this.levelLabel = createEliteLabel(scene, baseConfig.level)
   }
 
   // AI: 변이 타입별 행동
@@ -160,6 +165,16 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
     } else if (this.hpBar && this.hpBar.alpha > 0) {
       updateHpBar(this.hpBar, this.x, this.y, this.hp / this.maxHp, this.hpBarConfig)
     }
+
+    // 레벨 라벨 위치 동기화 (LOD 조건)
+    if (this.levelLabel) {
+      if (!enableHpBars) {
+        this.levelLabel.setVisible(false)
+      } else {
+        this.levelLabel.setVisible(true)
+        syncEliteLabel(this.levelLabel, this.x, this.y)
+      }
+    }
   }
 
   // splitting 변이: 분열 가능 여부
@@ -167,17 +182,20 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
 
   getSplitCount = (): number => this.splitCount
 
-  // setVisible override: hpBar 동기화 (clearAll 경로 대응)
+  // setVisible override: hpBar + 라벨 동기화 (clearAll 경로 대응)
   setVisible(value: boolean): this {
     super.setVisible(value)
     if (this.hpBar) this.hpBar.setVisible(value)
+    if (this.levelLabel) this.levelLabel.setVisible(value)
     return this
   }
 
-  // Phaser destroy lifecycle: Graphics 정리 (scene.restart/shutdown 대응)
+  // Phaser destroy lifecycle: Graphics + 라벨 정리 (scene.restart/shutdown 대응)
   preDestroy(): void {
     destroyHpBar(this.hpBar)
     this.hpBar = null
+    destroyEntityLabel(this.levelLabel)
+    this.levelLabel = null
   }
 
   private die(): void {
@@ -224,6 +242,12 @@ export class EliteMonster extends Phaser.Physics.Arcade.Sprite {
       this.hpBar.clear() // 이전 mutation 색상 draw command 제거
       this.hpBar.setVisible(true)
       this.hpBar.setAlpha(0)
+    }
+
+    // 레벨 라벨 리셋
+    if (this.levelLabel) {
+      updateEliteLabel(this.levelLabel, baseConfig.level)
+      this.levelLabel.setVisible(true)
     }
   }
 }

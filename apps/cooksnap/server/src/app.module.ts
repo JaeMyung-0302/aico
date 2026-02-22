@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PremiumModule } from './premium/premium.module';
 import { PaymentModule } from './payment/payment.module';
+import { FeedbackModule } from './feedback/feedback.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -30,6 +31,7 @@ import configuration from './config/configuration';
     UsersModule,
     PremiumModule,
     PaymentModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

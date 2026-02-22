@@ -24,6 +24,12 @@ const configuration = () => ({
     channelKey: process.env.PORTONE_CHANNEL_KEY,
     webhookSecret: process.env.PORTONE_WEBHOOK_SECRET,
   },
+  billing: {
+    encryptKey: process.env.BILLING_ENCRYPT_KEY,
+  },
+  admin: {
+    emails: process.env.ADMIN_EMAILS,
+  },
 });
 
 export default configuration;

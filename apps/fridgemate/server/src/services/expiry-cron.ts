@@ -72,4 +72,21 @@ export const startExpiryCron = (): void => {
   })
 
   console.log('[Cron] 유통기한 알림 스케줄러 등록 (매일 09:00)')
+
+  // 매일 00:05 실행 — 프리미엄 만료 체크
+  cron.schedule('5 0 * * *', async () => {
+    try {
+      const result = await prisma.group.updateMany({
+        where: { isPremium: true, premiumExpiresAt: { lt: new Date() } },
+        data: { isPremium: false },
+      })
+      if (result.count > 0) {
+        console.log(`[Cron] ${result.count}개 그룹 프리미엄 만료 처리`)
+      }
+    } catch (err) {
+      console.error('[Cron] 프리미엄 만료 체크 실패:', err)
+    }
+  })
+
+  console.log('[Cron] 프리미엄 만료 스케줄러 등록 (매일 00:05)')
 }

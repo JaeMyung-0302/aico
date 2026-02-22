@@ -15,7 +15,8 @@ export const requestBillingKey = async (customerId: string, customerEmail: strin
   const response = await PortOne.requestIssueBillingKey({
     storeId: STORE_ID,
     channelKey: CHANNEL_KEY,
-    billingKeyMethod: 'CARD',
+    billingKeyMethod: 'EASY_PAY',
+    issueName: 'KAKAOPAY',
     customer: {
       customerId,
       email: customerEmail,

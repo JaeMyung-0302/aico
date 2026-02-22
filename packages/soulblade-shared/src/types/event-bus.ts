@@ -1,4 +1,4 @@
-import type { CharacterClass, CharacterStats } from './character.js'
+import type { BasicAttackPattern, CharacterClass, CharacterStats } from './character.js'
 import type { Equipment } from './equipment.js'
 import type { MapId, NpcType } from './map.js'
 import type { PassiveSkillId, SkillEvolution } from './skill.js'
@@ -75,6 +75,24 @@ export interface PhaserToReactEvents {
   }
   readonly 'npc:leave': undefined
   readonly 'save:request': undefined
+  // R3F 전투 이벤트
+  readonly 'combat:damageNumber': {
+    readonly x: number
+    readonly y: number
+    readonly damage: number
+    readonly isCrit: boolean
+    readonly color?: string
+  }
+  readonly 'combat:attack': {
+    readonly attackPattern: BasicAttackPattern
+    readonly x: number
+    readonly y: number
+    readonly facingAngle: number
+  }
+  readonly 'monster:death': {
+    readonly x: number
+    readonly y: number
+  }
   readonly 'player:fullStats': {
     readonly hp: number
     readonly maxHp: number
@@ -111,6 +129,7 @@ export interface ReactToPhaserEvents {
     readonly classType: CharacterClass
     readonly stats: CharacterStats
     readonly equippedItems: readonly Equipment[]
+    readonly characterName?: string
   }
   readonly 'game:pause': undefined
   readonly 'game:resume': undefined

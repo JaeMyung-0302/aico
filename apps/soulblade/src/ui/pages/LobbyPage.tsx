@@ -6,6 +6,7 @@ import { CLASS_CONFIGS, EMPTY_PERMANENT_STATS } from '@soulblade/shared'
 import { useRunStore } from '@/stores/useRunStore'
 import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
+import { checkNameAvailable, validateNameLocal } from '@/lib/character-name'
 import { ClassPreview } from '@/ui/components/ClassPreview'
 import styles from './LobbyPage.module.scss'
 
@@ -35,8 +36,12 @@ export const LobbyPage = () => {
   const savedLevel = useSaveStore((s) => s.characterLevel)
   const savedStats = useSaveStore((s) => s.characterStats)
   const savedGold = useSaveStore((s) => s.gold)
+  const savedName = useSaveStore((s) => s.characterName)
   const [selectedClass, setSelectedClass] = useState<CharacterClass>('Warrior')
   const [confirming, setConfirming] = useState(false)
+  const [charName, setCharName] = useState('')
+  const [nameError, setNameError] = useState('')
+  const [nameChecking, setNameChecking] = useState(false)
 
   // 기존 플레이어: 저장된 클래스로 바로 게임 시작
   const handleStartLocked = () => {
@@ -49,23 +54,71 @@ export const LobbyPage = () => {
       classType: savedClass,
       stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },
       equippedItems: [],
+      characterName: savedName || undefined,
     })
     navigate('/game')
   }
 
-  // 신규 플레이어: 클래스 확정 후 게임 시작
-  const handleConfirmClass = () => {
-    useSaveStore.getState().lockClass(selectedClass)
-    useRunStore.setState({ classType: selectedClass })
-    const config = CLASS_CONFIGS[selectedClass]
+  // 이름 입력 변경 핸들러
+  const handleNameChange = (value: string) => {
+    setCharName(value)
+    setNameError('')
+  }
 
-    eventBus.emit('game:start', {
-      mapId: 'town',
-      classType: selectedClass,
-      stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },
-      equippedItems: [],
-    })
-    navigate('/game')
+  // 이름 입력 후 확정 단계로 전환
+  const handleProceedToConfirm = async () => {
+    const localResult = validateNameLocal(charName)
+    if (!localResult.valid) {
+      setNameError(localResult.error ?? '')
+      return
+    }
+
+    setNameChecking(true)
+    try {
+      const result = await checkNameAvailable(charName)
+      if (!result.valid) {
+        setNameError(result.error ?? '')
+        return
+      }
+      setConfirming(true)
+    } catch {
+      setNameError('이름 확인 중 오류가 발생했습니다.')
+    } finally {
+      setNameChecking(false)
+    }
+  }
+
+  // 신규 플레이어: 클래스 + 이름 확정 후 게임 시작
+  const handleConfirmClass = async () => {
+    // 최종 중복 검사 (TOCTOU 방어: unique_violation은 DB가 최종 방어)
+    setNameChecking(true)
+    try {
+      const result = await checkNameAvailable(charName)
+      if (!result.valid) {
+        setNameError(result.error ?? '')
+        setConfirming(false)
+        return
+      }
+
+      const trimmedName = result.trimmedName ?? charName.trim()
+      useSaveStore.getState().lockClass(selectedClass, trimmedName)
+      useRunStore.setState({ classType: selectedClass })
+      const config = CLASS_CONFIGS[selectedClass]
+
+      eventBus.emit('game:start', {
+        mapId: 'town',
+        classType: selectedClass,
+        stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },
+        equippedItems: [],
+        characterName: trimmedName,
+      })
+      navigate('/game')
+    } catch {
+      setNameError('이름 확인 중 오류가 발생했습니다.')
+      setConfirming(false)
+    } finally {
+      setNameChecking(false)
+    }
   }
 
   // 세이브 로딩 대기
@@ -91,6 +144,7 @@ export const LobbyPage = () => {
         <div className={cx('lockedInfo')}>
           <ClassPreview classType={savedClass} />
           <div className={cx('lockedDetails')}>
+            {savedName && <span className={cx('lockedName')}>{savedName}</span>}
             <span className={cx('lockedClass')}>{CLASS_NAME_KR[savedClass]}</span>
             <span className={cx('lockedLevel')}>Lv. {savedLevel}</span>
             <span className={cx('lockedStat')}>HP {savedStats.hp} / ATK {savedStats.atk} / DEF {savedStats.def}</span>
@@ -143,7 +197,7 @@ export const LobbyPage = () => {
               <button
                 key={cls}
                 className={cx('classTab', { selected: selectedClass === cls })}
-                onClick={() => { setSelectedClass(cls); setConfirming(false) }}
+                onClick={() => { setSelectedClass(cls); setConfirming(false); setNameError('') }}
               >
                 {CLASS_NAME_KR[cls]}
               </button>
@@ -174,20 +228,40 @@ export const LobbyPage = () => {
         </div>
       </div>
 
+      {/* 이름 입력 */}
+      <div className={cx('nameInputGroup')}>
+        <label className={cx('nameLabel')} htmlFor="char-name">캐릭터명</label>
+        <input
+          id="char-name"
+          className={cx('nameInput', { error: !!nameError })}
+          type="text"
+          placeholder="2~8자 (한글, 영문, 숫자)"
+          maxLength={8}
+          value={charName}
+          onChange={(e) => handleNameChange(e.target.value)}
+          disabled={confirming || nameChecking}
+        />
+        {nameError && <span className={cx('nameError')}>{nameError}</span>}
+      </div>
+
       {!confirming ? (
-        <button className={cx('startButton')} onClick={() => setConfirming(true)}>
-          {CLASS_NAME_KR[selectedClass]}(으)로 시작
+        <button
+          className={cx('startButton')}
+          onClick={handleProceedToConfirm}
+          disabled={nameChecking || charName.trim().length === 0}
+        >
+          {nameChecking ? '확인 중...' : `${CLASS_NAME_KR[selectedClass]}(으)로 시작`}
         </button>
       ) : (
         <div className={cx('confirmGroup')}>
           <p className={cx('confirmText')}>
-            한 번 선택하면 변경할 수 없습니다. {CLASS_NAME_KR[selectedClass]}(으)로 확정할까요?
+            한 번 선택하면 변경할 수 없습니다. &quot;{charName.trim()}&quot; {CLASS_NAME_KR[selectedClass]}(으)로 확정할까요?
           </p>
           <div className={cx('confirmButtons')}>
-            <button className={cx('confirmButton')} onClick={handleConfirmClass}>
-              확정
+            <button className={cx('confirmButton')} onClick={handleConfirmClass} disabled={nameChecking}>
+              {nameChecking ? '확인 중...' : '확정'}
             </button>
-            <button className={cx('cancelButton')} onClick={() => setConfirming(false)}>
+            <button className={cx('cancelButton')} onClick={() => setConfirming(false)} disabled={nameChecking}>
               취소
             </button>
           </div>

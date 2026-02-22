@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import type { Router as RouterType } from 'express'
 import { prisma } from '../lib/prisma.js'
-import { groupAuth, type GroupRequest } from '../middleware/group-auth.js'
+import { jwtAuth, type AuthRequest } from '../middleware/auth.js'
 import { getVapidPublicKey } from '../services/push-notification.js'
 import type { PushSubscriptionInput } from '../types/index.js'
 
@@ -13,8 +13,8 @@ pushRouter.get('/vapid-public-key', (_req: Request, res: Response): void => {
 })
 
 // POST /api/push/subscribe — Push 구독 등록 (인증 필요)
-pushRouter.post('/subscribe', groupAuth, async (req: Request, res: Response): Promise<void> => {
-  const { groupId } = req as GroupRequest
+pushRouter.post('/subscribe', jwtAuth, async (req: Request, res: Response): Promise<void> => {
+  const { groupId, userId } = req as AuthRequest
   const { endpoint, keys } = req.body as PushSubscriptionInput
 
   if (!endpoint || !keys?.p256dh || !keys?.auth) {
@@ -27,12 +27,14 @@ pushRouter.post('/subscribe', groupAuth, async (req: Request, res: Response): Pr
       where: { endpoint },
       create: {
         groupId,
+        userId,
         endpoint,
         p256dh: keys.p256dh,
         auth: keys.auth,
       },
       update: {
         groupId,
+        userId,
         p256dh: keys.p256dh,
         auth: keys.auth,
       },
@@ -45,7 +47,7 @@ pushRouter.post('/subscribe', groupAuth, async (req: Request, res: Response): Pr
 })
 
 // POST /api/push/unsubscribe — Push 구독 해제 (인증 필요)
-pushRouter.post('/unsubscribe', groupAuth, async (req: Request, res: Response): Promise<void> => {
+pushRouter.post('/unsubscribe', jwtAuth, async (req: Request, res: Response): Promise<void> => {
   const { endpoint } = req.body as { endpoint?: string }
 
   if (!endpoint) {

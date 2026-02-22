@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, SchemaType, type Schema } from '@google/generative-ai';
 
@@ -98,8 +98,30 @@ export class GeminiService {
     });
   };
 
+  private static readonly ALLOWED_HOSTS = new Set([
+    'instagram.com', 'www.instagram.com',
+    'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com',
+    'youtube.com', 'www.youtube.com', 'youtu.be',
+  ]);
+
+  private validateVideoUrl = (url: string): void => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:') {
+        throw new BadRequestException('HTTPS URL만 허용됩니다.');
+      }
+      if (!GeminiService.ALLOWED_HOSTS.has(parsed.hostname)) {
+        throw new BadRequestException('허용되지 않은 도메인입니다.');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException('유효하지 않은 URL입니다.');
+    }
+  };
+
   // 영상 URL 직접 분석 (다운로드 불필요)
   analyzeVideoUrl = async (videoUrl: string): Promise<GeminiRecipeResult> => {
+    this.validateVideoUrl(videoUrl);
     const model = this.getModel();
 
     this.logger.log(`영상 URL 직접 분석: ${videoUrl}`);

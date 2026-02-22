@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { prisma } from '../lib/prisma.js'
 import { suggestRecipes } from '../lib/gemini.js'
 import { getKSTWeekStart } from '../lib/date.js'
-import { GroupRequest } from '../middleware/group-auth.js'
+import { AuthRequest } from '../middleware/auth.js'
 import { FREE_WEEKLY_LIMIT } from '../middleware/usage-check.js'
 import type { RecipeIngredient, RecipeSuggestion, RecipeSuggestResponse, RecipeSuggestRequest } from '../types/index.js'
 
@@ -20,7 +20,7 @@ const buildIngredientHash = (names: string[]): string => {
 
 // POST /api/fridges/:fridgeId/recipe-suggest
 recipeSuggestRouter.post('/:fridgeId/recipe-suggest', async (req, res: Response): Promise<void> => {
-  const { groupId } = req as unknown as GroupRequest
+  const { groupId } = req as unknown as AuthRequest
   const fridgeId = req.params['fridgeId'] as string
 
   if (!UUID_REGEX.test(fridgeId)) {

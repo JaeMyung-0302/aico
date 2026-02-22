@@ -3,6 +3,7 @@ import type { CharacterClass, CharacterStats, BasicAttackPattern, StatAllocation
 import type { PassiveSkillId } from '@soulblade/shared'
 import { CLASS_CONFIGS, calcExpForLevel, STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES } from '@soulblade/shared'
 import { PLAYER_SPRITESHEET_KEYS, PLAYER_ANIM_KEYS } from '../texture-keys'
+import { createPlayerLabel, updatePlayerLabel, syncPlayerLabel, destroyEntityLabel } from '../systems/entity-label'
 import { eventBus } from '@/lib/event-bus'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -42,12 +43,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   invincible: boolean
   private invincibleTimer: number
 
+  // 이름 라벨
+  private characterName: string
+  private nameLabel: Phaser.GameObjects.Text | null = null
+
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
     classType: CharacterClass,
     permanentStats?: Partial<CharacterStats>,
+    characterName?: string,
   ) {
     super(scene, x, y, PLAYER_SPRITESHEET_KEYS[classType], 0)
     this.classType = classType
@@ -86,6 +92,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.invincible = false
     this.invincibleTimer = 0
+
+    this.characterName = characterName ?? ''
+    if (this.characterName) {
+      this.nameLabel = createPlayerLabel(scene, this.characterName, this.level)
+    }
 
     this.setCollideWorldBounds(true)
     this.setDepth(10)
@@ -159,6 +170,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (levelsGained > 0) {
       // HP 전체 회복
       this.hp = this.maxHp
+
+      // 라벨 갱신
+      this.refreshLabel()
 
       // 스탯 포인트 배분 이벤트 (누적 레벨만큼 한 번에)
       eventBus.emit('player:levelup', {
@@ -253,6 +267,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.invincible = false
       this.setAlpha(1)
     }
+  }
+
+  // 이름 라벨 위치 동기화 (매 프레임 호출)
+  updateLabel = (): void => {
+    if (this.nameLabel) {
+      syncPlayerLabel(this.nameLabel, this.x, this.y)
+    }
+  }
+
+  // 이름 라벨 텍스트 갱신 (레벨업 시)
+  private refreshLabel(): void {
+    if (this.nameLabel && this.characterName) {
+      updatePlayerLabel(this.nameLabel, this.characterName, this.level)
+    }
+  }
+
+  preDestroy(): void {
+    destroyEntityLabel(this.nameLabel)
+    this.nameLabel = null
   }
 
   emitStatsUpdate = (): void => {

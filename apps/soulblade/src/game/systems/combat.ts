@@ -32,6 +32,11 @@ export interface JuicyConfig {
   readonly enableEntityGlow: boolean
   readonly enableBreathTween: boolean
   readonly combatEffectLevel: CombatEffectLevel
+  // 조명 + 포스트프로세싱 플래그
+  readonly enableLighting: boolean
+  readonly enableDynamicLights: boolean
+  readonly enableBloom: boolean
+  readonly enableChromaticAberration: boolean
 }
 
 const DEFAULT_JUICY: JuicyConfig = {
@@ -53,6 +58,10 @@ const DEFAULT_JUICY: JuicyConfig = {
   enableEntityGlow: true,
   enableBreathTween: true,
   combatEffectLevel: 'enhanced',
+  enableLighting: true,
+  enableDynamicLights: true,
+  enableBloom: true,
+  enableChromaticAberration: true,
 }
 
 interface CombatState {

@@ -80,6 +80,50 @@ export interface FoodItemResponse {
   updatedAt: string
 }
 
+// === JoinRequest ===
+
+export const JoinRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+} as const
+export type JoinRequestStatus = (typeof JoinRequestStatus)[keyof typeof JoinRequestStatus]
+
+export interface JoinRequestResponse {
+  id: string
+  userId: string
+  groupId: string
+  status: JoinRequestStatus
+  userName: string
+  userEmail: string
+  createdAt: string
+}
+
+// === Subscription/Payment ===
+
+export const SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+  PAST_DUE: 'PAST_DUE',
+} as const
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED',
+} as const
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+export interface SubscriptionStatusResponse {
+  hasSubscription: boolean
+  status: SubscriptionStatus | null
+  currentPeriodEnd: string | null
+  isPremium: boolean
+}
+
 // === Push Subscription ===
 
 export interface PushSubscriptionInput {

@@ -1,0 +1,117 @@
+.overlay {
+  @include overlay;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-24;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  background-color: $color-bg-primary;
+  border-radius: $radius-lg;
+  padding: $space-24 $space-20;
+  box-shadow: $shadow-3;
+}
+
+.closeButton {
+  position: absolute;
+  top: $space-12;
+  right: $space-12;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: $color-gray-400;
+  cursor: pointer;
+  line-height: 1;
+  padding: $space-4;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+  text-align: center;
+  margin-bottom: $space-20;
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: $space-12;
+  margin-bottom: $space-20;
+}
+
+.benefit {
+  display: flex;
+  align-items: center;
+  gap: $space-12;
+}
+
+.benefitIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $color-primary-50;
+  border-radius: $radius-md;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.benefitText {
+  font-size: $font-size-body;
+  color: $color-gray-700;
+}
+
+.pricing {
+  text-align: center;
+  margin-bottom: $space-20;
+  padding: $space-16;
+  background-color: $color-gray-50;
+  border-radius: $radius-md;
+}
+
+.price {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: $font-weight-bold;
+  color: $color-primary-500;
+  margin-bottom: $space-4;
+}
+
+.priceNote {
+  font-size: $font-size-body-sm;
+  color: $color-gray-500;
+}
+
+.error {
+  font-size: $font-size-body-sm;
+  color: $color-danger;
+  text-align: center;
+  margin-bottom: $space-12;
+}
+
+.subscribeButton {
+  @include button-primary;
+  width: 100%;
+  padding: $space-16;
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-semibold;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.disclaimer {
+  font-size: $font-size-caption;
+  color: $color-gray-400;
+  text-align: center;
+  margin-top: $space-12;
+  line-height: 1.5;
+}

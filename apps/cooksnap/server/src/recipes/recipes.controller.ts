@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { RecipesService } from './recipes.service';
 import { KamisService } from '../kamis/kamis.service';
 import { CoupangService } from '../coupang/coupang.service';
@@ -15,6 +16,7 @@ export class RecipesController {
 
   @Post('analyze')
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   analyze(@Body() dto: AnalyzeRecipeDto, @Req() req: any) {
     return this.recipesService.analyze(dto.url, req.user.id);
   }

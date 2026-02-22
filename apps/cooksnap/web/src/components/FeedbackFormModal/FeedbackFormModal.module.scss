@@ -1,0 +1,188 @@
+@use 'sass:color';
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  @include flex-center;
+  padding: $spacing-md;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background-color: $surface;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+  box-shadow: $shadow-lg;
+}
+
+.closeButton {
+  @include button-reset;
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  width: 32px;
+  height: 32px;
+  @include flex-center;
+  font-size: 20px;
+  color: $text-secondary;
+  border-radius: $radius-sm;
+  transition: $transition-fast;
+
+  &:hover {
+    background-color: $background;
+    color: $text-primary;
+  }
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: $spacing-lg;
+}
+
+.categoryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.chip {
+  @include button-reset;
+  padding: $spacing-sm $spacing-md;
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-secondary;
+  background-color: $background;
+  border-radius: $radius-full;
+  border: 1.5px solid transparent;
+  transition: $transition-fast;
+
+  &:hover {
+    color: $primary;
+    border-color: $primary-light;
+  }
+
+  &.active {
+    color: $primary;
+    background-color: rgba($primary, 0.08);
+    border-color: $primary;
+  }
+}
+
+.textareaWrapper {
+  position: relative;
+  margin-bottom: $spacing-md;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: $spacing-md;
+  font-size: 15px;
+  font-family: $font-family;
+  color: $text-primary;
+  background-color: $background;
+  border: 1.5px solid $border;
+  border-radius: $radius-md;
+  resize: vertical;
+  transition: $transition-fast;
+  line-height: 1.6;
+
+  &::placeholder {
+    color: $text-secondary;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    background-color: $surface;
+  }
+}
+
+.charCounter {
+  position: absolute;
+  bottom: $spacing-sm;
+  right: $spacing-md;
+  font-size: 12px;
+  color: $text-secondary;
+
+  &.warning {
+    color: $error;
+  }
+}
+
+.error {
+  margin-bottom: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  font-size: 13px;
+  color: $error;
+  background-color: rgba($error, 0.08);
+  border-radius: $radius-sm;
+}
+
+.submitButton {
+  @include button-reset;
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: $radius-md;
+  text-align: center;
+  transition: $transition-base;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.disclaimer {
+  margin-top: $spacing-md;
+  font-size: 12px;
+  color: $text-secondary;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.successMessage {
+  text-align: center;
+  padding: $spacing-xl 0;
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto $spacing-md;
+  @include flex-center;
+  background: linear-gradient(135deg, $success 0%, color.adjust($success, $lightness: 10%) 100%);
+  color: #fff;
+  font-size: 28px;
+  border-radius: 50%;
+}
+
+.successText {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: $spacing-xs;
+}
+
+.successSubText {
+  font-size: 14px;
+  color: $text-secondary;
+}

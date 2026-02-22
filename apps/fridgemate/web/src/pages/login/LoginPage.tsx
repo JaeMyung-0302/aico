@@ -1,30 +1,38 @@
 import { useState, useCallback } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
 import classNames from 'classnames/bind'
-import { useGroupStore } from '@/stores/useGroupStore'
+import { useAuthStore } from '@/stores/useAuthStore'
 import styles from './LoginPage.module.scss'
 
 const cx = classNames.bind(styles)
 
 export const LoginPage = () => {
   const navigate = useNavigate()
-  const { verify, loading, error } = useGroupStore()
-  const [code, setCode] = useState('')
+  const { login, loading, error, isAuthenticated, needsGroup } = useAuthStore()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault()
-      const trimmed = code.trim()
-      if (!trimmed || loading) return
+      if (!email.trim() || !password || loading) return
 
-      const success = await verify(trimmed)
+      const success = await login(email.trim(), password)
       if (success) {
-        navigate('/select', { replace: true })
+        const { needsGroup: ng } = useAuthStore.getState()
+        navigate(ng ? '/group-setup' : '/select', { replace: true })
       }
     },
-    [code, loading, verify, navigate],
+    [email, password, loading, login, navigate],
   )
+
+  if (isAuthenticated && !needsGroup) {
+    return <Navigate to="/select" replace />
+  }
+  if (isAuthenticated && needsGroup) {
+    return <Navigate to="/group-setup" replace />
+  }
 
   return (
     <div className={cx('page')}>
@@ -35,24 +43,32 @@ export const LoginPage = () => {
       <form className={cx('form')} onSubmit={handleSubmit}>
         <input
           className={cx('input')}
-          type="text"
-          placeholder="그룹 코드를 입력하세요"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          maxLength={20}
+          type="email"
+          placeholder="이메일"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           autoFocus
+        />
+        <input
+          className={cx('input')}
+          type="password"
+          placeholder="비밀번호"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
         <button
           className={cx('submitBtn')}
           type="submit"
-          disabled={!code.trim() || loading}
+          disabled={!email.trim() || !password || loading}
         >
-          {loading ? '확인 중...' : '입장하기'}
+          {loading ? '로그인 중...' : '로그인'}
         </button>
       </form>
 
       {error && <p className={cx('error')}>{error}</p>}
-      <p className={cx('hint')}>가족/룸메이트와 같은 코드로 냉장고를 공유하세요</p>
+      <p className={cx('hint')}>
+        계정이 없으신가요? <Link className={cx('link')} to="/register">회원가입</Link>
+      </p>
     </div>
   )
 }

@@ -54,6 +54,7 @@ export class GameScene extends Phaser.Scene {
   private classType: CharacterClass = 'Warrior'
   private permanentStats: Partial<CharacterStats> = {}
   private equippedItems: readonly Equipment[] = []
+  private characterName = ''
 
   // 골드
   private gold = 0
@@ -96,6 +97,10 @@ export class GameScene extends Phaser.Scene {
     if (saveInit.loaded) {
       this.initialMapId = saveInit.currentMapId
     }
+    // characterName: game:start 이벤트 → useSaveStore fallback
+    if (!this.characterName && saveInit.loaded && saveInit.characterName) {
+      this.characterName = saveInit.characterName
+    }
 
     // MapManager 초기화
     this.mapManager = new MapManager(this)
@@ -108,6 +113,7 @@ export class GameScene extends Phaser.Scene {
       mapConfig.playerSpawn.y,
       this.classType,
       this.permanentStats,
+      this.characterName || undefined,
     )
 
     // 장비 스탯 반영
@@ -270,6 +276,9 @@ export class GameScene extends Phaser.Scene {
     // 이동
     applyMovement(this.player, this.joystick)
 
+    // 이름 라벨 위치 동기화
+    this.player.updateLabel()
+
     // 무적 타이머
     this.player.updateInvincibility(delta)
 
@@ -360,11 +369,13 @@ export class GameScene extends Phaser.Scene {
     classType: CharacterClass
     stats: CharacterStats
     equippedItems: readonly Equipment[]
+    characterName?: string
   }): void => {
     this.initialMapId = data.mapId
     this.classType = data.classType
     this.permanentStats = data.stats
     this.equippedItems = data.equippedItems
+    this.characterName = data.characterName ?? ''
     stopBgm()
     this.scene.restart()
   }

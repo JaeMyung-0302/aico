@@ -14,5 +14,6 @@ export interface SaveData {
   readonly position: { readonly x: number; readonly y: number }
   readonly gold: number
   readonly classLocked: boolean
+  readonly characterName?: string
   readonly lastSavedAt: string // ISO 8601
 }

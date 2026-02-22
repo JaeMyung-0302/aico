@@ -16,6 +16,10 @@ export const SocketEvents = {
   STAGE_CLEAR: 'stage-clear',
   GAME_COMPLETE: 'game-complete',
 
+  // Ranking
+  RANKING_FETCH: 'ranking-fetch',
+  RANKING_DATA: 'ranking-data',
+
   // Error
   ERROR: 'error',
 } as const

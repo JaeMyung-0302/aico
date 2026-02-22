@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Body, UseGuards, Req, Headers, RawBody } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { PaymentService } from './payment.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { SubscribeDto } from './dto/subscribe.dto';
@@ -31,7 +31,7 @@ export class PaymentController {
     return this.paymentService.getStatus(req.user.id);
   }
 
-  @SkipThrottle()
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   @Post('webhook')
   handleWebhook(@Headers() headers: Record<string, string>, @RawBody() body: Buffer) {
     return this.paymentService.handleWebhook(body.toString(), headers);

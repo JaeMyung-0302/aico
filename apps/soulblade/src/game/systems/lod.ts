@@ -88,4 +88,9 @@ export const getLodConfig = (quality: QualityLevel): JuicyConfig => ({
   enableEntityGlow: quality === 'full' || quality === 'reduced',
   enableBreathTween: quality === 'full',
   combatEffectLevel: getCombatEffectLevel(quality),
+  // 조명 + 포스트프로세싱
+  enableLighting: quality !== 'canvas',
+  enableDynamicLights: quality === 'full' || quality === 'reduced',
+  enableBloom: quality === 'full',
+  enableChromaticAberration: quality === 'full' || quality === 'reduced',
 })

@@ -17,7 +17,7 @@
   border-radius: 16px;
   border: 2px solid #0f3460;
   box-shadow: 0 0 60px rgba(0, 212, 255, 0.1), 0 20px 60px rgba(0, 0, 0, 0.4);
-  max-width: 400px;
+  max-width: 480px;
   width: 100%;
   animation: cardReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -78,6 +78,99 @@
     color: #e94560;
     text-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
   }
+}
+
+.ranking {
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: statReveal 0.4s ease-out 0.6s forwards;
+}
+
+.rankingTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ccd6f6;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.myRankBadge {
+  font-size: 14px;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.rankingList {
+  max-height: 280px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 52, 96, 0.6);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #1a3a6a;
+    border-radius: 2px;
+  }
+}
+
+.rankingHeader,
+.rankingRow {
+  display: grid;
+  grid-template-columns: 36px 1fr 60px 44px 40px;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankingHeader {
+  color: #5a6a90;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(15, 52, 96, 0.6);
+  position: sticky;
+  top: 0;
+  background: rgba(22, 33, 62, 0.95);
+}
+
+.rankingRow {
+  color: #8892b0;
+  border-bottom: 1px solid rgba(15, 52, 96, 0.3);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.highlight {
+    color: #e6f1ff;
+    background: rgba(0, 212, 255, 0.08);
+    font-weight: 600;
+  }
+}
+
+.rankCol {
+  text-align: center;
+}
+
+.nameCol {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeCol,
+.deathCol,
+.playerCol {
+  text-align: center;
 }
 
 .homeButton {

@@ -29,22 +29,6 @@ const createParticle = (
   }
 }
 
-export const emitCoinParticles = (state: EffectsState, x: number, y: number): EffectsState => {
-  const colors = ['#ffd700', '#ffec8b', '#fff8dc', '#ffa500']
-  const newParticles: Particle[] = []
-  const count = 5 + Math.floor(Math.random() * 4) // 5-8
-
-  for (let i = 0; i < count; i++) {
-    const color = colors[Math.floor(Math.random() * colors.length)] ?? '#ffd700'
-    newParticles.push(createParticle(x, y, color, 1.5))
-  }
-
-  return {
-    ...state,
-    particles: [...state.particles, ...newParticles].slice(-MAX_PARTICLES),
-  }
-}
-
 export const emitDeathParticles = (state: EffectsState, x: number, y: number): EffectsState => {
   const colors = ['#ff4444', '#ff6666', '#cc2222', '#ff8888']
   const newParticles: Particle[] = []

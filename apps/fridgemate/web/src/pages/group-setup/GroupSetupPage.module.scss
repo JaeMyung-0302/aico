@@ -1,0 +1,178 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: $space-32 $space-24;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(0, 0, 0, 0.06) 0%, transparent 50%),
+    linear-gradient(180deg, #4a9af5 0%, $color-primary-500 30%, $color-primary-600 70%, $color-primary-700 100%);
+}
+
+.logo {
+  font-size: 4.5rem;
+  margin-bottom: $space-16;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: $font-weight-bold;
+  color: $color-bg-primary;
+  margin-bottom: $space-4;
+}
+
+.subtitle {
+  font-size: $font-size-body-lg;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: $space-24;
+}
+
+.tabs {
+  display: flex;
+  gap: $space-4;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: $space-20;
+}
+
+.tab {
+  flex: 1;
+  padding: $space-12;
+  border-radius: $radius-lg;
+  font-size: $font-size-body-sm;
+  font-weight: $font-weight-bold;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all $transition-normal;
+
+  &.active {
+    color: $color-primary-600;
+    background: $color-bg-primary;
+    border-color: $color-bg-primary;
+  }
+}
+
+.form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: $space-12;
+}
+
+.input {
+  width: 100%;
+  padding: $space-16 $space-20;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: $radius-lg;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: $color-bg-primary;
+  font-size: 1.0625rem;
+  text-align: center;
+  outline: none;
+  transition: border-color $transition-normal;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &:focus {
+    border-color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+  }
+}
+
+.submitBtn {
+  width: 100%;
+  padding: $space-16;
+  background: $color-bg-primary;
+  color: $color-primary-600;
+  border-radius: $radius-lg;
+  font-size: 1rem;
+  font-weight: $font-weight-bold;
+  transition: transform $transition-normal, box-shadow $transition-normal;
+  box-shadow: $shadow-3;
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: $shadow-2;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+// 참여 요청 상태 카드
+.statusCard {
+  width: 100%;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: $radius-lg;
+  padding: $space-24 $space-20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-12;
+}
+
+.statusIcon {
+  font-size: 3rem;
+}
+
+.statusText {
+  font-size: $font-size-body;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  line-height: $line-height-normal;
+}
+
+.refreshBtn {
+  width: 100%;
+  padding: $space-12;
+  background: rgba(255, 255, 255, 0.2);
+  color: $color-bg-primary;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: $radius-lg;
+  font-size: $font-size-body;
+  font-weight: $font-weight-semibold;
+  transition: background-color $transition-normal;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.backBtn {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: $font-size-caption;
+  margin-top: $space-16;
+  text-decoration: underline;
+}
+
+.error {
+  color: #ffd6d6;
+  font-size: $font-size-body-sm;
+  text-align: center;
+  margin-top: $space-4;
+}
+
+.hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: $font-size-caption;
+  text-align: center;
+  margin-top: $space-8;
+}

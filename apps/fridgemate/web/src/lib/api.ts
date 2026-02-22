@@ -1,11 +1,10 @@
 // fetch 기반 API client
-// groupId를 X-Group-Id 헤더로 전송
+// JWT Bearer token으로 인증
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
-// groupId를 가져오는 함수 (순환참조 방지를 위해 localStorage에서 직접 읽기)
-const getGroupId = (): string | null => {
-  return localStorage.getItem('fridgemate-group-id')
+const getToken = (): string | null => {
+  return localStorage.getItem('fridgemate-token')
 }
 
 interface ApiError {
@@ -29,9 +28,9 @@ const buildHeaders = (): Record<string, string> => {
     'Content-Type': 'application/json',
   }
 
-  const groupId = getGroupId()
-  if (groupId) {
-    headers['X-Group-Id'] = groupId
+  const token = getToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
   return headers
@@ -41,9 +40,11 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
     // 401 응답 시 세션 정리 + 로그인 페이지로 리다이렉트
     if (response.status === 401 && !response.url.includes('/auth/')) {
-      localStorage.removeItem('fridgemate-group-id')
+      localStorage.removeItem('fridgemate-token')
+      localStorage.removeItem('fridgemate-user')
       localStorage.removeItem('fridgemate-group-name')
-      window.location.href = '/'
+      window.location.href = '/login'
+      return new Promise<T>(() => {})
     }
 
     let errorMessage = `HTTP ${response.status}`

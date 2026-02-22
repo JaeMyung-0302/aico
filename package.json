@@ -22,7 +22,8 @@
       "prisma",
       "@nestjs/core",
       "puppeteer",
-      "bcrypt"
+      "bcrypt",
+      "better-sqlite3"
     ]
   }
 }

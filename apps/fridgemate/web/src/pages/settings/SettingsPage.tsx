@@ -1,17 +1,20 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
-import { useGroupStore } from '@/stores/useGroupStore'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useFridgeStore } from '@/stores/useFridgeStore'
+import { api } from '@/lib/api'
 import { FRIDGE_TYPE_LABELS } from '@/types'
+import type { JoinRequestResponse, SubscriptionStatusResponse } from '@/types'
 import { isPushSupported, isPushSubscribed, subscribeToPush, unsubscribeFromPush } from '@/lib/push'
+import { PremiumModal } from '@/components/PremiumModal/PremiumModal'
 import styles from './SettingsPage.module.scss'
 
 const cx = classNames.bind(styles)
 
 export const SettingsPage = () => {
   const navigate = useNavigate()
-  const { groupId, groupName, logout } = useGroupStore()
+  const { user, groupName, groupCode, isAdmin, fetchMe, logout } = useAuthStore()
   const { fridges, fetchFridges, updateFridge, deleteFridge } = useFridgeStore()
   const [editingFridgeId, setEditingFridgeId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
@@ -19,10 +22,37 @@ export const SettingsPage = () => {
   const [pushEnabled, setPushEnabled] = useState(false)
   const [pushLoading, setPushLoading] = useState(false)
   const [pushError, setPushError] = useState<string | null>(null)
+  const [joinRequests, setJoinRequests] = useState<JoinRequestResponse[]>([])
+  const [requestLoading, setRequestLoading] = useState<string | null>(null)
+  const [requestError, setRequestError] = useState<string | null>(null)
+  const [subscription, setSubscription] = useState<SubscriptionStatusResponse | null>(null)
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
+  const [confirmCancelSub, setConfirmCancelSub] = useState(false)
 
   useEffect(() => {
     fetchFridges()
   }, [fetchFridges])
+
+  // 사용자 정보 + 관리자 여부 조회
+  useEffect(() => {
+    fetchMe()
+  }, [fetchMe])
+
+  // 관리자일 때만 대기 중인 참여 요청 조회
+  useEffect(() => {
+    if (!isAdmin) return
+    const fetchJoinRequests = async () => {
+      try {
+        const data = await api.get<JoinRequestResponse[]>('/join-requests/pending')
+        setJoinRequests(data)
+      } catch {
+        // 참여 요청 조회 실패 시 무시
+      }
+    }
+    fetchJoinRequests()
+  }, [isAdmin])
 
   useEffect(() => {
     if (!isPushSupported()) return
@@ -36,6 +66,20 @@ export const SettingsPage = () => {
     const timer = setTimeout(() => setPushError(null), 3000)
     return () => clearTimeout(timer)
   }, [pushError])
+
+  // 구독 상태 조회
+  const fetchSubscriptionStatus = useCallback(async () => {
+    try {
+      const data = await api.get<SubscriptionStatusResponse>('/payments/status')
+      setSubscription(data)
+    } catch {
+      // 결제 API 미설정 시 무시
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchSubscriptionStatus()
+  }, [fetchSubscriptionStatus])
 
   const handlePushToggle = useCallback(async () => {
     if (pushLoading) return
@@ -64,9 +108,54 @@ export const SettingsPage = () => {
     }
   }, [pushEnabled, pushLoading])
 
+  const handleApprove = useCallback(async (requestId: string) => {
+    setRequestLoading(requestId)
+    setRequestError(null)
+    try {
+      await api.patch(`/join-requests/${requestId}/approve`)
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId))
+    } catch {
+      setRequestError('승인 처리에 실패했습니다')
+    } finally {
+      setRequestLoading(null)
+    }
+  }, [])
+
+  const handleReject = useCallback(async (requestId: string) => {
+    setRequestLoading(requestId)
+    setRequestError(null)
+    try {
+      await api.patch(`/join-requests/${requestId}/reject`)
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId))
+    } catch {
+      setRequestError('거부 처리에 실패했습니다')
+    } finally {
+      setRequestLoading(null)
+    }
+  }, [])
+
+  const handleCancelSubscription = useCallback(async () => {
+    if (cancelLoading) return
+    setCancelLoading(true)
+    setCancelError(null)
+    try {
+      await api.post('/payments/cancel')
+      setConfirmCancelSub(false)
+      await fetchSubscriptionStatus()
+    } catch {
+      setCancelError('구독 해지에 실패했습니다')
+    } finally {
+      setCancelLoading(false)
+    }
+  }, [cancelLoading, fetchSubscriptionStatus])
+
+  const handlePremiumSuccess = useCallback(() => {
+    fetchSubscriptionStatus()
+  }, [fetchSubscriptionStatus])
+
   const handleLogout = useCallback(() => {
     logout()
-    navigate('/', { replace: true })
+    navigate('/login', { replace: true })
   }, [logout, navigate])
 
   const handleEditStart = useCallback((fridgeId: string, currentName: string) => {
@@ -97,12 +186,51 @@ export const SettingsPage = () => {
     navigate('/setup')
   }, [navigate])
 
-  // 그룹 코드 표시용 (앞 4자리만 보여주기)
-  const maskedGroupId = groupId ? `${groupId.slice(0, 8)}...` : '-'
+  const maskedGroupId = user?.groupId ? `${user.groupId.slice(0, 8)}...` : '-'
 
   return (
     <div className={cx('page')}>
       <h1 className={cx('title')}>설정</h1>
+
+      {/* 참여 요청 관리 (관리자만) */}
+      {isAdmin && joinRequests.length > 0 && (
+        <div className={cx('section')}>
+          <div className={cx('sectionTitle')}>참여 요청</div>
+          <div className={cx('card')}>
+            {requestError && (
+              <div className={cx('row')}>
+                <span className={cx('pushError')}>{requestError}</span>
+              </div>
+            )}
+            {joinRequests.map((req) => (
+              <div key={req.id} className={cx('requestItem')}>
+                <div className={cx('requestInfo')}>
+                  <span className={cx('requestName')}>{req.userName}</span>
+                  <span className={cx('requestEmail')}>{req.userEmail}</span>
+                </div>
+                <div className={cx('requestActions')}>
+                  <button
+                    className={cx('approveBtn')}
+                    onClick={() => handleApprove(req.id)}
+                    disabled={requestLoading === req.id}
+                    type="button"
+                  >
+                    승인
+                  </button>
+                  <button
+                    className={cx('rejectBtn')}
+                    onClick={() => handleReject(req.id)}
+                    disabled={requestLoading === req.id}
+                    type="button"
+                  >
+                    거부
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 그룹 정보 */}
       <div className={cx('section')}>
@@ -116,6 +244,12 @@ export const SettingsPage = () => {
             <span className={cx('rowLabel')}>그룹 ID</span>
             <span className={cx('rowValue')}>{maskedGroupId}</span>
           </div>
+          {isAdmin && groupCode && (
+            <div className={cx('row')}>
+              <span className={cx('rowLabel')}>초대 코드</span>
+              <span className={cx('rowValue', 'groupCode')}>{groupCode}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -129,31 +263,35 @@ export const SettingsPage = () => {
                 <span className={cx('fridgeName')}>{fridge.name}</span>
                 <span className={cx('fridgeType')}>{FRIDGE_TYPE_LABELS[fridge.type]}</span>
               </div>
-              <div className={cx('fridgeActions')}>
-                <button
-                  className={cx('editBtn')}
-                  onClick={() => handleEditStart(fridge.id, fridge.name)}
-                  type="button"
-                >
-                  이름 변경
-                </button>
-                <button
-                  className={cx('deleteBtn')}
-                  onClick={() => setDeletingFridgeId(fridge.id)}
-                  type="button"
-                >
-                  삭제
-                </button>
-              </div>
+              {isAdmin && (
+                <div className={cx('fridgeActions')}>
+                  <button
+                    className={cx('editBtn')}
+                    onClick={() => handleEditStart(fridge.id, fridge.name)}
+                    type="button"
+                  >
+                    이름 변경
+                  </button>
+                  <button
+                    className={cx('deleteBtn')}
+                    onClick={() => setDeletingFridgeId(fridge.id)}
+                    type="button"
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
             </div>
           ))}
-          <button
-            className={cx('addFridgeBtn')}
-            onClick={handleAddFridge}
-            type="button"
-          >
-            + 냉장고 추가
-          </button>
+          {isAdmin && (
+            <button
+              className={cx('addFridgeBtn')}
+              onClick={handleAddFridge}
+              type="button"
+            >
+              + 냉장고 추가
+            </button>
+          )}
         </div>
       </div>
 
@@ -177,6 +315,84 @@ export const SettingsPage = () => {
             {pushError && (
               <div className={cx('row')}>
                 <span className={cx('pushError')}>{pushError}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 구독 관리 */}
+      {subscription && (
+        <div className={cx('section')}>
+          <div className={cx('sectionTitle')}>구독 관리</div>
+          <div className={cx('card')}>
+            <div className={cx('row')}>
+              <span className={cx('rowLabel')}>구독 상태</span>
+              <span className={cx('subBadge', {
+                subActive: subscription.isPremium,
+                subInactive: !subscription.isPremium,
+              })}>
+                {subscription.isPremium ? 'Premium' : subscription.status === 'CANCELLED' ? '해지됨' : '미구독'}
+              </span>
+            </div>
+            {subscription.currentPeriodEnd && (
+              <div className={cx('row')}>
+                <span className={cx('rowLabel')}>
+                  {subscription.status === 'CANCELLED' ? '만료 예정일' : '다음 결제일'}
+                </span>
+                <span className={cx('rowValue')}>
+                  {new Date(subscription.currentPeriodEnd).toLocaleDateString('ko-KR')}
+                </span>
+              </div>
+            )}
+            {cancelError && (
+              <div className={cx('row')}>
+                <span className={cx('pushError')}>{cancelError}</span>
+              </div>
+            )}
+            {isAdmin && (
+              <div className={cx('row', 'subActionRow')}>
+                {subscription.isPremium && subscription.status === 'ACTIVE' ? (
+                  confirmCancelSub ? (
+                    <div className={cx('cancelConfirm')}>
+                      <span className={cx('cancelConfirmText')}>정말 해지하시겠습니까?</span>
+                      <div className={cx('cancelConfirmActions')}>
+                        <button
+                          className={cx('cancelSubBtn')}
+                          onClick={handleCancelSubscription}
+                          disabled={cancelLoading}
+                          type="button"
+                        >
+                          {cancelLoading ? '처리 중...' : '해지 확인'}
+                        </button>
+                        <button
+                          className={cx('cancelKeepBtn')}
+                          onClick={() => setConfirmCancelSub(false)}
+                          disabled={cancelLoading}
+                          type="button"
+                        >
+                          유지하기
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      className={cx('cancelSubBtn')}
+                      onClick={() => setConfirmCancelSub(true)}
+                      type="button"
+                    >
+                      구독 해지
+                    </button>
+                  )
+                ) : !subscription.isPremium ? (
+                  <button
+                    className={cx('subscribeBtn')}
+                    onClick={() => setShowPremiumModal(true)}
+                    type="button"
+                  >
+                    Premium 구독하기
+                  </button>
+                ) : null}
               </div>
             )}
           </div>
@@ -216,6 +432,14 @@ export const SettingsPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Premium 모달 */}
+      {showPremiumModal && (
+        <PremiumModal
+          onClose={() => setShowPremiumModal(false)}
+          onSuccess={handlePremiumSuccess}
+        />
       )}
 
       {/* 수정 모달 */}

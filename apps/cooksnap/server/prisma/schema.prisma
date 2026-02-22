@@ -21,6 +21,20 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum FeedbackCategory {
+  BUG
+  FEATURE_REQUEST
+  IMPROVEMENT
+  OTHER
+}
+
+enum FeedbackStatus {
+  PENDING
+  REVIEWING
+  APPLIED
+  REJECTED
+}
+
 model User {
   id               String    @id @default(uuid())
   email            String
@@ -37,6 +51,7 @@ model User {
   dailyUsages     DailyUsage[]
   subscriptions   Subscription[]
   payments        Payment[]
+  feedbacks       Feedback[]
 
   @@unique([provider, providerId])
   @@map("users")
@@ -164,4 +179,18 @@ model Payment {
   subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
   @@map("payments")
+}
+
+model Feedback {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  category  FeedbackCategory
+  content   String
+  status    FeedbackStatus   @default(PENDING)
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("feedbacks")
 }

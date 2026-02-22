@@ -1,7 +1,7 @@
 import { Router, Response } from 'express'
 import type { Router as RouterType } from 'express'
 import { prisma } from '../lib/prisma.js'
-import { GroupRequest } from '../middleware/group-auth.js'
+import { AuthRequest } from '../middleware/auth.js'
 
 export const cookCompleteRouter: RouterType = Router()
 
@@ -13,7 +13,7 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 // POST /api/fridges/:fridgeId/cook-complete
 cookCompleteRouter.post('/:fridgeId/cook-complete', async (req, res: Response): Promise<void> => {
-  const { groupId } = req as unknown as GroupRequest
+  const { groupId } = req as unknown as AuthRequest
   const fridgeId = req.params['fridgeId'] as string
 
   if (!UUID_REGEX.test(fridgeId)) {

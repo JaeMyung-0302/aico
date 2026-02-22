@@ -24,6 +24,7 @@ let audioState: AudioState = {
 
 let currentScene: Phaser.Scene | null = null
 let currentBgmKey: string | null = null
+let currentBgm: Phaser.Sound.BaseSound | null = null
 
 // BGM 오디오 키
 export const BGM_KEYS: Partial<Record<MapId, string>> = {
@@ -48,26 +49,33 @@ export const playSfx = (_type: SfxType): void => {
   // TODO: scene.sound.play(type, { volume: audioState.sfxVolume })
 }
 
-// BGM 재생 (loop) — Autoplay Policy 대응: sound.locked 시 unlock 후 재생
+// BGM 재생 (loop) — sound.add()로 인스턴스 생성하여 seamless loop 보장
+// Autoplay Policy 대응: sound.locked 시 unlock 후 재생
 export const playBgm = (key: string): void => {
   if (!currentScene || !audioState.bgmEnabled) return
-  if (currentBgmKey === key) return // 이미 재생 중
+  if (currentBgmKey === key && currentBgm) return // 이미 재생 중
   stopBgm()
   currentBgmKey = key
+
+  const startPlayback = (): void => {
+    if (!currentScene || currentBgmKey !== key || currentBgm) return
+    currentBgm = currentScene.sound.add(key, { loop: true, volume: audioState.bgmVolume })
+    currentBgm.play()
+  }
+
   if (currentScene.sound.locked) {
-    currentScene.sound.once('unlocked', () => {
-      if (currentScene && currentBgmKey === key) {
-        currentScene.sound.play(key, { loop: true, volume: audioState.bgmVolume })
-      }
-    })
+    currentScene.sound.once('unlocked', startPlayback)
   } else {
-    currentScene.sound.play(key, { loop: true, volume: audioState.bgmVolume })
+    startPlayback()
   }
 }
 
 // BGM 정지
 export const stopBgm = (): void => {
-  if (!currentScene || !currentBgmKey) return
-  currentScene.sound.stopByKey(currentBgmKey)
+  if (currentBgm) {
+    currentBgm.stop()
+    currentBgm.destroy()
+    currentBgm = null
+  }
   currentBgmKey = null
 }

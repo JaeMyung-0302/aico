@@ -3,6 +3,7 @@ import type { Key } from '@wasd/shared'
 import { SocketEvents } from '@wasd/shared'
 import { roomManager } from '../rooms/room-manager.js'
 import { gameLoops } from '../engine/game-loop.js'
+import { rankingStore } from '../engine/ranking-store.js'
 
 const VALID_KEYS = new Set<Key>(['w', 'a', 's', 'd'])
 
@@ -24,6 +25,12 @@ export const registerGameEvents = (io: Server) => {
         key,
         playerId: socket.id,
         nickname: player.nickname,
+      })
+    })
+
+    socket.on(SocketEvents.RANKING_FETCH, () => {
+      socket.emit(SocketEvents.RANKING_DATA, {
+        ranking: rankingStore.getRankings(),
       })
     })
   })

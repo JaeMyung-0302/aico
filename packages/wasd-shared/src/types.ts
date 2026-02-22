@@ -74,4 +74,12 @@ export interface Room {
   stage: number
 }
 
+export interface RankingEntry {
+  nicknames: string[]
+  elapsedTime: number
+  deaths: number
+  playerCount: number
+  clearedAt: number
+}
+
 export type TileMap = TileType[][]

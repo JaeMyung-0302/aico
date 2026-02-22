@@ -1,0 +1,53 @@
+.attackButton {
+  position: absolute;
+  bottom: 100px;
+  right: 24px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(60, 20, 20, 0.8) 0%, rgba(20, 8, 8, 0.9) 100%);
+  border: 3px solid #b44;
+  box-shadow:
+    inset 0 0 0 1px rgba(180, 60, 60, 0.3),
+    0 0 8px rgba(200, 60, 60, 0.2);
+  color: #f88;
+  font-size: 13px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  z-index: 100;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &.cooldown {
+    background: rgba(10, 10, 12, 0.7);
+    border-color: #633;
+    box-shadow: none;
+  }
+
+  &:active:not(.cooldown) {
+    transform: scale(0.92);
+    border-color: #e66;
+    box-shadow: 0 0 12px rgba(200, 60, 60, 0.5);
+  }
+}
+
+.cooldownOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  transition: height 0.1s linear;
+  pointer-events: none;
+}
+
+.label {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  font-family: var(--font-fantasy);
+}

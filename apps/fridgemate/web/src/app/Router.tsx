@@ -1,7 +1,9 @@
-import { createBrowserRouter } from 'react-router-dom'
-import { GroupGuard } from '@/components/GroupGuard'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { AuthGuard } from '@/components/AuthGuard'
 import { Layout } from '@/components/Layout'
 import { LoginPage } from '@/pages/login/LoginPage'
+import { RegisterPage } from '@/pages/register/RegisterPage'
+import { GroupSetupPage } from '@/pages/group-setup/GroupSetupPage'
 import { FridgeSelectPage } from '@/pages/select/FridgeSelectPage'
 import { SetupPage } from '@/pages/setup/SetupPage'
 import { FridgePage } from '@/pages/fridge/FridgePage'
@@ -13,10 +15,22 @@ import { RecipeDetailPage } from '@/pages/recipes/RecipeDetailPage'
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <Navigate to="/login" replace />,
+  },
+  {
+    path: '/login',
     element: <LoginPage />,
   },
   {
-    element: <GroupGuard />,
+    path: '/register',
+    element: <RegisterPage />,
+  },
+  {
+    path: '/group-setup',
+    element: <GroupSetupPage />,
+  },
+  {
+    element: <AuthGuard />,
     children: [
       {
         path: '/select',

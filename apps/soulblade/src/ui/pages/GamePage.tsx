@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
 import type { MapId, NpcType, PassiveSkillId, StageId, StatAllocationData } from '@soulblade/shared'
-import { PhaserGame } from '@/ui/components/PhaserGame'
+import { GameCanvas } from '@/game/core/GameCanvas'
 import { VirtualJoystick } from '@/ui/components/VirtualJoystick'
 import { HUD } from '@/ui/components/HUD'
 import { ActiveSkillButton } from '@/ui/components/ActiveSkillButton'
+import { AttackButton } from '@/ui/components/AttackButton'
 import { PortalModal } from '@/ui/components/PortalModal'
 import { NpcShopModal } from '@/ui/components/NpcShopModal'
 import { NpcForgeModal } from '@/ui/components/NpcForgeModal'
@@ -305,10 +306,11 @@ export const GamePage = () => {
 
   return (
     <div className={cx('gamePage')}>
-      <PhaserGame />
+      <GameCanvas />
       <HUD />
       {!openPanel && <VirtualJoystick />}
       {!openPanel && classType && <ActiveSkillButton classType={classType} />}
+      {!openPanel && <AttackButton />}
       {portalData && (
         <PortalModal
           targetMapId={portalData.targetMapId}

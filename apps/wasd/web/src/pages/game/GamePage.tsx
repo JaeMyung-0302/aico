@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
-import type { GameState, DeathEvent } from '@wasd/shared'
+import type { GameState, DeathEvent, RankingEntry } from '@wasd/shared'
 import { SocketEvents, STAGES, TILE_SIZE, PLAYER_SIZE } from '@wasd/shared'
 import { socket } from '@/lib/socket'
 import { useGameStore } from '@/stores/useGameStore'
@@ -9,7 +9,6 @@ import { useGameInput } from '@/hooks/useGameInput'
 import { sound } from '@/game/sound'
 import {
   createEffectsState,
-  emitCoinParticles,
   emitDeathParticles,
   emitStageClearParticles,
   triggerScreenShake,
@@ -49,10 +48,6 @@ const GamePage = () => {
       const prevCoins = prevCoinsRef.current
       if (state.coins > prevCoins) {
         sound.coin()
-        // 코인 파티클: 플레이어 위치 근처
-        const px = state.position.x + PLAYER_SIZE / 2
-        const py = state.position.y + PLAYER_SIZE / 2
-        effectsRef.current = emitCoinParticles(effectsRef.current, px, py)
       }
       prevCoinsRef.current = state.coins
       useGameStore.getState().applyServerState(state)
@@ -84,7 +79,7 @@ const GamePage = () => {
       }
     }
 
-    const handleGameComplete = (data: { deaths: number; elapsedTime: number }) => {
+    const handleGameComplete = (data: { deaths: number; elapsedTime: number; ranking?: RankingEntry[]; myRank?: number | null }) => {
       sound.gameComplete()
       useGameStore.getState().setGameResult(data)
     }

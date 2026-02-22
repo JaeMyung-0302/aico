@@ -1,31 +1,62 @@
 import type { Server, Socket } from 'socket.io'
 import type { GamePhase } from '@wasd/shared'
-import { SocketEvents, MIN_PLAYERS } from '@wasd/shared'
+import { SocketEvents, MIN_PLAYERS, INVITE_CODE_LENGTH } from '@wasd/shared'
 import { roomManager } from '../rooms/room-manager.js'
 import { assignKeys } from '../rooms/key-assigner.js'
 import { GameLoop, gameLoops } from '../engine/game-loop.js'
+import { sanitizeNickname } from '../guards/rate-limiter.js'
+
+const cleanupExistingRoom = (socket: Socket, io: Server): void => {
+  const existingRoom = roomManager.getRoomByPlayerId(socket.id)
+  if (!existingRoom) return
+
+  socket.leave(existingRoom.code)
+  const existingLoop = gameLoops.get(existingRoom.code)
+  if (existingLoop) {
+    existingLoop.stop()
+    gameLoops.delete(existingRoom.code)
+  }
+  const updatedRoom = roomManager.leaveRoom(existingRoom.code, socket.id)
+  if (updatedRoom) {
+    io.to(existingRoom.code).emit(SocketEvents.ROOM_UPDATED, updatedRoom)
+  }
+}
 
 export const registerRoomEvents = (io: Server) => {
   io.on('connection', (socket: Socket) => {
     console.log(`Connected: ${socket.id}`)
 
     socket.on(SocketEvents.CREATE_ROOM, ({ nickname }: { nickname: string }) => {
-      const trimmed = typeof nickname === 'string' ? nickname.trim() : ''
-      if (trimmed.length < 1 || trimmed.length > 10) {
+      const trimmed = sanitizeNickname(nickname)
+      if (!trimmed) {
         socket.emit(SocketEvents.ERROR, { message: '닉네임은 1~10자여야 합니다.' })
         return
       }
+
+      cleanupExistingRoom(socket, io)
+
       const room = roomManager.createRoom(socket.id, trimmed)
+      if (!room) {
+        socket.emit(SocketEvents.ERROR, { message: '서버 방 제한에 도달했습니다.' })
+        return
+      }
       socket.join(room.code)
       socket.emit(SocketEvents.ROOM_UPDATED, room)
     })
 
     socket.on(SocketEvents.JOIN_ROOM, ({ code, nickname }: { code: string; nickname: string }) => {
-      const trimmed = typeof nickname === 'string' ? nickname.trim() : ''
-      if (trimmed.length < 1 || trimmed.length > 10) {
+      if (typeof code !== 'string' || code.length !== INVITE_CODE_LENGTH) {
+        socket.emit(SocketEvents.ERROR, { message: '유효하지 않은 초대 코드입니다.' })
+        return
+      }
+      const trimmed = sanitizeNickname(nickname)
+      if (!trimmed) {
         socket.emit(SocketEvents.ERROR, { message: '닉네임은 1~10자여야 합니다.' })
         return
       }
+
+      cleanupExistingRoom(socket, io)
+
       const room = roomManager.joinRoom(code, socket.id, trimmed)
       if (!room) {
         socket.emit(SocketEvents.ERROR, { message: '방을 찾을 수 없거나 참가할 수 없습니다.' })
@@ -59,13 +90,19 @@ export const registerRoomEvents = (io: Server) => {
     })
 
     socket.on(SocketEvents.SOLO_START, ({ nickname }: { nickname: string }) => {
-      const trimmed = typeof nickname === 'string' ? nickname.trim() : ''
-      if (trimmed.length < 1 || trimmed.length > 10) {
+      const trimmed = sanitizeNickname(nickname)
+      if (!trimmed) {
         socket.emit(SocketEvents.ERROR, { message: '닉네임은 1~10자여야 합니다.' })
         return
       }
 
+      cleanupExistingRoom(socket, io)
+
       const room = roomManager.createRoom(socket.id, trimmed)
+      if (!room) {
+        socket.emit(SocketEvents.ERROR, { message: '서버 방 제한에 도달했습니다.' })
+        return
+      }
       socket.join(room.code)
 
       const assignments = assignKeys([socket.id])
@@ -81,12 +118,14 @@ export const registerRoomEvents = (io: Server) => {
       }
       roomManager.updateRoom(room.code, updatedRoom)
 
+      // 키 배정 개별 전송 (솔로는 단일 플레이어)
+      const myAssignment = assignments.filter((a) => a.playerId === socket.id)
       socket.emit(SocketEvents.GAME_STARTED, {
         room: updatedRoom,
-        assignments,
+        assignments: myAssignment,
       })
 
-      const gameLoop = new GameLoop(room.code, io)
+      const gameLoop = new GameLoop(room.code, io, updatedRoom.players.length)
       gameLoops.set(room.code, gameLoop)
       gameLoop.start()
     })
@@ -111,12 +150,23 @@ export const registerRoomEvents = (io: Server) => {
       }
       roomManager.updateRoom(room.code, updatedRoom)
 
-      io.to(room.code).emit(SocketEvents.GAME_STARTED, {
-        room: updatedRoom,
-        assignments,
-      })
+      // 키 배정 개별 전송: 각 플레이어에게 자신의 배정만 전달 (다른 플레이어 키 마스킹)
+      for (const player of updatedRoom.players) {
+        const myAssignment = assignments.filter((a) => a.playerId === player.id)
+        const maskedRoom = {
+          ...updatedRoom,
+          players: updatedRoom.players.map((p) => ({
+            ...p,
+            keys: p.id === player.id ? p.keys : [],
+          })),
+        }
+        io.to(player.id).emit(SocketEvents.GAME_STARTED, {
+          room: maskedRoom,
+          assignments: myAssignment,
+        })
+      }
 
-      const gameLoop = new GameLoop(room.code, io)
+      const gameLoop = new GameLoop(room.code, io, updatedRoom.players.length)
       gameLoops.set(room.code, gameLoop)
       gameLoop.start()
     })

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
@@ -7,6 +8,7 @@ const seed = async () => {
   await prisma.foodItem.deleteMany()
   await prisma.compartment.deleteMany()
   await prisma.fridge.deleteMany()
+  await prisma.user.deleteMany()
   await prisma.group.deleteMany()
 
   // 그룹 생성
@@ -99,8 +101,19 @@ const seed = async () => {
     })
   }
 
+  // 기본 사용자 생성
+  const defaultUser = await prisma.user.create({
+    data: {
+      email: 'admin@fridgemate.local',
+      password: await bcrypt.hash('password123', 10),
+      name: '관리자',
+      groupId: group.id,
+    },
+  })
+
   console.log(`Seed complete:`)
   console.log(`  Group: "${group.name}" (code: ${group.code})`)
+  console.log(`  User: "${defaultUser.name}" (${defaultUser.email})`)
   console.log(`  Fridge 1: "${kimchiFridge.name}" (${kimchiCompartments.length} compartments)`)
   console.log(`  Fridge 2: "${samsungFridge.name}" (${samsungCompartments.length} compartments)`)
 }

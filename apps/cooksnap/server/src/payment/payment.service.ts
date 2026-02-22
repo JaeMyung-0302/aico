@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PortoneService } from '../portone/portone.service';
 import { randomUUID } from 'crypto';
+import { encrypt } from '../common/utils/crypto';
 
 const SUBSCRIPTION_PRICE = 3900;
 const SUBSCRIPTION_DAYS = 30;
@@ -38,11 +39,11 @@ export class PaymentService {
     const now = new Date();
     const periodEnd = new Date(now.getTime() + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000);
 
-    // Subscription 생성
+    // Subscription 생성 (billingKey 암호화 저장)
     const subscription = await this.prisma.subscription.create({
       data: {
         userId,
-        billingKey,
+        billingKey: encrypt(billingKey),
         status: 'ACTIVE',
         currentPeriodEnd: periodEnd,
       },

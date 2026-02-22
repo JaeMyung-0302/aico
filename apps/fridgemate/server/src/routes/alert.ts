@@ -1,14 +1,14 @@
 import { Router, Response } from 'express'
 import type { Router as RouterType } from 'express'
 import { prisma } from '../lib/prisma.js'
-import { GroupRequest } from '../middleware/group-auth.js'
+import { AuthRequest } from '../middleware/auth.js'
 import { getExpiryStatus, ExpiryStatus } from '../types/index.js'
 
 export const alertRouter: RouterType = Router()
 
 // GET /api/alerts — 유통기한 임박 식재료 (D-3 이내)
 alertRouter.get('/', async (req, res: Response): Promise<void> => {
-  const { groupId } = req as GroupRequest
+  const { groupId } = req as AuthRequest
 
   try {
     const threeDaysFromNow = new Date()

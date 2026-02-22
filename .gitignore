@@ -41,6 +41,9 @@ yarn-error.log*
 # Downloaded videos (temp)
 apps/cooksnap/server/tmp/
 
+# WASD ranking data (persisted at runtime)
+apps/wasd/server/data/
+
 # claude
 .claude
 .opencode

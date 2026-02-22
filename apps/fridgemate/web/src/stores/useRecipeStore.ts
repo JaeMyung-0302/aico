@@ -6,6 +6,7 @@ interface RecipeState {
   recipes: RecipeSuggestion[]
   cached: boolean
   remainingCount: number
+  isPremium: boolean
   loading: boolean
   error: string | null
 }
@@ -17,6 +18,7 @@ interface CookCompleteResponse {
 
 interface RemainingResponse {
   remainingCount: number
+  isPremium: boolean
 }
 
 interface RecipeActions {
@@ -32,13 +34,14 @@ export const useRecipeStore = create<RecipeStore>((set) => ({
   recipes: [],
   cached: false,
   remainingCount: 2,
+  isPremium: false,
   loading: false,
   error: null,
 
   fetchRemainingCount: async () => {
     try {
       const data = await api.get<RemainingResponse>('/usage/remaining')
-      set({ remainingCount: data.remainingCount })
+      set({ remainingCount: data.remainingCount, isPremium: data.isPremium })
     } catch {
       // 실패 시 기본값 유지
     }

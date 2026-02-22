@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { MONSTER_TEXTURES } from '../texture-keys'
 import { createHpBar, updateHpBar, destroyHpBar, type HpBarConfig } from '../systems/hp-bar'
+import { createMonsterLabel, updateMonsterLabel, syncMonsterLabel, destroyEntityLabel } from '../systems/entity-label'
 
 export interface MonsterConfig {
   readonly hp: number
@@ -25,6 +26,9 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
   // HP 바
   private hpBar: Phaser.GameObjects.Graphics | null = null
   private readonly hpBarConfig: HpBarConfig = { width: 24, height: 3, yOffset: -4, showBorder: false }
+
+  // 레벨 라벨
+  private levelLabel: Phaser.GameObjects.Text | null = null
 
   // 상태 효과
   slowMultiplier = 0
@@ -56,6 +60,7 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(5)
 
     this.hpBar = createHpBar(scene, this.hpBarConfig)
+    this.levelLabel = createMonsterLabel(scene, config.level)
   }
 
   // AI: 플레이어 추적 (slow 적용)
@@ -125,19 +130,32 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     } else if (this.hpBar && this.hpBar.alpha > 0) {
       updateHpBar(this.hpBar, this.x, this.y, this.hp / this.maxHp, this.hpBarConfig)
     }
+
+    // 레벨 라벨 위치 동기화 (LOD 조건)
+    if (this.levelLabel) {
+      if (!enableHpBars) {
+        this.levelLabel.setVisible(false)
+      } else {
+        this.levelLabel.setVisible(true)
+        syncMonsterLabel(this.levelLabel, this.x, this.y)
+      }
+    }
   }
 
-  // setVisible override: hpBar 동기화 (clearAll 경로 대응)
+  // setVisible override: hpBar + 라벨 동기화 (clearAll 경로 대응)
   setVisible(value: boolean): this {
     super.setVisible(value)
     if (this.hpBar) this.hpBar.setVisible(value)
+    if (this.levelLabel) this.levelLabel.setVisible(value)
     return this
   }
 
-  // Phaser destroy lifecycle: Graphics 정리 (scene.restart/shutdown 대응)
+  // Phaser destroy lifecycle: Graphics + 라벨 정리 (scene.restart/shutdown 대응)
   preDestroy(): void {
     destroyHpBar(this.hpBar)
     this.hpBar = null
+    destroyEntityLabel(this.levelLabel)
+    this.levelLabel = null
   }
 
   private die(): void {
@@ -170,6 +188,12 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     if (this.hpBar) {
       this.hpBar.setVisible(true)
       this.hpBar.setAlpha(0) // 피격 전 숨김
+    }
+
+    // 레벨 라벨 리셋
+    if (this.levelLabel) {
+      updateMonsterLabel(this.levelLabel, config.level)
+      this.levelLabel.setVisible(true)
     }
   }
 }

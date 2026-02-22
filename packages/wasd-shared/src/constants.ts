@@ -16,3 +16,14 @@ export const DEATH_LOG_TICKS = 15 // 0.5 seconds
 export const MIN_PLAYERS = 1
 export const MAX_PLAYERS = 4
 export const INVITE_CODE_LENGTH = 6
+
+// Ranking
+export const MAX_RANKING_SIZE = 50
+
+// Security limits
+export const MAX_ROOMS = 100
+export const MAX_INPUT_QUEUE = 30
+export const GAME_LOOP_TTL_MS = 30 * 60 * 1000 // 30 minutes
+export const MAX_CONNECTIONS_PER_IP = 5
+export const RATE_LIMIT_WINDOW_MS = 1000
+export const RATE_LIMIT_MAX_EVENTS = 20

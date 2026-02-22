@@ -49,4 +49,35 @@ export const sendPushToGroup = async (groupId: string, payload: PushPayload): Pr
   }
 }
 
+export const sendPushToUser = async (userId: string, payload: PushPayload): Promise<void> => {
+  const subscriptions = await prisma.pushSubscription.findMany({
+    where: { userId },
+  })
+
+  const results = await Promise.allSettled(
+    subscriptions.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          },
+          JSON.stringify(payload),
+        )
+      } catch (err) {
+        if (err instanceof webpush.WebPushError && (err.statusCode === 410 || err.statusCode === 404)) {
+          await prisma.pushSubscription.delete({ where: { id: sub.id } })
+          return
+        }
+        throw err
+      }
+    }),
+  )
+
+  const failed = results.filter((r) => r.status === 'rejected').length
+  if (failed > 0) {
+    console.warn(`[Push] ${failed}/${subscriptions.length} 발송 실패 (userId: ${userId})`)
+  }
+}
+
 export const getVapidPublicKey = (): string => VAPID_PUBLIC_KEY

@@ -1,9 +1,11 @@
 import { create } from 'zustand'
-import type { Room, Player, Key, GamePhase, GameState, Direction, DeathEvent } from '@wasd/shared'
+import type { Room, Player, Key, GamePhase, GameState, Direction, DeathEvent, RankingEntry } from '@wasd/shared'
 
 interface GameResult {
   deaths: number
   elapsedTime: number
+  ranking?: RankingEntry[]
+  myRank?: number | null
 }
 
 const PREDICTION_GUARD_MS = 500

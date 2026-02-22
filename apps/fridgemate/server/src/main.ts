@@ -10,7 +10,14 @@ const app = express()
 
 console.log('CORS allowed origins:', corsOrigins)
 app.use(cors({ origin: corsOrigins }))
-app.use(express.json())
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    // 웹훅 서명 검증을 위해 원본 body 보존
+    if (req.url?.includes('/payments/webhook')) {
+      (req as express.Request & { rawBody: Buffer }).rawBody = buf
+    }
+  },
+}))
 
 app.get('/', (_req, res) => {
   res.json({ status: 'ok', service: 'fridgemate-server' })

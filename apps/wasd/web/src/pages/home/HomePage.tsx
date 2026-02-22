@@ -4,8 +4,9 @@ import classNames from 'classnames/bind'
 import { socket } from '@/lib/socket'
 import { useGameStore } from '@/stores/useGameStore'
 import { SocketEvents } from '@wasd/shared'
-import type { Room, KeyAssignment } from '@wasd/shared'
+import type { Room, KeyAssignment, RankingEntry } from '@wasd/shared'
 import { initAudio, sound } from '@/game/sound'
+import RankingModal from '@/components/RankingModal/RankingModal'
 import styles from './HomePage.module.scss'
 
 const cx = classNames.bind(styles)
@@ -15,6 +16,15 @@ const HomePage = () => {
   const { nickname, setNickname } = useGameStore()
   const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState('')
+  const [rankingData, setRankingData] = useState<RankingEntry[] | null>(null)
+
+  const handleShowRanking = () => {
+    socket.off(SocketEvents.RANKING_DATA)
+    socket.emit(SocketEvents.RANKING_FETCH)
+    socket.once(SocketEvents.RANKING_DATA, ({ ranking }: { ranking: RankingEntry[] }) => {
+      setRankingData(ranking)
+    })
+  }
 
   const handleSoloStart = () => {
     initAudio()
@@ -98,6 +108,9 @@ const HomePage = () => {
       <h1 className={cx('title')}>WASD</h1>
       <p className={cx('subtitle')}>협동 파티 게임</p>
       <p className={cx('description')}>1~4명이 키를 나눠 하나의 캐릭터를 조종하는 협동 게임</p>
+      <button className={cx('rankingButton')} onClick={handleShowRanking}>
+        랭킹 보기
+      </button>
 
       <div className={cx('form')}>
         <input
@@ -142,6 +155,10 @@ const HomePage = () => {
 
         {error && <p className={cx('error')}>{error}</p>}
       </div>
+
+      {rankingData !== null && (
+        <RankingModal ranking={rankingData} onClose={() => setRankingData(null)} />
+      )}
     </div>
   )
 }

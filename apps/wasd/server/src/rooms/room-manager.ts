@@ -1,24 +1,13 @@
 import type { Room, Player, GamePhase } from '@wasd/shared'
-import { INVITE_CODE_LENGTH, MAX_PLAYERS } from '@wasd/shared'
+import { MAX_PLAYERS, MAX_ROOMS } from '@wasd/shared'
+import { generateSecureCode } from '../guards/rate-limiter.js'
 
 const rooms = new Map<string, Room>()
 
-const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-
-const generateCode = (): string => {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    let code = ''
-    for (let i = 0; i < INVITE_CODE_LENGTH; i++) {
-      code += CHARS[Math.floor(Math.random() * CHARS.length)]
-    }
-    if (!rooms.has(code)) return code
-  }
-  throw new Error('Failed to generate unique room code')
-}
-
 export const roomManager = {
-  createRoom: (hostId: string, nickname: string): Room => {
-    const code = generateCode()
+  createRoom: (hostId: string, nickname: string): Room | null => {
+    if (rooms.size >= MAX_ROOMS) return null
+    const code = generateSecureCode(rooms)
     const host: Player = {
       id: hostId,
       nickname,

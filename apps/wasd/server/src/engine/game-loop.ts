@@ -5,6 +5,8 @@ import {
   STAGES,
   STAGE_OBSTACLES,
   SocketEvents,
+  MAX_INPUT_QUEUE,
+  GAME_LOOP_TTL_MS,
 } from '@wasd/shared';
 import { ServerGameState, type InputEntry } from './game-state.js';
 import { applyMovement, keyToDirection } from './movement.js';
@@ -15,6 +17,8 @@ import {
 } from './collision.js';
 import { DeathLogManager } from './death-log.js';
 import { ObstacleManager } from './obstacle.js';
+import { rankingStore } from './ranking-store.js';
+import { roomManager } from '../rooms/room-manager.js';
 
 const STAGE_CLEAR_DELAY = 2000;
 
@@ -26,13 +30,16 @@ export class GameLoop {
   private obstacleManager: ObstacleManager;
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
+  private ttlTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private currentTick = 0;
   private roomCode: string;
   private io: Server;
+  private playerCount: number;
 
-  constructor(roomCode: string, io: Server) {
+  constructor(roomCode: string, io: Server, playerCount = 1) {
     this.roomCode = roomCode;
     this.io = io;
+    this.playerCount = playerCount;
     const startStage = 1;
     this.state = new ServerGameState(startStage);
     this.deathLog = new DeathLogManager();
@@ -43,6 +50,17 @@ export class GameLoop {
 
   start(): void {
     this.intervalId = setInterval(() => this.update(), TICK_INTERVAL);
+    this.ttlTimeoutId = setTimeout(() => {
+      console.warn(`Game loop TTL expired: ${this.roomCode}`);
+      this.io.to(this.roomCode).emit(SocketEvents.GAME_COMPLETE, {
+        deaths: this.state.deaths,
+        elapsedTime: GAME_LOOP_TTL_MS,
+        ranking: rankingStore.getRankings(),
+        myRank: null,
+      });
+      this.stop();
+      gameLoops.delete(this.roomCode);
+    }, GAME_LOOP_TTL_MS);
   }
 
   stop(): void {
@@ -54,9 +72,14 @@ export class GameLoop {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+    if (this.ttlTimeoutId) {
+      clearTimeout(this.ttlTimeoutId);
+      this.ttlTimeoutId = null;
+    }
   }
 
   queueInput(entry: InputEntry): void {
+    if (this.state.pendingInputs.length >= MAX_INPUT_QUEUE) return;
     this.state.pendingInputs.push(entry);
   }
 
@@ -160,11 +183,26 @@ export class GameLoop {
 
     if (nextStage > STAGES.length) {
       this.state.phase = 'complete' as GamePhase;
+      const clearedAt = Date.now();
+      const elapsedTime = clearedAt - this.state.startTime;
+      const room = roomManager.getRoom(this.roomCode);
+      const nicknames = room?.players.map((p) => p.nickname) ?? [];
+      const entry = {
+        nicknames,
+        elapsedTime,
+        deaths: this.state.deaths,
+        playerCount: this.playerCount,
+        clearedAt,
+      };
+      const myRank = rankingStore.addEntry(entry);
       this.io.to(this.roomCode).emit(SocketEvents.GAME_COMPLETE, {
         deaths: this.state.deaths,
-        elapsedTime: Date.now() - this.state.startTime,
+        elapsedTime,
+        ranking: rankingStore.getRankings(),
+        myRank,
       });
       this.stop();
+      gameLoops.delete(this.roomCode);
       return;
     }
 

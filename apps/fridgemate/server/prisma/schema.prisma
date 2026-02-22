@@ -24,6 +24,20 @@ enum CompartmentType {
   VEGGIE
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
 enum FoodCategory {
   MEAT
   SEAFOOD
@@ -36,26 +50,72 @@ enum FoodCategory {
   OTHER
 }
 
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  password          String
+  name              String
+  groupId           String?
+  group             Group?             @relation(fields: [groupId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdGroups     Group[]            @relation("GroupCreator")
+  joinRequests      JoinRequest[]
+  pushSubscriptions PushSubscription[]
+  payments          Payment[]
+}
+
 model Group {
   id                String             @id @default(uuid())
   code              String             @unique
   name              String
+  creatorId         String
+  creator           User               @relation("GroupCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  isPremium         Boolean            @default(false)
+  premiumExpiresAt  DateTime?          @db.Timestamptz(3)
   createdAt         DateTime           @default(now())
+  users             User[]
   fridges           Fridge[]
   pushSubscriptions PushSubscription[]
   recipeHistories   RecipeHistory[]
+  joinRequests      JoinRequest[]
+  subscriptions     Subscription[]
+  payments          Payment[]
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model JoinRequest {
+  id        String             @id @default(uuid())
+  userId    String
+  groupId   String
+  status    JoinRequestStatus  @default(PENDING)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([groupId, status])
 }
 
 model PushSubscription {
   id        String   @id @default(uuid())
   groupId   String
+  userId    String?
   endpoint  String   @unique
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([groupId])
+  @@index([userId])
 }
 
 model Fridge {
@@ -106,6 +166,40 @@ model RecipeHistory {
 
   @@index([fridgeId, ingredientHash, createdAt])
   @@index([groupId, createdAt])
+}
+
+model Subscription {
+  id               String             @id @default(uuid())
+  groupId          String
+  billingKey       String
+  status           SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd DateTime           @db.Timestamptz(3)
+  cancelledAt      DateTime?          @db.Timestamptz(3)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  group            Group              @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  payments         Payment[]
+
+  @@index([groupId, status])
+}
+
+model Payment {
+  id               String        @id @default(uuid())
+  groupId          String
+  payerId          String
+  subscriptionId   String?
+  amount           Int
+  status           PaymentStatus @default(PENDING)
+  portonePaymentId String?       @unique
+  failReason       String?
+  paidAt           DateTime?     @db.Timestamptz(3)
+  createdAt        DateTime      @default(now())
+  group            Group         @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  payer            User          @relation(fields: [payerId], references: [id], onDelete: Restrict)
+  subscription     Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([groupId, createdAt])
+  @@index([payerId])
 }
 
 model DailyUsage {

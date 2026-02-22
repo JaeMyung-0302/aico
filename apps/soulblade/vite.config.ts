@@ -24,7 +24,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,mp3}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[a-z]+\.supabase\.co\/rest\/v1\/.*/,
@@ -41,11 +41,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5176,
+    port: 5175,
   },
   css: {
     modules: {
       localsConvention: 'camelCase',
     },
+  },
+  optimizeDeps: {
+    include: ['three', '@react-three/fiber', '@react-three/drei'],
   },
 })

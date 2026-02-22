@@ -19,7 +19,7 @@ const DIFFICULTY_LABELS: Record<RecipeSuggestion['difficulty'], string> = {
 export const RecipeSuggestPage = () => {
   const navigate = useNavigate()
   const { activeFridgeId, fridges, loading: fridgeLoading, setActiveFridge, fetchFridges } = useFridgeStore()
-  const { recipes, cached, remainingCount, loading, error, suggestRecipes, fetchRemainingCount, clearRecipes } = useRecipeStore()
+  const { recipes, cached, remainingCount, isPremium, loading, error, suggestRecipes, fetchRemainingCount, clearRecipes } = useRecipeStore()
   const { items: foodItemDetails, fetchItems } = useFoodItemStore()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const initializedFridgeRef = useRef<string | null>(null)
@@ -139,13 +139,21 @@ export const RecipeSuggestPage = () => {
         <button
           className={cx('suggestBtn')}
           onClick={handleSuggest}
-          disabled={loading || !activeFridgeId || selectedIds.size === 0 || remainingCount === 0}
+          disabled={loading || !activeFridgeId || selectedIds.size === 0 || (!isPremium && remainingCount === 0)}
           type="button"
         >
           {loading ? '추천 중...' : '냉장고 재료로 추천받기'}
         </button>
         <p className={cx('remaining')}>
-          이번 주 남은 횟수: {remainingCount}회
+          {isPremium ? (
+            'Premium 무제한'
+          ) : (
+            <>
+              {remainingCount === 0
+                ? '이번 주 사용량을 모두 소진했습니다'
+                : `이번 주 남은 횟수: ${remainingCount}회`}
+            </>
+          )}
           {cached && <span className={cx('cachedBadge')}>캐시</span>}
         </p>
       </div>
@@ -212,6 +220,12 @@ export const RecipeSuggestPage = () => {
               </button>
             )
           })}
+        </div>
+      )}
+      {loading && (
+        <div className={cx('loadingOverlay')} role="status" aria-live="polite">
+          <div className={cx('loadingSpinner')} aria-hidden="true" />
+          <p className={cx('loadingText')}>AI가 레시피를 추천하고 있어요...</p>
         </div>
       )}
     </div>

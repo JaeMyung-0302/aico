@@ -16,7 +16,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private loadAudio(): void {
-    this.load.audio('bgm_town', 'assets/Whispers_of_the_Verdant_Glade.mp3')
+    this.load.audio('bgm_town', 'assets/village.mp3')
   }
 
   create(): void {

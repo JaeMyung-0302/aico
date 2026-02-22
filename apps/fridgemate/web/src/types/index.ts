@@ -40,6 +40,64 @@ export const ExpiryStatus = {
 } as const
 export type ExpiryStatus = (typeof ExpiryStatus)[keyof typeof ExpiryStatus]
 
+// === Subscription/Payment ===
+
+export const SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+  PAST_DUE: 'PAST_DUE',
+} as const
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+export interface SubscriptionStatusResponse {
+  hasSubscription: boolean
+  status: SubscriptionStatus | null
+  currentPeriodEnd: string | null
+  isPremium: boolean
+}
+
+// === JoinRequest ===
+
+export const JoinRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+} as const
+export type JoinRequestStatus = (typeof JoinRequestStatus)[keyof typeof JoinRequestStatus]
+
+export interface JoinRequestResponse {
+  id: string
+  userId: string
+  groupId: string
+  status: JoinRequestStatus
+  userName: string
+  userEmail: string
+  createdAt: string
+}
+
+// === Auth 인터페이스 ===
+
+export interface AuthUser {
+  id: string
+  email: string
+  name: string
+  groupId: string | null
+}
+
+export interface AuthResponse {
+  token: string
+  user: AuthUser
+}
+
+export interface GroupJoinResponse extends AuthResponse {
+  group: { id: string; name: string }
+}
+
+export interface GroupCreateResponse extends AuthResponse {
+  group: { id: string; name: string; code: string }
+}
+
 // === Response 인터페이스 ===
 
 export interface GroupResponse {

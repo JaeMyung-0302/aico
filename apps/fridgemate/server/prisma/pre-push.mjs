@@ -2,7 +2,35 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+const tableExists = async (tableName) => {
+  const result = await prisma.$queryRawUnsafe(
+    `SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = $1
+    ) AS "exists"`,
+    tableName
+  )
+  return result[0].exists
+}
+
 const main = async () => {
+  const hasGroup = await tableExists('Group')
+  const hasUser = await tableExists('User')
+
+  if (!hasGroup) {
+    console.log('Fresh database. Skipping pre-push migration.')
+    return
+  }
+
+  if (hasGroup && !hasUser) {
+    // Group은 있지만 User가 없는 불일치 상태 → 고아 데이터 정리
+    console.log('Inconsistent state: Group exists without User. Cleaning up orphaned rows...')
+    await prisma.$executeRawUnsafe(`DELETE FROM "Group"`)
+    console.log('Cleaned up. prisma db push will recreate tables.')
+    return
+  }
+
+  // 양쪽 테이블 존재 → 기존 마이그레이션 실행
   await prisma.$executeRawUnsafe(`
     DO $$
     BEGIN

@@ -93,4 +93,8 @@ export const getLodConfig = (quality: QualityLevel): JuicyConfig => ({
   enableDynamicLights: quality === 'full' || quality === 'reduced',
   enableBloom: quality === 'full',
   enableChromaticAberration: quality === 'full' || quality === 'reduced',
+  // 3D 모델 렌더링
+  enable3DModels: quality !== 'canvas',
+  enableLitMaterial: quality !== 'minimal' && quality !== 'canvas',
+  enableCastShadow: quality === 'full',
 })

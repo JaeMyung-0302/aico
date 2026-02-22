@@ -26,6 +26,11 @@ import { CameraController } from './CameraController'
 import { Player3D } from '../components/Player3D'
 import { Monster3D } from '../components/Monster3D'
 import { Elite3D } from '../components/Elite3D'
+import { Projectile3D } from '../components/Projectile3D'
+import { Boss3D } from '../components/Boss3D'
+import { PlayerBillboard } from '../components/PlayerBillboard'
+import { MonsterBillboard } from '../components/MonsterBillboard'
+import { EliteBillboard } from '../components/EliteBillboard'
 import { ProjectileBillboard } from '../components/ProjectileBillboard'
 import { HpBarOverlay } from '../components/HpBarOverlay'
 import { DamageNumbers } from '../components/DamageNumbers'
@@ -153,10 +158,11 @@ const SceneContents = ({ currentMapId }: { currentMapId: MapId }) => {
         worldHeight={mapConfig.worldSize.height}
         quality={quality}
       />
-      <Player3D />
-      <Monster3D />
-      <Elite3D />
-      <ProjectileBillboard />
+      {config.enable3DModels ? <Player3D key="player-3d" /> : <PlayerBillboard key="player-bb" />}
+      {config.enable3DModels ? <Monster3D key="monster-3d" /> : <MonsterBillboard key="monster-bb" />}
+      {config.enable3DModels ? <Elite3D key="elite-3d" /> : <EliteBillboard key="elite-bb" />}
+      {config.enable3DModels ? <Projectile3D key="proj-3d" /> : <ProjectileBillboard key="proj-bb" />}
+      <Boss3D />
       <HpBarOverlay />
       <DamageNumbers />
       <PostProcessing

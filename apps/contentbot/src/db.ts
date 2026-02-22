@@ -52,9 +52,10 @@ export const getDb = (): Database.Database => {
   }
 
   if (needsMigration) {
-    const migrate = db.transaction(() => {
-      db.exec(`ALTER TABLE keywords RENAME TO keywords_old`);
-      db.exec(`
+    const currentDb = db;
+    const migrate = currentDb.transaction(() => {
+      currentDb.exec(`ALTER TABLE keywords RENAME TO keywords_old`);
+      currentDb.exec(`
         CREATE TABLE keywords (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           keyword TEXT NOT NULL,
@@ -64,9 +65,9 @@ export const getDb = (): Database.Database => {
           created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
         )
       `);
-      db.exec(`INSERT INTO keywords SELECT * FROM keywords_old`);
-      db.exec(`DROP TABLE keywords_old`);
-      db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_keywords_keyword_source ON keywords(keyword, source)`);
+      currentDb.exec(`INSERT INTO keywords SELECT * FROM keywords_old`);
+      currentDb.exec(`DROP TABLE keywords_old`);
+      currentDb.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_keywords_keyword_source ON keywords(keyword, source)`);
     });
     migrate();
     console.log("[DB] keywords 테이블 마이그레이션 완료: 'news' source 추가");

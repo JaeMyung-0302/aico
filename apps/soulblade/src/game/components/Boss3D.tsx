@@ -16,6 +16,7 @@ import { createBossModel } from '../models/boss-model'
 export const Boss3D = () => {
   const groupRef = useRef<Group>(null)
   const animRef = useRef({ timer: 0 })
+  const prevPhaseRef = useRef<string>('chase')
 
   const hasBoss = useEntityStore((s) => s.boss !== null)
 
@@ -35,13 +36,19 @@ export const Boss3D = () => {
     }
   }, [model])
 
-  // 애니메이션 파트 캐싱
+  // 애니메이션 파트 + 메시 배열 캐싱 (traverse 제거)
   const parts = useMemo(() => ({
     rightArm: model.getObjectByName('rightArm') ?? null,
     leftArm: model.getObjectByName('leftArm') ?? null,
     rightLeg: model.getObjectByName('rightLeg') ?? null,
     leftLeg: model.getObjectByName('leftLeg') ?? null,
   }), [model])
+
+  const meshes = useMemo(() => {
+    const list: Mesh[] = []
+    model.traverse((c) => { if (c instanceof Mesh) list.push(c) })
+    return list
+  }, [model])
 
   useFrame((_state, delta) => {
     const boss = useEntityStore.getState().boss
@@ -70,41 +77,35 @@ export const Boss3D = () => {
         groupRef.current.rotation.x = 0
         break
       case 'charge':
-        // 앞으로 기울임 (돌진 자세)
         groupRef.current.rotation.x = boss.isCharging ? -0.3 : 0
         break
       case 'aoe':
-        // scale 펄스 (범위 공격)
+        groupRef.current.rotation.x = 0
         groupRef.current.scale.set(
           1 + Math.sin(anim.timer * 10) * 0.05,
           1 + breath + Math.sin(anim.timer * 10) * 0.05,
           1 + Math.sin(anim.timer * 10) * 0.05,
         )
         break
-      case 'summon':
-        // emissive 글로우 (소환 중)
-        model.traverse((child) => {
-          if (child instanceof Mesh) {
-            const m = child.material as MeshLambertMaterial
-            const glow = Math.sin(anim.timer * 6) * 0.5 + 0.5
-            m.emissiveIntensity = glow * 0.3
-            m.emissive.setHex(0x442211)
-          }
-        })
+      case 'summon': {
+        groupRef.current.rotation.x = 0
+        const glow = Math.sin(anim.timer * 6) * 0.5 + 0.5
+        for (const mesh of meshes) {
+          const m = mesh.material as MeshLambertMaterial
+          m.emissiveIntensity = glow * 0.3
+          m.emissive.setHex(0x442211)
+        }
         break
+      }
     }
 
-    // summon이 아닐 때 emissive 리셋
-    if (boss.currentPhase !== 'summon') {
-      model.traverse((child) => {
-        if (child instanceof Mesh) {
-          const m = child.material as MeshLambertMaterial
-          if (m.emissiveIntensity > 0) {
-            m.emissiveIntensity = 0
-          }
-        }
-      })
+    // summon → 다른 phase 전환 시에만 emissive 리셋
+    if (prevPhaseRef.current === 'summon' && boss.currentPhase !== 'summon') {
+      for (const mesh of meshes) {
+        (mesh.material as MeshLambertMaterial).emissiveIntensity = 0
+      }
     }
+    prevPhaseRef.current = boss.currentPhase
   })
 
   if (!hasBoss) return null

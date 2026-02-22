@@ -37,6 +37,10 @@ export interface JuicyConfig {
   readonly enableDynamicLights: boolean
   readonly enableBloom: boolean
   readonly enableChromaticAberration: boolean
+  // 3D 모델 렌더링 플래그
+  readonly enable3DModels: boolean
+  readonly enableLitMaterial: boolean
+  readonly enableCastShadow: boolean
 }
 
 const DEFAULT_JUICY: JuicyConfig = {
@@ -62,6 +66,9 @@ const DEFAULT_JUICY: JuicyConfig = {
   enableDynamicLights: true,
   enableBloom: true,
   enableChromaticAberration: true,
+  enable3DModels: true,
+  enableLitMaterial: true,
+  enableCastShadow: true,
 }
 
 interface CombatState {

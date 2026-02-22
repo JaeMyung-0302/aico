@@ -121,12 +121,11 @@ export const createBossModel = (): Group => {
   group.add(rArm)
 
   // Claws (children of arms)
-  const clawGeo = new BoxGeometry(3, 4, 3)
   const clawMat = buildMat(BOSS_COLORS.claw)
-  const lClaw = new Mesh(clawGeo.clone(), clawMat)
+  const lClaw = new Mesh(new BoxGeometry(3, 4, 3), clawMat)
   lClaw.position.y = -ARM_H
   lArm.add(lClaw)
-  const rClaw = new Mesh(clawGeo, clawMat)
+  const rClaw = new Mesh(new BoxGeometry(3, 4, 3), clawMat)
   rClaw.position.y = -ARM_H
   rArm.add(rClaw)
 
@@ -140,12 +139,11 @@ export const createBossModel = (): Group => {
   group.add(rLeg)
 
   // Feet (children of legs)
-  const footGeo = new BoxGeometry(LEG_W + 2, 3, LEG_D + 2)
   const footMat = buildMat(BOSS_COLORS.foot)
-  const lFoot = new Mesh(footGeo.clone(), footMat)
+  const lFoot = new Mesh(new BoxGeometry(LEG_W + 2, 3, LEG_D + 2), footMat)
   lFoot.position.y = -LEG_H
   lLeg.add(lFoot)
-  const rFoot = new Mesh(footGeo, footMat)
+  const rFoot = new Mesh(new BoxGeometry(LEG_W + 2, 3, LEG_D + 2), footMat)
   rFoot.position.y = -LEG_H
   rLeg.add(rFoot)
 

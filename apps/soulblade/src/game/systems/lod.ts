@@ -97,4 +97,8 @@ export const getLodConfig = (quality: QualityLevel): JuicyConfig => ({
   enable3DModels: quality !== 'canvas',
   enableLitMaterial: quality !== 'minimal' && quality !== 'canvas',
   enableCastShadow: quality === 'full',
+  // 셀셰이딩 + 아웃라인 (full=cel+outline, reduced=cel only, minimal/canvas=lambert fallback)
+  enableCelShading: quality === 'full' || quality === 'reduced',
+  enableOutline: quality === 'full',
+  celShadingSteps: quality === 'full' ? 2 : 1,
 })

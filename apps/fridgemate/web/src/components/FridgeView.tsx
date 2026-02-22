@@ -30,14 +30,14 @@ const DOOR_SECTIONS: Partial<Record<FridgeType, DoorSection[]>> = {
   [FridgeType.SIDE_BY_SIDE]: [
     {
       label: '냉동실',
-      positions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      positions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
       layout: 'twoColumn',
-      columnSplit: 5,
+      columnSplit: 6,
       isFreezer: true,
     },
     {
       label: '냉장실',
-      positions: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+      positions: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
       layout: 'twoColumn',
       columnSplit: 6,
     },
@@ -45,20 +45,20 @@ const DOOR_SECTIONS: Partial<Record<FridgeType, DoorSection[]>> = {
   [FridgeType.FOUR_DOOR]: [
     { label: '좌측', positions: [0, 1, 2, 3, 4, 5], layout: 'twoColumn', columnSplit: 3 },
     { label: '우측', positions: [6, 7, 8, 9, 10, 11], layout: 'twoColumn', columnSplit: 3 },
-    { label: '하단 좌', positions: [12], layout: 'grid2x1', spanFull: true },
-    { label: '하단 우', positions: [13], layout: 'grid2x1', spanFull: true },
+    { label: '하단 1', positions: [12], layout: 'grid2x1', spanFull: true },
+    { label: '하단 2', positions: [13], layout: 'grid2x1', spanFull: true },
   ],
 }
 
 // 서랍 위치 (높이를 낮게 표시)
 const isDrawerPosition = (fridgeType: FridgeType, position: number): boolean => {
-  if (fridgeType === FridgeType.SIDE_BY_SIDE) return [9, 10, 15, 16].includes(position)
+  if (fridgeType === FridgeType.SIDE_BY_SIDE) return [10, 11, 16, 17].includes(position)
   return false
 }
 
 // 쇼케이스 위치 (별도 스타일)
 const isShowcasePosition = (fridgeType: FridgeType, position: number): boolean => {
-  if (fridgeType === FridgeType.SIDE_BY_SIDE) return position >= 17
+  if (fridgeType === FridgeType.SIDE_BY_SIDE) return position >= 18
   return false
 }
 

@@ -41,6 +41,10 @@ export interface JuicyConfig {
   readonly enable3DModels: boolean
   readonly enableLitMaterial: boolean
   readonly enableCastShadow: boolean
+  // 셀셰이딩 + 아웃라인 플래그
+  readonly enableCelShading: boolean
+  readonly enableOutline: boolean
+  readonly celShadingSteps: number
 }
 
 const DEFAULT_JUICY: JuicyConfig = {
@@ -69,6 +73,9 @@ const DEFAULT_JUICY: JuicyConfig = {
   enable3DModels: true,
   enableLitMaterial: true,
   enableCastShadow: true,
+  enableCelShading: true,
+  enableOutline: true,
+  celShadingSteps: 2,
 }
 
 interface CombatState {

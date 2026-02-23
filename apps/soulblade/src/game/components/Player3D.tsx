@@ -4,17 +4,30 @@
  *
  * 좌표계: 게임 Y-down → Three.js Y-up 변환
  * 애니메이션: useFrame + Math.sin 프로시져럴 (idle/walk/attack)
+ * 모델: 프로시져럴 (기본) / GLTF (에셋 배치 시 자동 전환)
  */
 
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, Suspense } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh } from 'three'
-import type { Group, MeshLambertMaterial } from 'three'
+import type { Group, ShaderMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createPlayerModel } from '../models/player-model'
+import { GLTFFallback } from '../models/gltf-loader'
+import { usePlayerGLTF } from '../models/player-gltf'
+import { gameToWorld } from '../core/coord-adapter'
+import { OutlinePass } from './OutlinePass'
+import { useLodStore } from '../stores/useLodStore'
+import { getLodConfig } from '../systems/lod'
 
 // Billboard 32×48에 맞춘 스케일 (모델 높이 32 → 시각 48px)
 const MODEL_SCALE = 1.5
+
+// GLTF 모델 로드 컴포넌트 (Suspense 내부 전용)
+const PlayerGLTFModel = () => {
+  const gltfModel = usePlayerGLTF()
+  return <primitive object={gltfModel} />
+}
 
 export const Player3D = () => {
   const groupRef = useRef<Group>(null)
@@ -44,7 +57,7 @@ export const Player3D = () => {
     }
   }, [model])
 
-  // 애니메이션 대상 파트 캐싱
+  // 애니메이션 대상 파트 캐싱 (procedural 기준 — GLTF 전환 시 groupRef에서 재추출 필요)
   const parts = useMemo(() => {
     if (!model) return null
     return {
@@ -59,8 +72,8 @@ export const Player3D = () => {
     const player = useEntityStore.getState().player
     if (!player || !player.active || !groupRef.current || !parts) return
 
-    // 위치 (게임 Y-down → Three.js Y-up)
-    groupRef.current.position.set(player.body.x, -player.body.y, 0)
+    // 위치 (게임 XY → Three.js XZ)
+    groupRef.current.position.set(...gameToWorld(player.body.x, player.body.y))
 
     // 이동 방향 X 플립 (스케일 유지)
     const { vx, vy } = player.body
@@ -73,9 +86,9 @@ export const Player3D = () => {
       wasInvincible.current = player.invincible
       groupRef.current.traverse((child) => {
         if (child instanceof Mesh) {
-          const m = child.material as MeshLambertMaterial
+          const m = child.material as ShaderMaterial
           m.transparent = player.invincible
-          m.opacity = player.invincible ? 0.5 : 1.0
+          m.uniforms['uOpacity']!.value = player.invincible ? 0.5 : 1.0
           m.needsUpdate = true
         }
       })
@@ -111,7 +124,29 @@ export const Player3D = () => {
     }
   })
 
+  const quality = useLodStore((s) => s.quality)
+  const enableOutline = getLodConfig(quality).enableOutline
+
   if (!hasPlayer || !model) return null
 
-  return <primitive key={classType} ref={groupRef} object={model} />
+  const procedural = <primitive key={classType} ref={groupRef} object={model} />
+
+  return (
+    <>
+      <GLTFFallback fallback={procedural}>
+        <Suspense fallback={procedural}>
+          <group key={classType ?? undefined} ref={groupRef}>
+            <PlayerGLTFModel />
+          </group>
+        </Suspense>
+      </GLTFFallback>
+      <OutlinePass
+        model={model}
+        sourceRef={groupRef}
+        thickness={0.04}
+        color={0x222233}
+        enabled={enableOutline}
+      />
+    </>
+  )
 }

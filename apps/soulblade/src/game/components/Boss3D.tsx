@@ -6,15 +6,28 @@
  * 애니메이션: idle 호흡 + 팔 진자 + phase 피드백
  */
 
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, Suspense } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Mesh } from 'three'
-import type { Group, MeshLambertMaterial } from 'three'
+import { Mesh, Color } from 'three'
+import type { Group, ShaderMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createBossModel } from '../models/boss-model'
+import { GLTFFallback } from '../models/gltf-loader'
+import { useBossGLTF } from '../models/boss-gltf'
+import { gameToWorld } from '../core/coord-adapter'
+import { OutlinePass } from './OutlinePass'
+import { useLodStore } from '../stores/useLodStore'
+import { getLodConfig } from '../systems/lod'
 
 // 보스 시각 크기 (모델 높이 54 → 시각 ~81px, 몬스터 대비 2.5배)
 const MODEL_SCALE = 1.5
+const SUMMON_EMISSIVE = new Color(0x442211)
+
+// GLTF 모델 로드 컴포넌트 (Suspense 내부 전용)
+const BossGLTFModel = () => {
+  const gltfModel = useBossGLTF()
+  return <primitive object={gltfModel} />
+}
 
 export const Boss3D = () => {
   const groupRef = useRef<Group>(null)
@@ -39,7 +52,7 @@ export const Boss3D = () => {
     }
   }, [model])
 
-  // 애니메이션 파트 + 메시 배열 캐싱 (traverse 제거)
+  // 애니메이션 파트 + 메시 배열 캐싱 (procedural 기준 — GLTF 전환 시 groupRef에서 재추출 필요)
   const parts = useMemo(() => ({
     rightArm: model.getObjectByName('rightArm') ?? null,
     leftArm: model.getObjectByName('leftArm') ?? null,
@@ -57,8 +70,8 @@ export const Boss3D = () => {
     const boss = useEntityStore.getState().boss
     if (!boss || !boss.active || !groupRef.current) return
 
-    // 위치 (게임 Y-down → Three.js Y-up)
-    groupRef.current.position.set(boss.body.x, -boss.body.y, 0)
+    // 위치 (게임 XY → Three.js XZ)
+    groupRef.current.position.set(...gameToWorld(boss.body.x, boss.body.y))
 
     // 프로시져럴 애니메이션
     const anim = animRef.current
@@ -82,7 +95,7 @@ export const Boss3D = () => {
       case 'charge':
         groupRef.current.rotation.x = boss.isCharging ? -0.3 : 0
         break
-      case 'aoe':
+      case 'aoe': {
         groupRef.current.rotation.x = 0
         const pulse = Math.sin(anim.timer * 10) * 0.05
         groupRef.current.scale.set(
@@ -91,13 +104,14 @@ export const Boss3D = () => {
           MODEL_SCALE * (1 + pulse),
         )
         break
+      }
       case 'summon': {
         groupRef.current.rotation.x = 0
         const glow = Math.sin(anim.timer * 6) * 0.5 + 0.5
         for (const mesh of meshes) {
-          const m = mesh.material as MeshLambertMaterial
-          m.emissiveIntensity = glow * 0.3
-          m.emissive.setHex(0x442211)
+          const m = mesh.material as ShaderMaterial
+          m.uniforms['uEmissiveIntensity']!.value = glow * 0.3
+          m.uniforms['uEmissive']!.value.set(SUMMON_EMISSIVE.r, SUMMON_EMISSIVE.g, SUMMON_EMISSIVE.b)
         }
         break
       }
@@ -106,13 +120,35 @@ export const Boss3D = () => {
     // summon → 다른 phase 전환 시에만 emissive 리셋
     if (prevPhaseRef.current === 'summon' && boss.currentPhase !== 'summon') {
       for (const mesh of meshes) {
-        (mesh.material as MeshLambertMaterial).emissiveIntensity = 0
+        (mesh.material as ShaderMaterial).uniforms['uEmissiveIntensity']!.value = 0
       }
     }
     prevPhaseRef.current = boss.currentPhase
   })
 
+  const quality = useLodStore((s) => s.quality)
+  const enableOutline = getLodConfig(quality).enableOutline
+
   if (!hasBoss) return null
 
-  return <primitive ref={groupRef} object={model} />
+  const procedural = <primitive ref={groupRef} object={model} />
+
+  return (
+    <>
+      <GLTFFallback fallback={procedural}>
+        <Suspense fallback={procedural}>
+          <group ref={groupRef}>
+            <BossGLTFModel />
+          </group>
+        </Suspense>
+      </GLTFFallback>
+      <OutlinePass
+        model={model}
+        sourceRef={groupRef}
+        thickness={0.06}
+        color={0x331111}
+        enabled={enableOutline}
+      />
+    </>
+  )
 }

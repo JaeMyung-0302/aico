@@ -1,9 +1,10 @@
 /**
  * 데미지 넘버 렌더링
  * eventBus 'combat:damageNumber' 이벤트를 수신하여
- * 떠오르는 데미지 텍스트 표시 (HTML Overlay 방식)
+ * 떠오르는 데미지 텍스트 표시
  *
- * R3F Canvas 내부 컴포넌트: Html (drei) 사용
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
+ * R3F Canvas 내부 컴포넌트
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react'
@@ -13,7 +14,8 @@ import { eventBus } from '@/lib/event-bus'
 interface DamageEntry {
   id: number
   x: number
-  y: number // game Y (Y-down)
+  z: number // 게임 Y → 월드 Z (static)
+  height: number // 떠오르는 Y 높이 오프셋
   damage: number
   isCrit: boolean
   color: string
@@ -22,7 +24,8 @@ interface DamageEntry {
 
 const MAX_ENTRIES = 20
 const LIFETIME_MS = 800
-const FLOAT_SPEED = 40 // px/sec (game coords)
+const FLOAT_SPEED = 40 // units/sec (Y 방향)
+const DAMAGE_BASE_HEIGHT = 10
 
 let entryIdCounter = 0
 
@@ -41,7 +44,8 @@ export const DamageNumbers = () => {
     const entry: DamageEntry = {
       id: entryIdCounter,
       x: data.x,
-      y: data.y,
+      z: data.y, // 게임 Y → 월드 Z
+      height: 0,
       damage: data.damage,
       isCrit: data.isCrit,
       color: data.color ?? (data.isCrit ? '#ffff00' : '#ffffff'),
@@ -71,7 +75,7 @@ export const DamageNumbers = () => {
 
     for (const entry of entries) {
       entry.age += deltaMs
-      entry.y -= FLOAT_SPEED * delta // 위로 떠오름 (game Y-down이므로 빼기)
+      entry.height += FLOAT_SPEED * delta // 위로 떠오름 (Y+ 방향)
     }
 
     // 만료 항목 제거 (in-place splice — GC 회피)
@@ -83,10 +87,11 @@ export const DamageNumbers = () => {
         writeIdx++
       }
     }
+    const prevLen = entries.length
     entries.length = writeIdx
 
-    // 매 프레임 rerender (위치 애니메이션 반영)
-    forceUpdate((n) => n + 1)
+    // 개수 변경 시에만 rerender (위치는 Three.js position으로 직접 제어)
+    if (writeIdx !== prevLen) forceUpdate((n) => n + 1)
   })
 
   const entries = entriesRef.current
@@ -96,12 +101,11 @@ export const DamageNumbers = () => {
       {entries.map((entry) => {
         const opacity = 1 - entry.age / LIFETIME_MS
         const scale = entry.isCrit ? 1.5 : 1.0
-        const fontSize = entry.isCrit ? 14 : 10
 
         return (
           <mesh
             key={entry.id}
-            position={[entry.x, -entry.y, 10]}
+            position={[entry.x, DAMAGE_BASE_HEIGHT + entry.height, entry.z]}
             scale={[scale, scale, 1]}
           >
             <planeGeometry args={[1, 1]} />

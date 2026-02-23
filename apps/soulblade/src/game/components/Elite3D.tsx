@@ -8,10 +8,12 @@
 
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Object3D, Color, MeshLambertMaterial } from 'three'
+import { Object3D, Color } from 'three'
 import type { InstancedMesh } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createEliteGeometry } from '../models/elite-geometry'
+import { createCelInstancedMaterial } from '../shaders/cel-instanced-shader'
+import { gameToWorld } from '../core/coord-adapter'
 
 const MAX_INSTANCES = 20
 const tempObject = new Object3D()
@@ -22,7 +24,7 @@ const MODEL_SCALE = 1.19
 export const Elite3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
   const geometry = useMemo(() => createEliteGeometry(), [])
-  const material = useMemo(() => new MeshLambertMaterial({ vertexColors: true }), [])
+  const material = useMemo(() => createCelInstancedMaterial(), [])
 
   useEffect(() => {
     return () => {
@@ -42,7 +44,7 @@ export const Elite3D = () => {
       if (!e.active) continue
       if (idx >= MAX_INSTANCES) break
 
-      tempObject.position.set(e.body.x, -e.body.y, 0)
+      tempObject.position.set(...gameToWorld(e.body.x, e.body.y))
       tempObject.rotation.set(0, 0, 0)
       const s = e.scale * MODEL_SCALE
       tempObject.scale.set(s, s, s)

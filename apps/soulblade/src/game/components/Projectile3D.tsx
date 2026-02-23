@@ -8,10 +8,12 @@
 
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Object3D, MeshLambertMaterial } from 'three'
+import { Object3D } from 'three'
 import type { InstancedMesh } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createProjectileGeometry } from '../models/projectile-geometry'
+import { createCelInstancedMaterial } from '../shaders/cel-instanced-shader'
+import { gameToWorld } from '../core/coord-adapter'
 
 const MAX_INSTANCES = 30
 const tempObject = new Object3D()
@@ -21,7 +23,7 @@ const MODEL_SCALE = 1.14
 export const Projectile3D = () => {
   const meshRef = useRef<InstancedMesh>(null)
   const geometry = useMemo(() => createProjectileGeometry(), [])
-  const material = useMemo(() => new MeshLambertMaterial({ vertexColors: true }), [])
+  const material = useMemo(() => createCelInstancedMaterial(), [])
 
   useEffect(() => {
     return () => {
@@ -41,8 +43,8 @@ export const Projectile3D = () => {
       if (!p.active) continue
       if (idx >= MAX_INSTANCES) break
 
-      tempObject.position.set(p.body.x, -p.body.y, 0)
-      tempObject.rotation.set(0, 0, -p.angle)
+      tempObject.position.set(...gameToWorld(p.body.x, p.body.y))
+      tempObject.rotation.set(0, -p.angle, 0)
       tempObject.scale.set(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE)
       tempObject.updateMatrix()
       mesh.setMatrixAt(idx, tempObject.matrix)

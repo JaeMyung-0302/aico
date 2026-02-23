@@ -2,6 +2,7 @@
  * HP 바 오버레이
  * 활성 몬스터/엘리트의 HP 바를 Three.js Graphics로 렌더링
  *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
  * InstancedMesh와 별도로 렌더링 (HP 바는 Line/Plane 기반)
  * LOD에 따라 비표시 가능
  */
@@ -14,10 +15,10 @@ import { useEntityStore } from '../stores/useEntityStore'
 
 const MAX_BARS = 80
 const BAR_WIDTH = 24
-const BAR_Y_OFFSET = 20 // 몬스터 위에 표시 (Three.js Y-up: +Y = 화면 위)
-// 빌보딩 후 몬스터 스프라이트 상단 Z ≈ 18, HP 바는 그 위에
-const HP_BAR_Z_BG = 20
-const HP_BAR_Z_FG = 21
+const BAR_Y_OFFSET = 20 // 엔티티 위에 표시 (Three.js Y-up: +Y = 위)
+// 전경/배경 바 Y 높이 분리
+const HP_BAR_Y_BG = BAR_Y_OFFSET
+const HP_BAR_Y_FG = BAR_Y_OFFSET + 0.1
 
 export const HpBarOverlay = () => {
   const bgRef = useRef<LineSegments>(null)
@@ -50,25 +51,25 @@ export const HpBarOverlay = () => {
       if (m.hp >= m.maxHp) continue // 풀 HP이면 비표시
 
       const baseX = m.body.x - BAR_WIDTH / 2
-      const baseY = -m.body.y + BAR_Y_OFFSET
+      const baseZ = m.body.y // 게임 Y → 월드 Z
       const hpRatio = m.hp / m.maxHp
 
       // 배경 바 (전체)
       const bi = idx * 6
       bgPositions[bi] = baseX
-      bgPositions[bi + 1] = baseY
-      bgPositions[bi + 2] = HP_BAR_Z_BG
+      bgPositions[bi + 1] = HP_BAR_Y_BG
+      bgPositions[bi + 2] = baseZ
       bgPositions[bi + 3] = baseX + BAR_WIDTH
-      bgPositions[bi + 4] = baseY
-      bgPositions[bi + 5] = HP_BAR_Z_BG
+      bgPositions[bi + 4] = HP_BAR_Y_BG
+      bgPositions[bi + 5] = baseZ
 
       // 전경 바 (HP 비율)
       fgPositions[bi] = baseX
-      fgPositions[bi + 1] = baseY
-      fgPositions[bi + 2] = HP_BAR_Z_FG
+      fgPositions[bi + 1] = HP_BAR_Y_FG
+      fgPositions[bi + 2] = baseZ
       fgPositions[bi + 3] = baseX + BAR_WIDTH * hpRatio
-      fgPositions[bi + 4] = baseY
-      fgPositions[bi + 5] = HP_BAR_Z_FG
+      fgPositions[bi + 4] = HP_BAR_Y_FG
+      fgPositions[bi + 5] = baseZ
 
       idx++
     }
@@ -80,23 +81,23 @@ export const HpBarOverlay = () => {
 
       const eliteBarWidth = 32
       const baseX = e.body.x - eliteBarWidth / 2
-      const baseY = -e.body.y + BAR_Y_OFFSET - 4 // 엘리트는 좀 더 위에
+      const baseZ = e.body.y
       const hpRatio = e.hp / e.maxHp
 
       const bi = idx * 6
       bgPositions[bi] = baseX
-      bgPositions[bi + 1] = baseY
-      bgPositions[bi + 2] = 1
+      bgPositions[bi + 1] = HP_BAR_Y_BG + 4 // 엘리트는 좀 더 위에
+      bgPositions[bi + 2] = baseZ
       bgPositions[bi + 3] = baseX + eliteBarWidth
-      bgPositions[bi + 4] = baseY
-      bgPositions[bi + 5] = HP_BAR_Z_BG
+      bgPositions[bi + 4] = HP_BAR_Y_BG + 4
+      bgPositions[bi + 5] = baseZ
 
       fgPositions[bi] = baseX
-      fgPositions[bi + 1] = baseY
-      fgPositions[bi + 2] = 2
+      fgPositions[bi + 1] = HP_BAR_Y_FG + 4
+      fgPositions[bi + 2] = baseZ
       fgPositions[bi + 3] = baseX + eliteBarWidth * hpRatio
-      fgPositions[bi + 4] = baseY
-      fgPositions[bi + 5] = HP_BAR_Z_FG
+      fgPositions[bi + 4] = HP_BAR_Y_FG + 4
+      fgPositions[bi + 5] = baseZ
 
       idx++
     }
@@ -105,17 +106,17 @@ export const HpBarOverlay = () => {
     for (let i = idx; i < MAX_BARS; i++) {
       const bi = i * 6
       bgPositions[bi] = 0
-      bgPositions[bi + 1] = 0
-      bgPositions[bi + 2] = -9999
+      bgPositions[bi + 1] = -9999
+      bgPositions[bi + 2] = 0
       bgPositions[bi + 3] = 0
-      bgPositions[bi + 4] = 0
-      bgPositions[bi + 5] = -9999
+      bgPositions[bi + 4] = -9999
+      bgPositions[bi + 5] = 0
       fgPositions[bi] = 0
-      fgPositions[bi + 1] = 0
-      fgPositions[bi + 2] = -9999
+      fgPositions[bi + 1] = -9999
+      fgPositions[bi + 2] = 0
       fgPositions[bi + 3] = 0
-      fgPositions[bi + 4] = 0
-      fgPositions[bi + 5] = -9999
+      fgPositions[bi + 4] = -9999
+      fgPositions[bi + 5] = 0
     }
 
     // geometry 갱신

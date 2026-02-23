@@ -3,8 +3,8 @@
  * Canvas2D 스프라이트 시트 + UV 애니메이션
  *
  * 프레임: 0=idle, 1-2=attack, 3-4=walk
- * 좌표계: 게임 Y-down → Three.js Y-up 변환
- * 2.5D 빌보딩: 카메라 기울기만큼 스프라이트를 회전하여 카메라를 향하게 함
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
+ * 빌보딩: 카메라 quaternion 복사로 항상 카메라를 향함
  */
 
 import { useRef, useMemo, useEffect } from 'react'
@@ -12,13 +12,12 @@ import { useFrame } from '@react-three/fiber'
 import type { Mesh, MeshBasicMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { getSpriteTextures, getFrameUV, SPRITE_FRAME_COUNT } from '../assets/sprite-generator'
-import { CAMERA_TILT } from '../core/CameraController'
 
 const WALK_FRAME_MS = 200
 const ATTACK_FRAME_MS = 150
-// 빌보딩: 스프라이트 하단이 Z=0(지면)에 위치하도록 Z 오프셋
+// 스프라이트 중심이 지면 위에 위치하도록 Y 오프셋
 const SPRITE_HALF_H = 24 // PlaneGeometry height 48 / 2
-const BILLBOARD_Z = SPRITE_HALF_H * Math.sin(CAMERA_TILT)
+const BILLBOARD_Y = SPRITE_HALF_H
 
 export const PlayerBillboard = () => {
   const meshRef = useRef<Mesh>(null)
@@ -42,14 +41,14 @@ export const PlayerBillboard = () => {
     return () => { texture?.dispose() }
   }, [texture])
 
-  useFrame((_state, delta) => {
+  useFrame((state, delta) => {
     const player = useEntityStore.getState().player
     if (!player || !player.active || !meshRef.current || !texture) return
 
-    // 위치 + Y 반전 + 2.5D 빌보딩 Z 오프셋
-    meshRef.current.position.set(player.body.x, -player.body.y, BILLBOARD_Z)
-    // 카메라 기울기 방향으로 스프라이트 회전 (바닥에 눕지 않고 카메라를 향함)
-    meshRef.current.rotation.x = -CAMERA_TILT
+    // 위치 (게임 XY → Three.js XZ) + Y 높이 오프셋
+    meshRef.current.position.set(player.body.x, BILLBOARD_Y, player.body.y)
+    // 카메라를 향하도록 빌보딩
+    meshRef.current.quaternion.copy(state.camera.quaternion)
 
     // 이동 방향에 따른 X 플립
     const { vx, vy } = player.body

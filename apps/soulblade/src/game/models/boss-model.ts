@@ -12,9 +12,9 @@ import {
   BoxGeometry,
   CylinderGeometry,
   ConeGeometry,
-  MeshLambertMaterial,
 } from 'three'
 import { BOSS_COLORS } from './colors'
+import { createCelMaterial } from '../shaders/cel-shader'
 
 // ── 치수 (총 높이 ~51, feet=0 기준) ──
 
@@ -33,7 +33,7 @@ const SHOULDER = LEG_TOP + BODY_H - 2          // 32
 const HEAD_MID = LEG_TOP + BODY_H + HEAD_H / 2 // 45
 const HORN_Y = LEG_TOP + BODY_H + HEAD_H + HORN_H / 2 // 51
 
-const buildMat = (color: number) => new MeshLambertMaterial({ color })
+const buildMat = (color: number) => createCelMaterial(color)
 
 /** 상단 pivot 사지 생성 */
 const buildLimb = (w: number, h: number, d: number, color: number, name: string): Mesh => {

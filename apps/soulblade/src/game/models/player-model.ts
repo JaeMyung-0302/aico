@@ -12,7 +12,6 @@ import {
   BoxGeometry,
   CylinderGeometry,
   SphereGeometry,
-  MeshLambertMaterial,
 } from 'three'
 import type { CharacterClass } from '@soulblade/shared'
 import {
@@ -21,6 +20,7 @@ import {
   PALADIN_COLORS,
   ARCHER_COLORS,
 } from './colors'
+import { createCelMaterial } from '../shaders/cel-shader'
 
 // ── 치수 (feet at y=0 기준, 총 높이 ~32) ──
 
@@ -35,7 +35,7 @@ const BODY_MID = LEG_TOP + BODY_H / 2        // 18
 const SHOULDER = LEG_TOP + BODY_H - 2        // 22
 const HEAD_MID = LEG_TOP + BODY_H + HEAD_H / 2 // 28
 
-const buildMat = (color: number) => new MeshLambertMaterial({ color })
+const buildMat = (color: number) => createCelMaterial(color)
 
 /** 상단 pivot 사지 생성 (geometry를 아래로 오프셋) */
 const buildLimb = (w: number, h: number, d: number, color: number, name: string): Mesh => {

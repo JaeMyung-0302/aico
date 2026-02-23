@@ -98,7 +98,7 @@ export const DynamicLights = ({ enabled }: DynamicLightsProps) => {
       // children 배열의 pointLight 업데이트
       const pointLight = children[lightIdx] as PointLight | undefined
       if (pointLight) {
-        pointLight.position.set(light.x, -light.y, 20)
+        pointLight.position.set(light.x, 20, light.y)
         pointLight.intensity = currentIntensity
         pointLight.color.set(light.color)
         pointLight.visible = true

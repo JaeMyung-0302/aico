@@ -2,9 +2,7 @@
  * 맵별 조명 리그
  * AmbientLight + DirectionalLight 조합으로 씬 조명
  *
- * 2.5D 깊이감 핵심: 앰비언트를 낮추고 디렉셔널을 높여
- * 건물 윗면(밝음)과 앞면(어두움) 간 명암 대비 극대화
- *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
  * LOD 연동: full/reduced → 그림자 활성, minimal/canvas → 비활성
  * 맵별 색온도: town=따뜻, forest=녹색, ice=파랑, flame=붉은빛
  */
@@ -14,41 +12,41 @@ import { useFrame } from '@react-three/fiber'
 import type { DirectionalLight } from 'three'
 import type { MapId } from '@soulblade/shared'
 
-// 맵별 조명 테마 (앰비언트 ↓ 디렉셔널 ↑ = 면 간 명암 대비 극대화)
+// 맵별 조명 테마 (3D 좌표계: [X오프셋, Y높이, Z오프셋])
 const LIGHTING_THEMES: Record<MapId, {
   ambientColor: number
   ambientIntensity: number
   dirColor: number
   dirIntensity: number
-  dirPosition: [number, number, number] // 그림자 시 카메라 기준 오프셋으로도 사용
+  dirPosition: [number, number, number]
 }> = {
   town: {
     ambientColor: 0xfff4e0,
     ambientIntensity: 0.35,
     dirColor: 0xffeecc,
     dirIntensity: 0.85,
-    dirPosition: [200, -100, 300],
+    dirPosition: [200, 300, -100],
   },
   serpent_forest: {
     ambientColor: 0x88cc88,
     ambientIntensity: 0.2,
     dirColor: 0x44aa44,
     dirIntensity: 0.55,
-    dirPosition: [100, -200, 250],
+    dirPosition: [100, 250, -200],
   },
   ice_cave: {
     ambientColor: 0xaaccff,
     ambientIntensity: 0.25,
     dirColor: 0x6688cc,
     dirIntensity: 0.65,
-    dirPosition: [0, -50, 350],
+    dirPosition: [0, 350, -50],
   },
   flame_castle: {
     ambientColor: 0xff8844,
     ambientIntensity: 0.2,
     dirColor: 0xff4422,
     dirIntensity: 0.8,
-    dirPosition: [150, -150, 200],
+    dirPosition: [150, 200, -150],
   },
 }
 
@@ -96,13 +94,13 @@ export const LightingRig = ({ mapId, enabled, enableShadows }: LightingRigProps)
     if (!light || !enableShadows) return
 
     const cx = camera.position.x
-    const cy = camera.position.y
+    const cz = camera.position.z
     light.position.set(
       cx + theme.dirPosition[0],
-      cy + theme.dirPosition[1],
-      theme.dirPosition[2],
+      theme.dirPosition[1],
+      cz + theme.dirPosition[2],
     )
-    light.target.position.set(cx, cy, 0)
+    light.target.position.set(cx, 0, cz)
     light.target.updateMatrixWorld()
   })
 

@@ -16,7 +16,7 @@ import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT } from '@soulblade/shared'
 
 // 파티클 풀 설정
 const MAX_PARTICLES = 20
-const PARTICLE_Z = 12
+const PARTICLE_Y = 12
 const RESPAWN_MARGIN = 50 // 화면 밖 마진
 
 // 맵별 파티클 설정
@@ -90,12 +90,12 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
   // 뷰포트 영역 내 파티클 스폰
   const spawnParticle = (p: Particle) => {
     const camX = camera.position.x
-    const camY = camera.position.y
+    const camZ = camera.position.z
     const halfW = VIEWPORT_WIDTH / 2 + RESPAWN_MARGIN
     const halfH = VIEWPORT_HEIGHT / 2 + RESPAWN_MARGIN
 
     p.x = camX + (Math.random() - 0.5) * halfW * 2
-    p.y = camY + (Math.random() - 0.5) * halfH * 2
+    p.y = camZ + (Math.random() - 0.5) * halfH * 2
     p.vx = theme.driftX * (0.5 + Math.random())
     p.vy = theme.driftY * (0.5 + Math.random())
     p.age = 0
@@ -112,7 +112,7 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
     elapsedRef.current += dt
     const elapsed = elapsedRef.current
     const camX = camera.position.x
-    const camY = camera.position.y
+    const camZ = camera.position.z
     const halfW = VIEWPORT_WIDTH / 2 + RESPAWN_MARGIN
     const halfH = VIEWPORT_HEIGHT / 2 + RESPAWN_MARGIN
 
@@ -133,7 +133,7 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
       p.y += p.vy * delta * 30
 
       // 수명 초과 또는 화면 밖 → 리사이클
-      if (p.age >= p.lifetime || Math.abs(p.x - camX) > halfW || Math.abs(p.y - camY) > halfH) {
+      if (p.age >= p.lifetime || Math.abs(p.x - camX) > halfW || Math.abs(p.y - camZ) > halfH) {
         spawnParticle(p)
       }
 
@@ -143,7 +143,7 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
         ? theme.alpha * (1 - (p.age - fadeStart) / (p.lifetime - fadeStart))
         : theme.alpha
 
-      positions.setXYZ(i, p.x, p.y, PARTICLE_Z)
+      positions.setXYZ(i, p.x, PARTICLE_Y, p.y)
       colors.setXYZ(i, particleColor.r * alpha, particleColor.g * alpha, particleColor.b * alpha)
     }
 

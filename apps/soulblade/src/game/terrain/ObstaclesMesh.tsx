@@ -2,6 +2,7 @@
  * 맵 장애물 3D 메시 렌더링
  * ObstacleConfig[] → Three.js 기하학 변환
  *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
  * type 매핑:
  * - rect → BoxGeometry
  * - circle → CylinderGeometry (원통)
@@ -26,18 +27,16 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
   const alpha = obs.alpha ?? 0.6
   const obstacleType = obs.type ?? 'rect'
 
-  // 공통 위치 (게임 Y-down → Three.js Y-up)
+  // 공통 위치 (게임 XY → Three.js XZ)
   const posX = obs.x
-  const posY = -obs.y
-  // collidable 장애물은 더 높이, 장식은 낮게
-  const posZ = obs.collidable !== false ? 2 : 0.5
+  const posZ = obs.y
 
   switch (obstacleType) {
     case 'rect': {
       const height3d = obs.collidable !== false ? Math.min(obs.height * 0.4, 20) : 2
       return (
-        <mesh position={[posX, posY, posZ]} castShadow={obs.collidable !== false}>
-          <boxGeometry args={[obs.width, obs.height, height3d]} />
+        <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
+          <boxGeometry args={[obs.width, height3d, obs.height]} />
           <meshLambertMaterial
             color={color}
             transparent={alpha < 1}
@@ -50,7 +49,7 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
       const radius = obs.radius ?? obs.width / 2
       const height3d = obs.collidable !== false ? Math.max(radius * 0.8, 10) : 3
       return (
-        <mesh position={[posX, posY, posZ]} rotation={[Math.PI / 2, 0, 0]} castShadow={obs.collidable !== false}>
+        <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
           <cylinderGeometry args={[radius, radius, height3d, 12]} />
           <meshLambertMaterial
             color={color}
@@ -64,7 +63,7 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
       const radius = Math.max(obs.width, obs.height) / 2
       const height3d = obs.collidable !== false ? obs.height * 0.6 : obs.height * 0.3
       return (
-        <mesh position={[posX, posY, posZ]} castShadow={obs.collidable !== false}>
+        <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
           <coneGeometry args={[radius, height3d, 6]} />
           <meshLambertMaterial
             color={color}
@@ -79,7 +78,7 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
       const radiusY = obs.height / 2
       const height3d = obs.collidable !== false ? 8 : 2
       return (
-        <mesh position={[posX, posY, posZ]} scale={[radiusX / radiusY, 1, 1]} rotation={[Math.PI / 2, 0, 0]} castShadow={obs.collidable !== false}>
+        <mesh position={[posX, height3d / 2, posZ]} scale={[radiusX / radiusY, 1, 1]} castShadow={obs.collidable !== false}>
           <cylinderGeometry args={[radiusY, radiusY, height3d, 12]} />
           <meshLambertMaterial
             color={color}

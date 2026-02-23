@@ -29,15 +29,15 @@ const PortalItem = ({ portal }: { portal: PortalConfig }) => {
   // 회전 애니메이션
   useFrame((_state, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.z += delta * 1.5
+      groupRef.current.rotation.y += delta * 1.5
     }
     if (innerRef.current) {
-      innerRef.current.rotation.z -= delta * 2.5
+      innerRef.current.rotation.y -= delta * 2.5
     }
   })
 
   return (
-    <group position={[portal.position.x, -portal.position.y, 3]}>
+    <group position={[portal.position.x, 3, portal.position.y]}>
       {/* 외부 링 (천천히 회전) */}
       <group ref={groupRef}>
         <mesh>

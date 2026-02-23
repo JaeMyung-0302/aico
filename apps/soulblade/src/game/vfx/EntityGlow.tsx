@@ -3,6 +3,7 @@
  * - 엘리트 오라: 변이 색상 타원형 글로우
  * - 플레이어 호흡: scaleX/Y 미세 진동
  *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
  * LOD: full/reduced → 글로우, full → 호흡
  */
 
@@ -10,21 +11,17 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useEntityStore } from '../stores/useEntityStore'
 import type { InstancedMesh } from 'three'
-import { Matrix4, Color } from 'three'
+import { Object3D, Color } from 'three'
+import { gameToWorld } from '../core/coord-adapter'
 
 // 글로우 설정
 const GLOW_ALPHA = 0.18
 const GLOW_RX = 18 // X 반경
-const GLOW_RY = 10 // Y 반경
+const GLOW_RY = 10 // Z 반경 (구 Y → 3D Z)
 const MAX_GLOWS = 20 // 엘리트 + 보스
-const GLOW_Z = 3 // 엔티티 아래
+const GLOW_HEIGHT = 0.02 // 섀도우 위
 
-// 호흡 설정
-const BREATH_MIN = 0.98
-const BREATH_MAX = 1.02
-const BREATH_SPEED = 1.2 // 초당 사이클
-
-const _mat4 = new Matrix4()
+const _tempObj = new Object3D()
 const _color = new Color()
 
 interface EntityGlowProps {
@@ -32,23 +29,14 @@ interface EntityGlowProps {
   enableBreath: boolean
 }
 
-export const EntityGlow = ({ enableGlow, enableBreath }: EntityGlowProps) => {
+export const EntityGlow = ({ enableGlow }: EntityGlowProps) => {
   const glowRef = useRef<InstancedMesh>(null)
-  // 플레이어 호흡 state
-  const breathScaleRef = useRef({ sx: 1, sy: 1 })
   const elapsedRef = useRef(0)
 
   useFrame((_state, delta) => {
     const { player, elites, boss } = useEntityStore.getState()
     elapsedRef.current += delta
     const t = elapsedRef.current
-
-    // 플레이어 호흡 애니메이션
-    if (enableBreath && player && player.active) {
-      const breathPhase = Math.sin(t * Math.PI * BREATH_SPEED)
-      breathScaleRef.current.sx = 1 + breathPhase * (BREATH_MAX - 1)
-      breathScaleRef.current.sy = 1 - breathPhase * (BREATH_MAX - 1)
-    }
 
     // 엘리트 글로우
     const mesh = glowRef.current
@@ -61,9 +49,12 @@ export const EntityGlow = ({ enableGlow, enableBreath }: EntityGlowProps) => {
 
     for (const e of elites) {
       if (!e.active || idx >= MAX_GLOWS) continue
-      _mat4.makeScale(GLOW_RX * e.scale, GLOW_RY * e.scale, 1)
-      _mat4.setPosition(e.body.x, -e.body.y, GLOW_Z)
-      mesh.setMatrixAt(idx, _mat4)
+      const [wx, , wz] = gameToWorld(e.body.x, e.body.y)
+      _tempObj.position.set(wx, GLOW_HEIGHT, wz)
+      _tempObj.rotation.set(-Math.PI / 2, 0, 0) // XZ 평면에 놓기
+      _tempObj.scale.set(GLOW_RX * e.scale, GLOW_RY * e.scale, 1)
+      _tempObj.updateMatrix()
+      mesh.setMatrixAt(idx, _tempObj.matrix)
 
       // 변이별 tint 색상
       _color.set(e.tint)
@@ -73,9 +64,12 @@ export const EntityGlow = ({ enableGlow, enableBreath }: EntityGlowProps) => {
 
     // 보스 글로우 (크기 확대)
     if (boss && boss.active && idx < MAX_GLOWS) {
-      _mat4.makeScale(GLOW_RX * 2, GLOW_RY * 2, 1)
-      _mat4.setPosition(boss.body.x, -boss.body.y, GLOW_Z)
-      mesh.setMatrixAt(idx, _mat4)
+      const [wx, , wz] = gameToWorld(boss.body.x, boss.body.y)
+      _tempObj.position.set(wx, GLOW_HEIGHT, wz)
+      _tempObj.rotation.set(-Math.PI / 2, 0, 0)
+      _tempObj.scale.set(GLOW_RX * 2, GLOW_RY * 2, 1)
+      _tempObj.updateMatrix()
+      mesh.setMatrixAt(idx, _tempObj.matrix)
       _color.set(0xff4444)
       mesh.setColorAt(idx, _color)
       idx++

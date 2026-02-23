@@ -119,7 +119,7 @@ export const TerrainMesh = ({ mapId, worldWidth, worldHeight }: TerrainMeshProps
   return (
     <mesh
       geometry={geometry}
-      position={[worldWidth / 2, -worldHeight / 2, -1]}
+      position={[worldWidth / 2, -0.1, worldHeight / 2]} rotation={[-Math.PI / 2, 0, 0]}
       receiveShadow
     >
       <meshLambertMaterial vertexColors />

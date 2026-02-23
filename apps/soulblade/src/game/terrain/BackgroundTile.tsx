@@ -130,7 +130,7 @@ export const BackgroundTile = ({ mapId, worldWidth, worldHeight }: BackgroundTil
   }, [texture])
 
   return (
-    <mesh position={[worldWidth / 2, -worldHeight / 2, -2]}>
+    <mesh position={[worldWidth / 2, -0.2, worldHeight / 2]} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[bgW, bgH]} />
       <meshBasicMaterial map={texture} />
     </mesh>

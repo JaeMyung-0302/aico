@@ -2,6 +2,7 @@
  * NPC 3D 메시 렌더링
  * BoxGeometry 기반 프로시저럴 건물/석상
  *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
  * NPC 타입별 외형:
  * - shop: 상점 건물 (지붕 + 진열대 + 따뜻한 조명)
  * - blacksmith: 대장간 (굴뚝 + 모루 + 불빛)
@@ -18,31 +19,31 @@ import type { NpcConfig } from '@soulblade/shared'
 // 상점 NPC
 const ShopMesh = ({ npc }: { npc: NpcConfig }) => {
   const posX = npc.position.x
-  const posY = -npc.position.y
+  const posZ = npc.position.y
 
   return (
-    <group position={[posX, posY, 0]}>
+    <group position={[posX, 0, posZ]}>
       {/* 건물 본체 */}
-      <mesh position={[0, 0, 15]} castShadow>
-        <boxGeometry args={[48, 40, 30]} />
+      <mesh position={[0, 15, 0]} castShadow>
+        <boxGeometry args={[48, 30, 40]} />
         <meshLambertMaterial color="#8b7355" />
       </mesh>
 
       {/* 지붕 (삼각형) */}
-      <mesh position={[0, 0, 33]} castShadow>
+      <mesh position={[0, 33, 0]} castShadow>
         <coneGeometry args={[32, 14, 4]} />
         <meshLambertMaterial color="#aa4444" />
       </mesh>
 
       {/* 창문 (따뜻한 빛 — meshBasicMaterial: 발광) */}
-      <mesh position={[0, -21, 12]}>
+      <mesh position={[0, 12, 21]}>
         <planeGeometry args={[16, 12]} />
         <meshBasicMaterial color="#ffdd88" />
       </mesh>
 
       {/* 진열대 */}
-      <mesh position={[0, -22, 5]}>
-        <boxGeometry args={[30, 6, 8]} />
+      <mesh position={[0, 5, 22]}>
+        <boxGeometry args={[30, 8, 6]} />
         <meshLambertMaterial color="#6b5335" />
       </mesh>
     </group>
@@ -52,7 +53,7 @@ const ShopMesh = ({ npc }: { npc: NpcConfig }) => {
 // 대장간 NPC
 const BlacksmithMesh = ({ npc }: { npc: NpcConfig }) => {
   const posX = npc.position.x
-  const posY = -npc.position.y
+  const posZ = npc.position.y
   const glowRef = useRef<Mesh>(null)
   const elapsedRef = useRef(0)
 
@@ -67,27 +68,27 @@ const BlacksmithMesh = ({ npc }: { npc: NpcConfig }) => {
   })
 
   return (
-    <group position={[posX, posY, 0]}>
+    <group position={[posX, 0, posZ]}>
       {/* 건물 본체 */}
-      <mesh position={[0, 0, 15]} castShadow>
-        <boxGeometry args={[50, 44, 30]} />
+      <mesh position={[0, 15, 0]} castShadow>
+        <boxGeometry args={[50, 30, 44]} />
         <meshLambertMaterial color="#666666" />
       </mesh>
 
       {/* 굴뚝 */}
-      <mesh position={[16, 0, 35]} castShadow>
-        <boxGeometry args={[10, 10, 16]} />
+      <mesh position={[16, 35, 0]} castShadow>
+        <boxGeometry args={[10, 16, 10]} />
         <meshLambertMaterial color="#555555" />
       </mesh>
 
       {/* 모루 */}
-      <mesh position={[-10, -24, 5]}>
-        <boxGeometry args={[14, 8, 10]} />
+      <mesh position={[-10, 5, 24]}>
+        <boxGeometry args={[14, 10, 8]} />
         <meshLambertMaterial color="#444444" />
       </mesh>
 
       {/* 화로 불빛 */}
-      <mesh ref={glowRef} position={[10, -24, 8]}>
+      <mesh ref={glowRef} position={[10, 8, 24]}>
         <circleGeometry args={[8, 12]} />
         <meshBasicMaterial
           color="#ff6600"
@@ -102,7 +103,7 @@ const BlacksmithMesh = ({ npc }: { npc: NpcConfig }) => {
 // 포탈 가이드 (석상) NPC
 const PortalGuideMesh = ({ npc }: { npc: NpcConfig }) => {
   const posX = npc.position.x
-  const posY = -npc.position.y
+  const posZ = npc.position.y
   const lightRef = useRef<Mesh>(null)
   const elapsedRef = useRef(0)
 
@@ -117,21 +118,21 @@ const PortalGuideMesh = ({ npc }: { npc: NpcConfig }) => {
   })
 
   return (
-    <group position={[posX, posY, 0]}>
+    <group position={[posX, 0, posZ]}>
       {/* 기둥 */}
-      <mesh position={[0, 0, 20]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+      <mesh position={[0, 20, 0]} castShadow>
         <cylinderGeometry args={[8, 10, 40, 8]} />
         <meshLambertMaterial color="#aaaaaa" />
       </mesh>
 
       {/* 상부 장식 */}
-      <mesh position={[0, 0, 42]} castShadow>
+      <mesh position={[0, 42, 0]} castShadow>
         <sphereGeometry args={[6, 8, 6]} />
         <meshLambertMaterial color="#cccccc" />
       </mesh>
 
       {/* 빛 이펙트 */}
-      <mesh ref={lightRef} position={[0, 0, 48]}>
+      <mesh ref={lightRef} position={[0, 48, 0]}>
         <circleGeometry args={[12, 12]} />
         <meshBasicMaterial
           color="#88ccff"

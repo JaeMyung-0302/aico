@@ -2,8 +2,9 @@
  * 패럴랙스 배경 레이어
  * 카메라 위치 기반 오프셋으로 깊이감 표현
  *
- * far 레이어 (0.1x 속도): 먼 배경 (Z=-3)
- * near 레이어 (0.4x 속도): 가까운 배경 (Z=-2.5)
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
+ * far 레이어 (0.1x 속도): Y=-0.3
+ * near 레이어 (0.4x 속도): Y=-0.25
  *
  * CanvasTexture + RepeatWrapping으로 프로시저럴 패턴
  */
@@ -17,8 +18,8 @@ import type { MapId } from '@soulblade/shared'
 // 패럴랙스 팩터
 const FAR_FACTOR = 0.1
 const NEAR_FACTOR = 0.4
-const FAR_Z = -3
-const NEAR_Z = -2.5
+const FAR_Y = -0.3
+const NEAR_Y = -0.25
 const FAR_ALPHA = 0.5
 const NEAR_ALPHA = 0.3
 const TILE_SIZE = 128
@@ -110,21 +111,21 @@ export const ParallaxLayers = ({ mapId, worldWidth, worldHeight, enabled, layerC
     }
   }, [farTexture, nearTexture])
 
-  // 카메라 위치 기반 패럴랙스 오프셋
+  // 카메라 위치 기반 패럴랙스 오프셋 (XZ 평면)
   useFrame(() => {
     if (!enabled) return
 
     const camX = camera.position.x
-    const camY = camera.position.y
+    const camZ = camera.position.z
 
     if (farRef.current) {
       farRef.current.position.x = camX * (1 - FAR_FACTOR) + worldWidth / 2 * FAR_FACTOR
-      farRef.current.position.y = camY * (1 - FAR_FACTOR) + (-worldHeight / 2) * FAR_FACTOR
+      farRef.current.position.z = camZ * (1 - FAR_FACTOR) + worldHeight / 2 * FAR_FACTOR
     }
 
     if (nearRef.current && layerCount >= 2) {
       nearRef.current.position.x = camX * (1 - NEAR_FACTOR) + worldWidth / 2 * NEAR_FACTOR
-      nearRef.current.position.y = camY * (1 - NEAR_FACTOR) + (-worldHeight / 2) * NEAR_FACTOR
+      nearRef.current.position.z = camZ * (1 - NEAR_FACTOR) + worldHeight / 2 * NEAR_FACTOR
     }
   })
 
@@ -133,7 +134,7 @@ export const ParallaxLayers = ({ mapId, worldWidth, worldHeight, enabled, layerC
   return (
     <group>
       {/* Far layer — 와이드스크린 대응 확장 */}
-      <mesh ref={farRef} position={[worldWidth / 2, -worldHeight / 2, FAR_Z]}>
+      <mesh ref={farRef} position={[worldWidth / 2, FAR_Y, worldHeight / 2]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[worldWidth + 3000, worldHeight + 3000]} />
         <meshBasicMaterial
           map={farTexture}
@@ -145,7 +146,7 @@ export const ParallaxLayers = ({ mapId, worldWidth, worldHeight, enabled, layerC
 
       {/* Near layer */}
       {layerCount >= 2 && (
-        <mesh ref={nearRef} position={[worldWidth / 2, -worldHeight / 2, NEAR_Z]}>
+        <mesh ref={nearRef} position={[worldWidth / 2, NEAR_Y, worldHeight / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[worldWidth + 2500, worldHeight + 2500]} />
           <meshBasicMaterial
             map={nearTexture}

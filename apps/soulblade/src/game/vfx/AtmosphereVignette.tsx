@@ -2,9 +2,8 @@
  * 맵별 분위기 비네팅
  * 화면 가장자리에 컬러 tint 오버레이
  *
- * 셰이더 대신 CSS overlay 방식 (R3F Canvas 바깥)
- * → 성능 영향 최소, 맵별 색상만 교체
- *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
+ * 카메라 앞에 위치하여 항상 화면을 덮음
  * LOD: full/reduced → 활성, minimal/canvas → 비활성
  */
 
@@ -68,11 +67,13 @@ export const AtmosphereVignette = ({ mapId, enabled }: AtmosphereVignetteProps) 
     uAlpha: { value: config.alpha },
   }), [config.tint, config.alpha])
 
-  // 카메라를 따라 이동 (화면 고정)
+  // 카메라 앞에 위치하여 화면 고정
   useFrame(() => {
     if (!meshRef.current || !enabled) return
-    meshRef.current.position.x = camera.position.x
-    meshRef.current.position.y = camera.position.y
+    // 카메라 위치와 방향을 복사하여 앞에 배치
+    meshRef.current.position.copy(camera.position)
+    meshRef.current.quaternion.copy(camera.quaternion)
+    meshRef.current.translateZ(-50) // 카메라 앞 50 유닛
 
     // 맵 변경 시 uniform 업데이트
     if (matRef.current) {
@@ -84,7 +85,7 @@ export const AtmosphereVignette = ({ mapId, enabled }: AtmosphereVignetteProps) 
   if (!enabled) return null
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 50]} renderOrder={900}>
+    <mesh ref={meshRef} renderOrder={900}>
       <planeGeometry args={[1200, 2000]} />
       <shaderMaterial
         ref={matRef}

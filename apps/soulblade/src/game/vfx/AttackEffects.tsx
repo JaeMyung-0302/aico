@@ -2,6 +2,7 @@
  * 공격 이펙트 렌더링
  * eventBus 'combat:attack' 리슨 → 클래스별 공격 시각화
  *
+ * 좌표계: 게임 XY → Three.js XZ (Y=높이)
  * - melee_fan: 호 모양 슬래시 (Warrior)
  * - aoe_circle: 마법진 원형 (Mage)
  * - mid_range_holy: 성광 직선 (Paladin)
@@ -17,7 +18,7 @@ import { eventBus } from '@/lib/event-bus'
 
 // ── 이펙트 풀 ──
 const MAX_EFFECTS = 8
-const EFFECT_Z = 8 // 엔티티 위에 렌더
+const EFFECT_Y = 8 // 지면 위 높이
 
 // 클래스별 색상
 const ATTACK_COLORS: Record<BasicAttackPattern, { main: string; glow: string }> = {
@@ -137,7 +138,7 @@ const SlashEffect = ({ effect, progress, alpha }: {
   return (
     <group>
       {/* 글로우 호 */}
-      <mesh position={[effect.x, -effect.y, EFFECT_Z]}>
+      <mesh position={[effect.x, EFFECT_Y, effect.y]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[radius - 8, radius + 8, 16, 1, startAngle, arcAngle * sweepProgress]} />
         <meshBasicMaterial
           color={colors.glow}
@@ -148,7 +149,7 @@ const SlashEffect = ({ effect, progress, alpha }: {
       </mesh>
 
       {/* 메인 호 */}
-      <mesh position={[effect.x, -effect.y, EFFECT_Z + 0.1]}>
+      <mesh position={[effect.x, EFFECT_Y + 0.1, effect.y]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[radius - 3, radius + 3, 16, 1, startAngle, arcAngle * sweepProgress]} />
         <meshBasicMaterial
           color={colors.main}
@@ -172,7 +173,7 @@ const AoeCircleEffect = ({ effect, progress, alpha }: {
   const expandScale = 0.3 + progress * 0.7 // 0.3 → 1.0으로 확장
 
   return (
-    <group position={[effect.x, -effect.y, EFFECT_Z]}>
+    <group position={[effect.x, EFFECT_Y, effect.y]} rotation={[-Math.PI / 2, 0, 0]}>
       {/* 글로우 필 */}
       <mesh scale={[expandScale, expandScale, 1]}>
         <circleGeometry args={[radius * 0.6, 16]} />
@@ -233,16 +234,16 @@ const HolyBeamEffect = ({ effect, progress, alpha }: {
   const width = 30
   const expandProgress = Math.min(progress * 3, 1) // 빠르게 확장
 
-  // 방향 벡터 기반 위치 오프셋
+  // XZ 평면 방향 벡터 기반 위치 오프셋
   const cosA = Math.cos(effect.angle)
   const sinA = Math.sin(effect.angle)
   const offsetX = cosA * length * 0.5
-  const offsetY = -sinA * length * 0.5
+  const offsetZ = sinA * length * 0.5
 
   return (
     <group
-      position={[effect.x + offsetX, -effect.y + offsetY, EFFECT_Z]}
-      rotation={[0, 0, -effect.angle]}
+      position={[effect.x + offsetX, EFFECT_Y, effect.y + offsetZ]}
+      rotation={[-Math.PI / 2, 0, -effect.angle]}
     >
       {/* 외부 글로우 */}
       <mesh>

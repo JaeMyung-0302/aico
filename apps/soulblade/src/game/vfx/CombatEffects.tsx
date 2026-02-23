@@ -23,9 +23,11 @@ const RING_LIFETIME = 350 // ms
 
 interface Spark {
   x: number
-  y: number
+  y: number // 게임 Y → Three.js Z
   vx: number
-  vy: number
+  vy: number // 게임 Y축 산개 속도 (Three.js Z 방향)
+  height: number // Three.js Y 높이
+  vHeight: number // Y 방향 초기 속도
   age: number
   color: Color
   active: boolean
@@ -54,7 +56,7 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
   useEffect(() => {
     const sparkPool: Spark[] = []
     for (let i = 0; i < MAX_SPARKS; i++) {
-      sparkPool.push({ x: 0, y: 0, vx: 0, vy: 0, age: 0, color: new Color(), active: false })
+      sparkPool.push({ x: 0, y: 0, vx: 0, vy: 0, height: 0, vHeight: 0, age: 0, color: new Color(), active: false })
     }
     sparks.current = sparkPool
 
@@ -82,6 +84,8 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
         spark.y = data.y
         spark.vx = Math.cos(angle) * speed
         spark.vy = Math.sin(angle) * speed
+        spark.height = 5 // 초기 높이
+        spark.vHeight = 10 + Math.random() * 15 // 위로 튀어오름
         spark.age = 0
         spark.color.set(sparkColor)
         spark.active = true
@@ -126,6 +130,8 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
         spark.y = data.y
         spark.vx = Math.cos(angle) * speed
         spark.vy = Math.sin(angle) * speed
+        spark.height = 5
+        spark.vHeight = 12 + Math.random() * 10
         spark.age = 0
         spark.color.set(0xff6644)
         spark.active = true
@@ -164,12 +170,13 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
 
       spark.x += spark.vx * delta
       spark.y += spark.vy * delta
-      spark.vy += 30 * delta // 중력
+      spark.height += spark.vHeight * delta
+      spark.vHeight -= 30 * delta // 중력: Y- 방향 (아래로)
 
       const alpha = 1 - spark.age / SPARK_LIFETIME
 
       if (activeCount < MAX_SPARKS) {
-        positions.setXYZ(activeCount, spark.x, -spark.y, 5)
+        positions.setXYZ(activeCount, spark.x, spark.height, spark.y)
         colors.setXYZ(activeCount, spark.color.r * alpha, spark.color.g * alpha, spark.color.b * alpha)
         activeCount++
       }
@@ -227,7 +234,8 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
         return (
           <mesh
             key={`ring-${i}`}
-            position={[ring.x, -ring.y, 5]}
+            position={[ring.x, 5, ring.y]}
+            rotation={[-Math.PI / 2, 0, 0]}
             scale={[scale * 10, scale * 10, 1]}
           >
             <ringGeometry args={[0.8, 1, 16]} />

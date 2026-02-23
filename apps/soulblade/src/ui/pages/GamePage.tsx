@@ -64,14 +64,17 @@ export const GamePage = () => {
 
   const handlePortalClose = useCallback(() => {
     setPortalData(null)
+    eventBus.emit('game:resume')
   }, [])
 
   const handleNpcClose = useCallback(() => {
     setNpcType(null)
+    eventBus.emit('game:resume')
   }, [])
 
   const handleDeathReturn = useCallback(() => {
     setIsDead(false)
+    eventBus.emit('game:resume')
   }, [])
 
   const handleTabPress = useCallback((panel: 'inventory' | 'skill' | 'stat') => {

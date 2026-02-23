@@ -1,7 +1,15 @@
 import { create } from 'zustand'
-import type { CharacterClass } from '@soulblade/shared'
+import type { CharacterClass, CharacterStats, Equipment, MapId } from '@soulblade/shared'
 import type { StageId } from '@soulblade/shared'
 import type { PassiveSkillId } from '@soulblade/shared'
+
+interface PendingStart {
+  readonly mapId: MapId
+  readonly classType: CharacterClass
+  readonly stats: CharacterStats
+  readonly equippedItems: readonly Equipment[]
+  readonly characterName?: string
+}
 
 interface ActiveSkillState {
   readonly id: PassiveSkillId
@@ -28,6 +36,11 @@ interface RunState {
   readonly killCount: number
   readonly survivedSeconds: number
   readonly score: number
+
+  // 게임 시작 대기 데이터 (LobbyPage → GameCanvas 전달용)
+  readonly pendingStart: PendingStart | null
+  readonly setPendingStart: (data: PendingStart) => void
+  readonly clearPendingStart: () => void
 
   // 액션
   readonly startRun: (stageId: StageId, classType: CharacterClass) => void
@@ -57,6 +70,10 @@ export const useRunStore = create<RunState>((set) => ({
   killCount: 0,
   survivedSeconds: 0,
   score: 0,
+  pendingStart: null,
+
+  setPendingStart: (data) => set({ pendingStart: data }),
+  clearPendingStart: () => set({ pendingStart: null }),
 
   startRun: (stageId, classType) => {
     set({

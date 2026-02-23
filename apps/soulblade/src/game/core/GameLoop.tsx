@@ -61,6 +61,7 @@ export const GameLoop = () => {
   const spawnRef = useRef(createSpawnManagerState())
   const mapRef = useRef(createMapState())
   const elapsedMsRef = useRef(0)
+  const pendingPortalSpawnRef = useRef<{ x: number; y: number } | null>(null)
 
   // eventBus 이벤트 리스너 등록
   useEffect(() => {
@@ -82,6 +83,17 @@ export const GameLoop = () => {
         playerAllocateStats(player, data)
       }
     }
+    const onGameStart = (data: { mapId: string }) => {
+      // 맵 상태를 실제 시작 맵으로 동기화 (새로고침 시 town 기본값 보정)
+      const mapId = data.mapId as MapId
+      const config = switchMap(mapRef.current, mapId)
+      stateRef.current.isSafeZone = config.isSafeZone
+      stateRef.current.worldBounds = { x: 0, y: 0, width: config.worldSize.width, height: config.worldSize.height }
+      registerZones(spawnRef.current, config.zones)
+      stateRef.current.elapsedSeconds = 0
+      stateRef.current.lastSecondTime = 0
+      combatRef.current.killCount = 0
+    }
     const onPortalConfirm = (data: { targetMapId: string }) => {
       // 맵 전환: 기존 몬스터 클리어 + 맵 상태 갱신 + 존 재등록
       const { monsters, elites } = useEntityStore.getState()
@@ -93,6 +105,20 @@ export const GameLoop = () => {
       stateRef.current.elapsedSeconds = 0
       stateRef.current.lastSecondTime = 0
       combatRef.current.killCount = 0
+
+      // 플레이어 위치를 포탈 대상 스폰 포인트로 이동
+      const player = useEntityStore.getState().player
+      const spawn = pendingPortalSpawnRef.current ?? config.playerSpawn
+      if (player) {
+        player.body.x = spawn.x
+        player.body.y = spawn.y
+        player.body.vx = 0
+        player.body.vy = 0
+      }
+      pendingPortalSpawnRef.current = null
+    }
+    const onPortalCancel = () => {
+      pendingPortalSpawnRef.current = null
     }
     const onRequestStats = () => {
       const player = useEntityStore.getState().player
@@ -120,7 +146,9 @@ export const GameLoop = () => {
     eventBus.on('game:resume', onResume)
     eventBus.on('input:attack', onAttack)
     eventBus.on('stat:allocate', onStatAllocate)
+    eventBus.on('game:start', onGameStart)
     eventBus.on('portal:confirm', onPortalConfirm)
+    eventBus.on('portal:cancel', onPortalCancel)
     eventBus.on('ui:requestStats', onRequestStats)
 
     return () => {
@@ -129,7 +157,9 @@ export const GameLoop = () => {
       eventBus.off('game:resume', onResume)
       eventBus.off('input:attack', onAttack)
       eventBus.off('stat:allocate', onStatAllocate)
+      eventBus.off('game:start', onGameStart)
       eventBus.off('portal:confirm', onPortalConfirm)
+      eventBus.off('portal:cancel', onPortalCancel)
       eventBus.off('ui:requestStats', onRequestStats)
     }
   }, [])
@@ -164,7 +194,8 @@ export const GameLoop = () => {
 
     const portal = checkPortalCollision(mapRef.current, player.body.x, player.body.y)
     if (portal) {
-      setPortalCooldown(mapRef.current) // UI 확인 중 재발행 방지
+      setPortalCooldown(mapRef.current)
+      pendingPortalSpawnRef.current = portal.targetSpawnPoint
       eventBus.emit('portal:enter', {
         portalId: portal.id,
         targetMapId: portal.targetMapId,

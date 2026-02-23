@@ -18,8 +18,10 @@ import { Canvas } from '@react-three/fiber'
 import { useCallback, useEffect, useState } from 'react'
 import { PCFShadowMap } from 'three'
 import type { RootState } from '@react-three/fiber'
-import type { CharacterClass, CharacterStats, MapId } from '@soulblade/shared'
+import type { CharacterClass, CharacterStats, Equipment, MapId } from '@soulblade/shared'
+import { CLASS_CONFIGS } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
+import { useSaveStore } from '@/stores/useSaveStore'
 import { GameLoop } from './GameLoop'
 import { CameraRig } from './CameraRig'
 import { Player3D } from '../components/Player3D'
@@ -38,6 +40,7 @@ import { VFXManager } from '../vfx/VFXManager'
 import { LightingRig } from '../lighting/LightingRig'
 import { DynamicLights } from '../lighting/DynamicLights'
 import { PostProcessing } from '../lighting/PostProcessing'
+import { useRunStore } from '@/stores/useRunStore'
 import { useEntityStore } from '../stores/useEntityStore'
 import { useLodStore } from '../stores/useLodStore'
 import { getLodConfig } from '../systems/lod'
@@ -59,8 +62,8 @@ const GameEventHandler = ({ onMapChange }: { onMapChange: (mapId: MapId) => void
     const onGameStart = (data: {
       mapId: MapId
       classType: CharacterClass
-      stats: Partial<CharacterStats>
-      equippedItems: ReadonlyArray<unknown>
+      stats: CharacterStats
+      equippedItems: readonly Equipment[]
       characterName?: string
     }) => {
       // 기존 엔티티 초기화
@@ -114,7 +117,40 @@ const GameEventHandler = ({ onMapChange }: { onMapChange: (mapId: MapId) => void
     eventBus.on('game:start', onGameStart)
     eventBus.on('portal:confirm', onPortalConfirm)
 
+    // 게임 시작 데이터 결정: pendingStart (로비 경유) 또는 save 데이터 (새로고침)
+    // setTimeout(0): 형제 컴포넌트(GameLoop)의 useEffect 리스너 등록 후 발행
+    let startTimerId: ReturnType<typeof setTimeout> | null = null
+    const pending = useRunStore.getState().pendingStart
+    if (pending) {
+      useRunStore.getState().clearPendingStart()
+      startTimerId = setTimeout(() => eventBus.emit('game:start', pending), 0)
+    } else {
+      const saveState = useSaveStore.getState()
+      if (!useEntityStore.getState().player && saveState.loaded && saveState.classLocked) {
+        const config = CLASS_CONFIGS[saveState.characterClass]
+        const base = config.baseStats
+        const saved = saveState.characterStats
+        // 저장된 최종 스탯에서 base를 빼서 영구 보너스 역산
+        const permanentDelta: CharacterStats = {
+          hp: saved.hp - base.hp,
+          atk: saved.atk - base.atk,
+          def: saved.def - base.def,
+          spd: saved.spd - base.spd,
+          crit: saved.crit - base.crit,
+          critDmg: saved.critDmg - base.critDmg,
+        }
+        startTimerId = setTimeout(() => eventBus.emit('game:start', {
+          mapId: saveState.currentMapId,
+          classType: saveState.characterClass,
+          stats: permanentDelta,
+          equippedItems: [],
+          characterName: saveState.characterName || undefined,
+        }), 0)
+      }
+    }
+
     return () => {
+      if (startTimerId !== null) clearTimeout(startTimerId)
       eventBus.off('game:start', onGameStart)
       eventBus.off('portal:confirm', onPortalConfirm)
       stopBgmR3F()

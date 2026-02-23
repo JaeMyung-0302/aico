@@ -5,7 +5,6 @@ import type { CharacterClass, ClassPassiveType } from '@soulblade/shared'
 import { CLASS_CONFIGS, EMPTY_PERMANENT_STATS } from '@soulblade/shared'
 import { useRunStore } from '@/stores/useRunStore'
 import { useSaveStore } from '@/stores/useSaveStore'
-import { eventBus } from '@/lib/event-bus'
 import { checkNameAvailable, validateNameLocal } from '@/lib/character-name'
 import { ClassPreview } from '@/ui/components/ClassPreview'
 import styles from './LobbyPage.module.scss'
@@ -49,7 +48,7 @@ export const LobbyPage = () => {
     const config = CLASS_CONFIGS[savedClass]
     const saveState = useSaveStore.getState()
 
-    eventBus.emit('game:start', {
+    useRunStore.getState().setPendingStart({
       mapId: saveState.currentMapId,
       classType: savedClass,
       stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },
@@ -105,7 +104,7 @@ export const LobbyPage = () => {
       useRunStore.setState({ classType: selectedClass })
       const config = CLASS_CONFIGS[selectedClass]
 
-      eventBus.emit('game:start', {
+      useRunStore.getState().setPendingStart({
         mapId: 'town',
         classType: selectedClass,
         stats: { ...config.baseStats, ...EMPTY_PERMANENT_STATS },

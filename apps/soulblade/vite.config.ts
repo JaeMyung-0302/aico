@@ -48,7 +48,13 @@ export default defineConfig({
       localsConvention: 'camelCase',
     },
   },
+  cacheDir: '/tmp/vite-soulblade',
   optimizeDeps: {
-    include: ['three', '@react-three/fiber', '@react-three/drei'],
+    include: [
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei',
+      '@react-three/postprocessing',
+    ],
   },
 })

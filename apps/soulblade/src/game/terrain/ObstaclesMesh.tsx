@@ -31,9 +31,11 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
   const posX = obs.x
   const posZ = obs.y
 
+  // 3D 높이: collidable이면 약간 돌출, 아니면 거의 평면
+  const height3d = obs.collidable !== false ? 3 : 1
+
   switch (obstacleType) {
     case 'rect': {
-      const height3d = obs.collidable !== false ? Math.min(obs.height * 0.4, 20) : 2
       return (
         <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
           <boxGeometry args={[obs.width, height3d, obs.height]} />
@@ -47,7 +49,6 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
     }
     case 'circle': {
       const radius = obs.radius ?? obs.width / 2
-      const height3d = obs.collidable !== false ? Math.max(radius * 0.8, 10) : 3
       return (
         <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
           <cylinderGeometry args={[radius, radius, height3d, 12]} />
@@ -61,7 +62,6 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
     }
     case 'triangle': {
       const radius = Math.max(obs.width, obs.height) / 2
-      const height3d = obs.collidable !== false ? obs.height * 0.6 : obs.height * 0.3
       return (
         <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
           <coneGeometry args={[radius, height3d, 6]} />
@@ -76,7 +76,6 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
     case 'ellipse': {
       const radiusX = obs.width / 2
       const radiusY = obs.height / 2
-      const height3d = obs.collidable !== false ? 8 : 2
       return (
         <mesh position={[posX, height3d / 2, posZ]} scale={[radiusX / radiusY, 1, 1]} castShadow={obs.collidable !== false}>
           <cylinderGeometry args={[radiusY, radiusY, height3d, 12]} />

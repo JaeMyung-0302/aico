@@ -7,14 +7,12 @@
  * 모델: 프로시져럴 (기본) / GLTF (에셋 배치 시 자동 전환)
  */
 
-import { useRef, useMemo, useEffect, Suspense } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh } from 'three'
 import type { Group, ShaderMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createPlayerModel } from '../models/player-model'
-import { GLTFFallback } from '../models/gltf-loader'
-import { usePlayerGLTF } from '../models/player-gltf'
 import { gameToWorld } from '../core/coord-adapter'
 import { OutlinePass } from './OutlinePass'
 import { useLodStore } from '../stores/useLodStore'
@@ -22,12 +20,6 @@ import { getLodConfig } from '../systems/lod'
 
 // Billboard 32×48에 맞춘 스케일 (모델 높이 32 → 시각 48px)
 const MODEL_SCALE = 1.5
-
-// GLTF 모델 로드 컴포넌트 (Suspense 내부 전용)
-const PlayerGLTFModel = () => {
-  const gltfModel = usePlayerGLTF()
-  return <primitive object={gltfModel} />
-}
 
 export const Player3D = () => {
   const groupRef = useRef<Group>(null)
@@ -129,17 +121,9 @@ export const Player3D = () => {
 
   if (!hasPlayer || !model) return null
 
-  const procedural = <primitive key={classType} ref={groupRef} object={model} />
-
   return (
     <>
-      <GLTFFallback fallback={procedural}>
-        <Suspense fallback={procedural}>
-          <group key={classType ?? undefined} ref={groupRef}>
-            <PlayerGLTFModel />
-          </group>
-        </Suspense>
-      </GLTFFallback>
+      <primitive key={classType} ref={groupRef} object={model} />
       <OutlinePass
         model={model}
         sourceRef={groupRef}

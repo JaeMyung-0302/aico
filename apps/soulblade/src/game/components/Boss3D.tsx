@@ -6,14 +6,12 @@
  * 애니메이션: idle 호흡 + 팔 진자 + phase 피드백
  */
 
-import { useRef, useMemo, useEffect, Suspense } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh, Color } from 'three'
 import type { Group, ShaderMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 import { createBossModel } from '../models/boss-model'
-import { GLTFFallback } from '../models/gltf-loader'
-import { useBossGLTF } from '../models/boss-gltf'
 import { gameToWorld } from '../core/coord-adapter'
 import { OutlinePass } from './OutlinePass'
 import { useLodStore } from '../stores/useLodStore'
@@ -22,12 +20,6 @@ import { getLodConfig } from '../systems/lod'
 // 보스 시각 크기 (모델 높이 54 → 시각 ~81px, 몬스터 대비 2.5배)
 const MODEL_SCALE = 1.5
 const SUMMON_EMISSIVE = new Color(0x442211)
-
-// GLTF 모델 로드 컴포넌트 (Suspense 내부 전용)
-const BossGLTFModel = () => {
-  const gltfModel = useBossGLTF()
-  return <primitive object={gltfModel} />
-}
 
 export const Boss3D = () => {
   const groupRef = useRef<Group>(null)
@@ -131,17 +123,9 @@ export const Boss3D = () => {
 
   if (!hasBoss) return null
 
-  const procedural = <primitive ref={groupRef} object={model} />
-
   return (
     <>
-      <GLTFFallback fallback={procedural}>
-        <Suspense fallback={procedural}>
-          <group ref={groupRef}>
-            <BossGLTFModel />
-          </group>
-        </Suspense>
-      </GLTFFallback>
+      <primitive ref={groupRef} object={model} />
       <OutlinePass
         model={model}
         sourceRef={groupRef}

@@ -20,8 +20,8 @@ verify_jwt = false
 
 [auth]
 enabled = true
-site_url = "http://localhost:5178"
-additional_redirect_urls = ["http://localhost:5178"]
+site_url = "http://localhost:5175"
+additional_redirect_urls = ["http://localhost:5175", "http://localhost:5176", "http://localhost:5177", "http://localhost:5178"]
 
 [auth.external.google]
 enabled = true

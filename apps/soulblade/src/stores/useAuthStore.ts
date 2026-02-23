@@ -26,7 +26,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (get().initialized) return
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      // Supabase 연결 불가 시 무한 대기 방지 (5초 타임아웃)
+      const sessionPromise = supabase.auth.getSession()
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Auth timeout')), 5000),
+      )
+      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise])
       set({ session, user: session?.user ?? null, loading: false, initialized: true })
 
       // 기존 구독 해제 후 새 구독 (HMR 대비)

@@ -15,7 +15,7 @@ import type { MapId } from '@soulblade/shared'
 import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT } from '@soulblade/shared'
 
 // 파티클 풀 설정
-const MAX_PARTICLES = 20
+const MAX_PARTICLES = 40
 const PARTICLE_Y = 12
 const RESPAWN_MARGIN = 50 // 화면 밖 마진
 
@@ -32,8 +32,8 @@ const PARTICLE_THEMES: Record<MapId, {
   maxLifetime: number
 }> = {
   town: {
-    color: 0xccbb99, minSize: 1, maxSize: 2,
-    alpha: 0.3, driftX: 0.2, driftY: 0.15, wobble: 0.3,
+    color: 0xddcc88, minSize: 2, maxSize: 3.5,
+    alpha: 0.4, driftX: 0.2, driftY: 0.15, wobble: 0.3,
     minLifetime: 3000, maxLifetime: 7000,
   },
   serpent_forest: {
@@ -170,7 +170,7 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
         transparent
         depthWrite={false}
         sizeAttenuation={false}
-        size={2}
+        size={3}
       />
     </points>
   )

@@ -9,6 +9,7 @@
  */
 
 import { CanvasTexture, NearestFilter, ClampToEdgeWrapping } from 'three'
+import type { Texture } from 'three'
 import type { CharacterClass } from '@soulblade/shared'
 
 // ── Canvas2D 유틸 ──
@@ -378,12 +379,13 @@ const generateProjectile = (): HTMLCanvasElement => {
 
 // ── 텍스처 캐시 (Lazy Singleton) ──
 
-type SpriteTextures = {
-  player: Record<CharacterClass, CanvasTexture>
-  monster: CanvasTexture
-  elite: CanvasTexture
-  boss: CanvasTexture
-  projectile: CanvasTexture
+// Texture 기반 타입: CanvasTexture(프로시저럴) 또는 Texture(PNG 로드) 모두 수용
+export type SpriteTextures = {
+  player: Record<CharacterClass, Texture>
+  monster: Texture
+  elite: Texture
+  boss: Texture
+  projectile: Texture
 }
 
 let _cache: SpriteTextures | null = null

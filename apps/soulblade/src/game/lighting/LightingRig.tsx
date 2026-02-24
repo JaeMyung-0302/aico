@@ -13,40 +13,71 @@ import type { DirectionalLight } from 'three'
 import type { MapId } from '@soulblade/shared'
 
 // 맵별 조명 테마 (3D 좌표계: [X오프셋, Y높이, Z오프셋])
+// warm key + cool fill 구성으로 입체적 조명
 const LIGHTING_THEMES: Record<MapId, {
   ambientColor: number
   ambientIntensity: number
   dirColor: number
   dirIntensity: number
   dirPosition: [number, number, number]
+  hemiSky: number
+  hemiGround: number
+  hemiIntensity: number
+  fillColor: number
+  fillIntensity: number
+  fillPosition: [number, number, number]
 }> = {
   town: {
     ambientColor: 0xfff4e0,
-    ambientIntensity: 0.35,
+    ambientIntensity: 0.2,
     dirColor: 0xffeecc,
-    dirIntensity: 0.85,
+    dirIntensity: 0.95,
     dirPosition: [200, 300, -100],
+    hemiSky: 0xfff4e0,
+    hemiGround: 0x3a5a3a,
+    hemiIntensity: 0.15,
+    fillColor: 0xaabbcc,
+    fillIntensity: 0.2,
+    fillPosition: [-150, 150, 100],
   },
   serpent_forest: {
     ambientColor: 0x88cc88,
-    ambientIntensity: 0.2,
+    ambientIntensity: 0.12,
     dirColor: 0x44aa44,
-    dirIntensity: 0.55,
+    dirIntensity: 0.6,
     dirPosition: [100, 250, -200],
+    hemiSky: 0x88cc88,
+    hemiGround: 0x1a2e1a,
+    hemiIntensity: 0.18,
+    fillColor: 0x99bbaa,
+    fillIntensity: 0.15,
+    fillPosition: [-100, 200, 150],
   },
   ice_cave: {
     ambientColor: 0xaaccff,
-    ambientIntensity: 0.25,
+    ambientIntensity: 0.15,
     dirColor: 0x6688cc,
-    dirIntensity: 0.65,
+    dirIntensity: 0.7,
     dirPosition: [0, 350, -50],
+    hemiSky: 0xaaccff,
+    hemiGround: 0x2a3a4a,
+    hemiIntensity: 0.2,
+    fillColor: 0x88aacc,
+    fillIntensity: 0.18,
+    fillPosition: [-100, 200, 100],
   },
   flame_castle: {
     ambientColor: 0xff8844,
-    ambientIntensity: 0.2,
+    ambientIntensity: 0.12,
     dirColor: 0xff4422,
-    dirIntensity: 0.8,
+    dirIntensity: 0.9,
     dirPosition: [150, 200, -150],
+    hemiSky: 0xff6633,
+    hemiGround: 0x331111,
+    hemiIntensity: 0.15,
+    fillColor: 0xcc6644,
+    fillIntensity: 0.15,
+    fillPosition: [-120, 180, 100],
   },
 }
 
@@ -111,11 +142,18 @@ export const LightingRig = ({ mapId, enabled, enableShadows }: LightingRigProps)
   return (
     <group>
       <ambientLight color={theme.ambientColor} intensity={theme.ambientIntensity} />
+      <hemisphereLight args={[theme.hemiSky, theme.hemiGround, theme.hemiIntensity]} />
       <directionalLight
         ref={lightRef}
         color={theme.dirColor}
         intensity={theme.dirIntensity}
         position={theme.dirPosition}
+      />
+      {/* Fill light (그림자 없이 반대쪽 조명으로 대비 완화) */}
+      <directionalLight
+        color={theme.fillColor}
+        intensity={theme.fillIntensity}
+        position={theme.fillPosition}
       />
     </group>
   )

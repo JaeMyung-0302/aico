@@ -101,6 +101,18 @@
     opacity: 0.6;
     cursor: not-allowed;
   }
+
+  &.exhausted {
+    background-color: $text-secondary;
+    font-size: 14px;
+    cursor: not-allowed;
+
+    &:hover {
+      background-color: darken($text-secondary, 10%);
+      transform: none;
+      box-shadow: none;
+    }
+  }
 }
 
 // 분석 로딩 오버레이
@@ -184,6 +196,11 @@
   color: $primary;
   background-color: rgba($primary, 0.08);
   border-radius: $radius-full;
+
+  &.exhausted {
+    color: $text-secondary;
+    background-color: rgba($text-secondary, 0.08);
+  }
 }
 
 .platforms {

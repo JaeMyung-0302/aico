@@ -78,9 +78,49 @@
   @include input-field;
 }
 
+.stepActions {
+  display: flex;
+  gap: $space-8;
+  margin-top: $space-16;
+}
+
+.backBtn {
+  padding: $space-12 $space-16;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-md;
+  background: $color-bg-primary;
+  color: $color-gray-600;
+  font-size: $font-size-body-sm;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    background: $color-gray-100;
+  }
+}
+
+.skipBtn {
+  padding: $space-12 $space-16;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-md;
+  background: $color-bg-primary;
+  color: $color-gray-500;
+  font-size: $font-size-body-sm;
+
+  &:active {
+    background: $color-gray-100;
+  }
+}
+
+.nextBtn {
+  @include button-primary;
+  flex: 1;
+  padding: $space-12 $space-16;
+  font-size: $font-size-body-sm;
+}
+
 .submitBtn {
   @include button-primary;
-  width: 100%;
+  flex: 1;
   padding: $space-16;
   font-size: 1rem;
 }

@@ -1,7 +1,17 @@
 import { create } from 'zustand'
 import type { CharacterClass, PermanentStats } from '@soulblade/shared'
 import { EMPTY_PERMANENT_STATS } from '@soulblade/shared'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
+
+interface CharacterResponse {
+  readonly permanentHp: number
+  readonly permanentAtk: number
+  readonly permanentDef: number
+  readonly permanentSpd: number
+  readonly permanentCrit: number
+  readonly masteryLevel: number
+  readonly masteryExp: number
+}
 
 interface CharacterState {
   readonly selectedClass: CharacterClass
@@ -10,8 +20,8 @@ interface CharacterState {
   readonly masteryExp: number
   readonly loading: boolean
   readonly selectClass: (cls: CharacterClass) => void
-  readonly fetchCharacter: (userId: string, cls: CharacterClass) => Promise<void>
-  readonly saveCharacter: (userId: string) => Promise<void>
+  readonly fetchCharacter: (cls: CharacterClass) => Promise<void>
+  readonly saveCharacter: () => Promise<void>
 }
 
 export const useCharacterStore = create<CharacterState>((set, get) => ({
@@ -23,59 +33,50 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
   selectClass: (cls) => set({ selectedClass: cls }),
 
-  fetchCharacter: async (userId, cls) => {
+  fetchCharacter: async (cls) => {
     set({ loading: true })
     try {
-      const { data } = await supabase
-        .from('sb_characters')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('class_type', cls)
-        .maybeSingle()
+      const data = await api.get<CharacterResponse>(`/characters/${cls}`)
 
-      if (data) {
-        set({
-          selectedClass: cls,
-          permanentStats: {
-            hp: data.permanent_hp,
-            atk: data.permanent_atk,
-            def: data.permanent_def,
-            spd: data.permanent_spd,
-            crit: data.permanent_crit,
-          },
-          masteryLevel: data.mastery_level,
-          masteryExp: data.mastery_exp,
-        })
-      } else {
-        set({
-          selectedClass: cls,
-          permanentStats: { ...EMPTY_PERMANENT_STATS },
-          masteryLevel: 0,
-          masteryExp: 0,
-        })
-      }
+      set({
+        selectedClass: cls,
+        permanentStats: {
+          hp: data.permanentHp,
+          atk: data.permanentAtk,
+          def: data.permanentDef,
+          spd: data.permanentSpd,
+          crit: data.permanentCrit,
+        },
+        masteryLevel: data.masteryLevel,
+        masteryExp: data.masteryExp,
+      })
     } catch {
-      // 캐릭터 미존재 시 기본값 유지
+      // 캐릭터 미존재 시 기본값
+      set({
+        selectedClass: cls,
+        permanentStats: { ...EMPTY_PERMANENT_STATS },
+        masteryLevel: 0,
+        masteryExp: 0,
+      })
     } finally {
       set({ loading: false })
     }
   },
 
-  saveCharacter: async (userId) => {
+  saveCharacter: async () => {
     const { selectedClass, permanentStats, masteryLevel, masteryExp } = get()
-    const { error } = await supabase
-      .from('sb_characters')
-      .upsert({
-        user_id: userId,
-        class_type: selectedClass,
-        permanent_hp: permanentStats.hp,
-        permanent_atk: permanentStats.atk,
-        permanent_def: permanentStats.def,
-        permanent_spd: permanentStats.spd,
-        permanent_crit: permanentStats.crit,
-        mastery_level: masteryLevel,
-        mastery_exp: masteryExp,
-      }, { onConflict: 'user_id,class_type' })
-    if (error) throw error
+    try {
+      await api.put(`/characters/${selectedClass}`, {
+        permanentHp: permanentStats.hp,
+        permanentAtk: permanentStats.atk,
+        permanentDef: permanentStats.def,
+        permanentSpd: permanentStats.spd,
+        permanentCrit: permanentStats.crit,
+        masteryLevel,
+        masteryExp,
+      })
+    } catch {
+      // 저장 실패 시 무시 (다음 저장 시 재시도)
+    }
   },
 }))

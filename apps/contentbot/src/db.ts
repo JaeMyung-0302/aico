@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import fs from "fs";
 import path from "path";
 import type { Keyword, Post } from "./types/index.js";
 
@@ -7,7 +8,11 @@ let db: Database.Database | null = null;
 export const getDb = (): Database.Database => {
   if (db) return db;
 
-  const dbPath = path.join(process.cwd(), "contentbot.db");
+  const dbDir = path.resolve(process.env.DB_DIR ?? process.cwd());
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+  const dbPath = path.join(dbDir, "contentbot.db");
   db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
 

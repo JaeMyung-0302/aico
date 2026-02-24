@@ -68,6 +68,8 @@ const Landing = () => {
     }
   }, [isLoading])
 
+  const quotaExhausted = Boolean(user && quotaStatus && !quotaStatus.isPremium && !quotaStatus.allowed)
+
   const handleAnalyze = async () => {
     setError('')
 
@@ -85,6 +87,12 @@ const Landing = () => {
     if (!user) {
       sessionStorage.setItem('pending_analyze_url', url.trim())
       navigate('/auth')
+      return
+    }
+
+    // quota 소진 시 API 호출 없이 PremiumModal 직접 표시
+    if (quotaExhausted) {
+      setShowPremiumModal(true)
       return
     }
 
@@ -164,11 +172,11 @@ const Landing = () => {
             disabled={isLoading}
           />
           <button
-            className={cx('analyzeButton')}
+            className={cx('analyzeButton', { exhausted: quotaExhausted })}
             onClick={handleAnalyze}
             disabled={isLoading}
           >
-            분석하기
+            {quotaExhausted ? '오늘 무료 분석을 모두 사용했어요' : '분석하기'}
           </button>
         </div>
         {error && <p className={cx('errorMessage')}>{error}</p>}
@@ -176,8 +184,8 @@ const Landing = () => {
 
       {/* 쿼터 표시 */}
       {user && quotaStatus && !quotaStatus.isPremium && (
-        <p className={cx('quotaBadge')}>
-          오늘 {quotaStatus.remaining}회 남음
+        <p className={cx('quotaBadge', { exhausted: quotaExhausted })}>
+          {quotaExhausted ? '오늘 무료 분석을 모두 사용했어요' : `오늘 ${quotaStatus.remaining}회 남음`}
         </p>
       )}
 

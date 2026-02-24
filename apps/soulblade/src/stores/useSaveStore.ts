@@ -56,7 +56,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     const local = loadLocal()
     const { data: { user } } = await supabase.auth.getUser()
     const userId = user?.id ?? ''
-    const remote = userId ? await loadRemote(userId) : null
+    const remote = userId ? await loadRemote() : null
     const merged = mergeSaveData(local, remote)
 
     if (merged) {
@@ -97,13 +97,9 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     // localStorage 즉시 저장
     saveLocal(saveData)
 
-    // Supabase 비동기 저장 (fire-and-forget)
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user?.id) {
-        saveRemote(user.id, saveData).catch(() => {
-          // 실패해도 무시 (localStorage가 1차)
-        })
-      }
+    // NestJS API 비동기 저장 (fire-and-forget)
+    saveRemote(saveData).catch(() => {
+      // 실패해도 무시 (localStorage가 1차)
     })
   },
 

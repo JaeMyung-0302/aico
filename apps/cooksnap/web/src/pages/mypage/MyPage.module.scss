@@ -55,6 +55,20 @@
   margin-top: 2px;
 }
 
+.adminLink {
+  display: inline-block;
+  margin-top: $spacing-xs;
+  font-size: 13px;
+  font-weight: 600;
+  color: $primary;
+  text-decoration: none;
+  transition: $transition-fast;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .subscriptionInfo {
   display: flex;
   align-items: center;

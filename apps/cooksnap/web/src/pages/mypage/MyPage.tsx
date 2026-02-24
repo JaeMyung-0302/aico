@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import classnames from 'classnames/bind'
@@ -100,6 +100,11 @@ const MyPage = () => {
             )}
           </div>
           <p className={cx('profileEmail')}>{user?.email}</p>
+          {user?.isAdmin && (
+            <Link to="/admin/feedback" className={cx('adminLink')}>
+              피드백 관리
+            </Link>
+          )}
           {user?.isPremium && subscription?.hasSubscription && (
             <div className={cx('subscriptionInfo')}>
               {subscription.status === 'ACTIVE' && subscription.currentPeriodEnd && (

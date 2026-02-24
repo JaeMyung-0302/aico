@@ -8,6 +8,8 @@ import { FRIDGE_TYPE_LABELS } from '@/types'
 import type { JoinRequestResponse, SubscriptionStatusResponse } from '@/types'
 import { isPushSupported, isPushSubscribed, subscribeToPush, unsubscribeFromPush } from '@/lib/push'
 import { PremiumModal } from '@/components/PremiumModal/PremiumModal'
+import { CompartmentEditModal } from '@/components/CompartmentEditModal'
+import type { FridgeResponse } from '@/types'
 import styles from './SettingsPage.module.scss'
 
 const cx = classNames.bind(styles)
@@ -30,6 +32,7 @@ export const SettingsPage = () => {
   const [cancelLoading, setCancelLoading] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
   const [confirmCancelSub, setConfirmCancelSub] = useState(false)
+  const [editingCompartmentsFridge, setEditingCompartmentsFridge] = useState<FridgeResponse | null>(null)
 
   useEffect(() => {
     fetchFridges()
@@ -273,6 +276,13 @@ export const SettingsPage = () => {
                     이름 변경
                   </button>
                   <button
+                    className={cx('editBtn')}
+                    onClick={() => setEditingCompartmentsFridge(fridge)}
+                    type="button"
+                  >
+                    칸 편집
+                  </button>
+                  <button
                     className={cx('deleteBtn')}
                     onClick={() => setDeletingFridgeId(fridge.id)}
                     type="button"
@@ -439,6 +449,14 @@ export const SettingsPage = () => {
         <PremiumModal
           onClose={() => setShowPremiumModal(false)}
           onSuccess={handlePremiumSuccess}
+        />
+      )}
+
+      {/* 칸 편집 모달 */}
+      {editingCompartmentsFridge && (
+        <CompartmentEditModal
+          fridge={editingCompartmentsFridge}
+          onClose={() => setEditingCompartmentsFridge(null)}
         />
       )}
 

@@ -12,7 +12,7 @@ import { useFrame } from '@react-three/fiber'
 import { Object3D, Color } from 'three'
 import type { InstancedMesh } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
-import { getSpriteTextures } from '../assets/sprite-generator'
+import { useSpriteTextures } from '../assets/sprite-loader'
 
 const MAX_INSTANCES = 20
 const tempObject = new Object3D()
@@ -23,7 +23,8 @@ const BILLBOARD_Y = SPRITE_HALF_H
 
 export const EliteBillboard = () => {
   const meshRef = useRef<InstancedMesh>(null)
-  const texture = useMemo(() => getSpriteTextures().elite, [])
+  const { textures } = useSpriteTextures()
+  const texture = useMemo(() => textures.elite, [textures])
 
   useFrame(({ camera }) => {
     const mesh = meshRef.current

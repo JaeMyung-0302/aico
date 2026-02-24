@@ -1,6 +1,6 @@
 import type { SaveData } from '@soulblade/shared'
 import { SAVE_VERSION } from '@soulblade/shared'
-import { supabase } from './supabase'
+import { api } from './api'
 
 const SAVE_KEY = 'soulblade_save'
 
@@ -46,34 +46,24 @@ export const clearLocal = (): void => {
   localStorage.removeItem(SAVE_KEY)
 }
 
-// Supabase 비동기 저장 (write-through)
-export const saveRemote = async (userId: string, data: SaveData): Promise<void> => {
+// NestJS API 비동기 저장 (write-through)
+export const saveRemote = async (data: SaveData): Promise<void> => {
   try {
-    await supabase
-      .from('sb_rpg_saves')
-      .upsert({
-        user_id: userId,
-        save_data: data,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+    await api.put('/saves', { saveData: data })
   } catch {
     // 네트워크 오류 시 무시 (localStorage가 1차)
   }
 }
 
-// Supabase 로드
-export const loadRemote = async (userId: string): Promise<SaveData | null> => {
+// NestJS API 로드
+export const loadRemote = async (): Promise<SaveData | null> => {
   try {
-    const { data } = await supabase
-      .from('sb_rpg_saves')
-      .select('save_data')
-      .eq('user_id', userId)
-      .maybeSingle()
+    const result = await api.get<{ saveData: unknown; updatedAt: string | null }>('/saves')
 
-    if (!data?.save_data) return null
-    if (!isSaveData(data.save_data)) return null
-    if (data.save_data.version !== SAVE_VERSION) return null
-    return data.save_data
+    if (!result?.saveData) return null
+    if (!isSaveData(result.saveData)) return null
+    if (result.saveData.version !== SAVE_VERSION) return null
+    return result.saveData
   } catch {
     return null
   }

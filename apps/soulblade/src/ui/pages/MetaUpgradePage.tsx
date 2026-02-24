@@ -32,7 +32,7 @@ export const MetaUpgradePage = () => {
   const purchaseUpgrade = useMetaStore((s) => s.purchaseUpgrade)
 
   useEffect(() => {
-    if (userId) fetchMeta(userId)
+    if (userId) fetchMeta()
   }, [userId, fetchMeta])
 
   const handleUpgrade = async (statType: keyof PermanentStats) => {

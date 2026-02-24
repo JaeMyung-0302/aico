@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
-import type { FridgeResponse, CreateFridgeInput, UpdateFridgeInput } from '@/types'
+import type { FridgeResponse, CreateFridgeInput, UpdateFridgeInput, UpdateCompartmentsInput } from '@/types'
 
 interface FridgeState {
   fridges: FridgeResponse[]
@@ -14,6 +14,7 @@ interface FridgeActions {
   fetchFridges: () => Promise<void>
   createFridge: (input: CreateFridgeInput) => Promise<FridgeResponse | null>
   updateFridge: (id: string, input: UpdateFridgeInput) => Promise<void>
+  updateCompartments: (fridgeId: string, input: UpdateCompartmentsInput) => Promise<FridgeResponse | null>
   deleteFridge: (id: string) => Promise<void>
   setActiveFridge: (id: string) => void
 }
@@ -78,6 +79,21 @@ export const useFridgeStore = create<FridgeStore>((set, get) => ({
     } catch (err) {
       const message = err instanceof Error ? err.message : '냉장고 정보를 수정하지 못했습니다'
       set({ error: message })
+    }
+  },
+
+  updateCompartments: async (fridgeId: string, input: UpdateCompartmentsInput) => {
+    set({ error: null })
+    try {
+      const updated = await api.put<FridgeResponse>(`/fridges/${fridgeId}/compartments`, input)
+      set((state) => ({
+        fridges: state.fridges.map((f) => (f.id === fridgeId ? updated : f)),
+      }))
+      return updated
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '칸 구성을 수정하지 못했습니다'
+      set({ error: message })
+      return null
     }
   },
 

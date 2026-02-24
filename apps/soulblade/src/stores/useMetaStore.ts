@@ -2,7 +2,18 @@ import { create } from 'zustand'
 import type { PermanentStats, SkillTreeNode } from '@soulblade/shared'
 import { EMPTY_PERMANENT_STATS, MAX_PERMANENT_STAT_LEVEL } from '@soulblade/shared'
 import { calcPermanentStatCost } from '@soulblade/shared'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
+
+interface ProfileResponse {
+  readonly metaGold: number
+  readonly gems: number
+}
+
+interface SkillTreeRow {
+  readonly nodeId: string
+  readonly unlocked: boolean
+  readonly level: number
+}
 
 interface MetaState {
   readonly metaGold: number
@@ -10,7 +21,7 @@ interface MetaState {
   readonly permanentStats: PermanentStats
   readonly skillTree: readonly SkillTreeNode[]
   readonly loading: boolean
-  readonly fetchMeta: (userId: string) => Promise<void>
+  readonly fetchMeta: () => Promise<void>
   readonly purchaseUpgrade: (statType: keyof PermanentStats) => Promise<boolean>
   readonly addMetaGold: (amount: number) => void
 }
@@ -22,39 +33,17 @@ export const useMetaStore = create<MetaState>((set, get) => ({
   skillTree: [],
   loading: false,
 
-  fetchMeta: async (userId) => {
+  fetchMeta: async () => {
     set({ loading: true })
     try {
-      // 프로필에서 메타 골드, 젬 조회
-      const { data: profile, error: profileError } = await supabase
-        .from('sb_profiles')
-        .select('meta_gold, gems')
-        .eq('id', userId)
-        .maybeSingle()
+      const profile = await api.get<ProfileResponse>('/profiles/me')
 
-      if (profileError) throw profileError
-
-      // 스킬 트리 노드 조회
-      const { data: nodes } = await supabase
-        .from('sb_skill_tree')
-        .select('*')
-        .eq('user_id', userId)
-
-      const skillTree: SkillTreeNode[] = (nodes ?? []).map((n) => ({
-        id: n.node_id,
-        name: n.node_id,
-        description: '',
-        cost: 0,
-        prerequisiteIds: [],
-        effect: {},
-        unlocked: n.unlocked,
-        level: n.level,
-        maxLevel: 5,
-      }))
+      // TODO: skill-tree API 추가 시 마이그레이션
+      const skillTree: SkillTreeNode[] = []
 
       set({
-        metaGold: profile?.meta_gold ?? 0,
-        gems: profile?.gems ?? 0,
+        metaGold: profile.metaGold,
+        gems: profile.gems,
         skillTree,
       })
     } catch {
@@ -73,17 +62,10 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     if (metaGold < cost) return false
 
     try {
-      // Edge Function 호출
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return false
-
-      const response = await supabase.functions.invoke('purchase-upgrade', {
-        body: { statType },
-      })
-
-      if (response.error) return false
-
-      const result = response.data as { newLevel: number; remainingGold: number }
+      const result = await api.post<{ newLevel: number; remainingGold: number }>(
+        '/upgrades/purchase',
+        { statType },
+      )
 
       set({
         metaGold: result.remainingGold,

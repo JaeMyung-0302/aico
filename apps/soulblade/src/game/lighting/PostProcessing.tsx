@@ -18,7 +18,7 @@ import { Vector2 } from 'three'
 import { eventBus } from '@/lib/event-bus'
 
 const ABERRATION_DURATION = 300 // ms
-const ABERRATION_MAX = 0.008
+const ABERRATION_MAX = 0.012
 
 interface PostProcessingProps {
   enableBloom: boolean
@@ -72,9 +72,9 @@ export const PostProcessing = ({ enableBloom, enableChromaticAberration }: PostP
   return (
     <EffectComposer enabled multisampling={0}>
       <Bloom
-        intensity={enableBloom ? 0.4 : 0}
-        luminanceThreshold={0.7}
-        luminanceSmoothing={0.3}
+        intensity={enableBloom ? 0.65 : 0}
+        luminanceThreshold={0.55}
+        luminanceSmoothing={0.4}
         mipmapBlur
       />
       <ChromaticAberration

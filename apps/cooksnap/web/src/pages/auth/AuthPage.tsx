@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import classnames from 'classnames/bind';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Loading } from '@repo/ui';
+import EmailAuthForm from './EmailAuthForm';
 import styles from './AuthPage.module.scss';
 
 const cx = classnames.bind(styles);
@@ -76,6 +77,9 @@ const Auth = () => {
             </button>
           )}
         </div>
+
+        <div className={cx('divider')}>또는</div>
+        <EmailAuthForm />
 
         {inApp && (
           <div className={cx('inAppWarning')}>

@@ -37,7 +37,7 @@ export const InventoryPage = () => {
 
   useEffect(() => {
     if (userId) {
-      fetchInventory(userId)
+      fetchInventory()
     }
   }, [userId, fetchInventory])
 

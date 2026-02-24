@@ -2,10 +2,21 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
 import { ATTENDANCE_BONUS } from '@soulblade/shared'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 import styles from './DailyPage.module.scss'
 
 const cx = classnames.bind(styles)
+
+interface DailyStatus {
+  readonly consecutiveDays: number
+  readonly attendanceClaimed: boolean
+}
+
+interface ClaimResponse {
+  readonly consecutiveDays: number
+  readonly goldReward: number
+  readonly newGold: number
+}
 
 interface DailyState {
   readonly consecutiveDays: number
@@ -24,16 +35,11 @@ export const DailyPage = () => {
   useEffect(() => {
     const fetchDaily = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0]
-        const { data } = await supabase
-          .from('sb_daily_progress')
-          .select('consecutive_days, attendance_claimed')
-          .eq('date', today)
-          .maybeSingle()
+        const data = await api.get<DailyStatus>('/daily/status')
 
         setState({
-          consecutiveDays: data?.consecutive_days ?? 0,
-          claimed: data?.attendance_claimed ?? false,
+          consecutiveDays: data.consecutiveDays,
+          claimed: data.attendanceClaimed,
           loading: false,
         })
       } catch {
@@ -48,22 +54,13 @@ export const DailyPage = () => {
     setState((prev) => ({ ...prev, loading: true }))
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      const data = await api.post<ClaimResponse>('/daily/claim')
 
-      const response = await supabase.functions.invoke('claim-daily', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+      setState({
+        consecutiveDays: data.consecutiveDays,
+        claimed: true,
+        loading: false,
       })
-
-      if (response.data) {
-        setState({
-          consecutiveDays: response.data.consecutiveDays,
-          claimed: true,
-          loading: false,
-        })
-      } else {
-        setState((prev) => ({ ...prev, loading: false }))
-      }
     } catch {
       setState((prev) => ({ ...prev, loading: false }))
     }

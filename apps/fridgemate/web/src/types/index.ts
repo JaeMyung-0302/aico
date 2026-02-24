@@ -192,10 +192,15 @@ export interface UpdateFoodItemInput {
 export interface CreateFridgeInput {
   type: FridgeType
   name: string
+  compartments?: CompartmentPreset[]
 }
 
 export interface UpdateFridgeInput {
   name: string
+}
+
+export interface UpdateCompartmentsInput {
+  compartments: CompartmentPreset[]
 }
 
 // === 유통기한 상태 계산 ===
@@ -360,4 +365,13 @@ export const FRIDGE_TYPE_DESCRIPTIONS: Record<FridgeType, string> = {
   [FridgeType.SIDE_BY_SIDE]: '냉동 도어·본체 + 냉장 본체·쇼케이스 (23칸)',
   [FridgeType.FOUR_DOOR]: '좌우 6칸 + 하단 2칸 (14칸)',
   [FridgeType.MINI]: '소형 냉장고 (3칸)',
+}
+
+export const COMPARTMENT_TYPE_LABELS: Record<CompartmentType, string> = {
+  [CompartmentType.FRIDGE_UPPER]: '냉장실 상단',
+  [CompartmentType.FRIDGE_LOWER]: '냉장실 하단',
+  [CompartmentType.FREEZER]: '냉동실',
+  [CompartmentType.DOOR]: '문 수납',
+  [CompartmentType.DRAWER]: '서랍',
+  [CompartmentType.VEGGIE]: '채소칸',
 }

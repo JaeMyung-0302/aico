@@ -1,0 +1,183 @@
+.editor {
+  margin-bottom: $space-24;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-12;
+}
+
+.headerTitle {
+  font-size: $font-size-body-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-900;
+}
+
+.headerCount {
+  font-size: $font-size-body-sm;
+  color: $color-gray-500;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-md;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.item {
+  border-bottom: 1px solid $color-gray-100;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  padding: $space-8 $space-12;
+}
+
+.itemType {
+  font-size: $font-size-caption;
+  color: $color-gray-400;
+  min-width: 56px;
+  flex-shrink: 0;
+}
+
+.itemLabel {
+  flex: 1;
+  font-size: $font-size-body-sm;
+  color: $color-gray-800;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-primary-500;
+    text-decoration: underline;
+  }
+}
+
+.itemActions {
+  display: flex;
+  gap: $space-4;
+  flex-shrink: 0;
+}
+
+.moveBtn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-sm;
+  background: $color-bg-primary;
+  color: $color-gray-600;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-fast;
+
+  &:active:not(:disabled) {
+    background: $color-gray-100;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+  }
+}
+
+.deleteBtn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid $color-gray-200;
+  border-radius: $radius-sm;
+  background: $color-bg-primary;
+  color: $color-danger;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-fast;
+
+  &:active:not(:disabled) {
+    background: rgba($color-danger, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+  }
+}
+
+.editRow {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  padding: $space-8 $space-12;
+}
+
+.editInput {
+  @include input-field;
+  flex: 1;
+  padding: $space-6 $space-8;
+  font-size: $font-size-body-sm;
+}
+
+.editBtn {
+  padding: $space-6 $space-8;
+  border: 1px solid $color-primary-500;
+  border-radius: $radius-sm;
+  background: $color-primary-500;
+  color: $color-bg-primary;
+  font-size: $font-size-caption;
+  white-space: nowrap;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.editBtnCancel {
+  background: $color-bg-primary;
+  color: $color-gray-600;
+  border-color: $color-gray-300;
+}
+
+.addSection {
+  margin-top: $space-12;
+}
+
+.addLabel {
+  display: block;
+  font-size: $font-size-body-sm;
+  color: $color-gray-500;
+  margin-bottom: $space-8;
+}
+
+.addButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-6;
+}
+
+.addBtn {
+  padding: $space-6 $space-8;
+  border: 1px dashed $color-gray-300;
+  border-radius: $radius-full;
+  background: $color-bg-primary;
+  color: $color-gray-600;
+  font-size: $font-size-caption;
+  white-space: nowrap;
+  transition: all $transition-fast;
+
+  &:active {
+    background: $color-primary-50;
+    border-color: $color-primary-500;
+    color: $color-primary-600;
+  }
+}

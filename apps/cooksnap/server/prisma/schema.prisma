@@ -39,7 +39,7 @@ model User {
   id               String    @id @default(uuid())
   email            String
   nickname         String?
-  provider         String    // "kakao" | "google"
+  provider         String    // "kakao" | "google" | "email"
   providerId       String    @map("provider_id")
   isPremium        Boolean   @default(false) @map("is_premium")
   premiumExpiresAt DateTime? @map("premium_expires_at")

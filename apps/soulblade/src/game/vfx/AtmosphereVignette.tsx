@@ -19,7 +19,7 @@ const ATMOSPHERE_CONFIG: Record<MapId, {
   tint: string
   alpha: number
 }> = {
-  town: { tint: '#ffcc88', alpha: 0.12 },
+  town: { tint: '#ffcc88', alpha: 0.2 },
   serpent_forest: { tint: '#33aa44', alpha: 0.2 },
   ice_cave: { tint: '#4488cc', alpha: 0.2 },
   flame_castle: { tint: '#ff4422', alpha: 0.15 },
@@ -45,7 +45,7 @@ const vignetteFragmentShader = `
     float dist = length(center) * 2.0;
 
     // 비네팅 강도: 가장자리에서 강하게
-    float vignette = smoothstep(0.3, 1.2, dist);
+    float vignette = smoothstep(0.25, 1.1, dist);
 
     gl_FragColor = vec4(uColor, vignette * uAlpha);
   }

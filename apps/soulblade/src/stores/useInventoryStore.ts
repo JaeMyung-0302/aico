@@ -1,11 +1,11 @@
 import { create } from 'zustand'
 import type { Equipment, EquipmentType } from '@soulblade/shared'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 
 interface InventoryState {
   readonly items: readonly Equipment[]
   readonly loading: boolean
-  readonly fetchInventory: (userId: string) => Promise<void>
+  readonly fetchInventory: () => Promise<void>
   readonly equipItem: (itemId: string, characterId: string) => Promise<void>
   readonly unequipItem: (itemId: string) => Promise<void>
   readonly getEquippedItems: (characterId: string) => readonly Equipment[]
@@ -16,30 +16,11 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   items: [],
   loading: false,
 
-  fetchInventory: async (userId) => {
+  fetchInventory: async () => {
     set({ loading: true })
     try {
-      const { data, error } = await supabase
-        .from('sb_equipment')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      const items: Equipment[] = (data ?? []).map((row) => ({
-        id: row.id,
-        userId: row.user_id,
-        type: row.type as EquipmentType,
-        grade: row.grade,
-        name: row.name,
-        tags: row.tags ?? [],
-        stats: row.stats ?? {},
-        weaponPower: row.weapon_power ?? 0,
-        equippedBy: row.equipped_by,
-      }))
-
-      set({ items })
+      const data = await api.get<Equipment[]>('/inventory')
+      set({ items: data })
     } catch {
       // 에러 시 빈 목록 유지
     } finally {
@@ -52,27 +33,14 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     const item = items.find((i) => i.id === itemId)
     if (!item) return
 
-    // 같은 슬롯에 이미 장착된 장비가 있으면 해제
-    const existingEquipped = items.find(
-      (i) => i.equippedBy === characterId && i.type === item.type,
-    )
-
     try {
-      if (existingEquipped) {
-        const { error } = await supabase
-          .from('sb_equipment')
-          .update({ equipped_by: null })
-          .eq('id', existingEquipped.id)
-        if (error) throw error
-      }
-
-      const { error } = await supabase
-        .from('sb_equipment')
-        .update({ equipped_by: characterId })
-        .eq('id', itemId)
-      if (error) throw error
+      await api.patch(`/inventory/${itemId}/equip`, { characterId })
 
       // 로컬 상태 업데이트 (불변)
+      const existingEquipped = items.find(
+        (i) => i.equippedBy === characterId && i.type === item.type,
+      )
+
       set({
         items: items.map((i) => {
           if (existingEquipped && i.id === existingEquipped.id) {
@@ -86,19 +54,14 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       })
     } catch {
       // 에러 시 refetch
-      const userId = item.userId
-      get().fetchInventory(userId)
+      get().fetchInventory()
     }
   },
 
   unequipItem: async (itemId) => {
     const { items } = get()
     try {
-      const { error } = await supabase
-        .from('sb_equipment')
-        .update({ equipped_by: null })
-        .eq('id', itemId)
-      if (error) throw error
+      await api.patch(`/inventory/${itemId}/unequip`)
 
       set({
         items: items.map((i) =>

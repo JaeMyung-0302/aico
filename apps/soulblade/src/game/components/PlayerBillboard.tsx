@@ -11,13 +11,11 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Mesh, MeshBasicMaterial } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
-import { getSpriteTextures, getFrameUV, SPRITE_FRAME_COUNT } from '../assets/sprite-generator'
+import { useSpriteTextures } from '../assets/sprite-loader'
+import { PLAYER_SPRITE_ASSETS } from '../assets/sprite-config'
 
 const WALK_FRAME_MS = 200
 const ATTACK_FRAME_MS = 150
-// 스프라이트 중심이 지면 위에 위치하도록 Y 오프셋
-const SPRITE_HALF_H = 24 // PlaneGeometry height 48 / 2
-const BILLBOARD_Y = SPRITE_HALF_H
 
 export const PlayerBillboard = () => {
   const meshRef = useRef<Mesh>(null)
@@ -26,15 +24,21 @@ export const PlayerBillboard = () => {
 
   const classType = useEntityStore((s) => s.player?.classType ?? null)
   const hasPlayer = useEntityStore((s) => s.player !== null)
+  const { textures } = useSpriteTextures()
+
+  const config = classType ? PLAYER_SPRITE_ASSETS[classType] : null
+  const frameCount = config?.frameCount ?? 5
+  // 스프라이트 중심이 지면 위에 위치하도록 Y 오프셋
+  const spriteHalfH = config ? config.frameHeight / 2 : 24
 
   // 클래스 변경 시 텍스처 교체 (clone으로 독립 UV 제어)
   const texture = useMemo(() => {
     if (!classType) return null
-    const tex = getSpriteTextures().player[classType].clone()
-    tex.repeat.set(1 / SPRITE_FRAME_COUNT, 1)
+    const tex = textures.player[classType].clone()
+    tex.repeat.set(1 / frameCount, 1)
     tex.needsUpdate = true
     return tex
-  }, [classType])
+  }, [classType, textures, frameCount])
 
   // 클래스 전환 시 이전 클론 텍스처 GPU 해제
   useEffect(() => {
@@ -46,7 +50,7 @@ export const PlayerBillboard = () => {
     if (!player || !player.active || !meshRef.current || !texture) return
 
     // 위치 (게임 XY → Three.js XZ) + Y 높이 오프셋
-    meshRef.current.position.set(player.body.x, BILLBOARD_Y, player.body.y)
+    meshRef.current.position.set(player.body.x, spriteHalfH, player.body.y)
     // 카메라를 향하도록 빌보딩
     meshRef.current.quaternion.copy(state.camera.quaternion)
 
@@ -83,7 +87,7 @@ export const PlayerBillboard = () => {
 
     // UV 업데이트 (프레임 변경 시에만)
     if (frameIdx !== anim.lastFrame) {
-      texture.offset.x = getFrameUV(frameIdx).offsetX
+      texture.offset.x = frameIdx / frameCount
       anim.lastFrame = frameIdx
     }
   })
@@ -92,7 +96,7 @@ export const PlayerBillboard = () => {
 
   return (
     <mesh ref={meshRef}>
-      <planeGeometry args={[32, 48]} />
+      <planeGeometry args={[config?.frameWidth ?? 32, config?.frameHeight ?? 48]} />
       <meshBasicMaterial ref={materialRef} map={texture} transparent alphaTest={0.1} />
     </mesh>
   )

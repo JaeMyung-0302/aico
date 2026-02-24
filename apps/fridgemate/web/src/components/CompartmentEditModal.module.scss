@@ -1,0 +1,103 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 $space-8;
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 85dvh;
+  background-color: $color-bg-primary;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding: $space-20 $space-16 $space-24;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: slideUp 0.3s ease;
+  box-shadow: $shadow-3;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.title {
+  font-size: $font-size-heading;
+  font-weight: $font-weight-bold;
+  color: $color-gray-900;
+  margin-bottom: $space-4;
+}
+
+.subtitle {
+  font-size: $font-size-body-sm;
+  color: $color-gray-500;
+  margin-bottom: $space-16;
+}
+
+.warning {
+  font-size: $font-size-body-sm;
+  color: $color-danger;
+  background: rgba($color-danger, 0.06);
+  padding: $space-8 $space-12;
+  border-radius: $radius-sm;
+  margin-bottom: $space-12;
+}
+
+.resetBtn {
+  display: block;
+  width: 100%;
+  padding: $space-8;
+  border: 1px dashed $color-gray-300;
+  border-radius: $radius-sm;
+  background: $color-bg-primary;
+  color: $color-gray-500;
+  font-size: $font-size-body-sm;
+  margin-bottom: $space-12;
+
+  &:active {
+    background: $color-gray-50;
+  }
+}
+
+.error {
+  font-size: $font-size-body-sm;
+  color: $color-danger;
+  margin-bottom: $space-8;
+}
+
+.actions {
+  display: flex;
+  gap: $space-8;
+  margin-top: $space-4;
+}
+
+.cancelBtn {
+  padding: $space-12 $space-16;
+  border: 1px solid $color-gray-300;
+  border-radius: $radius-md;
+  background: $color-bg-primary;
+  color: $color-gray-600;
+  font-size: $font-size-body-sm;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    background: $color-gray-100;
+  }
+}
+
+.saveBtn {
+  @include button-primary;
+  flex: 1;
+  padding: $space-12 $space-16;
+  font-size: $font-size-body-sm;
+}

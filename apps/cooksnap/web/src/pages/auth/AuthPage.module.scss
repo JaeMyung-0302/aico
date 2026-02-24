@@ -79,6 +79,23 @@
   }
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin: $spacing-lg 0;
+  font-size: 13px;
+  color: $text-secondary;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: rgba($border, 0.6);
+  }
+}
+
 .inAppWarning {
   padding: $spacing-lg;
   background-color: rgba(#f39c12, 0.08);

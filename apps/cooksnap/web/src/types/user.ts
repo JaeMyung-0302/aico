@@ -4,6 +4,7 @@ export interface User {
   nickname: string | null
   provider: string
   isPremium: boolean
+  isAdmin: boolean
   premiumExpiresAt: string | null
   createdAt: string
 }

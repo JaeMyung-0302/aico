@@ -19,23 +19,23 @@ const TERRAIN_THEMES: Record<MapId, {
 }> = {
   town: {
     baseColor: '#3a5a3a',
-    colorVariation: 0.08,
-    segmentsPerUnit: 0.02,
+    colorVariation: 0.16,
+    segmentsPerUnit: 0.035,
   },
   serpent_forest: {
     baseColor: '#2a4e2a',
-    colorVariation: 0.1,
-    segmentsPerUnit: 0.015,
+    colorVariation: 0.18,
+    segmentsPerUnit: 0.025,
   },
   ice_cave: {
     baseColor: '#3a5a7a',
-    colorVariation: 0.06,
-    segmentsPerUnit: 0.012,
+    colorVariation: 0.12,
+    segmentsPerUnit: 0.02,
   },
   flame_castle: {
     baseColor: '#5a3a2a',
-    colorVariation: 0.1,
-    segmentsPerUnit: 0.01,
+    colorVariation: 0.18,
+    segmentsPerUnit: 0.018,
   },
 }
 
@@ -62,12 +62,12 @@ const smoothNoise = (x: number, y: number): number => {
   return nx0 + (nx1 - nx0) * sy
 }
 
-// Fractal Brownian Motion (2 octaves)
+// Fractal Brownian Motion (3 octaves)
 const fbm = (x: number, y: number): number => {
   let value = 0
   let amplitude = 1
   let frequency = 1
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     value += smoothNoise(x * frequency, y * frequency) * amplitude
     amplitude *= 0.5
     frequency *= 2
@@ -102,9 +102,9 @@ export const TerrainMesh = ({ mapId, worldWidth, worldHeight }: TerrainMeshProps
       const noise = fbm(x * 0.005, y * 0.005) // 0~1.5 범위
       const factor = noise / 1.5 // 0~1 정규화
 
-      colors[i * 3] = Math.min(1, baseColor.r + factor * variation * 0.6)
+      colors[i * 3] = Math.min(1, baseColor.r + factor * variation * 0.8)
       colors[i * 3 + 1] = Math.min(1, baseColor.g + factor * variation)
-      colors[i * 3 + 2] = Math.min(1, baseColor.b + factor * variation * 0.4)
+      colors[i * 3 + 2] = Math.min(1, baseColor.b + factor * variation * 0.6)
     }
     geo.setAttribute('color', new Float32BufferAttribute(colors, 3))
 

@@ -45,6 +45,8 @@ export interface JuicyConfig {
   readonly enableCelShading: boolean
   readonly enableOutline: boolean
   readonly celShadingSteps: number
+  // 빌보드 우선 렌더링 (AI 스프라이트 로드 시 3D 대신 빌보드)
+  readonly preferBillboard: boolean
 }
 
 const DEFAULT_JUICY: JuicyConfig = {
@@ -76,6 +78,7 @@ const DEFAULT_JUICY: JuicyConfig = {
   enableCelShading: true,
   enableOutline: true,
   celShadingSteps: 2,
+  preferBillboard: true,
 }
 
 interface CombatState {

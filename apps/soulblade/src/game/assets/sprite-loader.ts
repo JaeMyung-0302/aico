@@ -8,15 +8,17 @@
  */
 
 import { useState, useEffect } from 'react'
-import { TextureLoader, NearestFilter, ClampToEdgeWrapping, RepeatWrapping } from 'three'
+import { TextureLoader, LinearFilter, ClampToEdgeWrapping, RepeatWrapping } from 'three'
 import type { Texture } from 'three'
-import type { CharacterClass, MapId } from '@soulblade/shared'
+import type { CharacterClass, MapId, NpcType } from '@soulblade/shared'
 import { getSpriteTextures } from './sprite-generator'
 import type { SpriteTextures } from './sprite-generator'
 import {
   PLAYER_SPRITE_ASSETS,
   ENTITY_SPRITE_ASSETS,
   BACKGROUND_ASSETS,
+  NPC_SPRITE_ASSETS,
+  OBSTACLE_SPRITE_ASSETS,
 } from './sprite-config'
 import type { SpriteAssetConfig } from './sprite-config'
 
@@ -28,8 +30,8 @@ const loadSpriteTexture = (config: SpriteAssetConfig): Promise<Texture | null> =
     loader.load(
       config.path,
       (tex) => {
-        tex.magFilter = NearestFilter
-        tex.minFilter = NearestFilter
+        tex.magFilter = LinearFilter
+        tex.minFilter = LinearFilter
         tex.wrapS = ClampToEdgeWrapping
         tex.wrapT = ClampToEdgeWrapping
         tex.needsUpdate = true
@@ -123,8 +125,8 @@ export const loadBackgroundTexture = (mapId: MapId): Promise<Texture | null> =>
       (tex) => {
         tex.wrapS = RepeatWrapping
         tex.wrapT = RepeatWrapping
-        tex.magFilter = NearestFilter
-        tex.minFilter = NearestFilter
+        tex.magFilter = LinearFilter
+        tex.minFilter = LinearFilter
         tex.needsUpdate = true
         resolve(tex)
       },
@@ -156,6 +158,106 @@ export const useSpriteTextures = (): {
 
     return () => { cancelled = true }
   }, [])
+
+  return { textures, loaded }
+}
+
+// NPC 텍스처 로드 (타입별 캐시)
+const _npcCache: Partial<Record<NpcType, Texture | null>> = {}
+
+export const loadNpcTexture = (npcType: NpcType): Promise<Texture | null> => {
+  if (npcType in _npcCache) return Promise.resolve(_npcCache[npcType] ?? null)
+  const config = NPC_SPRITE_ASSETS[npcType]
+  return loadSpriteTexture(config).then((tex) => {
+    _npcCache[npcType] = tex
+    return tex
+  })
+}
+
+export const disposeNpcTextures = () => {
+  for (const tex of Object.values(_npcCache)) tex?.dispose()
+  for (const key of Object.keys(_npcCache)) delete _npcCache[key as NpcType]
+}
+
+// NPC 텍스처 React hook (전체 NPC 타입 병렬 로드)
+export const useNpcTextures = (): {
+  textures: Partial<Record<NpcType, Texture>>
+  loaded: boolean
+} => {
+  const [textures, setTextures] = useState<Partial<Record<NpcType, Texture>>>({})
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const npcTypes = Object.keys(NPC_SPRITE_ASSETS) as NpcType[]
+
+    Promise.all(npcTypes.map((t) => loadNpcTexture(t))).then((results) => {
+      if (cancelled) return
+      const map: Partial<Record<NpcType, Texture>> = {}
+      npcTypes.forEach((t, i) => {
+        const tex = results[i]
+        if (tex) map[t] = tex
+      })
+      setTextures(map)
+      setLoaded(true)
+    }).catch(() => { /* fallback: 프로시저럴 유지 */ })
+
+    return () => { cancelled = true }
+  }, [])
+
+  return { textures, loaded }
+}
+
+// 장애물 텍스처 로드 (spriteType 키 기반 캐시)
+const _obstacleCache: Partial<Record<string, Texture | null>> = {}
+
+export const loadObstacleTexture = (spriteType: string): Promise<Texture | null> => {
+  if (spriteType in _obstacleCache) return Promise.resolve(_obstacleCache[spriteType] ?? null)
+  const config = OBSTACLE_SPRITE_ASSETS[spriteType]
+  if (!config) return Promise.resolve(null)
+  return loadSpriteTexture(config).then((tex) => {
+    _obstacleCache[spriteType] = tex
+    return tex
+  })
+}
+
+export const disposeObstacleTextures = () => {
+  for (const tex of Object.values(_obstacleCache)) tex?.dispose()
+  for (const key of Object.keys(_obstacleCache)) delete _obstacleCache[key]
+}
+
+// 장애물 텍스처 React hook (사용중인 spriteType들만 로드)
+export const useObstacleTextures = (spriteTypes: readonly string[]): {
+  textures: Record<string, Texture>
+  loaded: boolean
+} => {
+  const [textures, setTextures] = useState<Record<string, Texture>>({})
+  const [loaded, setLoaded] = useState(false)
+
+  const cacheKey = [...new Set(spriteTypes.filter(Boolean))].join(',')
+
+  useEffect(() => {
+    const types = cacheKey ? cacheKey.split(',') : []
+    if (types.length === 0) {
+      setLoaded(true)
+      return
+    }
+
+    let cancelled = false
+
+    Promise.all(types.map((t) => loadObstacleTexture(t))).then((results) => {
+      if (cancelled) return
+      const map: Record<string, Texture> = {}
+      types.forEach((t, i) => {
+        const tex = results[i]
+        if (tex) map[t] = tex
+      })
+      setTextures(map)
+      setLoaded(true)
+    }).catch(() => { /* fallback: 프로시저럴 유지 */ })
+
+    return () => { cancelled = true }
+  }, [cacheKey])
 
   return { textures, loaded }
 }

@@ -19,9 +19,9 @@ import { useEntityStore } from '../stores/useEntityStore'
 import { MAP_CONFIGS } from '../data/maps'
 import { gameToWorld } from './coord-adapter'
 
-// 3인칭 카메라 오프셋
-const CAM_HEIGHT = 300
-const CAM_BACK = 350
+// 3인칭 카메라 오프셋 (~66° 시점: 넓은 시야 + 크기 변화 감소)
+const CAM_HEIGHT = 450
+const CAM_BACK = 200
 
 interface CameraRigProps {
   mapId: MapId

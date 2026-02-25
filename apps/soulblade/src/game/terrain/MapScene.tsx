@@ -8,11 +8,13 @@
 import { useMemo } from 'react'
 import type { MapId } from '@soulblade/shared'
 import { MAP_CONFIGS } from '../data/maps'
+import { useNpcTextures } from '../assets/sprite-loader'
 import { TerrainMesh } from './TerrainMesh'
 import { BackgroundTile } from './BackgroundTile'
 import { ObstaclesMesh } from './ObstaclesMesh'
 import { PortalMesh } from './PortalMesh'
 import { NpcMesh } from './NpcMesh'
+import { NpcBillboard } from './NpcBillboard'
 
 interface MapSceneProps {
   mapId: MapId
@@ -21,6 +23,7 @@ interface MapSceneProps {
 export const MapScene = ({ mapId }: MapSceneProps) => {
   const config = useMemo(() => MAP_CONFIGS[mapId], [mapId])
   const { width, height } = config.worldSize
+  const { loaded: npcSpritesLoaded } = useNpcTextures()
 
   return (
     <group>
@@ -36,8 +39,8 @@ export const MapScene = ({ mapId }: MapSceneProps) => {
       {/* 포탈 */}
       <PortalMesh portals={config.portals} />
 
-      {/* NPC */}
-      <NpcMesh npcs={config.npcs} />
+      {/* NPC: 스프라이트 로드 시 빌보드, 아니면 3D 프로시저럴 */}
+      {npcSpritesLoaded ? <NpcBillboard npcs={config.npcs} /> : <NpcMesh npcs={config.npcs} />}
     </group>
   )
 }

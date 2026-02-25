@@ -1,6 +1,6 @@
 import { IsEnum, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
-import { FeedbackCategory, FeedbackStatus } from '@prisma/client';
+import { FeedbackCategory, FeedbackStatus } from '../../generated/prisma';
 
 export class FeedbackQueryDto {
   @IsOptional()

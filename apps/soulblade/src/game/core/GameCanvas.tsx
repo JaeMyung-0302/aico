@@ -29,6 +29,7 @@ import { Monster3D } from '../components/Monster3D'
 import { Elite3D } from '../components/Elite3D'
 import { Projectile3D } from '../components/Projectile3D'
 import { Boss3D } from '../components/Boss3D'
+import { BossBillboard } from '../components/BossBillboard'
 import { PlayerBillboard } from '../components/PlayerBillboard'
 import { MonsterBillboard } from '../components/MonsterBillboard'
 import { EliteBillboard } from '../components/EliteBillboard'
@@ -45,6 +46,7 @@ import { useEntityStore } from '../stores/useEntityStore'
 import { useLodStore } from '../stores/useLodStore'
 import { getLodConfig } from '../systems/lod'
 import { MAP_CONFIGS } from '../data/maps'
+import { useSpriteTextures } from '../assets/sprite-loader'
 import { initAudioR3F, playBgmR3F, stopBgmR3F } from '../systems/audio-r3f'
 
 // 그림자 초기화 (Canvas shadows prop 대신 직접 설정)
@@ -165,6 +167,10 @@ const SceneContents = ({ currentMapId }: { currentMapId: MapId }) => {
   const quality = useLodStore((s) => s.quality)
   const config = getLodConfig(quality)
   const mapConfig = MAP_CONFIGS[currentMapId]
+  const { loaded: spriteLoaded } = useSpriteTextures()
+
+  // AI 스프라이트 로드 시 빌보드 우선, 아니면 기존 3D/빌보드 LOD 분기
+  const useBillboard = (config.preferBillboard && spriteLoaded) || !config.enable3DModels
 
   return (
     <>
@@ -177,11 +183,11 @@ const SceneContents = ({ currentMapId }: { currentMapId: MapId }) => {
         worldHeight={mapConfig.worldSize.height}
         quality={quality}
       />
-      {config.enable3DModels ? <Player3D key="player-3d" /> : <PlayerBillboard key="player-bb" />}
-      {config.enable3DModels ? <Monster3D key="monster-3d" /> : <MonsterBillboard key="monster-bb" />}
-      {config.enable3DModels ? <Elite3D key="elite-3d" /> : <EliteBillboard key="elite-bb" />}
-      {config.enable3DModels ? <Projectile3D key="proj-3d" /> : <ProjectileBillboard key="proj-bb" />}
-      <Boss3D />
+      {useBillboard ? <PlayerBillboard key="player-bb" /> : <Player3D key="player-3d" />}
+      {useBillboard ? <MonsterBillboard key="monster-bb" /> : <Monster3D key="monster-3d" />}
+      {useBillboard ? <EliteBillboard key="elite-bb" /> : <Elite3D key="elite-3d" />}
+      {useBillboard ? <ProjectileBillboard key="proj-bb" /> : <Projectile3D key="proj-3d" />}
+      {useBillboard ? <BossBillboard key="boss-bb" /> : <Boss3D key="boss-3d" />}
       <HpBarOverlay />
       <DamageNumbers />
       <PostProcessing
@@ -202,13 +208,13 @@ export const GameCanvas = () => {
   return (
     <Canvas
       camera={{
-        position: [270, 300, 830],
-        fov: 45,
-        near: 0.1,
-        far: 5000,
+        position: [270, 450, 400],
+        fov: 50,
+        near: 1,
+        far: 2000,
       }}
       gl={{
-        antialias: false,
+        antialias: true,
         powerPreference: 'high-performance',
       }}
       style={{ width: '100%', height: '100%', background: '#1a1a2e' }}

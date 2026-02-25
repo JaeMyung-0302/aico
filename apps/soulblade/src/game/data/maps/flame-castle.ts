@@ -52,10 +52,10 @@ export const FLAME_CASTLE_MAP: WorldMapConfig = {
   npcs: [],
   obstacles: [
     // 석기둥 (collidable)
-    { x: 450, y: 650, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
-    { x: 1400, y: 600, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
-    { x: 700, y: 1100, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
-    { x: 1000, y: 2500, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true },
+    { x: 450, y: 650, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true, spriteType: 'rock_01' },
+    { x: 1400, y: 600, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true, spriteType: 'rock_01' },
+    { x: 700, y: 1100, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true, spriteType: 'rock_01' },
+    { x: 1000, y: 2500, width: 40, height: 80, color: 0x8b4513, type: 'rect', collidable: true, spriteType: 'rock_01' },
     // 용암 웅덩이 (not collidable)
     { x: 300, y: 1300, width: 80, height: 80, color: 0xff4400, type: 'circle', radius: 40, collidable: false, alpha: 0.5 },
     { x: 1500, y: 1500, width: 70, height: 70, color: 0xff4400, type: 'circle', radius: 35, collidable: false, alpha: 0.5 },

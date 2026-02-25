@@ -226,6 +226,15 @@ export const GameLoop = () => {
     playerUpdateInvincibility(player, deltaMs)
     playerUpdateHolyShield(player, deltaMs)
 
+    // 5.5. 공격 모션 타이머 (isAttacking → false 복귀)
+    if (player.isAttacking) {
+      player.attackTimer -= deltaMs
+      if (player.attackTimer <= 0) {
+        player.isAttacking = false
+        player.attackTimer = 0
+      }
+    }
+
     // === 전투/스폰 (안전지대가 아닌 경우만) ===
     if (!stateRef.current.isSafeZone) {
       const { monsters, elites, projectiles } = store

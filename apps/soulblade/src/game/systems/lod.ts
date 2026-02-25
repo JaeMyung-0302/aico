@@ -101,4 +101,6 @@ export const getLodConfig = (quality: QualityLevel): JuicyConfig => ({
   enableCelShading: quality === 'full' || quality === 'reduced',
   enableOutline: quality === 'full',
   celShadingSteps: quality === 'full' ? 2 : 1,
+  // 빌보드 우선 (AI 스프라이트 로드 시 3D 대신 빌보드 사용)
+  preferBillboard: quality !== 'canvas',
 })

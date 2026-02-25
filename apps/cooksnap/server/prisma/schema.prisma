@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -155,6 +156,7 @@ model Subscription {
   status           SubscriptionStatus @default(ACTIVE)
   currentPeriodEnd DateTime           @map("current_period_end")
   cancelledAt      DateTime?          @map("cancelled_at")
+  retryCount       Int                @default(0) @map("retry_count")
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
 

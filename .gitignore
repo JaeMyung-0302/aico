@@ -27,6 +27,9 @@ build
 dist
 *.tsbuildinfo
 
+# Prisma generated clients
+**/src/generated/
+
 
 # Debug
 npm-debug.log*

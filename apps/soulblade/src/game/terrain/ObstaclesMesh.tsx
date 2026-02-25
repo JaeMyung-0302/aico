@@ -13,9 +13,13 @@
  * 여기서는 렌더링만 담당
  */
 
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { Color } from 'three'
+import type { Mesh } from 'three'
 import type { ObstacleConfig } from '@soulblade/shared'
+import { useObstacleTextures } from '../assets/sprite-loader'
+import { OBSTACLE_SPRITE_ASSETS } from '../assets/sprite-config'
 
 interface ObstaclesMeshProps {
   obstacles: readonly ObstacleConfig[]
@@ -90,12 +94,48 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
   }
 }
 
+// 스프라이트 빌보드 장애물 (spriteType이 있고 텍스처 로드됨)
+const ObstacleBillboard = ({ obs, textures }: { obs: ObstacleConfig; textures: Record<string, import('three').Texture> }) => {
+  const meshRef = useRef<Mesh>(null)
+  const spriteType = obs.spriteType!
+  const tex = textures[spriteType]
+  const config = OBSTACLE_SPRITE_ASSETS[spriteType]
+
+  // useFrame은 항상 호출 (Rules of Hooks)
+  useFrame((state) => {
+    if (!meshRef.current) return
+    meshRef.current.quaternion.copy(state.camera.quaternion)
+  })
+
+  if (!tex || !config) return null
+
+  const halfH = config.frameHeight / 2
+
+  return (
+    <mesh ref={meshRef} position={[obs.x, halfH, obs.y]}>
+      <planeGeometry args={[config.frameWidth, config.frameHeight]} />
+      <meshBasicMaterial map={tex} transparent alphaTest={0.1} />
+    </mesh>
+  )
+}
+
 export const ObstaclesMesh = ({ obstacles }: ObstaclesMeshProps) => {
+  const spriteTypes = useMemo(
+    () => obstacles.map((o) => o.spriteType).filter((s): s is string => !!s),
+    [obstacles],
+  )
+  const { textures, loaded } = useObstacleTextures(spriteTypes)
+
   return (
     <group>
-      {obstacles.map((obs, i) => (
-        <ObstacleItem key={i} obs={obs} />
-      ))}
+      {obstacles.map((obs, i) => {
+        // spriteType이 있고 텍스처 로드됨 → 빌보드
+        if (obs.spriteType && loaded && textures[obs.spriteType]) {
+          return <ObstacleBillboard key={i} obs={obs} textures={textures} />
+        }
+        // 폴백: 기존 3D 프리미티브
+        return <ObstacleItem key={i} obs={obs} />
+      })}
     </group>
   )
 }

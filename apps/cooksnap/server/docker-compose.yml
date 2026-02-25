@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: cooksnap
       POSTGRES_DB: cooksnap_dev
     ports:
-      - '5433:5432'
+      - '5436:5432'
     volumes:
       - cooksnap_pgdata:/var/lib/postgresql/data
 

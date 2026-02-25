@@ -12,6 +12,7 @@ interface FridgeViewProps {
   onCompartmentClick: (compartment: CompartmentResponse) => void
   onDeleteItem: (itemId: string, compartmentId: string) => void
   highlightedCompartmentId?: string | null
+  onEditCompartments?: () => void
 }
 
 
@@ -218,11 +219,13 @@ const DoorSectionGrid = ({
   onCompartmentClick,
   onDeleteItem,
   highlightedCompartmentId,
+  onEditCompartments,
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
   onDeleteItem: (itemId: string, compartmentId: string) => void
   highlightedCompartmentId?: string | null
+  onEditCompartments?: () => void
 }) => {
   const [selectedDoor, setSelectedDoor] = useState<number | null>(null)
   const doorSections = DOOR_SECTIONS[fridge.type]!
@@ -334,7 +337,14 @@ const DoorSectionGrid = ({
 
   return (
     <div className={cx('fridge')}>
-      <div className={cx('fridgeHeader')}>{fridge.name}</div>
+      <div className={cx('fridgeHeader')}>
+        {fridge.name}
+        {onEditCompartments && (
+          <button className={cx('editCompartmentsBtn')} onClick={onEditCompartments} type="button">
+            칸 편집
+          </button>
+        )}
+      </div>
       <div className={cx('closedDoors', closedClass)}>
         {doorSections.map((section, i) => {
           const comps = section.positions
@@ -378,17 +388,26 @@ const SimpleFridgeGrid = ({
   onCompartmentClick,
   onDeleteItem,
   highlightedCompartmentId,
+  onEditCompartments,
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
   onDeleteItem: (itemId: string, compartmentId: string) => void
   highlightedCompartmentId?: string | null
+  onEditCompartments?: () => void
 }) => {
   const gridClass = SIMPLE_GRID_CLASS[fridge.type]
 
   return (
     <div className={cx('fridge')}>
-      <div className={cx('fridgeHeader')}>{fridge.name}</div>
+      <div className={cx('fridgeHeader')}>
+        {fridge.name}
+        {onEditCompartments && (
+          <button className={cx('editCompartmentsBtn')} onClick={onEditCompartments} type="button">
+            칸 편집
+          </button>
+        )}
+      </div>
       <div className={cx('doorContent')}>
         <div className={cx(gridClass)}>
           {fridge.compartments
@@ -413,7 +432,7 @@ const SimpleFridgeGrid = ({
 
 // === 메인 컴포넌트 ===
 
-export const FridgeView = ({ onCompartmentClick, onDeleteItem, highlightedCompartmentId }: FridgeViewProps) => {
+export const FridgeView = ({ onCompartmentClick, onDeleteItem, highlightedCompartmentId, onEditCompartments }: FridgeViewProps) => {
   const navigate = useNavigate()
   const { fridges, activeFridgeId, setActiveFridge } = useFridgeStore()
 
@@ -460,9 +479,9 @@ export const FridgeView = ({ onCompartmentClick, onDeleteItem, highlightedCompar
       {/* 냉장고 그리드 */}
       {activeFridge &&
         (DOOR_SECTIONS[activeFridge.type] ? (
-          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} />
+          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
         ) : (
-          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} />
+          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
         ))}
     </div>
   )

@@ -49,7 +49,7 @@ export const ProjectileBillboard = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]}>
+    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]} frustumCulled={false}>
       <planeGeometry args={[16, 6]} />
       <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
     </instancedMesh>

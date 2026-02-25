@@ -173,7 +173,7 @@ const Landing = () => {
           />
           <button
             className={cx('analyzeButton', { exhausted: quotaExhausted })}
-            onClick={handleAnalyze}
+            onClick={quotaExhausted ? () => setShowPremiumModal(true) : handleAnalyze}
             disabled={isLoading}
           >
             {quotaExhausted ? '오늘 무료 분석을 모두 사용했어요' : '분석하기'}

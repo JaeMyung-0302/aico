@@ -64,6 +64,6 @@ export const Elite3D = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[geometry, material, MAX_INSTANCES]} />
+    <instancedMesh ref={meshRef} args={[geometry, material, MAX_INSTANCES]} frustumCulled={false} />
   )
 }

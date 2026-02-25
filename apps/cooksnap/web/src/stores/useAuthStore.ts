@@ -84,12 +84,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signInWithEmail: async (email, password) => {
     if (!supabase) return { error: '인증 서비스가 설정되지 않았습니다.' }
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         if (error.message.includes('Email not confirmed')) {
           return { error: '이메일 인증을 완료해주세요. 받은편지함을 확인해주세요.' }
         }
         return { error: '이메일 또는 비밀번호가 올바르지 않습니다.' }
+      }
+      if (authData.session) {
+        localStorage.setItem('access_token', authData.session.access_token)
+        const { data: userData } = await api.get<User>('/auth/me')
+        set({ user: userData })
+        get().fetchQuota()
       }
       return {}
     } catch {

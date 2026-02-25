@@ -68,6 +68,7 @@ export interface PlayerEntity extends EntityBase {
 
   // 상태
   isAttacking: boolean
+  attackTimer: number
   invincible: boolean
   invincibleTimer: number
 

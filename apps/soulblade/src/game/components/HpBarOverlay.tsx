@@ -14,8 +14,8 @@ import type { LineSegments } from 'three'
 import { useEntityStore } from '../stores/useEntityStore'
 
 const MAX_BARS = 80
-const BAR_WIDTH = 24
-const BAR_Y_OFFSET = 20 // 엔티티 위에 표시 (Three.js Y-up: +Y = 위)
+const BAR_WIDTH = 28
+const BAR_Y_OFFSET = 32 // 빌보드 위에 표시 (Three.js Y-up: +Y = 위)
 // 전경/배경 바 Y 높이 분리
 const HP_BAR_Y_BG = BAR_Y_OFFSET
 const HP_BAR_Y_FG = BAR_Y_OFFSET + 0.1
@@ -79,7 +79,7 @@ export const HpBarOverlay = () => {
       if (!e.active || idx >= MAX_BARS) continue
       if (e.hp >= e.maxHp) continue
 
-      const eliteBarWidth = 32
+      const eliteBarWidth = 36
       const baseX = e.body.x - eliteBarWidth / 2
       const baseZ = e.body.y
       const hpRatio = e.hp / e.maxHp

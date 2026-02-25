@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite --port 5173",
+    "dev": "vite --port 5177",
     "build": "tsc -b && vite build && tsx scripts/prerender.ts",
     "preview": "vite preview",
     "lint": "eslint --max-warnings 0",

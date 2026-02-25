@@ -277,6 +277,10 @@ export const processAttackR3F = (
 
   state.lastAttackTime = timeMs
 
+  // 공격 모션 플래그 설정 (PlayerBillboard/Player3D에서 프레임 전환용)
+  player.isAttacking = true
+  player.attackTimer = player.attackPattern === 'aoe_circle' ? 280 : 200
+
   // 공격 이벤트 (이펙트 렌더링용)
   eventBus.emit('combat:attack', {
     attackPattern: player.attackPattern,

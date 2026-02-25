@@ -11,7 +11,7 @@
 
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { CanvasTexture, RepeatWrapping, NearestFilter } from 'three'
+import { CanvasTexture, RepeatWrapping, NearestFilter, LinearFilter } from 'three'
 import type { Mesh } from 'three'
 import type { MapId } from '@soulblade/shared'
 
@@ -71,8 +71,8 @@ const createParallaxTexture = (baseColor: string, accentColor: string, density: 
   const texture = new CanvasTexture(canvas)
   texture.wrapS = RepeatWrapping
   texture.wrapT = RepeatWrapping
-  texture.magFilter = NearestFilter
-  texture.minFilter = NearestFilter
+  texture.magFilter = LinearFilter
+  texture.minFilter = LinearFilter
   return texture
 }
 

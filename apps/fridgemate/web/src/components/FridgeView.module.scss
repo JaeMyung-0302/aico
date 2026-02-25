@@ -82,11 +82,32 @@
 }
 
 .fridgeHeader {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.85rem;
   color: $color-gray-700;
   padding: $space-12 $space-12 $space-8;
   font-weight: $font-weight-semibold;
+  position: relative;
+}
+
+.editCompartmentsBtn {
+  position: absolute;
+  right: $space-12;
+  font-size: 0.7rem;
+  font-weight: $font-weight-medium;
+  color: $color-primary-500;
+  background: rgba($color-primary-500, 0.08);
+  border: 1px solid rgba($color-primary-500, 0.2);
+  border-radius: $radius-full;
+  padding: $space-4 $space-8;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:active {
+    background: rgba($color-primary-500, 0.16);
+  }
 }
 
 // === 도어 전환 애니메이션 ===

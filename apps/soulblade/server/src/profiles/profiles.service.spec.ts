@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/prisma';
 import { ProfilesService } from './profiles.service';
 import { PrismaService } from '../prisma/prisma.service';
 

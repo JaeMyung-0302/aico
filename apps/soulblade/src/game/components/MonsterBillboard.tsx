@@ -16,7 +16,7 @@ import { useSpriteTextures } from '../assets/sprite-loader'
 const MAX_INSTANCES = 60
 const tempObject = new Object3D()
 // 스프라이트 중심이 지면 위에 위치하도록 Y 오프셋
-const SPRITE_HALF_H = 16 // PlaneGeometry height 32 / 2
+const SPRITE_HALF_H = 28 // PlaneGeometry height 56 / 2
 const BILLBOARD_Y = SPRITE_HALF_H
 
 export const MonsterBillboard = () => {
@@ -48,9 +48,9 @@ export const MonsterBillboard = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]}>
-      {/* 텍스처 24x24 → 게임 월드 body 크기 32x32로 스케일업 (정사각 비율 유지) */}
-      <planeGeometry args={[32, 32]} />
+    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]} frustumCulled={false}>
+      {/* 텍스처 24x24 → 56x56 스케일업 (가시성 개선) */}
+      <planeGeometry args={[56, 56]} />
       <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
     </instancedMesh>
   )

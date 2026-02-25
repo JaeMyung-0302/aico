@@ -99,6 +99,7 @@ export const useEntityStore = create<EntityState>((set) => ({
       holyShieldTimer: 0,
       holyShieldInterval: 0,
       isAttacking: false,
+      attackTimer: 0,
       invincible: false,
       invincibleTimer: 0,
       characterName: characterName ?? '',

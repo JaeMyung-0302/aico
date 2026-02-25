@@ -9,9 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PortoneService } from '../portone/portone.service';
 import { randomUUID } from 'crypto';
 import { encrypt } from '../common/utils/crypto';
-
-const SUBSCRIPTION_PRICE = 3900;
-const SUBSCRIPTION_DAYS = 30;
+import { SUBSCRIPTION_PRICE, SUBSCRIPTION_DAYS } from './constants';
 
 @Injectable()
 export class PaymentService {
@@ -80,7 +78,8 @@ export class PaymentService {
 
       return { success: true, currentPeriodEnd: periodEnd };
     } catch (error) {
-      this.logger.error(`결제 실패: ${error}`);
+      const errorCode = error instanceof Error ? error.message.slice(0, 100) : 'UNKNOWN';
+      this.logger.error(`결제 실패: code=${errorCode}`);
 
       // 결제 실패 → Subscription 만료 + Payment 기록
       await this.prisma.$transaction([
@@ -106,7 +105,7 @@ export class PaymentService {
 
   cancelSubscription = async (userId: string) => {
     const subscription = await this.prisma.subscription.findFirst({
-      where: { userId, status: 'ACTIVE' },
+      where: { userId, status: { in: ['ACTIVE', 'PAST_DUE'] } },
     });
 
     if (!subscription) {
@@ -132,7 +131,7 @@ export class PaymentService {
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
-        status: { in: ['ACTIVE', 'CANCELLED'] },
+        status: { in: ['ACTIVE', 'CANCELLED', 'PAST_DUE'] },
       },
       orderBy: { createdAt: 'desc' },
     });

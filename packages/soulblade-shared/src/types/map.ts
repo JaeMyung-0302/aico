@@ -52,6 +52,7 @@ export interface ObstacleConfig {
   readonly collidable?: boolean   // default true
   readonly radius?: number        // circle/ellipse용
   readonly alpha?: number         // 투명도 (default 0.6)
+  readonly spriteType?: string    // 스프라이트 에셋 키 (OBSTACLE_SPRITE_ASSETS)
 }
 
 // 월드 맵 설정 (StageConfig 대체)

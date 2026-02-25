@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import classnames from 'classnames/bind';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -16,10 +17,12 @@ const isInAppBrowser = (): boolean => {
 const isIOS = (): boolean => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 const Auth = () => {
-  const { signInWithGoogle, signInWithKakao } = useAuthStore();
+  const { user, signInWithGoogle, signInWithKakao } = useAuthStore();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [copied, setCopied] = useState(false);
   const inApp = isInAppBrowser();
+
+  if (user) return <Navigate to="/" replace />;
 
   const handleGoogleLogin = async () => {
     if (inApp) return;

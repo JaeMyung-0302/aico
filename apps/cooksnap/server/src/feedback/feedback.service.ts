@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { FeedbackQueryDto } from './dto/feedback-query.dto';
-import type { FeedbackStatus } from '@prisma/client';
+import type { FeedbackStatus } from '../generated/prisma';
 
 @Injectable()
 export class FeedbackService {

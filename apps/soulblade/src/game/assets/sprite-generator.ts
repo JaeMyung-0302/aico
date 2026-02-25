@@ -305,13 +305,19 @@ const generateArcher = (): HTMLCanvasElement => {
 // ── 몬스터 텍스처 (24×24) ──
 const generateNormalMonster = (): HTMLCanvasElement => {
   const [canvas, g] = createCanvas(24, 24)
-  g.fillStyle = colorToCSS(0x884422); fillCircle(g, 12, 5, 5)
-  g.fillStyle = colorToCSS(0xff2200); fillCircle(g, 10, 4, 1.5); fillCircle(g, 14, 4, 1.5)
-  g.fillStyle = colorToCSS(0x663311); fillRoundedRect(g, 7, 10, 10, 7, 2)
-  g.fillStyle = colorToCSS(0x774422); fillRoundedRect(g, 3, 11, 4, 6, 1); fillRoundedRect(g, 17, 11, 4, 6, 1)
-  g.fillStyle = colorToCSS(0xccaa77)
+  // 밝은 아웃라인 (어두운 숲 배경 대비)
+  g.strokeStyle = colorToCSS(0xffaa44)
+  g.lineWidth = 2
+  g.beginPath(); g.arc(12, 5, 6, 0, Math.PI * 2); g.stroke()
+  g.beginPath(); g.roundRect(6, 9, 12, 9, 2); g.stroke()
+  // 몸체 (밝은 색상)
+  g.fillStyle = colorToCSS(0xcc6633); fillCircle(g, 12, 5, 5)
+  g.fillStyle = colorToCSS(0xff4400); fillCircle(g, 10, 4, 1.5); fillCircle(g, 14, 4, 1.5)
+  g.fillStyle = colorToCSS(0x995522); fillRoundedRect(g, 7, 10, 10, 7, 2)
+  g.fillStyle = colorToCSS(0xbb6633); fillRoundedRect(g, 3, 11, 4, 6, 1); fillRoundedRect(g, 17, 11, 4, 6, 1)
+  g.fillStyle = colorToCSS(0xddbb88)
   fillTriangle(g, 2, 17, 4, 14, 5, 17); fillTriangle(g, 17, 17, 19, 14, 21, 17)
-  g.fillStyle = colorToCSS(0x663311)
+  g.fillStyle = colorToCSS(0x995522)
   fillRoundedRect(g, 8, 17, 3, 5, 1); fillRoundedRect(g, 13, 17, 3, 5, 1)
   return canvas
 }
@@ -319,20 +325,28 @@ const generateNormalMonster = (): HTMLCanvasElement => {
 // ── 엘리트 몬스터 텍스처 (32×32) ──
 const generateEliteMonster = (): HTMLCanvasElement => {
   const [canvas, g] = createCanvas(32, 32)
-  g.fillStyle = colorToCSS(0xaa6633)
+  // 밝은 아웃라인 (어두운 숲 배경 대비)
+  g.strokeStyle = colorToCSS(0xffcc33)
+  g.lineWidth = 2
+  g.beginPath(); g.arc(16, 9, 8, 0, Math.PI * 2); g.stroke()
+  g.beginPath(); g.roundRect(7, 15, 18, 11, 2); g.stroke()
+  // 뿔 (밝은 색)
+  g.fillStyle = colorToCSS(0xcc8844)
   fillTriangle(g, 6, 8, 9, 0, 11, 8); fillTriangle(g, 21, 8, 23, 0, 26, 8)
-  g.fillStyle = colorToCSS(0x664422); fillCircle(g, 16, 9, 7)
-  g.fillStyle = colorToCSS(0xff4400); fillCircle(g, 13, 8, 2); fillCircle(g, 19, 8, 2)
-  g.fillStyle = colorToCSS(0xffaa00); fillCircle(g, 13, 8, 1); fillCircle(g, 19, 8, 1)
-  g.fillStyle = colorToCSS(0x554433); fillRoundedRect(g, 8, 16, 16, 9, 2)
-  g.fillStyle = colorToCSS(0x776655); fillRect(g, 14, 17, 4, 7)
-  g.fillStyle = colorToCSS(0x665544)
-  fillRoundedRect(g, 3, 15, 7, 5, 1); fillRoundedRect(g, 22, 15, 7, 5, 1)
+  // 머리
+  g.fillStyle = colorToCSS(0x996633); fillCircle(g, 16, 9, 7)
+  g.fillStyle = colorToCSS(0xff6600); fillCircle(g, 13, 8, 2); fillCircle(g, 19, 8, 2)
+  g.fillStyle = colorToCSS(0xffcc33); fillCircle(g, 13, 8, 1); fillCircle(g, 19, 8, 1)
+  // 몸체
+  g.fillStyle = colorToCSS(0x776655); fillRoundedRect(g, 8, 16, 16, 9, 2)
+  g.fillStyle = colorToCSS(0x998877); fillRect(g, 14, 17, 4, 7)
   g.fillStyle = colorToCSS(0x887766)
+  fillRoundedRect(g, 3, 15, 7, 5, 1); fillRoundedRect(g, 22, 15, 7, 5, 1)
+  g.fillStyle = colorToCSS(0xaa9988)
   fillTriangle(g, 4, 15, 6, 11, 8, 15); fillTriangle(g, 24, 15, 26, 11, 28, 15)
-  g.fillStyle = colorToCSS(0x554433)
+  g.fillStyle = colorToCSS(0x776655)
   fillRoundedRect(g, 4, 20, 5, 7, 1); fillRoundedRect(g, 23, 20, 5, 7, 1)
-  g.fillStyle = colorToCSS(0x443322)
+  g.fillStyle = colorToCSS(0x665544)
   fillRoundedRect(g, 10, 25, 5, 6, 1); fillRoundedRect(g, 17, 25, 5, 6, 1)
   return canvas
 }

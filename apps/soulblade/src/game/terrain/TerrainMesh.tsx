@@ -23,9 +23,9 @@ const TERRAIN_THEMES: Record<MapId, {
     segmentsPerUnit: 0.035,
   },
   serpent_forest: {
-    baseColor: '#2a4e2a',
-    colorVariation: 0.18,
-    segmentsPerUnit: 0.025,
+    baseColor: '#2a4e2c',
+    colorVariation: 0.25,
+    segmentsPerUnit: 0.035,
   },
   ice_cave: {
     baseColor: '#3a5a7a',
@@ -99,7 +99,7 @@ export const TerrainMesh = ({ mapId, worldWidth, worldHeight }: TerrainMeshProps
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i)
       const y = pos.getY(i)
-      const noise = fbm(x * 0.005, y * 0.005) // 0~1.5 범위
+      const noise = fbm(x * 0.015, y * 0.015) // 0~1.5 범위
       const factor = noise / 1.5 // 0~1 정규화
 
       colors[i * 3] = Math.min(1, baseColor.r + factor * variation * 0.8)
@@ -119,10 +119,10 @@ export const TerrainMesh = ({ mapId, worldWidth, worldHeight }: TerrainMeshProps
   return (
     <mesh
       geometry={geometry}
-      position={[worldWidth / 2, -0.1, worldHeight / 2]} rotation={[-Math.PI / 2, 0, 0]}
-      receiveShadow
+      position={[worldWidth / 2, -0.1, worldHeight / 2]}
+      rotation={[-Math.PI / 2, 0, 0]}
     >
-      <meshLambertMaterial vertexColors />
+      <meshLambertMaterial vertexColors transparent opacity={0.8} depthWrite={false} />
     </mesh>
   )
 }

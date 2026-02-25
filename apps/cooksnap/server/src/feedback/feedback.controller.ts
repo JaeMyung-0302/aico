@@ -6,7 +6,7 @@ import { AdminGuard } from './guards/admin.guard';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { UpdateFeedbackStatusDto } from './dto/update-feedback-status.dto';
 import { FeedbackQueryDto } from './dto/feedback-query.dto';
-import type { User } from '@prisma/client';
+import type { User } from '../generated/prisma';
 
 interface AuthenticatedRequest extends Request {
   user: User;

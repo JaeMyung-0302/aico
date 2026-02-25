@@ -18,7 +18,7 @@ const MAX_INSTANCES = 20
 const tempObject = new Object3D()
 const tempColor = new Color()
 // 스프라이트 중심이 지면 위에 위치하도록 Y 오프셋
-const SPRITE_HALF_H = 16 // PlaneGeometry height 32 / 2
+const SPRITE_HALF_H = 20 // PlaneGeometry height 40 / 2
 const BILLBOARD_Y = SPRITE_HALF_H
 
 export const EliteBillboard = () => {
@@ -56,8 +56,8 @@ export const EliteBillboard = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]}>
-      <planeGeometry args={[32, 32]} />
+    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]} frustumCulled={false}>
+      <planeGeometry args={[40, 40]} />
       <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
     </instancedMesh>
   )

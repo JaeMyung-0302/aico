@@ -3,7 +3,7 @@ import { Throttle } from '@nestjs/throttler';
 import { PaymentService } from './payment.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { SubscribeDto } from './dto/subscribe.dto';
-import type { User } from '@prisma/client';
+import type { User } from '../generated/prisma';
 
 interface AuthenticatedRequest extends Request {
   user: User;

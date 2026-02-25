@@ -1,5 +1,5 @@
 import { IsObject } from 'class-validator';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../generated/prisma';
 
 export class UpsertSaveDto {
   @IsObject()

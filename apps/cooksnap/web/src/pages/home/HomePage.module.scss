@@ -105,7 +105,6 @@
   &.exhausted {
     background-color: $text-secondary;
     font-size: 14px;
-    cursor: not-allowed;
 
     &:hover {
       background-color: darken($text-secondary, 10%);
@@ -115,13 +114,15 @@
   }
 }
 
-// 분석 로딩 오버레이
+// 분석 로딩 오버레이 (풀스크린 — Header/Footer 위에 덮음)
 .loadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   @include flex-center;
   flex-direction: column;
-  min-height: calc(100vh - 56px - $spacing-xxl * 2);
   gap: $spacing-lg;
-
+  background-color: $surface;
 }
 
 .spinner {

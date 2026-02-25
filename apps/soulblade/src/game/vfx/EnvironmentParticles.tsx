@@ -15,7 +15,7 @@ import type { MapId } from '@soulblade/shared'
 import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT } from '@soulblade/shared'
 
 // 파티클 풀 설정
-const MAX_PARTICLES = 40
+const MAX_PARTICLES = 100
 const PARTICLE_Y = 12
 const RESPAWN_MARGIN = 50 // 화면 밖 마진
 
@@ -169,8 +169,8 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
         vertexColors
         transparent
         depthWrite={false}
-        sizeAttenuation={false}
-        size={3}
+        sizeAttenuation
+        size={8}
       />
     </points>
   )

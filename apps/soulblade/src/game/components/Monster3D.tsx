@@ -56,6 +56,6 @@ export const Monster3D = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[geometry, material, MAX_INSTANCES]} />
+    <instancedMesh ref={meshRef} args={[geometry, material, MAX_INSTANCES]} frustumCulled={false} />
   )
 }

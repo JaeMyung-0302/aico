@@ -55,23 +55,23 @@ export const VILLAGE_MAP: WorldMapConfig = {
   ],
   obstacles: [
     // 분수대 (중앙)
-    { x: 270, y: 560, width: 50, height: 50, color: 0x4488aa, type: 'circle', radius: 25, collidable: true },
+    { x: 270, y: 560, width: 50, height: 50, color: 0x4488aa, type: 'circle', radius: 25, collidable: true, spriteType: 'fountain' },
     // 분수대 물 이펙트
     { x: 270, y: 560, width: 70, height: 70, color: 0x3377aa, type: 'circle', radius: 35, collidable: false, alpha: 0.3 },
     // 나무 (4 모서리)
-    { x: 60, y: 180, width: 40, height: 40, color: 0x2d5a27, type: 'circle', radius: 20, collidable: true },
-    { x: 480, y: 180, width: 40, height: 40, color: 0x2d5a27, type: 'circle', radius: 20, collidable: true },
-    { x: 60, y: 650, width: 40, height: 40, color: 0x3a6b32, type: 'circle', radius: 20, collidable: true },
-    { x: 480, y: 650, width: 40, height: 40, color: 0x3a6b32, type: 'circle', radius: 20, collidable: true },
+    { x: 60, y: 180, width: 40, height: 40, color: 0x2d5a27, type: 'circle', radius: 20, collidable: true, spriteType: 'tree_01' },
+    { x: 480, y: 180, width: 40, height: 40, color: 0x2d5a27, type: 'circle', radius: 20, collidable: true, spriteType: 'tree_01' },
+    { x: 60, y: 650, width: 40, height: 40, color: 0x3a6b32, type: 'circle', radius: 20, collidable: true, spriteType: 'tree_02' },
+    { x: 480, y: 650, width: 40, height: 40, color: 0x3a6b32, type: 'circle', radius: 20, collidable: true, spriteType: 'tree_02' },
     // 길 (세로 중앙)
     { x: 270, y: 300, width: 60, height: 400, color: 0x3a3a2a, type: 'rect', collidable: false, alpha: 0.4 },
     // 길 (가로 - 상점/대장간 연결)
     { x: 270, y: 400, width: 280, height: 40, color: 0x3a3a2a, type: 'rect', collidable: false, alpha: 0.4 },
     // 풀 장식
-    { x: 140, y: 250, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.5 },
-    { x: 400, y: 300, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.5 },
-    { x: 100, y: 550, width: 25, height: 30, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
-    { x: 440, y: 520, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4 },
+    { x: 140, y: 250, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.5, spriteType: 'grass' },
+    { x: 400, y: 300, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.5, spriteType: 'grass' },
+    { x: 100, y: 550, width: 25, height: 30, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4, spriteType: 'grass' },
+    { x: 440, y: 520, width: 20, height: 25, color: 0x4a8b42, type: 'triangle', collidable: false, alpha: 0.4, spriteType: 'grass' },
   ],
   isSafeZone: true,
 }

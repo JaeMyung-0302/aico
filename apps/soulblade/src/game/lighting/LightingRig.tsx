@@ -98,13 +98,15 @@ export const LightingRig = ({ mapId, enabled, enableShadows }: LightingRigProps)
 
     if (enableShadows) {
       light.castShadow = true
-      light.shadow.mapSize.set(1024, 1024)
+      light.shadow.mapSize.set(2048, 2048)
       light.shadow.camera.left = -800
       light.shadow.camera.right = 800
       light.shadow.camera.top = 800
       light.shadow.camera.bottom = -800
       light.shadow.camera.near = 50
       light.shadow.camera.far = 600
+      light.shadow.bias = -0.001
+      light.shadow.normalBias = 0.02
       light.shadow.camera.updateProjectionMatrix()
       // target을 씬 그래프에 추가해야 그림자 카메라가 올바르게 동작
       light.parent?.add(light.target)
@@ -120,18 +122,29 @@ export const LightingRig = ({ mapId, enabled, enableShadows }: LightingRigProps)
   }, [enableShadows])
 
   // 그림자 카메라가 게임 카메라를 따라가도록 (큰 맵 대응)
+  // 텍셀 스냅핑: 섀도우 맵 텍셀 단위로 위치를 반올림하여 이동 시 격자 흔들림 방지
   useFrame(({ camera }) => {
     const light = lightRef.current
     if (!light || !enableShadows) return
 
+    // 섀도우 프러스텀 = 1600 유닛, 맵 = 2048 텍셀 → 텍셀 크기
+    const shadowFrustum = 1600
+    const shadowMapSize = 2048
+    const texelSize = shadowFrustum / shadowMapSize
+
     const cx = camera.position.x
     const cz = camera.position.z
+
+    // 텍셀 그리드에 스냅 (sub-texel 이동 제거)
+    const snappedX = Math.floor(cx / texelSize) * texelSize
+    const snappedZ = Math.floor(cz / texelSize) * texelSize
+
     light.position.set(
-      cx + theme.dirPosition[0],
+      snappedX + theme.dirPosition[0],
       theme.dirPosition[1],
-      cz + theme.dirPosition[2],
+      snappedZ + theme.dirPosition[2],
     )
-    light.target.position.set(cx, 0, cz)
+    light.target.position.set(snappedX, 0, snappedZ)
     light.target.updateMatrixWorld()
   })
 

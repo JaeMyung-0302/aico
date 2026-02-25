@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth.js'
 import { groupAdmin } from '../middleware/group-admin.js'
 import { COMPARTMENT_PRESETS, getExpiryStatus, ExpiryStatus, CompartmentType } from '../types/index.js'
 import type { FridgeType, CompartmentPreset } from '../types/index.js'
-import type { CompartmentType as PrismaCompartmentType } from '@prisma/client'
+import type { CompartmentType as PrismaCompartmentType } from '../generated/prisma/index.js'
 
 const VALID_COMPARTMENT_TYPES: Set<string> = new Set(Object.values(CompartmentType))
 const MAX_COMPARTMENTS = 50

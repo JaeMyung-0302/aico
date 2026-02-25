@@ -72,8 +72,8 @@ export const PostProcessing = ({ enableBloom, enableChromaticAberration }: PostP
   return (
     <EffectComposer enabled multisampling={0}>
       <Bloom
-        intensity={enableBloom ? 0.65 : 0}
-        luminanceThreshold={0.55}
+        intensity={enableBloom ? 0.90 : 0}
+        luminanceThreshold={0.40}
         luminanceSmoothing={0.4}
         mipmapBlur
       />

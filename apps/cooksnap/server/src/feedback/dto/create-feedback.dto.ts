@@ -1,5 +1,5 @@
 import { IsEnum, IsString, MinLength, MaxLength } from 'class-validator';
-import { FeedbackCategory } from '@prisma/client';
+import { FeedbackCategory } from '../../generated/prisma';
 
 export class CreateFeedbackDto {
   @IsEnum(FeedbackCategory)

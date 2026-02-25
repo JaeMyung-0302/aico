@@ -32,4 +32,7 @@ const bootstrap = async () => {
   Logger.log(`CookSnap API running on http://localhost:${port}`, 'Bootstrap');
 };
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Fatal bootstrap error:', error);
+  process.exit(1);
+});

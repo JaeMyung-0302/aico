@@ -17,7 +17,7 @@ export class RenewalService {
   ) {}
 
   // KST 매일 자정 실행 (데코레이터는 메서드 문법 필요)
-  @Cron('0 0 * * *', { timeZone: 'Asia/Seoul' })
+  @Cron('0 0 * * *', { name: 'subscription-renewal', timeZone: 'Asia/Seoul' })
   async handleRenewals() {
     if (this.isRunning) {
       this.logger.warn('이전 갱신 작업 진행 중 — 스킵');

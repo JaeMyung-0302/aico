@@ -146,10 +146,6 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
-  apps/cooksnap/server/dist/generated/prisma: {}
-
-  apps/cooksnap/server/src/generated/prisma: {}
-
   apps/cooksnap/web:
     dependencies:
       '@portone/browser-sdk':
@@ -295,8 +291,6 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
-
-  apps/fridgemate/server/src/generated/prisma: {}
 
   apps/fridgemate/web:
     dependencies:
@@ -510,8 +504,6 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
-
-  apps/soulblade/server/src/generated/prisma: {}
 
   apps/wasd/server:
     dependencies:

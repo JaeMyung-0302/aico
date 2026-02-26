@@ -61,7 +61,7 @@ export const CompartmentEditModal = ({ fridge, onClose }: CompartmentEditModalPr
           </p>
         )}
 
-        <CompartmentEditor compartments={compartments} onChange={setCompartments} />
+        <CompartmentEditor compartments={compartments} onChange={setCompartments} fridgeType={fridge.type} />
 
         <button
           className={cx('resetBtn')}

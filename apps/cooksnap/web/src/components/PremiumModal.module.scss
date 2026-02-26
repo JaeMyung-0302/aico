@@ -133,3 +133,18 @@
   text-align: center;
   line-height: 1.5;
 }
+
+.terms {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background-color: $background;
+  border-radius: $radius-sm;
+  font-size: 11px;
+  color: $text-secondary;
+  line-height: 1.6;
+
+  p:first-child {
+    font-weight: 600;
+    margin-bottom: $spacing-xs;
+  }
+}

@@ -232,6 +232,39 @@ export const getDaysUntilExpiry = (expiryDate: string | null): number | null => 
   return Math.floor((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+// === Zone 그룹핑 (영역별 칸 분류) ===
+
+export interface ZoneDefinition {
+  name: string
+  positionStart: number
+  positionEnd: number
+}
+
+export const ZONE_MAPPINGS: Partial<Record<FridgeType, ZoneDefinition[]>> = {
+  [FridgeType.SIDE_BY_SIDE]: [
+    { name: '냉동 도어', positionStart: 0, positionEnd: 4 },
+    { name: '냉동 본체', positionStart: 5, positionEnd: 10 },
+    { name: '냉장 본체', positionStart: 11, positionEnd: 16 },
+    { name: '쇼케이스 도어', positionStart: 17, positionEnd: 22 },
+  ],
+  [FridgeType.FOUR_DOOR]: [
+    { name: '좌측 상단', positionStart: 0, positionEnd: 2 },
+    { name: '좌측 하단', positionStart: 3, positionEnd: 5 },
+    { name: '우측 상단', positionStart: 6, positionEnd: 8 },
+    { name: '우측 하단', positionStart: 9, positionEnd: 11 },
+    { name: '하단 서랍', positionStart: 12, positionEnd: 13 },
+  ],
+}
+
+export const COMPARTMENT_TYPE_COLORS: Record<CompartmentType, string> = {
+  [CompartmentType.FREEZER]: '#3B82F6',
+  [CompartmentType.FRIDGE_UPPER]: '#22C55E',
+  [CompartmentType.FRIDGE_LOWER]: '#22C55E',
+  [CompartmentType.DOOR]: '#F59E0B',
+  [CompartmentType.DRAWER]: '#8B5CF6',
+  [CompartmentType.VEGGIE]: '#10B981',
+}
+
 // === 냉장고 타입별 칸 프리셋 ===
 
 export interface CompartmentPreset {

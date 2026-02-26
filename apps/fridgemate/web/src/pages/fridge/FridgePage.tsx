@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { FridgeView } from '@/components/FridgeView'
 import { CompartmentPanel } from '@/components/CompartmentPanel'
 import { CompartmentEditModal } from '@/components/CompartmentEditModal'
+import { FoodItemForm } from '@/components/FoodItemForm'
 import { PremiumModal } from '@/components/PremiumModal/PremiumModal'
 import type { CompartmentResponse, SubscriptionStatusResponse } from '@/types'
 import styles from './FridgePage.module.scss'
@@ -20,6 +21,7 @@ export const FridgePage = () => {
   const [highlightedCompartmentId, setHighlightedCompartmentId] = useState<string | null>(null)
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [subscription, setSubscription] = useState<SubscriptionStatusResponse | null>(null)
+  const [quickAddCompartmentId, setQuickAddCompartmentId] = useState<string | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
 
@@ -51,10 +53,17 @@ export const FridgePage = () => {
   }, [])
 
   const handleCompartmentClick = useCallback((compartment: CompartmentResponse) => {
+    setQuickAddCompartmentId(null)
     setActiveCompartment(compartment)
   }, [])
 
-  const handleDeleteItem = useCallback(async (itemId: string, compartmentId: string) => {
+  const handleQuickAdd = useCallback((compartmentId: string) => {
+    setActiveCompartment(null)
+    setQuickAddCompartmentId(compartmentId)
+  }, [])
+
+  const handleDeleteItem = useCallback(async (itemId: string, compartmentId: string, itemName: string) => {
+    if (!window.confirm(`"${itemName}" 을(를) 삭제하시겠습니까?`)) return
     try {
       await useFoodItemStore.getState().deleteItem(itemId, compartmentId)
       await fetchFridges()
@@ -126,9 +135,21 @@ export const FridgePage = () => {
       <FridgeView
         onCompartmentClick={handleCompartmentClick}
         onDeleteItem={handleDeleteItem}
+        onQuickAdd={handleQuickAdd}
         highlightedCompartmentId={highlightedCompartmentId}
         onEditCompartments={isAdmin ? handleEditCompartments : undefined}
       />
+
+      {quickAddCompartmentId && (
+        <FoodItemForm
+          compartmentId={quickAddCompartmentId}
+          onClose={() => setQuickAddCompartmentId(null)}
+          onSuccess={() => {
+            setQuickAddCompartmentId(null)
+            fetchFridges()
+          }}
+        />
+      )}
 
       {activeCompartment && (
         <CompartmentPanel

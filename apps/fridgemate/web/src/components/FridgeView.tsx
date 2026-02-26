@@ -2,112 +2,26 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
-import { FridgeType, CompartmentType, getFillLevel, getDaysUntilExpiry } from '@/types'
+import { FridgeType, getFillLevel, getDaysUntilExpiry } from '@/types'
 import type { CompartmentResponse, FridgeResponse } from '@/types'
+import {
+  DOOR_SECTIONS,
+  SIMPLE_GRID_CLASS,
+  getCompartmentPositionClass,
+  isDrawerPosition,
+  isShowcasePosition,
+  isFreezerZone,
+} from '@/utils/fridgeLayout'
 import styles from './FridgeView.module.scss'
 
 const cx = classNames.bind(styles)
 
 interface FridgeViewProps {
   onCompartmentClick: (compartment: CompartmentResponse) => void
-  onDeleteItem: (itemId: string, compartmentId: string) => void
+  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onQuickAdd?: (compartmentId: string) => void
   highlightedCompartmentId?: string | null
   onEditCompartments?: () => void
-}
-
-
-// === 도어 섹션 정의 (SIDE_BY_SIDE, FOUR_DOOR) ===
-
-interface DoorSection {
-  label: string
-  positions: number[]
-  layout: 'twoColumn' | 'column' | 'grid3x2' | 'grid2x1'
-  columnSplit?: number // twoColumn에서 좌/우 구분 인덱스
-  isFreezer?: boolean
-  spanFull?: boolean // 닫힌 상태에서 전체 너비 차지
-}
-
-const DOOR_SECTIONS: Partial<Record<FridgeType, DoorSection[]>> = {
-  [FridgeType.SIDE_BY_SIDE]: [
-    {
-      label: '냉동실',
-      positions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-      layout: 'twoColumn',
-      columnSplit: 6,
-      isFreezer: true,
-    },
-    {
-      label: '냉장실',
-      positions: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-      layout: 'twoColumn',
-      columnSplit: 6,
-    },
-  ],
-  [FridgeType.FOUR_DOOR]: [
-    { label: '좌측', positions: [0, 1, 2, 3, 4, 5], layout: 'twoColumn', columnSplit: 3 },
-    { label: '우측', positions: [6, 7, 8, 9, 10, 11], layout: 'twoColumn', columnSplit: 3 },
-    { label: '하단 1', positions: [12], layout: 'grid2x1', spanFull: true },
-    { label: '하단 2', positions: [13], layout: 'grid2x1', spanFull: true },
-  ],
-}
-
-// 서랍 위치 (높이를 낮게 표시)
-const isDrawerPosition = (fridgeType: FridgeType, position: number): boolean => {
-  if (fridgeType === FridgeType.SIDE_BY_SIDE) return [10, 11, 16, 17].includes(position)
-  return false
-}
-
-// 쇼케이스 위치 (별도 스타일)
-const isShowcasePosition = (fridgeType: FridgeType, position: number): boolean => {
-  if (fridgeType === FridgeType.SIDE_BY_SIDE) return position >= 18
-  return false
-}
-
-// 냉동 영역 판별
-const isFreezerZone = (
-  fridgeType: FridgeType,
-  position: number,
-  compartmentType: CompartmentType,
-): boolean => {
-  if (fridgeType === FridgeType.SIDE_BY_SIDE) return position <= 10
-  if (fridgeType === FridgeType.FOUR_DOOR) return false
-  return compartmentType === CompartmentType.FREEZER
-}
-
-// === 기존 그리드 (ONE_DOOR, TWO_DOOR, MINI용) ===
-
-const SIMPLE_GRID_CLASS: Partial<Record<FridgeType, string>> = {
-  [FridgeType.ONE_DOOR]: 'gridOneDoor',
-  [FridgeType.TWO_DOOR]: 'gridTwoDoor',
-  [FridgeType.MINI]: 'gridMini',
-}
-
-const getCompartmentPositionClass = (
-  fridgeType: FridgeType,
-  position: number,
-): string => {
-  const map: Partial<Record<FridgeType, Record<number, string>>> = {
-    [FridgeType.ONE_DOOR]: {
-      0: 'oneDoorFridgeUpper',
-      1: 'oneDoorFridgeLower',
-      2: 'oneDoorFreezer',
-      3: 'oneDoorDoor',
-    },
-    [FridgeType.TWO_DOOR]: {
-      0: 'twoDoorFridgeUpper',
-      1: 'twoDoorFridgeLower',
-      2: 'twoDoorFreezer',
-      3: 'twoDoorDoor',
-      4: 'twoDoorDrawer',
-      5: 'twoDoorVeggie',
-    },
-    [FridgeType.MINI]: {
-      0: 'miniFridgeUpper',
-      1: 'miniFreezer',
-      2: 'miniDoor',
-    },
-  }
-  return map[fridgeType]?.[position] ?? ''
 }
 
 // === 칸 셀 컴포넌트 ===
@@ -123,13 +37,15 @@ const CompartmentCell = ({
   fridgeType,
   onClick,
   onDeleteItem,
+  onQuickAdd,
   className,
   isHighlighted,
 }: {
   compartment: CompartmentResponse
   fridgeType: FridgeType
   onClick: () => void
-  onDeleteItem: (itemId: string, compartmentId: string) => void
+  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onQuickAdd?: () => void
   className?: string
   isHighlighted?: boolean
 }) => {
@@ -159,13 +75,17 @@ const CompartmentCell = ({
         compartmentExpiring: compartment.hasExpiringItems && compartment.itemCount > 0,
         compartmentHighlighted: isHighlighted,
       })}
-      onClick={onClick}
+      onClick={fillLevel === 0 && onQuickAdd ? onQuickAdd : onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          onClick()
+          if (fillLevel === 0 && onQuickAdd) {
+            onQuickAdd()
+          } else {
+            onClick()
+          }
         }
       }}
     >
@@ -191,7 +111,7 @@ const CompartmentCell = ({
                     className={cx('chipDelete')}
                     onClick={(e) => {
                       e.stopPropagation()
-                      onDeleteItem(item.id, compartment.id)
+                      onDeleteItem(item.id, compartment.id, item.name)
                     }}
                     type="button"
                     aria-label={`${item.name} 삭제`}
@@ -205,6 +125,19 @@ const CompartmentCell = ({
           <div className={cx('compartmentInfo')}>
             <span className={cx('itemCount')}>{compartment.itemCount}개</span>
             {compartment.hasExpiringItems && <span className={cx('warningDot')} />}
+            {onQuickAdd && (
+              <button
+                className={cx('quickAddBtn')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onQuickAdd()
+                }}
+                type="button"
+                aria-label="식재료 추가"
+              >
+                +
+              </button>
+            )}
           </div>
         </>
       )}
@@ -218,12 +151,14 @@ const DoorSectionGrid = ({
   fridge,
   onCompartmentClick,
   onDeleteItem,
+  onQuickAdd,
   highlightedCompartmentId,
   onEditCompartments,
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
-  onDeleteItem: (itemId: string, compartmentId: string) => void
+  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onQuickAdd?: (compartmentId: string) => void
   highlightedCompartmentId?: string | null
   onEditCompartments?: () => void
 }) => {
@@ -248,6 +183,7 @@ const DoorSectionGrid = ({
             fridgeType={fridge.type}
             onClick={() => onCompartmentClick(comp)}
             onDeleteItem={onDeleteItem}
+            onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
             isHighlighted={comp.id === highlightedCompartmentId}
           />
         )
@@ -262,6 +198,7 @@ const DoorSectionGrid = ({
                 fridgeType={fridge.type}
                 onClick={() => onCompartmentClick(comp)}
                 onDeleteItem={onDeleteItem}
+                onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
                 isHighlighted={comp.id === highlightedCompartmentId}
               />
             ))}
@@ -281,6 +218,7 @@ const DoorSectionGrid = ({
                   fridgeType={fridge.type}
                   onClick={() => onCompartmentClick(comp)}
                   onDeleteItem={onDeleteItem}
+                  onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
                   isHighlighted={comp.id === highlightedCompartmentId}
                 />
               ))}
@@ -293,6 +231,7 @@ const DoorSectionGrid = ({
                   fridgeType={fridge.type}
                   onClick={() => onCompartmentClick(comp)}
                   onDeleteItem={onDeleteItem}
+                  onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
                   isHighlighted={comp.id === highlightedCompartmentId}
                 />
               ))}
@@ -309,6 +248,7 @@ const DoorSectionGrid = ({
               fridgeType={fridge.type}
               onClick={() => onCompartmentClick(comp)}
               onDeleteItem={onDeleteItem}
+              onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
               isHighlighted={comp.id === highlightedCompartmentId}
             />
           ))}
@@ -387,12 +327,14 @@ const SimpleFridgeGrid = ({
   fridge,
   onCompartmentClick,
   onDeleteItem,
+  onQuickAdd,
   highlightedCompartmentId,
   onEditCompartments,
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
-  onDeleteItem: (itemId: string, compartmentId: string) => void
+  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onQuickAdd?: (compartmentId: string) => void
   highlightedCompartmentId?: string | null
   onEditCompartments?: () => void
 }) => {
@@ -420,6 +362,7 @@ const SimpleFridgeGrid = ({
                 fridgeType={fridge.type}
                 onClick={() => onCompartmentClick(compartment)}
                 onDeleteItem={onDeleteItem}
+                onQuickAdd={onQuickAdd ? () => onQuickAdd(compartment.id) : undefined}
                 className={getCompartmentPositionClass(fridge.type, compartment.position)}
                 isHighlighted={compartment.id === highlightedCompartmentId}
               />
@@ -432,7 +375,7 @@ const SimpleFridgeGrid = ({
 
 // === 메인 컴포넌트 ===
 
-export const FridgeView = ({ onCompartmentClick, onDeleteItem, highlightedCompartmentId, onEditCompartments }: FridgeViewProps) => {
+export const FridgeView = ({ onCompartmentClick, onDeleteItem, onQuickAdd, highlightedCompartmentId, onEditCompartments }: FridgeViewProps) => {
   const navigate = useNavigate()
   const { fridges, activeFridgeId, setActiveFridge } = useFridgeStore()
 
@@ -479,9 +422,9 @@ export const FridgeView = ({ onCompartmentClick, onDeleteItem, highlightedCompar
       {/* 냉장고 그리드 */}
       {activeFridge &&
         (DOOR_SECTIONS[activeFridge.type] ? (
-          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
+          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} onQuickAdd={onQuickAdd} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
         ) : (
-          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
+          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} onQuickAdd={onQuickAdd} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
         ))}
     </div>
   )

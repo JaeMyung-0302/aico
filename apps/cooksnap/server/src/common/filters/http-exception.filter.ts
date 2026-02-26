@@ -27,8 +27,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         : '서버 내부 오류가 발생했습니다.';
 
     if (status >= 500) {
+      const errorMessage = exception instanceof Error ? exception.message : String(exception);
       this.logger.error(
-        `[${status}] ${message}`,
+        `[${status}] ${errorMessage}`,
         exception instanceof Error ? exception.stack : '',
       );
     }

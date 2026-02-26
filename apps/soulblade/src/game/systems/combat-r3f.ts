@@ -7,9 +7,9 @@
  */
 
 import type { PlayerEntity, MonsterEntity, EliteEntity, ProjectileEntity } from '../types'
-import { calcDamage, BASE_ATTACK_COOLDOWN, CLASS_CONFIGS } from '@soulblade/shared'
+import { calcDamage, CLASS_CONFIGS } from '@soulblade/shared'
 import { distanceBetween, angleBetween, angleWrap } from '../physics/aabb'
-import { playerHealOnKill, playerGainExp, emitPlayerStats } from '../data/player-data'
+import { playerHealOnKill, playerGainExp } from '../data/player-data'
 import { monsterTakeDamage, monsterApplyDot } from '../data/monster-data'
 import { eliteTakeDamage } from '../data/elite-data'
 import { onProjectileHit } from '../data/projectile-data'
@@ -24,7 +24,7 @@ export interface CombatState {
 }
 
 export const createCombatState = (): CombatState => ({
-  lastAttackTime: 0,
+  lastAttackTime: -Infinity,
   killCount: 0,
   gold: 0,
 })
@@ -259,8 +259,8 @@ const attackMidRangeHoly = (
 // ── 수동 공격 처리 ──
 
 /**
- * 플레이어 공격 처리 (A키/AttackButton 트리거)
- * @mutates state.lastAttackTime, 대상 몬스터/엘리트, player (패시브)
+ * 플레이어 공격 데미지 처리 (쿨다운/모션은 GameLoop에서 관리)
+ * @mutates state.killCount, 대상 몬스터/엘리트 hp/active
  * @returns 투사체 발사 정보 (Archer용) 또는 null
  */
 export const processAttackR3F = (
@@ -268,27 +268,8 @@ export const processAttackR3F = (
   monsters: readonly MonsterEntity[],
   elites: readonly EliteEntity[],
   state: CombatState,
-  timeMs: number,
 ): { angle: number; damage: number; piercing: boolean }[] | null => {
-  const cdrLevel = player.passiveSkills.get('cooldown_reduction') ?? 0
-  const atkSpdLevel = player.passiveSkills.get('attack_speed_up') ?? 0
-  const cooldown = (BASE_ATTACK_COOLDOWN * 1000) * (1 - cdrLevel * 0.08) * (1 - atkSpdLevel * 0.1)
-  if (timeMs - state.lastAttackTime < cooldown) return null
-
-  state.lastAttackTime = timeMs
-
-  // 공격 모션 플래그 설정 (PlayerBillboard/Player3D에서 프레임 전환용)
-  player.isAttacking = true
-  player.attackTimer = player.attackPattern === 'aoe_circle' ? 280 : 200
-
-  // 공격 이벤트 (이펙트 렌더링용)
-  eventBus.emit('combat:attack', {
-    attackPattern: player.attackPattern,
-    x: player.body.x,
-    y: player.body.y,
-    facingAngle: player.facingAngle,
-  })
-
+  // 데미지 처리만 (쿨다운/모션은 GameLoop에서 관리)
   switch (player.attackPattern) {
     case 'melee_fan':
       attackMeleeFan(player, monsters, elites, state)

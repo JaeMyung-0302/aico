@@ -97,7 +97,7 @@ export const SetupPage = () => {
             칸 구성을 확인하고 필요하면 수정해주세요
           </p>
 
-          <CompartmentEditor compartments={compartments} onChange={setCompartments} />
+          <CompartmentEditor compartments={compartments} onChange={setCompartments} fridgeType={selectedType} />
 
           <div className={cx('stepActions')}>
             <button

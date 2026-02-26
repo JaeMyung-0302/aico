@@ -1,10 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import classNames from 'classnames/bind'
-import {
-  CompartmentType,
-  COMPARTMENT_TYPE_LABELS,
-} from '@/types'
+import { FridgeType, COMPARTMENT_PRESETS } from '@/types'
 import type { CompartmentPreset } from '@/types'
+import {
+  DOOR_SECTIONS,
+  SIMPLE_GRID_CLASS,
+  getCompartmentPositionClass,
+  getEmptySlots,
+} from '@/utils/fridgeLayout'
+import { EditableCompartmentCell } from './EditableCompartmentCell'
 import styles from './CompartmentEditor.module.scss'
 
 const cx = classNames.bind(styles)
@@ -12,87 +16,175 @@ const cx = classNames.bind(styles)
 interface CompartmentEditorProps {
   compartments: CompartmentPreset[]
   onChange: (compartments: CompartmentPreset[]) => void
+  fridgeType?: FridgeType
 }
 
-const COMPARTMENT_TYPE_OPTIONS = Object.values(CompartmentType).map((value) => ({
-  value,
-  label: COMPARTMENT_TYPE_LABELS[value],
-}))
+export const CompartmentEditor = ({ compartments, onChange, fridgeType }: CompartmentEditorProps) => {
+  const effectiveFridgeType = fridgeType ?? FridgeType.TWO_DOOR
 
-export const CompartmentEditor = ({ compartments, onChange }: CompartmentEditorProps) => {
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [editLabel, setEditLabel] = useState('')
+  const compartmentMap = useMemo(
+    () => new Map(compartments.map((c) => [c.position, c])),
+    [compartments],
+  )
+
+  const emptySlots = useMemo(
+    () => getEmptySlots(effectiveFridgeType, compartments),
+    [effectiveFridgeType, compartments],
+  )
+
+  const emptySlotMap = useMemo(
+    () => new Map(emptySlots.map((s) => [s.position, s])),
+    [emptySlots],
+  )
 
   const handleDelete = useCallback(
-    (index: number) => {
+    (position: number) => {
       if (compartments.length <= 1) return
-      const updated = compartments
-        .filter((_, i) => i !== index)
-        .map((c, i) => ({ ...c, position: i }))
+      const updated = compartments.filter((c) => c.position !== position)
       onChange(updated)
     },
     [compartments, onChange],
   )
 
   const handleAdd = useCallback(
-    (type: string) => {
-      const label = COMPARTMENT_TYPE_LABELS[type as CompartmentType] ?? '새 칸'
-      const next: CompartmentPreset = {
-        type: type as CompartmentType,
-        label,
-        position: compartments.length,
-      }
-      onChange([...compartments, next])
-    },
-    [compartments, onChange],
-  )
-
-  const handleMoveUp = useCallback(
-    (index: number) => {
-      if (index === 0) return
-      const updated = compartments.map((c, i) => {
-        if (i === index - 1) return { ...compartments[index]!, position: index - 1 }
-        if (i === index) return { ...compartments[index - 1]!, position: index }
-        return c
-      })
+    (preset: CompartmentPreset) => {
+      const updated = [...compartments, preset].sort((a, b) => a.position - b.position)
       onChange(updated)
     },
     [compartments, onChange],
   )
 
-  const handleMoveDown = useCallback(
-    (index: number) => {
-      if (index >= compartments.length - 1) return
-      const updated = compartments.map((c, i) => {
-        if (i === index) return { ...compartments[index + 1]!, position: index }
-        if (i === index + 1) return { ...compartments[index]!, position: index + 1 }
-        return c
-      })
+  const handleLabelChange = useCallback(
+    (position: number, label: string) => {
+      const updated = compartments.map((c) =>
+        c.position === position ? { ...c, label } : c,
+      )
       onChange(updated)
     },
     [compartments, onChange],
   )
 
-  const handleStartEdit = useCallback(
-    (index: number) => {
-      setEditingIndex(index)
-      setEditLabel(compartments[index]!.label)
-    },
-    [compartments],
-  )
+  // 프리셋의 모든 position에 대해 셀 렌더링 (기존 칸 or 빈 슬롯)
+  const renderCell = (position: number, className?: string) => {
+    const existing = compartmentMap.get(position)
+    const empty = emptySlotMap.get(position)
 
-  const handleSaveEdit = useCallback(() => {
-    if (editingIndex === null || !editLabel.trim()) return
-    const updated = compartments.map((c, i) =>
-      i === editingIndex ? { ...c, label: editLabel.trim() } : c,
+    if (existing) {
+      return (
+        <EditableCompartmentCell
+          key={`pos-${position}`}
+          preset={existing}
+          fridgeType={effectiveFridgeType}
+          onDelete={() => handleDelete(position)}
+          onLabelChange={(label) => handleLabelChange(position, label)}
+          canDelete={compartments.length > 1}
+          className={className}
+        />
+      )
+    }
+
+    if (empty) {
+      return (
+        <EditableCompartmentCell
+          key={`pos-${position}`}
+          preset={empty}
+          fridgeType={effectiveFridgeType}
+          isEmpty
+          onAdd={() => handleAdd(empty)}
+          className={className}
+        />
+      )
+    }
+
+    return null
+  }
+
+  // === Simple Grid 레이아웃 (ONE_DOOR, TWO_DOOR, MINI) ===
+  const renderSimpleGrid = () => {
+    const gridClass = SIMPLE_GRID_CLASS[effectiveFridgeType]
+    const presets = COMPARTMENT_PRESETS[effectiveFridgeType]
+
+    return (
+      <div className={cx('fridgeBody')}>
+        <div className={cx(gridClass)}>
+          {presets.map((preset) =>
+            renderCell(
+              preset.position,
+              cx(getCompartmentPositionClass(effectiveFridgeType, preset.position)),
+            ),
+          )}
+        </div>
+      </div>
     )
-    onChange(updated)
-    setEditingIndex(null)
-  }, [editingIndex, editLabel, compartments, onChange])
+  }
 
-  const handleCancelEdit = useCallback(() => {
-    setEditingIndex(null)
-  }, [])
+  // === Door Section 레이아웃 (SIDE_BY_SIDE, FOUR_DOOR) ===
+  const renderDoorSections = () => {
+    const sections = DOOR_SECTIONS[effectiveFridgeType]
+    if (!sections) return null
+    const presets = COMPARTMENT_PRESETS[effectiveFridgeType]
+
+    return (
+      <div className={cx('doorSectionsContainer')}>
+        {sections.map((section) => {
+          // 이 섹션에 속하는 프리셋 position들
+          const sectionPositions = section.positions.filter((pos) =>
+            presets.some((p) => p.position === pos),
+          )
+
+          const renderSectionContent = () => {
+            if (sectionPositions.length === 1) {
+              return renderCell(sectionPositions[0]!)
+            }
+
+            if (section.layout === 'column') {
+              return (
+                <div className={cx('fridgeColumn')}>
+                  {sectionPositions.map((pos) => renderCell(pos))}
+                </div>
+              )
+            }
+
+            if (section.layout === 'twoColumn') {
+              const leftPositions = sectionPositions.slice(0, section.columnSplit!)
+              const rightPositions = sectionPositions.slice(section.columnSplit!)
+              return (
+                <div className={cx('twoColumnLayout')}>
+                  <div className={cx('fridgeColumn')}>
+                    {leftPositions.map((pos) => renderCell(pos))}
+                  </div>
+                  <div className={cx('fridgeColumn')}>
+                    {rightPositions.map((pos) => renderCell(pos))}
+                  </div>
+                </div>
+              )
+            }
+
+            // grid3x2 or grid2x1
+            return (
+              <div className={cx(section.layout === 'grid3x2' ? 'gridLayout3x2' : 'gridLayout2x1')}>
+                {sectionPositions.map((pos) => renderCell(pos))}
+              </div>
+            )
+          }
+
+          return (
+            <div
+              key={section.label}
+              className={cx('doorSection', { doorSectionFull: section.spanFull })}
+            >
+              <div className={cx('doorSectionLabel')}>{section.label}</div>
+              <div className={cx('doorSectionContent')}>
+                {renderSectionContent()}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  const isDoorType = DOOR_SECTIONS[effectiveFridgeType] !== undefined
 
   return (
     <div className={cx('editor')}>
@@ -101,86 +193,8 @@ export const CompartmentEditor = ({ compartments, onChange }: CompartmentEditorP
         <span className={cx('headerCount')}>{compartments.length}칸</span>
       </div>
 
-      <ul className={cx('list')}>
-        {compartments.map((c, index) => (
-          <li key={`${c.type}-${c.label}-${index}`} className={cx('item')}>
-            {editingIndex === index ? (
-              <div className={cx('editRow')}>
-                <input
-                  className={cx('editInput')}
-                  value={editLabel}
-                  onChange={(e) => setEditLabel(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSaveEdit()
-                    if (e.key === 'Escape') handleCancelEdit()
-                  }}
-                  maxLength={20}
-                  autoFocus
-                />
-                <button className={cx('editBtn')} onClick={handleSaveEdit} type="button">
-                  확인
-                </button>
-                <button className={cx('editBtn', 'editBtnCancel')} onClick={handleCancelEdit} type="button">
-                  취소
-                </button>
-              </div>
-            ) : (
-              <div className={cx('itemRow')}>
-                <span className={cx('itemType')}>
-                  {COMPARTMENT_TYPE_LABELS[c.type as CompartmentType]}
-                </span>
-                <span className={cx('itemLabel')} onClick={() => handleStartEdit(index)}>
-                  {c.label}
-                </span>
-                <div className={cx('itemActions')}>
-                  <button
-                    className={cx('moveBtn')}
-                    onClick={() => handleMoveUp(index)}
-                    disabled={index === 0}
-                    type="button"
-                    aria-label="위로 이동"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    className={cx('moveBtn')}
-                    onClick={() => handleMoveDown(index)}
-                    disabled={index === compartments.length - 1}
-                    type="button"
-                    aria-label="아래로 이동"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    className={cx('deleteBtn')}
-                    onClick={() => handleDelete(index)}
-                    disabled={compartments.length <= 1}
-                    type="button"
-                    aria-label="삭제"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <div className={cx('addSection')}>
-        <span className={cx('addLabel')}>칸 추가:</span>
-        <div className={cx('addButtons')}>
-          {COMPARTMENT_TYPE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              className={cx('addBtn')}
-              onClick={() => handleAdd(opt.value)}
-              type="button"
-            >
-              + {opt.label}
-            </button>
-          ))}
-        </div>
+      <div className={cx('fridge')}>
+        {isDoorType ? renderDoorSections() : renderSimpleGrid()}
       </div>
     </div>
   )

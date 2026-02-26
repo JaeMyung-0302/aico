@@ -1,0 +1,181 @@
+// 편집용 셀 — FridgeView.module.scss의 .compartment 기반
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: $space-4;
+  padding: $space-12 $space-8;
+  background: linear-gradient(180deg, #f8fbff 0%, #f0f4fa 40%, #e8edf5 100%);
+  border-radius: $radius-md;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  min-height: 60px;
+  flex: 1;
+  transition: transform $transition-normal;
+}
+
+// 빈 슬롯
+.cellEmpty {
+  opacity: 0.6;
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, 0.15);
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 32%,
+      rgba(0, 0, 0, 0.03) 32%,
+      rgba(0, 0, 0, 0.03) 33%
+    ),
+    linear-gradient(180deg, #f0f2f5 0%, #e8eaee 100%);
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+  }
+}
+
+// 냉동 영역
+.cellFreezer {
+  background: linear-gradient(180deg, #e0f0fd 0%, #c8e2f6 50%, #b8d8f2 100%);
+  border-color: rgba(100, 160, 220, 0.25);
+
+  &.cellEmpty {
+    background:
+      repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 32%,
+        rgba(100, 160, 220, 0.04) 32%,
+        rgba(100, 160, 220, 0.04) 33%
+      ),
+      linear-gradient(180deg, #dce8f2 0%, #d0dcea 100%);
+  }
+}
+
+// 서랍
+.cellDrawer {
+  flex: 0.5;
+  border-top: 2px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0 0 $radius-sm $radius-sm;
+}
+
+// 쇼케이스
+.cellShowcase {
+  background: linear-gradient(180deg, #fffcf0 0%, #fff6de 50%, #fff2cc 100%);
+  border-color: rgba(200, 170, 100, 0.3);
+
+  &.cellEmpty {
+    background:
+      repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 32%,
+        rgba(200, 170, 100, 0.04) 32%,
+        rgba(200, 170, 100, 0.04) 33%
+      ),
+      linear-gradient(180deg, #f5f0e0 0%, #ece7d5 100%);
+  }
+}
+
+// 삭제 버튼 (우상단)
+.deleteBtn {
+  position: absolute;
+  top: $space-4;
+  right: $space-4;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.08);
+  color: $color-danger;
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $transition-fast;
+  z-index: 1;
+
+  // 44px 터치 영역
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -11px;
+  }
+
+  &:active:not(:disabled) {
+    background: rgba($color-danger, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.2;
+    cursor: default;
+  }
+}
+
+// 타입 배지
+.typeBadge {
+  font-size: 0.55rem;
+  font-weight: $font-weight-medium;
+  padding: $space-2 $space-4;
+  border-radius: $radius-full;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+// 라벨 (클릭으로 편집)
+.label {
+  font-size: 0.75rem;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-800;
+  text-align: center;
+  cursor: pointer;
+  line-height: 1.3;
+  word-break: keep-all;
+
+  &:active {
+    color: $color-primary-500;
+  }
+}
+
+// 라벨 편집 입력
+.labelInput {
+  width: 100%;
+  max-width: 100px;
+  padding: $space-2 $space-4;
+  font-size: 0.75rem;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-800;
+  text-align: center;
+  border: 1px solid $color-primary-500;
+  border-radius: $radius-sm;
+  background: $color-bg-primary;
+  outline: none;
+
+  &:focus {
+    border-color: $color-primary-500;
+    box-shadow: 0 0 0 2px rgba($color-primary-500, 0.2);
+  }
+}
+
+// 빈 슬롯 라벨
+.emptyLabel {
+  font-size: 0.65rem;
+  color: $color-gray-500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+// 빈 슬롯 "+" 아이콘
+.emptyPlus {
+  font-size: 1.2rem;
+  color: rgba(0, 0, 0, 0.2);
+  line-height: 1;
+}

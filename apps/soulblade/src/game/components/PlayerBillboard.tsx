@@ -72,6 +72,12 @@ export const PlayerBillboard = () => {
     if (player.isAttacking) {
       anim.timer += dt
       frameIdx = anim.timer % (ATTACK_FRAME_MS * 2) < ATTACK_FRAME_MS ? 1 : 2
+
+      // 공격 시각 피드백: 스케일 펌프 (1.0 → 1.3 → 1.0)
+      const attackProgress = 1 - (player.attackTimer / 200)
+      const pump = 1 + Math.sin(attackProgress * Math.PI) * 0.3
+      const flipX = meshRef.current.scale.x < 0 ? -1 : 1
+      meshRef.current.scale.set(flipX * pump, pump, 1)
     } else if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1) {
       anim.timer += dt
       if (anim.timer >= WALK_FRAME_MS) {
@@ -79,10 +85,16 @@ export const PlayerBillboard = () => {
         anim.toggle = anim.toggle === 0 ? 1 : 0
       }
       frameIdx = 3 + anim.toggle
+      // 이동 시 스케일 복원
+      const flipX = meshRef.current.scale.x < 0 ? -1 : 1
+      meshRef.current.scale.set(flipX, 1, 1)
     } else {
       frameIdx = 0
       anim.timer = 0
       anim.toggle = 0
+      // 대기 시 스케일 복원
+      const flipX = meshRef.current.scale.x < 0 ? -1 : 1
+      meshRef.current.scale.set(flipX, 1, 1)
     }
 
     // UV 업데이트 (프레임 변경 시에만)

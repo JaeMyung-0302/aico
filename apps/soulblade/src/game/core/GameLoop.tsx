@@ -8,7 +8,7 @@
 
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
-import { WORLD_WIDTH, WORLD_HEIGHT, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, calcDamage, CLASS_CONFIGS } from '@soulblade/shared'
+import { WORLD_WIDTH, WORLD_HEIGHT, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, calcDamage, CLASS_CONFIGS, BASE_ATTACK_COOLDOWN } from '@soulblade/shared'
 import type { StatAllocationData } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import { useEntityStore } from '../stores/useEntityStore'
@@ -93,6 +93,7 @@ export const GameLoop = () => {
       stateRef.current.elapsedSeconds = 0
       stateRef.current.lastSecondTime = 0
       combatRef.current.killCount = 0
+      combatRef.current.lastAttackTime = -Infinity
     }
     const onPortalConfirm = (data: { targetMapId: string }) => {
       // 맵 전환: 기존 몬스터 클리어 + 맵 상태 갱신 + 존 재등록
@@ -105,6 +106,7 @@ export const GameLoop = () => {
       stateRef.current.elapsedSeconds = 0
       stateRef.current.lastSecondTime = 0
       combatRef.current.killCount = 0
+      combatRef.current.lastAttackTime = -Infinity
 
       // 플레이어 위치를 포탈 대상 스폰 포인트로 이동
       const player = useEntityStore.getState().player
@@ -235,6 +237,50 @@ export const GameLoop = () => {
       }
     }
 
+    // 11. 공격 요청 소비 (안전지대 여부 무관)
+    if (stateRef.current.attackRequested) {
+      stateRef.current.attackRequested = false
+
+      const cdrLevel = player.passiveSkills.get('cooldown_reduction') ?? 0
+      const atkSpdLevel = player.passiveSkills.get('attack_speed_up') ?? 0
+      const cooldown = (BASE_ATTACK_COOLDOWN * 1000)
+        * Math.max(0.2, 1 - cdrLevel * 0.08)
+        * Math.max(0.2, 1 - atkSpdLevel * 0.1)
+
+      if (timeMs - combatRef.current.lastAttackTime >= cooldown) {
+        combatRef.current.lastAttackTime = timeMs
+        player.isAttacking = true
+        player.attackTimer = player.attackPattern === 'aoe_circle' ? 280 : 200
+
+        eventBus.emit('combat:attack', {
+          attackPattern: player.attackPattern,
+          x: player.body.x,
+          y: player.body.y,
+          facingAngle: player.facingAngle,
+        })
+
+        // 데미지 처리는 전투 지역에서만
+        if (!stateRef.current.isSafeZone) {
+          const { monsters, elites } = store
+          const projectileInfos = processAttackR3F(player, monsters, elites, combatRef.current)
+
+          // Archer 투사체 생성
+          if (projectileInfos) {
+            for (const info of projectileInfos) {
+              const proj = createProjectile()
+              fireProjectile(proj, player.body.x, player.body.y, info.angle, {
+                speed: 400,
+                damage: info.damage,
+                piercing: info.piercing,
+                lifetime: 500,
+              })
+              store.addProjectile(proj)
+            }
+          }
+        }
+      }
+    }
+
     // === 전투/스폰 (안전지대가 아닌 경우만) ===
     if (!stateRef.current.isSafeZone) {
       const { monsters, elites, projectiles } = store
@@ -294,32 +340,6 @@ export const GameLoop = () => {
         if (!p.active) continue
         physicsStep(p.body, deltaClamped)
         updateProjectile(p, deltaMs, stateRef.current.worldBounds)
-      }
-
-      // 11. 공격 처리
-      if (stateRef.current.attackRequested) {
-        stateRef.current.attackRequested = false
-        const projectileInfos = processAttackR3F(
-          player,
-          monsters,
-          elites,
-          combatRef.current,
-          timeMs,
-        )
-
-        // Archer 투사체 생성
-        if (projectileInfos) {
-          for (const info of projectileInfos) {
-            const proj = createProjectile()
-            fireProjectile(proj, player.body.x, player.body.y, info.angle, {
-              speed: 400,
-              damage: info.damage,
-              piercing: info.piercing,
-              lifetime: 500,
-            })
-            store.addProjectile(proj)
-          }
-        }
       }
 
       // 12. 적 → 플레이어 충돌 (thorn_armor 포함)

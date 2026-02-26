@@ -91,8 +91,16 @@ export const generatePosts = async (
   console.log(`[Generator] ${keywords.length}개 키워드에 대해 글 생성 시작`);
 
   let posts: Post[] = [];
+  const maxPerRun = config.pipeline.maxPostsPerRun;
 
   for (const keyword of keywords) {
+    if (posts.length >= maxPerRun) {
+      console.log(
+        `[Generator] 실행당 최대 발행 수 도달: ${posts.length}/${maxPerRun}개`
+      );
+      break;
+    }
+
     try {
       const post = await generatePost(config, db, keyword);
       if (!post) break; // 예산/발행 수 한도 도달

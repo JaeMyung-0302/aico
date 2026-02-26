@@ -38,8 +38,9 @@ export const loadConfig = (): ContentBotConfig => {
     },
     pipeline: {
       dailyBudgetKrw: Number(optionalEnv("DAILY_BUDGET_KRW", "2000")),
-      maxPostsPerDay: Number(optionalEnv("MAX_POSTS_PER_DAY", "10")),
-      cronSchedule: optionalEnv("CRON_SCHEDULE", "0 */3 * * *"),
+      maxPostsPerDay: Number(optionalEnv("MAX_POSTS_PER_DAY", "3")),
+      maxPostsPerRun: Number(optionalEnv("MAX_POSTS_PER_RUN", "2")),
+      cronSchedule: optionalEnv("CRON_SCHEDULE", "0 9,18 * * *"),
     },
   };
 };

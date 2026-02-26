@@ -62,6 +62,7 @@ export interface ContentBotConfig {
   pipeline: {
     dailyBudgetKrw: number;
     maxPostsPerDay: number;
+    maxPostsPerRun: number;
     cronSchedule: string;
   };
 }

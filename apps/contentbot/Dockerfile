@@ -31,6 +31,7 @@ WORKDIR /app
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/apps/contentbot/node_modules ./apps/contentbot/node_modules
 COPY --from=base /app/apps/contentbot/dist ./apps/contentbot/dist
+COPY --from=base /app/apps/contentbot/prompts ./apps/contentbot/prompts
 COPY --from=base /app/apps/contentbot/package.json ./apps/contentbot/package.json
 
 ENV DB_DIR=/data

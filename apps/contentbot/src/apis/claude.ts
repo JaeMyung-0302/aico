@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import type { ContentBotConfig, CoupangProduct } from "../types/index.js";
 
@@ -35,29 +37,33 @@ const buildProductSection = (products: CoupangProduct[]): string => {
   return `\n\n<h2>추천 AI 제품 & 도구</h2>\n<ul>\n${items}\n</ul>\n`;
 };
 
-const SYSTEM_PROMPT = `당신은 AI 전문 한국 블로거입니다.
-다양한 AI 도구와 서비스를 직접 사용해보고 독자에게 친근하게 알려주는 스타일로 글을 작성하세요.
+const PROMPT_FILES = ["system.md", "style.md", "hooks.md", "structure.md", "quality.md"];
 
-다음 규칙을 반드시 따르세요:
+const loadSystemPrompt = (): string => {
+  const promptsDir = path.resolve(__dirname, "../../prompts");
 
-1. SEO 최적화: 제목에 키워드 포함, <h2>/<h3> 소제목 활용
-2. 구어체 톤: "~해보니", "~더라고요", "~추천드려요" 등 자연스러운 말투
-3. HTML 형식 사용 (WordPress 발행용)
-4. 구조:
-   - 도입: 이 AI 도구/기술을 알게 된 계기
-   - 핵심 내용: <h2>/<h3>로 구분된 기능 설명 + 사용법
-   - 실사용 후기: 직접 써본 경험 기반 장단점
-   - 꿀팁: 실무/실생활 AI 활용 팁 2-3개
-   - 마무리: 요약 및 추천 대상
-5. 분량: 1,500-2,500자
-6. 글 마지막에 Schema.org Article JSON-LD 마크업을 <script type="application/ld+json"> 태그로 포함
+  const sections = PROMPT_FILES.map((file) => {
+    const filePath = path.join(promptsDir, file);
+    try {
+      return fs.readFileSync(filePath, "utf-8").trim();
+    } catch {
+      console.warn(`[Prompt] ${file} 로드 실패, 건너뜀`);
+      return null;
+    }
+  }).filter((s): s is string => s !== null);
 
-JSON 형식으로 응답하세요:
-{
-  "title": "SEO 최적화된 AI 블로그 제목",
-  "content": "HTML 형식의 본문 전체 (Schema.org JSON-LD 포함)",
-  "metaDescription": "150자 이내 메타 설명"
-}`;
+  return sections.join("\n\n---\n\n");
+};
+
+let cachedPrompt: string | null = null;
+
+const getSystemPrompt = (): string => {
+  if (!cachedPrompt) {
+    cachedPrompt = loadSystemPrompt();
+    console.log(`[Prompt] 시스템 프롬프트 로드 완료 (${cachedPrompt.length}자)`);
+  }
+  return cachedPrompt;
+};
 
 const MODEL_PRICING = {
   inputPricePerMToken: 3,
@@ -112,7 +118,7 @@ export const generateContent = async (
     response = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: getSystemPrompt(),
       messages: [{ role: "user", content: userPrompt }],
     });
   } catch (error) {
@@ -134,21 +140,11 @@ export const generateContent = async (
 
   const parsed = parseJsonResponse(textBlock.text);
 
-  // Schema.org JSON-LD 검증 — 잘못된 JSON-LD는 제거
-  const jsonLdMatch = parsed.content.match(
-    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+  // 혹시 남아있는 JSON-LD 제거 (WordPress.com은 <script> 태그를 제거하여 raw JSON이 노출됨)
+  parsed.content = parsed.content.replace(
+    /<script type="application\/ld\+json">[\s\S]*?<\/script>/g,
+    ""
   );
-  if (jsonLdMatch?.[1]) {
-    try {
-      JSON.parse(jsonLdMatch[1]);
-    } catch {
-      console.warn("[Claude] Invalid JSON-LD in generated content, stripping");
-      parsed.content = parsed.content.replace(
-        /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-        ""
-      );
-    }
-  }
 
   const productSection = buildProductSection(products);
   const fullContent = `${parsed.content}${productSection}`;

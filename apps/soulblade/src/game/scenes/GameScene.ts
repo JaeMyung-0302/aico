@@ -2,7 +2,12 @@ import Phaser from 'phaser'
 import type { CharacterClass, CharacterStats } from '@soulblade/shared'
 import type { Equipment, MapId, StatAllocationData } from '@soulblade/shared'
 import type { PassiveSkillId } from '@soulblade/shared'
-import { STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES, CLASS_CONFIGS, calcExpForLevel } from '@soulblade/shared'
+import {
+  STAT_POINTS_PER_LEVEL,
+  STAT_POINT_VALUES,
+  CLASS_CONFIGS,
+  calcExpForLevel,
+} from '@soulblade/shared'
 import { Player } from '../entities/Player'
 import { Monster } from '../entities/Monster'
 import { Projectile } from '../entities/Projectile'
@@ -18,14 +23,23 @@ import {
 } from '../systems/combat'
 import { ZoneSpawnManager } from '../systems/spawn-zone'
 import { calcTotalEquipmentStats } from '../systems/synergy'
-import { createEventState, checkEventTrigger, type MerchantItem } from '../systems/events'
+import {
+  createEventState,
+  checkEventTrigger,
+  type MerchantItem,
+} from '../systems/events'
 import { createLodState, updateLod, getLodConfig } from '../systems/lod'
 import { VisualFxManager } from '../systems/visual-fx'
 import { initAudio, playBgm, stopBgm, BGM_KEYS } from '../systems/audio'
 import { useRunStore } from '@/stores/useRunStore'
 import { useSaveStore } from '@/stores/useSaveStore'
 import { eventBus } from '@/lib/event-bus'
-import { CAMERA_LERP, CAMERA_DEADZONE_X, CAMERA_DEADZONE_Y, DEATH_EXP_PENALTY } from '@soulblade/shared'
+import {
+  CAMERA_LERP,
+  CAMERA_DEADZONE_X,
+  CAMERA_DEADZONE_Y,
+  DEATH_EXP_PENALTY,
+} from '@soulblade/shared'
 
 export class GameScene extends Phaser.Scene {
   private player!: Player
@@ -140,7 +154,12 @@ export class GameScene extends Phaser.Scene {
 
     // 시각 이펙트: 맵 로드 + 플레이어 섀도우
     const initMapConfig = this.mapManager.getCurrentMapConfig()
-    this.visualFx.onMapLoad(this.initialMapId, initMapConfig.worldSize.width, initMapConfig.worldSize.height, this.combatState.juicy.parallaxLayers)
+    this.visualFx.onMapLoad(
+      this.initialMapId,
+      initMapConfig.worldSize.width,
+      initMapConfig.worldSize.height,
+      this.combatState.juicy.parallaxLayers,
+    )
     this.visualFx.attachPlayerShadow(this.player)
 
     // 카메라: 플레이어 추적 + 데드존
@@ -160,7 +179,11 @@ export class GameScene extends Phaser.Scene {
     })
 
     // 존 기반 스폰 매니저
-    this.zoneSpawnManager = new ZoneSpawnManager(this, this.enemies, this.eliteGroup)
+    this.zoneSpawnManager = new ZoneSpawnManager(
+      this,
+      this.enemies,
+      this.eliteGroup,
+    )
     this.zoneSpawnManager.registerZones(this.mapManager.getZones())
 
     // 투사체 그룹 (Object Pool)
@@ -173,7 +196,8 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.player,
       this.enemies,
-      this.onPlayerEnemyCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      this
+        .onPlayerEnemyCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
       undefined,
       this,
     )
@@ -182,7 +206,8 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.projectiles,
       this.enemies,
-      this.onProjectileEnemyCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      this
+        .onProjectileEnemyCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
       undefined,
       this,
     )
@@ -191,7 +216,8 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.player,
       this.eliteGroup,
-      this.onPlayerEliteCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      this
+        .onPlayerEliteCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
       undefined,
       this,
     )
@@ -200,7 +226,8 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(
       this.projectiles,
       this.eliteGroup,
-      this.onProjectileEliteCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      this
+        .onProjectileEliteCollide as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
       undefined,
       this,
     )
@@ -271,7 +298,14 @@ export class GameScene extends Phaser.Scene {
     this.combatState.juicy = getLodConfig(quality)
 
     // 시각 이펙트 업데이트 (섀도우 동기화 등)
-    this.visualFx.update(this.combatState.juicy, this.player, this.enemies, this.eliteGroup, this.cameras.main, delta)
+    this.visualFx.update(
+      this.combatState.juicy,
+      this.player,
+      this.enemies,
+      this.eliteGroup,
+      this.cameras.main,
+      delta,
+    )
 
     // 이동
     applyMovement(this.player, this.joystick)
@@ -306,7 +340,12 @@ export class GameScene extends Phaser.Scene {
         for (const child of group.getChildren()) {
           const monster = child as Monster
           if (!monster.active) continue
-          const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y, monster.x, monster.y)
+          const dist = Phaser.Math.Distance.Between(
+            this.player.x,
+            this.player.y,
+            monster.x,
+            monster.y,
+          )
           if (dist <= 150) {
             monster.applySlow(slowPercent)
           }
@@ -388,7 +427,10 @@ export class GameScene extends Phaser.Scene {
     this.scene.resume()
   }
 
-  private onGameRevive = (data: { hpPercent: number; applyDeathPenalty?: boolean }): void => {
+  private onGameRevive = (data: {
+    hpPercent: number
+    applyDeathPenalty?: boolean
+  }): void => {
     // 사망 페널티: 경험치 감소
     if (data.applyDeathPenalty) {
       const penalty = Math.floor(this.player.exp * DEATH_EXP_PENALTY)
@@ -437,7 +479,10 @@ export class GameScene extends Phaser.Scene {
     switch (item.effect) {
       case 'heal': {
         const healAmount = Math.floor(this.player.maxHp * item.value)
-        this.player.hp = Math.min(this.player.hp + healAmount, this.player.maxHp)
+        this.player.hp = Math.min(
+          this.player.hp + healAmount,
+          this.player.maxHp,
+        )
         break
       }
       case 'atk_boost':
@@ -458,9 +503,9 @@ export class GameScene extends Phaser.Scene {
   // 포탈 확인 → 맵 전환
   private onPortalConfirm = (data: { targetMapId: MapId }): void => {
     const targetConfig = this.mapManager.getCurrentMapConfig()
-    const portalConfig = targetConfig.portals.find(
-      (p) => p.targetMapId === data.targetMapId,
-    ) ?? this.findPortalToTarget(data.targetMapId)
+    const portalConfig =
+      targetConfig.portals.find((p) => p.targetMapId === data.targetMapId) ??
+      this.findPortalToTarget(data.targetMapId)
 
     if (!portalConfig) return
 
@@ -481,14 +526,22 @@ export class GameScene extends Phaser.Scene {
 
     // 시각 이펙트: 새 맵 로드
     const newMapConfig = this.mapManager.getCurrentMapConfig()
-    this.visualFx.onMapLoad(data.targetMapId, newMapConfig.worldSize.width, newMapConfig.worldSize.height, this.combatState.juicy.parallaxLayers)
+    this.visualFx.onMapLoad(
+      data.targetMapId,
+      newMapConfig.worldSize.width,
+      newMapConfig.worldSize.height,
+      this.combatState.juicy.parallaxLayers,
+    )
 
     // 새 맵 BGM 재생
     const newBgmKey = BGM_KEYS[data.targetMapId]
     if (newBgmKey) playBgm(newBgmKey)
 
     // 플레이어를 포탈 지정 스폰 포인트로 이동
-    this.player.setPosition(portalConfig.targetSpawnPoint.x, portalConfig.targetSpawnPoint.y)
+    this.player.setPosition(
+      portalConfig.targetSpawnPoint.x,
+      portalConfig.targetSpawnPoint.y,
+    )
 
     // 장애물 ↔ 몬스터/엘리트 충돌 재등록
     const newObstacles = this.mapManager.getObstacles()
@@ -542,7 +595,9 @@ export class GameScene extends Phaser.Scene {
 
     // gold_boost 패시브 적용
     const goldBoostLevel = this.player.passiveSkills.get('gold_boost') ?? 0
-    const boostedGold = Math.floor(goldPerKill * kills * (1 + goldBoostLevel * 0.15))
+    const boostedGold = Math.floor(
+      goldPerKill * kills * (1 + goldBoostLevel * 0.15),
+    )
 
     this.gold += boostedGold
     eventBus.emit('hud:gold', { gold: this.gold })
@@ -565,7 +620,10 @@ export class GameScene extends Phaser.Scene {
 
     // HP 효과는 즉시 회복, 나머지는 영구 스탯 증가
     if (item.effect.hp) {
-      this.player.hp = Math.min(this.player.hp + item.effect.hp, this.player.maxHp)
+      this.player.hp = Math.min(
+        this.player.hp + item.effect.hp,
+        this.player.maxHp,
+      )
     }
     if (item.effect.atk) this.player.atk += item.effect.atk
     if (item.effect.def) this.player.def += item.effect.def
@@ -622,8 +680,12 @@ export class GameScene extends Phaser.Scene {
   // --- 충돌 핸들러 ---
 
   private onPlayerEnemyCollide = (
-    _player: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    _player:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
+    enemy:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
   ): void => {
     const monster = enemy as unknown as Monster
     if (!monster.active) return
@@ -632,7 +694,9 @@ export class GameScene extends Phaser.Scene {
 
   private onProjectileEnemyCollide = (
     proj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    enemy:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
   ): void => {
     const projectile = proj as unknown as Projectile
     const monster = enemy as unknown as Monster
@@ -641,8 +705,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onPlayerEliteCollide = (
-    _player: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    _player:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
+    enemy:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
   ): void => {
     const elite = enemy as unknown as Monster
     if (!elite.active) return
@@ -651,7 +719,9 @@ export class GameScene extends Phaser.Scene {
 
   private onProjectileEliteCollide = (
     proj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemy: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    enemy:
+      | Phaser.Types.Physics.Arcade.GameObjectWithBody
+      | Phaser.Tilemaps.Tile,
   ): void => {
     const projectile = proj as unknown as Projectile
     const elite = enemy as unknown as Monster

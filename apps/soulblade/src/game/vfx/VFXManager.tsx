@@ -29,7 +29,12 @@ interface VFXManagerProps {
   quality: QualityLevel
 }
 
-export const VFXManager = ({ mapId, worldWidth, worldHeight, quality }: VFXManagerProps) => {
+export const VFXManager = ({
+  mapId,
+  worldWidth,
+  worldHeight,
+  quality,
+}: VFXManagerProps) => {
   const config = getLodConfig(quality)
 
   return (
@@ -44,10 +49,7 @@ export const VFXManager = ({ mapId, worldWidth, worldHeight, quality }: VFXManag
         layerCount={config.parallaxLayers}
       />
 
-      <AtmosphereVignette
-        mapId={mapId}
-        enabled={config.enableAtmosphere}
-      />
+      <AtmosphereVignette mapId={mapId} enabled={config.enableAtmosphere} />
 
       <CombatEffects effectLevel={config.combatEffectLevel} />
 

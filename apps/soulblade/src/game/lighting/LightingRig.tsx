@@ -14,19 +14,22 @@ import type { MapId } from '@soulblade/shared'
 
 // 맵별 조명 테마 (3D 좌표계: [X오프셋, Y높이, Z오프셋])
 // warm key + cool fill 구성으로 입체적 조명
-const LIGHTING_THEMES: Record<MapId, {
-  ambientColor: number
-  ambientIntensity: number
-  dirColor: number
-  dirIntensity: number
-  dirPosition: [number, number, number]
-  hemiSky: number
-  hemiGround: number
-  hemiIntensity: number
-  fillColor: number
-  fillIntensity: number
-  fillPosition: [number, number, number]
-}> = {
+const LIGHTING_THEMES: Record<
+  MapId,
+  {
+    ambientColor: number
+    ambientIntensity: number
+    dirColor: number
+    dirIntensity: number
+    dirPosition: [number, number, number]
+    hemiSky: number
+    hemiGround: number
+    hemiIntensity: number
+    fillColor: number
+    fillIntensity: number
+    fillPosition: [number, number, number]
+  }
+> = {
   town: {
     ambientColor: 0xfff4e0,
     ambientIntensity: 0.2,
@@ -87,7 +90,11 @@ interface LightingRigProps {
   enableShadows: boolean
 }
 
-export const LightingRig = ({ mapId, enabled, enableShadows }: LightingRigProps) => {
+export const LightingRig = ({
+  mapId,
+  enabled,
+  enableShadows,
+}: LightingRigProps) => {
   const theme = useMemo(() => LIGHTING_THEMES[mapId], [mapId])
   const lightRef = useRef<DirectionalLight>(null)
 
@@ -154,8 +161,13 @@ export const LightingRig = ({ mapId, enabled, enableShadows }: LightingRigProps)
 
   return (
     <group>
-      <ambientLight color={theme.ambientColor} intensity={theme.ambientIntensity} />
-      <hemisphereLight args={[theme.hemiSky, theme.hemiGround, theme.hemiIntensity]} />
+      <ambientLight
+        color={theme.ambientColor}
+        intensity={theme.ambientIntensity}
+      />
+      <hemisphereLight
+        args={[theme.hemiSky, theme.hemiGround, theme.hemiIntensity]}
+      />
       <directionalLight
         ref={lightRef}
         color={theme.dirColor}

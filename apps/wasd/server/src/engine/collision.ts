@@ -9,7 +9,10 @@ const getOverlappingTiles = (position: Position) => {
   return { startCol, endCol, startRow, endRow }
 }
 
-export const checkWallCollision = (position: Position, tileMap: TileMap): boolean => {
+export const checkWallCollision = (
+  position: Position,
+  tileMap: TileMap,
+): boolean => {
   const { startCol, endCol, startRow, endRow } = getOverlappingTiles(position)
 
   for (let row = startRow; row <= endRow; row++) {
@@ -39,7 +42,10 @@ export const checkCoinCollection = (
   return collected
 }
 
-export const checkGoalReached = (position: Position, tileMap: TileMap): boolean => {
+export const checkGoalReached = (
+  position: Position,
+  tileMap: TileMap,
+): boolean => {
   const { startCol, endCol, startRow, endRow } = getOverlappingTiles(position)
 
   for (let row = startRow; row <= endRow; row++) {

@@ -9,7 +9,10 @@ interface InventoryState {
   readonly equipItem: (itemId: string, characterId: string) => Promise<void>
   readonly unequipItem: (itemId: string) => Promise<void>
   readonly getEquippedItems: (characterId: string) => readonly Equipment[]
-  readonly getEquippedBySlot: (characterId: string, slot: EquipmentType) => Equipment | undefined
+  readonly getEquippedBySlot: (
+    characterId: string,
+    slot: EquipmentType,
+  ) => Equipment | undefined
 }
 
 export const useInventoryStore = create<InventoryState>((set, get) => ({

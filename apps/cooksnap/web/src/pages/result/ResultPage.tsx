@@ -26,7 +26,11 @@ const Result = () => {
   const { user } = useAuthStore()
   const [showPremiumModal, setShowPremiumModal] = useState(false)
 
-  const { data: recipe, isLoading, error } = useQuery<Recipe>({
+  const {
+    data: recipe,
+    isLoading,
+    error,
+  } = useQuery<Recipe>({
     queryKey: ['recipe', id],
     queryFn: async () => {
       const { data } = await api.get(`/recipes/${id}`)
@@ -142,8 +146,8 @@ const Result = () => {
     ...(recipe.cookTime && { cookTime: `PT${recipe.cookTime}M` }),
     ...(recipe.servings && { recipeYield: `${recipe.servings}인분` }),
     ...(recipe.difficulty && { description: `난이도: ${recipe.difficulty}` }),
-    recipeIngredient: recipe.ingredients.map((i) =>
-      `${i.name}${i.amount ? ` ${i.amount}` : ''}${i.unit || ''}`
+    recipeIngredient: recipe.ingredients.map(
+      (i) => `${i.name}${i.amount ? ` ${i.amount}` : ''}${i.unit || ''}`,
     ),
     recipeInstructions: recipe.steps.map((s) => ({
       '@type': 'HowToStep',
@@ -155,12 +159,26 @@ const Result = () => {
     <div className={cx('result')}>
       <Helmet>
         <title>{recipe.title} - CookSnap</title>
-        <meta name="description" content={`${recipe.title} 레시피 - 재료비 ${recipe.totalPrice ? `${recipe.totalPrice.toLocaleString()}원` : '확인'}, 재료 ${recipe.ingredients.length}가지`} />
-        <link rel="canonical" href={`https://aico-cooksnap.vercel.app/result/${id}`} />
+        <meta
+          name="description"
+          content={`${recipe.title} 레시피 - 재료비 ${recipe.totalPrice ? `${recipe.totalPrice.toLocaleString()}원` : '확인'}, 재료 ${recipe.ingredients.length}가지`}
+        />
+        <link
+          rel="canonical"
+          href={`https://aico-cooksnap.vercel.app/result/${id}`}
+        />
         <meta property="og:title" content={`${recipe.title} - CookSnap`} />
-        <meta property="og:description" content={`재료 ${recipe.ingredients.length}가지${recipe.totalPrice ? `, 총 ${recipe.totalPrice.toLocaleString()}원` : ''}`} />
-        {recipe.thumbnailUrl && <meta property="og:image" content={recipe.thumbnailUrl} />}
-        <meta property="og:url" content={`https://aico-cooksnap.vercel.app/result/${id}`} />
+        <meta
+          property="og:description"
+          content={`재료 ${recipe.ingredients.length}가지${recipe.totalPrice ? `, 총 ${recipe.totalPrice.toLocaleString()}원` : ''}`}
+        />
+        {recipe.thumbnailUrl && (
+          <meta property="og:image" content={recipe.thumbnailUrl} />
+        )}
+        <meta
+          property="og:url"
+          content={`https://aico-cooksnap.vercel.app/result/${id}`}
+        />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       {/* 레시피 헤더 */}
@@ -198,7 +216,9 @@ const Result = () => {
       <div className={cx('section')}>
         <h2 className={cx('sectionTitle')}>재료</h2>
         <p className={cx('priceNotice')}>
-          가격은 한국농수산식품유통공사(KAMIS) 제공 소매가 기준이며, 실제 구매가와 차이가 있을 수 있습니다. 일부 가공식품은 시세가 제공되지 않습니다.
+          가격은 한국농수산식품유통공사(KAMIS) 제공 소매가 기준이며, 실제
+          구매가와 차이가 있을 수 있습니다. 일부 가공식품은 시세가 제공되지
+          않습니다.
         </p>
         <div className={cx('ingredientList')}>
           {recipe.ingredients.map((ingredient) => {
@@ -206,7 +226,9 @@ const Result = () => {
             return (
               <div key={ingredient.id} className={cx('ingredientItem')}>
                 <div className={cx('ingredientInfo')}>
-                  <span className={cx('ingredientName')}>{ingredient.name}</span>
+                  <span className={cx('ingredientName')}>
+                    {ingredient.name}
+                  </span>
                   {ingredient.amount && (
                     <span className={cx('ingredientAmount')}>
                       {' '}
@@ -217,7 +239,10 @@ const Result = () => {
                 </div>
                 <div className={cx('ingredientActions')}>
                   <span className={cx('ingredientPrice')}>
-                    {formatPrice(getPriceForIngredient(ingredient.id) ?? ingredient.estimatedPrice)}
+                    {formatPrice(
+                      getPriceForIngredient(ingredient.id) ??
+                        ingredient.estimatedPrice,
+                    )}
                   </span>
                   {purchaseUrl && (
                     <a
@@ -243,7 +268,9 @@ const Result = () => {
           return (
             <div className={cx('priceSummary')}>
               <span className={cx('priceSummaryLabel')}>총 재료비</span>
-              <span className={cx('priceSummaryValue')}>{formatPrice(total)}</span>
+              <span className={cx('priceSummaryValue')}>
+                {formatPrice(total)}
+              </span>
             </div>
           )
         })()}

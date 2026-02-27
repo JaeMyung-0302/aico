@@ -19,7 +19,11 @@ interface JwtPayload {
   email: string
 }
 
-export const jwtAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const jwtAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   const token = req.headers.authorization?.replace('Bearer ', '')
 
   if (!token) {
@@ -45,7 +49,11 @@ export const jwtAuth = async (req: Request, res: Response, next: NextFunction): 
 }
 
 // groupId 없어도 통과하는 미들웨어 (JoinRequest 라우트용)
-export const jwtAuthOptionalGroup = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const jwtAuthOptionalGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   const token = req.headers.authorization?.replace('Bearer ', '')
 
   if (!token) {

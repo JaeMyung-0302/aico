@@ -1,54 +1,54 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import classnames from 'classnames/bind';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { Loading } from '@repo/ui';
-import EmailAuthForm from './EmailAuthForm';
-import styles from './AuthPage.module.scss';
+import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+import classnames from 'classnames/bind'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { Loading } from '@repo/ui'
+import EmailAuthForm from './EmailAuthForm'
+import styles from './AuthPage.module.scss'
 
-const cx = classnames.bind(styles);
+const cx = classnames.bind(styles)
 
 const isInAppBrowser = (): boolean => {
-  const ua = navigator.userAgent;
-  return /FBAN|FBAV|Instagram|KAKAOTALK|Line\/|NAVER|wv|WebView/i.test(ua);
-};
+  const ua = navigator.userAgent
+  return /FBAN|FBAV|Instagram|KAKAOTALK|Line\/|NAVER|wv|WebView/i.test(ua)
+}
 
-const isIOS = (): boolean => /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isIOS = (): boolean => /iPhone|iPad|iPod/i.test(navigator.userAgent)
 
 const Auth = () => {
-  const { user, signInWithGoogle, signInWithKakao } = useAuthStore();
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const inApp = isInAppBrowser();
+  const { user, signInWithGoogle, signInWithKakao } = useAuthStore()
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const inApp = isInAppBrowser()
 
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/" replace />
 
   const handleGoogleLogin = async () => {
-    if (inApp) return;
-    setIsSigningIn(true);
-    await signInWithGoogle();
-  };
+    if (inApp) return
+    setIsSigningIn(true)
+    await signInWithGoogle()
+  }
 
   const handleKakaoLogin = async () => {
-    setIsSigningIn(true);
-    await signInWithKakao();
-  };
+    setIsSigningIn(true)
+    await signInWithKakao()
+  }
 
   const handleOpenInBrowser = () => {
-    const currentUrl = window.location.href;
+    const currentUrl = window.location.href
 
     if (isIOS()) {
       // iOS: 클립보드 복사 후 안내
       navigator.clipboard?.writeText(currentUrl).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 3000);
-      });
+        setCopied(true)
+        setTimeout(() => setCopied(false), 3000)
+      })
     } else {
       // Android: intent scheme으로 시스템 브라우저 열기
-      window.location.href = `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;end`;
+      window.location.href = `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;end`
     }
-  };
+  }
 
   return (
     <div className={cx('auth')}>
@@ -111,7 +111,7 @@ const Auth = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Auth;
+export default Auth

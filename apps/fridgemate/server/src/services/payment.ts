@@ -11,7 +11,11 @@ interface WebhookEvent {
   data: { paymentId: string }
 }
 
-export const subscribe = async (groupId: string, payerId: string, billingKey: string) => {
+export const subscribe = async (
+  groupId: string,
+  payerId: string,
+  billingKey: string,
+) => {
   if (!portone.isAvailable()) {
     throw new Error('결제 서비스가 아직 설정되지 않았습니다.')
   }
@@ -26,7 +30,9 @@ export const subscribe = async (groupId: string, payerId: string, billingKey: st
   }
 
   const now = new Date()
-  const periodEnd = new Date(now.getTime() + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000)
+  const periodEnd = new Date(
+    now.getTime() + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000,
+  )
   const paymentId = `fridgemate_${randomUUID()}`
 
   // 포트원 결제 먼저 시도
@@ -140,7 +146,10 @@ export const getStatus = async (groupId: string) => {
   }
 }
 
-export const handleWebhook = async (body: string, headers: Record<string, string>) => {
+export const handleWebhook = async (
+  body: string,
+  headers: Record<string, string>,
+) => {
   const webhook = await portone.verifyWebhook(body, headers)
   const event = webhook as WebhookEvent
 

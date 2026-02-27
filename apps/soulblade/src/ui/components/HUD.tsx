@@ -22,7 +22,13 @@ export const HUD = () => {
   const [mapName, setMapName] = useState('')
 
   useEffect(() => {
-    const onStats = (data: { hp: number; maxHp: number; level: number; exp: number; expToNext: number }) => {
+    const onStats = (data: {
+      hp: number
+      maxHp: number
+      level: number
+      exp: number
+      expToNext: number
+    }) => {
       setHp(data.hp)
       setMaxHp(data.maxHp)
       setLevel(data.level)

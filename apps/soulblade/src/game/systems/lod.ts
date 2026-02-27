@@ -23,7 +23,12 @@ const DOWNGRADE_FPS = 25
 const UPGRADE_FPS = 45
 
 // 품질 레벨 순서
-const QUALITY_ORDER: readonly QualityLevel[] = ['full', 'reduced', 'minimal', 'canvas']
+const QUALITY_ORDER: readonly QualityLevel[] = [
+  'full',
+  'reduced',
+  'minimal',
+  'canvas',
+]
 
 export const createLodState = (): LodState => ({
   fpsHistory: [],
@@ -32,7 +37,11 @@ export const createLodState = (): LodState => ({
 })
 
 // FPS 샘플 기록 + 품질 레벨 조정
-export const updateLod = (state: LodState, fps: number, time: number): QualityLevel => {
+export const updateLod = (
+  state: LodState,
+  fps: number,
+  time: number,
+): QualityLevel => {
   state.fpsHistory.push(fps)
   if (state.fpsHistory.length > FPS_SAMPLE_COUNT) {
     state.fpsHistory = state.fpsHistory.slice(-FPS_SAMPLE_COUNT)
@@ -43,7 +52,8 @@ export const updateLod = (state: LodState, fps: number, time: number): QualityLe
 
   if (state.fpsHistory.length < 10) return state.currentQuality
 
-  const avgFps = state.fpsHistory.reduce((sum, f) => sum + f, 0) / state.fpsHistory.length
+  const avgFps =
+    state.fpsHistory.reduce((sum, f) => sum + f, 0) / state.fpsHistory.length
   const currentIdx = QUALITY_ORDER.indexOf(state.currentQuality)
 
   if (avgFps < DOWNGRADE_FPS && currentIdx < QUALITY_ORDER.length - 1) {
@@ -74,7 +84,14 @@ export const getLodConfig = (quality: QualityLevel): JuicyConfig => ({
   enableDamageNumbers: quality !== 'canvas',
   maxMonsters: quality === 'full' ? 30 : quality === 'reduced' ? 20 : 15,
   effectLayers: quality === 'full' ? 4 : quality === 'reduced' ? 2 : 1,
-  deathParticles: quality === 'full' ? 12 : quality === 'reduced' ? 8 : quality === 'minimal' ? 4 : 0,
+  deathParticles:
+    quality === 'full'
+      ? 12
+      : quality === 'reduced'
+        ? 8
+        : quality === 'minimal'
+          ? 4
+          : 0,
   enableEffectGlow: quality === 'full' || quality === 'reduced',
   enableHpBars: quality !== 'canvas',
   enableAttackAnim: quality === 'full' || quality === 'reduced',

@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react'
 import classNames from 'classnames/bind'
-import { FoodCategory, FOOD_CATEGORY_LABELS, FOOD_CATEGORY_ICONS } from '@/types'
+import {
+  FoodCategory,
+  FOOD_CATEGORY_LABELS,
+  FOOD_CATEGORY_ICONS,
+} from '@/types'
 import styles from './IngredientSelector.module.scss'
 
 const cx = classNames.bind(styles)
@@ -33,11 +37,20 @@ interface IngredientSelectorProps {
   onToggleAll: () => void
 }
 
-export const IngredientSelector = ({ items, selectedIds, onToggle, onToggleAll }: IngredientSelectorProps) => {
+export const IngredientSelector = ({
+  items,
+  selectedIds,
+  onToggle,
+  onToggleAll,
+}: IngredientSelectorProps) => {
   const allSelected = items.length > 0 && selectedIds.size === items.length
   const [searchQuery, setSearchQuery] = useState('')
-  const [openCategories, setOpenCategories] = useState<Set<FoodCategory>>(() => new Set(CATEGORY_ORDER))
-  const [expandedCategories, setExpandedCategories] = useState<Set<FoodCategory>>(new Set())
+  const [openCategories, setOpenCategories] = useState<Set<FoodCategory>>(
+    () => new Set(CATEGORY_ORDER),
+  )
+  const [expandedCategories, setExpandedCategories] = useState<
+    Set<FoodCategory>
+  >(new Set())
 
   const filteredItems = useMemo(() => {
     if (!searchQuery.trim()) return items
@@ -109,63 +122,86 @@ export const IngredientSelector = ({ items, selectedIds, onToggle, onToggleAll }
             {filteredItems.length === 0 && (
               <p className={cx('noResult')}>검색 결과가 없습니다</p>
             )}
-            {CATEGORY_ORDER.filter((cat) => groupedItems.has(cat)).map((category) => {
-              const categoryItems = groupedItems.get(category)!
-              const isOpen = openCategories.has(category)
-              const selectedCount = categoryItems.filter((item) => selectedIds.has(item.id)).length
+            {CATEGORY_ORDER.filter((cat) => groupedItems.has(cat)).map(
+              (category) => {
+                const categoryItems = groupedItems.get(category)!
+                const isOpen = openCategories.has(category)
+                const selectedCount = categoryItems.filter((item) =>
+                  selectedIds.has(item.id),
+                ).length
 
-              return (
-                <div key={category} className={cx('categoryGroup')}>
-                  <button
-                    className={cx('categoryHeader')}
-                    onClick={() => toggleCategory(category)}
-                    type="button"
-                    aria-expanded={isOpen}
-                    aria-controls={`category-${category}`}
-                  >
-                    <span className={cx('categoryIcon')} aria-hidden="true">{FOOD_CATEGORY_ICONS[category]}</span>
-                    <span className={cx('categoryLabel')}>{FOOD_CATEGORY_LABELS[category]}</span>
-                    <span className={cx('categoryCount')}>
-                      {selectedCount}/{categoryItems.length}
-                    </span>
-                    <span className={cx('chevron', { chevronOpen: isOpen })} aria-hidden="true">›</span>
-                  </button>
-                  {isOpen && (() => {
-                    const isExpanded = expandedCategories.has(category)
-                    const hasOverflow = categoryItems.length > COLLAPSED_CHIP_COUNT
-                    const visibleItems = !hasOverflow || isExpanded ? categoryItems : categoryItems.slice(0, COLLAPSED_CHIP_COUNT)
-                    const hiddenCount = categoryItems.length - COLLAPSED_CHIP_COUNT
+                return (
+                  <div key={category} className={cx('categoryGroup')}>
+                    <button
+                      className={cx('categoryHeader')}
+                      onClick={() => toggleCategory(category)}
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={`category-${category}`}
+                    >
+                      <span className={cx('categoryIcon')} aria-hidden="true">
+                        {FOOD_CATEGORY_ICONS[category]}
+                      </span>
+                      <span className={cx('categoryLabel')}>
+                        {FOOD_CATEGORY_LABELS[category]}
+                      </span>
+                      <span className={cx('categoryCount')}>
+                        {selectedCount}/{categoryItems.length}
+                      </span>
+                      <span
+                        className={cx('chevron', { chevronOpen: isOpen })}
+                        aria-hidden="true"
+                      >
+                        ›
+                      </span>
+                    </button>
+                    {isOpen &&
+                      (() => {
+                        const isExpanded = expandedCategories.has(category)
+                        const hasOverflow =
+                          categoryItems.length > COLLAPSED_CHIP_COUNT
+                        const visibleItems =
+                          !hasOverflow || isExpanded
+                            ? categoryItems
+                            : categoryItems.slice(0, COLLAPSED_CHIP_COUNT)
+                        const hiddenCount =
+                          categoryItems.length - COLLAPSED_CHIP_COUNT
 
-                    return (
-                      <div id={`category-${category}`} role="region">
-                        <div className={cx('categoryChipList')}>
-                          {visibleItems.map((item) => (
-                            <button
-                              key={item.id}
-                              className={cx('chip', { chipSelected: selectedIds.has(item.id) })}
-                              onClick={() => onToggle(item.id)}
-                              type="button"
-                            >
-                              {item.name}
-                            </button>
-                          ))}
-                        </div>
-                        {hasOverflow && (
-                          <button
-                            className={cx('expandToggle')}
-                            onClick={() => toggleExpand(category)}
-                            type="button"
-                            aria-expanded={isExpanded}
-                          >
-                            {isExpanded ? '접기' : `+${hiddenCount}개 더보기`}
-                          </button>
-                        )}
-                      </div>
-                    )
-                  })()}
-                </div>
-              )
-            })}
+                        return (
+                          <div id={`category-${category}`} role="region">
+                            <div className={cx('categoryChipList')}>
+                              {visibleItems.map((item) => (
+                                <button
+                                  key={item.id}
+                                  className={cx('chip', {
+                                    chipSelected: selectedIds.has(item.id),
+                                  })}
+                                  onClick={() => onToggle(item.id)}
+                                  type="button"
+                                >
+                                  {item.name}
+                                </button>
+                              ))}
+                            </div>
+                            {hasOverflow && (
+                              <button
+                                className={cx('expandToggle')}
+                                onClick={() => toggleExpand(category)}
+                                type="button"
+                                aria-expanded={isExpanded}
+                              >
+                                {isExpanded
+                                  ? '접기'
+                                  : `+${hiddenCount}개 더보기`}
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })()}
+                  </div>
+                )
+              },
+            )}
           </div>
         </>
       ) : (

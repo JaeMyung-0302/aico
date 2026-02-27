@@ -12,12 +12,48 @@ export interface MerchantItem {
 }
 
 const MERCHANT_POOL: readonly MerchantItem[] = [
-  { id: 'heal_50', name: 'HP 회복', description: 'HP 50% 회복', effect: 'heal', value: 0.5 },
-  { id: 'heal_full', name: '완전 회복', description: 'HP 100% 회복', effect: 'heal', value: 1.0 },
-  { id: 'atk_boost', name: '공격력 강화', description: 'ATK +20% (영구)', effect: 'atk_boost', value: 0.2 },
-  { id: 'spd_boost', name: '속도 강화', description: 'SPD +20% (영구)', effect: 'spd_boost', value: 0.2 },
-  { id: 'shield_5s', name: '보호막', description: '5초 무적', effect: 'shield', value: 5000 },
-  { id: 'shield_10s', name: '강화 보호막', description: '10초 무적', effect: 'shield', value: 10000 },
+  {
+    id: 'heal_50',
+    name: 'HP 회복',
+    description: 'HP 50% 회복',
+    effect: 'heal',
+    value: 0.5,
+  },
+  {
+    id: 'heal_full',
+    name: '완전 회복',
+    description: 'HP 100% 회복',
+    effect: 'heal',
+    value: 1.0,
+  },
+  {
+    id: 'atk_boost',
+    name: '공격력 강화',
+    description: 'ATK +20% (영구)',
+    effect: 'atk_boost',
+    value: 0.2,
+  },
+  {
+    id: 'spd_boost',
+    name: '속도 강화',
+    description: 'SPD +20% (영구)',
+    effect: 'spd_boost',
+    value: 0.2,
+  },
+  {
+    id: 'shield_5s',
+    name: '보호막',
+    description: '5초 무적',
+    effect: 'shield',
+    value: 5000,
+  },
+  {
+    id: 'shield_10s',
+    name: '강화 보호막',
+    description: '10초 무적',
+    effect: 'shield',
+    value: 10000,
+  },
 ]
 
 export interface EventState {
@@ -45,7 +81,10 @@ const rollEventType = (): EventType => {
 /**
  * 매초 호출. EVENT_TIMES(7분/12분)에 이벤트 트리거
  */
-export const checkEventTrigger = (state: EventState, elapsedSeconds: number): void => {
+export const checkEventTrigger = (
+  state: EventState,
+  elapsedSeconds: number,
+): void => {
   for (const eventTime of EVENT_TIMES) {
     if (elapsedSeconds >= eventTime && !state.triggeredEvents.has(eventTime)) {
       state.triggeredEvents.add(eventTime)
@@ -68,7 +107,10 @@ export const checkEventTrigger = (state: EventState, elapsedSeconds: number): vo
 /**
  * 상인 아이템 효과를 반환 (GameScene에서 플레이어에 적용)
  */
-export const getMerchantItemByIndex = (items: readonly MerchantItem[], index: number): MerchantItem | null => {
+export const getMerchantItemByIndex = (
+  items: readonly MerchantItem[],
+  index: number,
+): MerchantItem | null => {
   if (index < 0 || index >= items.length) return null
   return items[index] ?? null
 }

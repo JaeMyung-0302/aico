@@ -18,8 +18,24 @@ const DIFFICULTY_LABELS: Record<RecipeSuggestion['difficulty'], string> = {
 
 export const RecipeSuggestPage = () => {
   const navigate = useNavigate()
-  const { activeFridgeId, fridges, loading: fridgeLoading, setActiveFridge, fetchFridges } = useFridgeStore()
-  const { recipes, cached, remainingCount, isPremium, loading, error, suggestRecipes, fetchRemainingCount, clearRecipes } = useRecipeStore()
+  const {
+    activeFridgeId,
+    fridges,
+    loading: fridgeLoading,
+    setActiveFridge,
+    fetchFridges,
+  } = useFridgeStore()
+  const {
+    recipes,
+    cached,
+    remainingCount,
+    isPremium,
+    loading,
+    error,
+    suggestRecipes,
+    fetchRemainingCount,
+    clearRecipes,
+  } = useRecipeStore()
   const { items: foodItemDetails, fetchItems } = useFoodItemStore()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const initializedFridgeRef = useRef<string | null>(null)
@@ -87,35 +103,42 @@ export const RecipeSuggestPage = () => {
 
   const handleSuggest = useCallback(async () => {
     if (!activeFridgeId || selectedIds.size === 0) return
-    const ids = selectedIds.size === foodItems.length ? undefined : [...selectedIds]
+    const ids =
+      selectedIds.size === foodItems.length ? undefined : [...selectedIds]
     await suggestRecipes(activeFridgeId, ids)
   }, [activeFridgeId, selectedIds, foodItems.length, suggestRecipes])
 
-  const handleFridgeSelect = useCallback((id: string) => {
-    if (id === activeFridgeId) return
-    setActiveFridge(id)
-    initializedFridgeRef.current = null
-    clearRecipes()
-  }, [activeFridgeId, setActiveFridge, clearRecipes])
+  const handleFridgeSelect = useCallback(
+    (id: string) => {
+      if (id === activeFridgeId) return
+      setActiveFridge(id)
+      initializedFridgeRef.current = null
+      clearRecipes()
+    },
+    [activeFridgeId, setActiveFridge, clearRecipes],
+  )
 
-  const handleRecipeClick = useCallback((index: number) => {
-    navigate(`/recipes/${index}`)
-  }, [navigate])
+  const handleRecipeClick = useCallback(
+    (index: number) => {
+      navigate(`/recipes/${index}`)
+    },
+    [navigate],
+  )
 
   return (
     <div className={cx('page')}>
       <h1 className={cx('title')}>AI 레시피 추천</h1>
 
-      {fridgeLoading && (
-        <div className={cx('loading')}>불러오는 중...</div>
-      )}
+      {fridgeLoading && <div className={cx('loading')}>불러오는 중...</div>}
 
       {!fridgeLoading && fridges.length >= 2 && (
         <div className={cx('fridgeSelector')}>
           {fridges.map((fridge) => (
             <button
               key={fridge.id}
-              className={cx('fridgeChip', { fridgeChipActive: fridge.id === activeFridgeId })}
+              className={cx('fridgeChip', {
+                fridgeChipActive: fridge.id === activeFridgeId,
+              })}
               onClick={() => handleFridgeSelect(fridge.id)}
               type="button"
               aria-current={fridge.id === activeFridgeId ? 'true' : undefined}
@@ -139,7 +162,12 @@ export const RecipeSuggestPage = () => {
         <button
           className={cx('suggestBtn')}
           onClick={handleSuggest}
-          disabled={loading || !activeFridgeId || selectedIds.size === 0 || (!isPremium && remainingCount === 0)}
+          disabled={
+            loading ||
+            !activeFridgeId ||
+            selectedIds.size === 0 ||
+            (!isPremium && remainingCount === 0)
+          }
           type="button"
         >
           {loading ? '추천 중...' : '냉장고 재료로 추천받기'}
@@ -161,9 +189,7 @@ export const RecipeSuggestPage = () => {
       {!fridgeLoading && !activeFridgeId && (
         <div className={cx('empty')}>
           <span className={cx('emptyIcon')}>🧊</span>
-          <p className={cx('emptyText')}>
-            냉장고를 먼저 선택해주세요.
-          </p>
+          <p className={cx('emptyText')}>냉장고를 먼저 선택해주세요.</p>
         </div>
       )}
 
@@ -194,7 +220,9 @@ export const RecipeSuggestPage = () => {
       {recipes.length > 0 && (
         <div className={cx('recipeList')}>
           {recipes.map((recipe, index) => {
-            const inFridgeCount = recipe.ingredients.filter((i) => i.inFridge).length
+            const inFridgeCount = recipe.ingredients.filter(
+              (i) => i.inFridge,
+            ).length
             const totalCount = recipe.ingredients.length
 
             return (

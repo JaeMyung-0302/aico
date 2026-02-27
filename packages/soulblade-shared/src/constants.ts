@@ -1,5 +1,14 @@
-import type { CharacterClass, ClassConfig, PermanentStats } from './types/character.js'
-import type { EquipmentGrade, EquipmentTag, GradeStatRange, TagSynergyConfig } from './types/equipment.js'
+import type {
+  CharacterClass,
+  ClassConfig,
+  PermanentStats,
+} from './types/character.js'
+import type {
+  EquipmentGrade,
+  EquipmentTag,
+  GradeStatRange,
+  TagSynergyConfig,
+} from './types/equipment.js'
 import type { MonsterType, StageId } from './types/stage.js'
 
 // === 클래스 설정 ===
@@ -8,7 +17,14 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
   Warrior: {
     classType: 'Warrior',
     baseStats: { hp: 120, atk: 15, def: 12, spd: 8, crit: 0.05, critDmg: 1.5 },
-    growthRates: { hp: 15, atk: 2.0, def: 3.0, spd: 0.5, crit: 0.002, critDmg: 0.02 },
+    growthRates: {
+      hp: 15,
+      atk: 2.0,
+      def: 3.0,
+      spd: 0.5,
+      crit: 0.002,
+      critDmg: 0.02,
+    },
     basicAttackPattern: 'melee_fan',
     activeSkillId: 'warrior_whirlwind',
     description: '근접 부채꼴 공격. 높은 HP와 방어력.',
@@ -17,7 +33,14 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
   Archer: {
     classType: 'Archer',
     baseStats: { hp: 80, atk: 18, def: 6, spd: 12, crit: 0.15, critDmg: 2.0 },
-    growthRates: { hp: 8, atk: 2.5, def: 0.8, spd: 1.5, crit: 0.008, critDmg: 0.03 },
+    growthRates: {
+      hp: 8,
+      atk: 2.5,
+      def: 0.8,
+      spd: 1.5,
+      crit: 0.008,
+      critDmg: 0.03,
+    },
     basicAttackPattern: 'ranged_projectile',
     activeSkillId: 'archer_rain',
     description: '원거리 투사체 공격. 높은 크리티컬.',
@@ -26,7 +49,14 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
   Mage: {
     classType: 'Mage',
     baseStats: { hp: 70, atk: 20, def: 5, spd: 9, crit: 0.08, critDmg: 1.8 },
-    growthRates: { hp: 7, atk: 4.0, def: 0.5, spd: 0.6, crit: 0.003, critDmg: 0.025 },
+    growthRates: {
+      hp: 7,
+      atk: 4.0,
+      def: 0.5,
+      spd: 0.6,
+      crit: 0.003,
+      critDmg: 0.025,
+    },
     basicAttackPattern: 'aoe_circle',
     activeSkillId: 'mage_meteor',
     description: '원형 범위 마법 공격. 최고 공격력.',
@@ -35,7 +65,14 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
   Paladin: {
     classType: 'Paladin',
     baseStats: { hp: 100, atk: 12, def: 15, spd: 7, crit: 0.06, critDmg: 1.5 },
-    growthRates: { hp: 10, atk: 1.5, def: 2.5, spd: 0.4, crit: 0.002, critDmg: 0.02 },
+    growthRates: {
+      hp: 10,
+      atk: 1.5,
+      def: 2.5,
+      spd: 0.4,
+      crit: 0.002,
+      critDmg: 0.02,
+    },
     basicAttackPattern: 'mid_range_holy',
     activeSkillId: 'paladin_judgment',
     description: '중거리 성스러운 타격. 최고 방어력 + 힐.',
@@ -56,7 +93,7 @@ export const GRADE_STAT_RANGES: Record<EquipmentGrade, GradeStatRange> = {
 
 // 장비 드롭 확률 (기본)
 export const GRADE_DROP_RATES: Record<EquipmentGrade, number> = {
-  common: 0.50,
+  common: 0.5,
   uncommon: 0.28,
   rare: 0.15,
   epic: 0.06,
@@ -83,7 +120,7 @@ export const TAG_SYNERGY_CONFIGS: Record<EquipmentTag, TagSynergyConfig> = {
   thunder: {
     tag: 'thunder',
     threeSetBonus: { spd: 5, crit: 0.05 },
-    fourSetBonus: { spd: 10, crit: 0.10, critDmg: 0.3 },
+    fourSetBonus: { spd: 10, crit: 0.1, critDmg: 0.3 },
   },
   holy: {
     tag: 'holy',

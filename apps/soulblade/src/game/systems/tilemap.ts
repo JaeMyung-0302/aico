@@ -75,6 +75,8 @@ const OBSTACLE_CONFIGS: Record<StageId, readonly ObstaclePreset[]> = {
 }
 
 // 장애물 그룹 반환 (플레이어/몬스터 충돌용)
-export const getObstacleGroup = (env: StageEnvironment): Phaser.Physics.Arcade.StaticGroup => {
+export const getObstacleGroup = (
+  env: StageEnvironment,
+): Phaser.Physics.Arcade.StaticGroup => {
   return env.obstacles
 }

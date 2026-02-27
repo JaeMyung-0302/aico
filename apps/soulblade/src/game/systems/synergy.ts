@@ -1,4 +1,9 @@
-import type { CharacterStats, Equipment, EquipmentTag, SynergyBonus } from '@soulblade/shared'
+import type {
+  CharacterStats,
+  Equipment,
+  EquipmentTag,
+  SynergyBonus,
+} from '@soulblade/shared'
 import { TAG_SYNERGY_CONFIGS } from '@soulblade/shared'
 
 /**

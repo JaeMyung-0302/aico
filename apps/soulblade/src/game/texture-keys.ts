@@ -16,10 +16,21 @@ export const PLAYER_SPRITESHEET_KEYS: Record<CharacterClass, string> = {
   Archer: 'ss_archer',
 }
 
-export const PLAYER_ANIM_KEYS: Record<CharacterClass, { readonly idle: string; readonly walk: string; readonly attack: string }> = {
-  Warrior: { idle: 'warrior_idle', walk: 'warrior_walk', attack: 'warrior_attack' },
+export const PLAYER_ANIM_KEYS: Record<
+  CharacterClass,
+  { readonly idle: string; readonly walk: string; readonly attack: string }
+> = {
+  Warrior: {
+    idle: 'warrior_idle',
+    walk: 'warrior_walk',
+    attack: 'warrior_attack',
+  },
   Mage: { idle: 'mage_idle', walk: 'mage_walk', attack: 'mage_attack' },
-  Paladin: { idle: 'paladin_idle', walk: 'paladin_walk', attack: 'paladin_attack' },
+  Paladin: {
+    idle: 'paladin_idle',
+    walk: 'paladin_walk',
+    attack: 'paladin_attack',
+  },
   Archer: { idle: 'archer_idle', walk: 'archer_walk', attack: 'archer_attack' },
 }
 
@@ -48,7 +59,10 @@ export const VFX_TEXTURES = {
 } as const
 
 // 맵별 패럴랙스 텍스처 키 (far/near 레이어)
-export const PARALLAX_TEXTURES: Record<MapId, { readonly far: string; readonly near: string }> = {
+export const PARALLAX_TEXTURES: Record<
+  MapId,
+  { readonly far: string; readonly near: string }
+> = {
   town: { far: 'parallax_town_far', near: 'parallax_town_near' },
   serpent_forest: { far: 'parallax_forest_far', near: 'parallax_forest_near' },
   ice_cave: { far: 'parallax_ice_far', near: 'parallax_ice_near' },

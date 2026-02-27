@@ -30,6 +30,6 @@ const configuration = () => ({
   admin: {
     emails: process.env.ADMIN_EMAILS,
   },
-});
+})
 
-export default configuration;
+export default configuration

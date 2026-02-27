@@ -20,7 +20,10 @@ interface FullStats {
   readonly critDmg: number
   readonly level: number
   readonly gold: number
-  readonly passiveSkills: ReadonlyArray<{ readonly id: PassiveSkillId; readonly level: number }>
+  readonly passiveSkills: ReadonlyArray<{
+    readonly id: PassiveSkillId
+    readonly level: number
+  }>
 }
 
 interface BottomTabBarProps {
@@ -32,11 +35,12 @@ interface BottomTabBarProps {
   readonly onStatAllocate: (allocation: StatAllocationData) => void
 }
 
-const TABS: ReadonlyArray<{ readonly id: PanelType; readonly label: string }> = [
-  { id: 'stat', label: '스탯' },
-  { id: 'skill', label: '스킬' },
-  { id: 'inventory', label: '가방' },
-]
+const TABS: ReadonlyArray<{ readonly id: PanelType; readonly label: string }> =
+  [
+    { id: 'stat', label: '스탯' },
+    { id: 'skill', label: '스킬' },
+    { id: 'inventory', label: '가방' },
+  ]
 
 const TAB_COLORS: Record<PanelType, string> = {
   stat: '#4fc3f7',
@@ -44,7 +48,14 @@ const TAB_COLORS: Record<PanelType, string> = {
   inventory: '#ffd700',
 }
 
-export const BottomTabBar = ({ openPanel, onTabPress, onClose, fullStats, pendingStatPoints, onStatAllocate }: BottomTabBarProps) => {
+export const BottomTabBar = ({
+  openPanel,
+  onTabPress,
+  onClose,
+  fullStats,
+  pendingStatPoints,
+  onStatAllocate,
+}: BottomTabBarProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // 외부 클릭 시 패널 닫기
@@ -52,7 +63,10 @@ export const BottomTabBar = ({ openPanel, onTabPress, onClose, fullStats, pendin
     if (!openPanel) return
 
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         onClose()
       }
     }
@@ -81,7 +95,9 @@ export const BottomTabBar = ({ openPanel, onTabPress, onClose, fullStats, pendin
                 onAllocate={onStatAllocate}
               />
             )}
-            {openPanel === 'skill' && <SkillPanel skills={fullStats.passiveSkills} />}
+            {openPanel === 'skill' && (
+              <SkillPanel skills={fullStats.passiveSkills} />
+            )}
             {openPanel === 'inventory' && <InventoryPanel />}
           </div>
         </div>

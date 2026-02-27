@@ -14,26 +14,45 @@ interface StatAllocationProps {
 
 type StatKey = 'hp' | 'atk' | 'def' | 'spd' | 'crit'
 
-const STAT_CONFIG: ReadonlyArray<{ key: StatKey; label: string; perPoint: string }> = [
+const STAT_CONFIG: ReadonlyArray<{
+  key: StatKey
+  label: string
+  perPoint: string
+}> = [
   { key: 'hp', label: 'HP', perPoint: `+${STAT_POINT_VALUES.hp}` },
   { key: 'atk', label: 'ATK', perPoint: `+${STAT_POINT_VALUES.atk}` },
   { key: 'def', label: 'DEF', perPoint: `+${STAT_POINT_VALUES.def}` },
   { key: 'spd', label: 'SPD', perPoint: `+${STAT_POINT_VALUES.spd}` },
-  { key: 'crit', label: 'CRIT', perPoint: `+${(STAT_POINT_VALUES.crit * 100).toFixed(0)}%` },
+  {
+    key: 'crit',
+    label: 'CRIT',
+    perPoint: `+${(STAT_POINT_VALUES.crit * 100).toFixed(0)}%`,
+  },
 ]
 
-export const StatAllocation = ({ level, statPoints, onClose }: StatAllocationProps) => {
+export const StatAllocation = ({
+  level,
+  statPoints,
+  onClose,
+}: StatAllocationProps) => {
   const [allocation, setAllocation] = useState<Record<StatKey, number>>({
-    hp: 0, atk: 0, def: 0, spd: 0, crit: 0,
+    hp: 0,
+    atk: 0,
+    def: 0,
+    spd: 0,
+    crit: 0,
   })
 
   const usedPoints = Object.values(allocation).reduce((sum, v) => sum + v, 0)
   const remaining = statPoints - usedPoints
 
-  const handleIncrement = useCallback((key: StatKey) => {
-    if (remaining <= 0) return
-    setAllocation((prev) => ({ ...prev, [key]: prev[key] + 1 }))
-  }, [remaining])
+  const handleIncrement = useCallback(
+    (key: StatKey) => {
+      if (remaining <= 0) return
+      setAllocation((prev) => ({ ...prev, [key]: prev[key] + 1 }))
+    },
+    [remaining],
+  )
 
   const handleDecrement = useCallback((key: StatKey) => {
     setAllocation((prev) => {
@@ -64,13 +83,17 @@ export const StatAllocation = ({ level, statPoints, onClose }: StatAllocationPro
                   className={cx('btn', 'minus')}
                   onClick={() => handleDecrement(key)}
                   disabled={allocation[key] <= 0}
-                >-</button>
+                >
+                  -
+                </button>
                 <span className={cx('value')}>{allocation[key]}</span>
                 <button
                   className={cx('btn', 'plus')}
                   onClick={() => handleIncrement(key)}
                   disabled={remaining <= 0}
-                >+</button>
+                >
+                  +
+                </button>
               </div>
             </div>
           ))}

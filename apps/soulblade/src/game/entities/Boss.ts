@@ -27,12 +27,7 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
   expReward: number
   goldReward: number
 
-  constructor(
-    scene: Phaser.Scene,
-    x: number,
-    y: number,
-    config: BossConfig,
-  ) {
+  constructor(scene: Phaser.Scene, x: number, y: number, config: BossConfig) {
     super(scene, x, y, MONSTER_TEXTURES.boss)
 
     scene.add.existing(this)
@@ -144,12 +139,22 @@ export class Boss extends Phaser.Physics.Arcade.Sprite {
   }
 
   private doCharge(): void {
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, this.chargeTarget.x, this.chargeTarget.y)
+    const angle = Phaser.Math.Angle.Between(
+      this.x,
+      this.y,
+      this.chargeTarget.x,
+      this.chargeTarget.y,
+    )
     const speed = 250
     this.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed)
 
     // 목표 도달 시 chase로 전환
-    const dist = Phaser.Math.Distance.Between(this.x, this.y, this.chargeTarget.x, this.chargeTarget.y)
+    const dist = Phaser.Math.Distance.Between(
+      this.x,
+      this.y,
+      this.chargeTarget.x,
+      this.chargeTarget.y,
+    )
     if (dist < 30) {
       this.currentPhase = 'chase'
     }

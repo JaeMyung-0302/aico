@@ -12,11 +12,14 @@ import { Color, PlaneGeometry, Float32BufferAttribute } from 'three'
 import type { MapId } from '@soulblade/shared'
 
 // 맵별 지형 설정
-const TERRAIN_THEMES: Record<MapId, {
-  baseColor: string
-  colorVariation: number // 노이즈 색상 변화 강도
-  segmentsPerUnit: number
-}> = {
+const TERRAIN_THEMES: Record<
+  MapId,
+  {
+    baseColor: string
+    colorVariation: number // 노이즈 색상 변화 강도
+    segmentsPerUnit: number
+  }
+> = {
   town: {
     baseColor: '#3a5a3a',
     colorVariation: 0.16,
@@ -81,7 +84,11 @@ interface TerrainMeshProps {
   worldHeight: number
 }
 
-export const TerrainMesh = ({ mapId, worldWidth, worldHeight }: TerrainMeshProps) => {
+export const TerrainMesh = ({
+  mapId,
+  worldWidth,
+  worldHeight,
+}: TerrainMeshProps) => {
   const theme = TERRAIN_THEMES[mapId]
 
   const geometry = useMemo(() => {
@@ -122,7 +129,12 @@ export const TerrainMesh = ({ mapId, worldWidth, worldHeight }: TerrainMeshProps
       position={[worldWidth / 2, -0.1, worldHeight / 2]}
       rotation={[-Math.PI / 2, 0, 0]}
     >
-      <meshLambertMaterial vertexColors transparent opacity={0.8} depthWrite={false} />
+      <meshLambertMaterial
+        vertexColors
+        transparent
+        opacity={0.8}
+        depthWrite={false}
+      />
     </mesh>
   )
 }

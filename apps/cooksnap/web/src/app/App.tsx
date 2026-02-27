@@ -15,8 +15,9 @@ const queryClient = new QueryClient({
   },
 })
 
-const isPrerendering = typeof navigator !== 'undefined'
-  && navigator.userAgent.includes('HeadlessChrome')
+const isPrerendering =
+  typeof navigator !== 'undefined' &&
+  navigator.userAgent.includes('HeadlessChrome')
 
 const App = () => {
   const { initialize, isLoading } = useAuthStore()

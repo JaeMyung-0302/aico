@@ -79,9 +79,7 @@ const KeyIndicator = ({ myKeys }: KeyIndicatorProps) => {
 
   return (
     <div className={cx('container')}>
-      <div className={cx('row')}>
-        {renderKey('w')}
-      </div>
+      <div className={cx('row')}>{renderKey('w')}</div>
       <div className={cx('row')}>
         {ALL_KEYS.filter((k) => k !== 'w').map(renderKey)}
       </div>

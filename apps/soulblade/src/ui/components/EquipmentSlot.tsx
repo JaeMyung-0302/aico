@@ -1,5 +1,9 @@
 import classnames from 'classnames/bind'
-import type { Equipment, EquipmentType, EquipmentGrade } from '@soulblade/shared'
+import type {
+  Equipment,
+  EquipmentType,
+  EquipmentGrade,
+} from '@soulblade/shared'
 import styles from './EquipmentSlot.module.scss'
 
 const cx = classnames.bind(styles)
@@ -24,7 +28,11 @@ const SLOT_LABELS: Record<EquipmentType, string> = {
   accessory: '장신구',
 }
 
-export const EquipmentSlot = ({ slotType, item, onTap }: EquipmentSlotProps) => {
+export const EquipmentSlot = ({
+  slotType,
+  item,
+  onTap,
+}: EquipmentSlotProps) => {
   const handleClick = () => onTap(slotType)
 
   return (
@@ -35,12 +43,17 @@ export const EquipmentSlot = ({ slotType, item, onTap }: EquipmentSlotProps) => 
     >
       {item ? (
         <>
-          <span className={cx('name')} style={{ color: GRADE_COLORS[item.grade] }}>
+          <span
+            className={cx('name')}
+            style={{ color: GRADE_COLORS[item.grade] }}
+          >
             {item.name}
           </span>
           <span className={cx('tags')}>
             {item.tags.map((tag) => (
-              <span key={tag} className={cx('tag')}>{tag}</span>
+              <span key={tag} className={cx('tag')}>
+                {tag}
+              </span>
             ))}
           </span>
           <span className={cx('stats')}>

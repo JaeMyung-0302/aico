@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '../generated/prisma';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { Prisma } from '../generated/prisma'
+import { PrismaService } from '../prisma/prisma.service'
 
 @Injectable()
 export class ProfilesService {
@@ -17,14 +17,14 @@ export class ProfilesService {
         attendanceStreak: true,
         lastAttendanceDate: true,
       },
-    });
+    })
 
     if (!profile) {
-      throw new NotFoundException('Profile not found');
+      throw new NotFoundException('Profile not found')
     }
 
-    return profile;
-  };
+    return profile
+  }
 
   updateDisplayName = async (userId: string, displayName: string) => {
     try {
@@ -32,12 +32,15 @@ export class ProfilesService {
         where: { id: userId },
         data: { displayName },
         select: { id: true, displayName: true },
-      });
+      })
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        throw new NotFoundException('Profile not found');
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Profile not found')
       }
-      throw error;
+      throw error
     }
-  };
+  }
 }

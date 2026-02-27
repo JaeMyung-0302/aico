@@ -26,45 +26,61 @@ export const registerRoomEvents = (io: Server) => {
   io.on('connection', (socket: Socket) => {
     console.log(`Connected: ${socket.id}`)
 
-    socket.on(SocketEvents.CREATE_ROOM, ({ nickname }: { nickname: string }) => {
-      const trimmed = sanitizeNickname(nickname)
-      if (!trimmed) {
-        socket.emit(SocketEvents.ERROR, { message: '닉네임은 1~10자여야 합니다.' })
-        return
-      }
+    socket.on(
+      SocketEvents.CREATE_ROOM,
+      ({ nickname }: { nickname: string }) => {
+        const trimmed = sanitizeNickname(nickname)
+        if (!trimmed) {
+          socket.emit(SocketEvents.ERROR, {
+            message: '닉네임은 1~10자여야 합니다.',
+          })
+          return
+        }
 
-      cleanupExistingRoom(socket, io)
+        cleanupExistingRoom(socket, io)
 
-      const room = roomManager.createRoom(socket.id, trimmed)
-      if (!room) {
-        socket.emit(SocketEvents.ERROR, { message: '서버 방 제한에 도달했습니다.' })
-        return
-      }
-      socket.join(room.code)
-      socket.emit(SocketEvents.ROOM_UPDATED, room)
-    })
+        const room = roomManager.createRoom(socket.id, trimmed)
+        if (!room) {
+          socket.emit(SocketEvents.ERROR, {
+            message: '서버 방 제한에 도달했습니다.',
+          })
+          return
+        }
+        socket.join(room.code)
+        socket.emit(SocketEvents.ROOM_UPDATED, room)
+      },
+    )
 
-    socket.on(SocketEvents.JOIN_ROOM, ({ code, nickname }: { code: string; nickname: string }) => {
-      if (typeof code !== 'string' || code.length !== INVITE_CODE_LENGTH) {
-        socket.emit(SocketEvents.ERROR, { message: '유효하지 않은 초대 코드입니다.' })
-        return
-      }
-      const trimmed = sanitizeNickname(nickname)
-      if (!trimmed) {
-        socket.emit(SocketEvents.ERROR, { message: '닉네임은 1~10자여야 합니다.' })
-        return
-      }
+    socket.on(
+      SocketEvents.JOIN_ROOM,
+      ({ code, nickname }: { code: string; nickname: string }) => {
+        if (typeof code !== 'string' || code.length !== INVITE_CODE_LENGTH) {
+          socket.emit(SocketEvents.ERROR, {
+            message: '유효하지 않은 초대 코드입니다.',
+          })
+          return
+        }
+        const trimmed = sanitizeNickname(nickname)
+        if (!trimmed) {
+          socket.emit(SocketEvents.ERROR, {
+            message: '닉네임은 1~10자여야 합니다.',
+          })
+          return
+        }
 
-      cleanupExistingRoom(socket, io)
+        cleanupExistingRoom(socket, io)
 
-      const room = roomManager.joinRoom(code, socket.id, trimmed)
-      if (!room) {
-        socket.emit(SocketEvents.ERROR, { message: '방을 찾을 수 없거나 참가할 수 없습니다.' })
-        return
-      }
-      socket.join(room.code)
-      io.to(room.code).emit(SocketEvents.ROOM_UPDATED, room)
-    })
+        const room = roomManager.joinRoom(code, socket.id, trimmed)
+        if (!room) {
+          socket.emit(SocketEvents.ERROR, {
+            message: '방을 찾을 수 없거나 참가할 수 없습니다.',
+          })
+          return
+        }
+        socket.join(room.code)
+        io.to(room.code).emit(SocketEvents.ROOM_UPDATED, room)
+      },
+    )
 
     socket.on(SocketEvents.LEAVE_ROOM, () => {
       const room = roomManager.getRoomByPlayerId(socket.id)
@@ -79,9 +95,10 @@ export const registerRoomEvents = (io: Server) => {
 
       const updatedRoom = roomManager.leaveRoom(room.code, socket.id)
       if (updatedRoom) {
-        const resetRoom = room.phase !== 'lobby'
-          ? { ...updatedRoom, phase: 'lobby' as GamePhase }
-          : updatedRoom
+        const resetRoom =
+          room.phase !== 'lobby'
+            ? { ...updatedRoom, phase: 'lobby' as GamePhase }
+            : updatedRoom
         if (resetRoom !== updatedRoom) {
           roomManager.updateRoom(room.code, resetRoom)
         }
@@ -92,7 +109,9 @@ export const registerRoomEvents = (io: Server) => {
     socket.on(SocketEvents.SOLO_START, ({ nickname }: { nickname: string }) => {
       const trimmed = sanitizeNickname(nickname)
       if (!trimmed) {
-        socket.emit(SocketEvents.ERROR, { message: '닉네임은 1~10자여야 합니다.' })
+        socket.emit(SocketEvents.ERROR, {
+          message: '닉네임은 1~10자여야 합니다.',
+        })
         return
       }
 
@@ -100,7 +119,9 @@ export const registerRoomEvents = (io: Server) => {
 
       const room = roomManager.createRoom(socket.id, trimmed)
       if (!room) {
-        socket.emit(SocketEvents.ERROR, { message: '서버 방 제한에 도달했습니다.' })
+        socket.emit(SocketEvents.ERROR, {
+          message: '서버 방 제한에 도달했습니다.',
+        })
         return
       }
       socket.join(room.code)
@@ -184,14 +205,17 @@ export const registerRoomEvents = (io: Server) => {
 
       const updatedRoom = roomManager.leaveRoom(room.code, socket.id)
       if (updatedRoom) {
-        const resetRoom = room.phase !== 'lobby'
-          ? { ...updatedRoom, phase: 'lobby' as GamePhase }
-          : updatedRoom
+        const resetRoom =
+          room.phase !== 'lobby'
+            ? { ...updatedRoom, phase: 'lobby' as GamePhase }
+            : updatedRoom
         if (resetRoom !== updatedRoom) {
           roomManager.updateRoom(room.code, resetRoom)
         }
         io.to(room.code).emit(SocketEvents.ROOM_UPDATED, resetRoom)
-        io.to(room.code).emit(SocketEvents.PLAYER_DISCONNECTED, { playerId: socket.id })
+        io.to(room.code).emit(SocketEvents.PLAYER_DISCONNECTED, {
+          playerId: socket.id,
+        })
       }
     })
   })

@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { PortoneService } from './portone.service';
+import { Module } from '@nestjs/common'
+import { PortoneService } from './portone.service'
 
 @Module({
   providers: [PortoneService],

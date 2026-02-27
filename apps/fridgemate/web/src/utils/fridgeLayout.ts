@@ -45,20 +45,36 @@ export const DOOR_SECTIONS: Partial<Record<FridgeType, DoorSection[]>> = {
     },
   ],
   [FridgeType.FOUR_DOOR]: [
-    { label: '좌측', positions: [0, 1, 2, 3, 4, 5], layout: 'twoColumn', columnSplit: 3 },
-    { label: '우측', positions: [6, 7, 8, 9, 10, 11], layout: 'twoColumn', columnSplit: 3 },
+    {
+      label: '좌측',
+      positions: [0, 1, 2, 3, 4, 5],
+      layout: 'twoColumn',
+      columnSplit: 3,
+    },
+    {
+      label: '우측',
+      positions: [6, 7, 8, 9, 10, 11],
+      layout: 'twoColumn',
+      columnSplit: 3,
+    },
     { label: '하단 1', positions: [12], layout: 'grid2x1', spanFull: true },
     { label: '하단 2', positions: [13], layout: 'grid2x1', spanFull: true },
   ],
 }
 
 // 서랍 위치 (높이를 낮게 표시)
-export const isDrawerPosition = (_fridgeType: FridgeType, _position: number): boolean => {
+export const isDrawerPosition = (
+  _fridgeType: FridgeType,
+  _position: number,
+): boolean => {
   return false
 }
 
 // 쇼케이스 위치 (별도 스타일)
-export const isShowcasePosition = (_fridgeType: FridgeType, _position: number): boolean => {
+export const isShowcasePosition = (
+  _fridgeType: FridgeType,
+  _position: number,
+): boolean => {
   return false
 }
 
@@ -116,7 +132,9 @@ export const getEmptySlots = (
 export const getPresetPositions = (fridgeType: FridgeType): Set<number> =>
   new Set(COMPARTMENT_PRESETS[fridgeType].map((p) => p.position))
 
-export const getNextPosition = (compartments: { position: number }[]): number => {
+export const getNextPosition = (
+  compartments: { position: number }[],
+): number => {
   if (compartments.length === 0) return 0
   return Math.max(...compartments.map((c) => c.position)) + 1
 }

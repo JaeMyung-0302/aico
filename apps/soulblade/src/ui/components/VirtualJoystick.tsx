@@ -50,46 +50,61 @@ export const VirtualJoystick = () => {
   }, [])
 
   // --- 터치 이벤트 (모바일) ---
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    if (touchIdRef.current !== null) return
-    const touch = e.changedTouches[0]
-    if (!touch) return
-    touchIdRef.current = touch.identifier
-    setActive(true)
-    handleMove(touch.clientX, touch.clientY)
-  }, [handleMove])
+  const onTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchIdRef.current !== null) return
+      const touch = e.changedTouches[0]
+      if (!touch) return
+      touchIdRef.current = touch.identifier
+      setActive(true)
+      handleMove(touch.clientX, touch.clientY)
+    },
+    [handleMove],
+  )
 
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      const touch = e.changedTouches[i]
-      if (touch && touch.identifier === touchIdRef.current) {
-        handleMove(touch.clientX, touch.clientY)
-        break
+  const onTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i]
+        if (touch && touch.identifier === touchIdRef.current) {
+          handleMove(touch.clientX, touch.clientY)
+          break
+        }
       }
-    }
-  }, [handleMove])
+    },
+    [handleMove],
+  )
 
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      const touch = e.changedTouches[i]
-      if (touch && touch.identifier === touchIdRef.current) {
-        handleEnd()
-        break
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i]
+        if (touch && touch.identifier === touchIdRef.current) {
+          handleEnd()
+          break
+        }
       }
-    }
-  }, [handleEnd])
+    },
+    [handleEnd],
+  )
 
   // --- 마우스 이벤트 (데스크톱) ---
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    mouseDownRef.current = true
-    setActive(true)
-    handleMove(e.clientX, e.clientY)
-  }, [handleMove])
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      mouseDownRef.current = true
+      setActive(true)
+      handleMove(e.clientX, e.clientY)
+    },
+    [handleMove],
+  )
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!mouseDownRef.current) return
-    handleMove(e.clientX, e.clientY)
-  }, [handleMove])
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!mouseDownRef.current) return
+      handleMove(e.clientX, e.clientY)
+    },
+    [handleMove],
+  )
 
   const onMouseUp = useCallback(() => {
     if (!mouseDownRef.current) return

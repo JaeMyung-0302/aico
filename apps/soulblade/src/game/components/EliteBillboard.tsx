@@ -56,7 +56,11 @@ export const EliteBillboard = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]} frustumCulled={false}>
+    <instancedMesh
+      ref={meshRef}
+      args={[undefined, undefined, MAX_INSTANCES]}
+      frustumCulled={false}
+    >
       <planeGeometry args={[40, 40]} />
       <meshBasicMaterial map={texture} transparent alphaTest={0.1} />
     </instancedMesh>

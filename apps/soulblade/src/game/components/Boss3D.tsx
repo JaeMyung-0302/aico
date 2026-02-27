@@ -45,16 +45,21 @@ export const Boss3D = () => {
   }, [model])
 
   // 애니메이션 파트 + 메시 배열 캐싱 (procedural 기준 — GLTF 전환 시 groupRef에서 재추출 필요)
-  const parts = useMemo(() => ({
-    rightArm: model.getObjectByName('rightArm') ?? null,
-    leftArm: model.getObjectByName('leftArm') ?? null,
-    rightLeg: model.getObjectByName('rightLeg') ?? null,
-    leftLeg: model.getObjectByName('leftLeg') ?? null,
-  }), [model])
+  const parts = useMemo(
+    () => ({
+      rightArm: model.getObjectByName('rightArm') ?? null,
+      leftArm: model.getObjectByName('leftArm') ?? null,
+      rightLeg: model.getObjectByName('rightLeg') ?? null,
+      leftLeg: model.getObjectByName('leftLeg') ?? null,
+    }),
+    [model],
+  )
 
   const meshes = useMemo(() => {
     const list: Mesh[] = []
-    model.traverse((c) => { if (c instanceof Mesh) list.push(c) })
+    model.traverse((c) => {
+      if (c instanceof Mesh) list.push(c)
+    })
     return list
   }, [model])
 
@@ -72,7 +77,11 @@ export const Boss3D = () => {
 
     // 대기: 호흡 + 팔 진자
     const breath = Math.sin(anim.timer * 1.5) * 0.015
-    groupRef.current.scale.set(MODEL_SCALE, MODEL_SCALE * (1 + breath), MODEL_SCALE)
+    groupRef.current.scale.set(
+      MODEL_SCALE,
+      MODEL_SCALE * (1 + breath),
+      MODEL_SCALE,
+    )
     const armSwing = Math.sin(anim.timer * 2) * 0.3
     if (rightArm) rightArm.rotation.x = armSwing
     if (leftArm) leftArm.rotation.x = -armSwing
@@ -103,7 +112,11 @@ export const Boss3D = () => {
         for (const mesh of meshes) {
           const m = mesh.material as ShaderMaterial
           m.uniforms['uEmissiveIntensity']!.value = glow * 0.3
-          m.uniforms['uEmissive']!.value.set(SUMMON_EMISSIVE.r, SUMMON_EMISSIVE.g, SUMMON_EMISSIVE.b)
+          m.uniforms['uEmissive']!.value.set(
+            SUMMON_EMISSIVE.r,
+            SUMMON_EMISSIVE.g,
+            SUMMON_EMISSIVE.b,
+          )
         }
         break
       }
@@ -112,7 +125,9 @@ export const Boss3D = () => {
     // summon → 다른 phase 전환 시에만 emissive 리셋
     if (prevPhaseRef.current === 'summon' && boss.currentPhase !== 'summon') {
       for (const mesh of meshes) {
-        (mesh.material as ShaderMaterial).uniforms['uEmissiveIntensity']!.value = 0
+        ;(mesh.material as ShaderMaterial).uniforms[
+          'uEmissiveIntensity'
+        ]!.value = 0
       }
     }
     prevPhaseRef.current = boss.currentPhase

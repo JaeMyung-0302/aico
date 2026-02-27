@@ -4,7 +4,12 @@ export type Direction = 'up' | 'down' | 'left' | 'right'
 
 export type Key = 'w' | 'a' | 's' | 'd'
 
-export type GamePhase = 'lobby' | 'playing' | 'death' | 'stage-clear' | 'complete'
+export type GamePhase =
+  | 'lobby'
+  | 'playing'
+  | 'death'
+  | 'stage-clear'
+  | 'complete'
 
 export interface KeyAssignment {
   playerId: string

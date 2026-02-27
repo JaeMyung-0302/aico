@@ -1,43 +1,43 @@
-import { IsInt, Min, Max, IsOptional } from 'class-validator';
+import { IsInt, Min, Max, IsOptional } from 'class-validator'
 
 export class UpsertCharacterDto {
   @IsInt()
   @Min(0)
   @Max(20)
   @IsOptional()
-  permanentHp?: number;
+  permanentHp?: number
 
   @IsInt()
   @Min(0)
   @Max(20)
   @IsOptional()
-  permanentAtk?: number;
+  permanentAtk?: number
 
   @IsInt()
   @Min(0)
   @Max(20)
   @IsOptional()
-  permanentDef?: number;
+  permanentDef?: number
 
   @IsInt()
   @Min(0)
   @Max(20)
   @IsOptional()
-  permanentSpd?: number;
+  permanentSpd?: number
 
   @IsInt()
   @Min(0)
   @Max(20)
   @IsOptional()
-  permanentCrit?: number;
+  permanentCrit?: number
 
   @IsInt()
   @Min(0)
   @IsOptional()
-  masteryLevel?: number;
+  masteryLevel?: number
 
   @IsInt()
   @Min(0)
   @IsOptional()
-  masteryExp?: number;
+  masteryExp?: number
 }

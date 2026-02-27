@@ -48,7 +48,11 @@ export const MonsterBillboard = () => {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, MAX_INSTANCES]} frustumCulled={false}>
+    <instancedMesh
+      ref={meshRef}
+      args={[undefined, undefined, MAX_INSTANCES]}
+      frustumCulled={false}
+    >
       {/* 텍스처 24x24 → 56x56 스케일업 (가시성 개선) */}
       <planeGeometry args={[56, 56]} />
       <meshBasicMaterial map={texture} transparent alphaTest={0.1} />

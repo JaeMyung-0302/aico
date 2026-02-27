@@ -26,11 +26,14 @@ export const RecipeDetailPage = () => {
 
   // 요리 완료 체크리스트 (보유 재료만)
   const inFridgeIngredients = useMemo(
-    () => recipe?.ingredients.filter((i) => i.inFridge).map((i) => i.name) ?? [],
+    () =>
+      recipe?.ingredients.filter((i) => i.inFridge).map((i) => i.name) ?? [],
     [recipe],
   )
 
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set(inFridgeIngredients))
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(
+    new Set(inFridgeIngredients),
+  )
   const [completing, setCompleting] = useState(false)
 
   const handleToggle = useCallback((name: string) => {
@@ -108,7 +111,10 @@ export const RecipeDetailPage = () => {
         </h2>
         <ul className={cx('ingredientList')}>
           {recipe.ingredients.map((ing, i) => (
-            <li key={`${ing.name}-${i}`} className={cx('ingredientItem', { inFridge: ing.inFridge })}>
+            <li
+              key={`${ing.name}-${i}`}
+              className={cx('ingredientItem', { inFridge: ing.inFridge })}
+            >
               {ing.inFridge ? (
                 <label className={cx('checkLabel')}>
                   <input
@@ -134,7 +140,8 @@ export const RecipeDetailPage = () => {
                 </>
               )}
               <span className={cx('ingredientAmount')}>
-                {ing.amount}{ing.unit}
+                {ing.amount}
+                {ing.unit}
               </span>
             </li>
           ))}

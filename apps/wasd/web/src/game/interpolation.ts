@@ -7,7 +7,9 @@ interface InterpolationState {
   lastUpdateTime: number
 }
 
-export const createInterpolationState = (position: Position): InterpolationState => ({
+export const createInterpolationState = (
+  position: Position,
+): InterpolationState => ({
   prevPosition: { ...position },
   currentPosition: { ...position },
   lastUpdateTime: performance.now(),
@@ -29,10 +31,14 @@ const clamp = (value: number, min: number, max: number): number =>
 
 const directionToDelta = (direction: Direction): Position => {
   switch (direction) {
-    case 'up': return { x: 0, y: -PLAYER_SPEED_PER_TICK }
-    case 'down': return { x: 0, y: PLAYER_SPEED_PER_TICK }
-    case 'left': return { x: -PLAYER_SPEED_PER_TICK, y: 0 }
-    case 'right': return { x: PLAYER_SPEED_PER_TICK, y: 0 }
+    case 'up':
+      return { x: 0, y: -PLAYER_SPEED_PER_TICK }
+    case 'down':
+      return { x: 0, y: PLAYER_SPEED_PER_TICK }
+    case 'left':
+      return { x: -PLAYER_SPEED_PER_TICK, y: 0 }
+    case 'right':
+      return { x: PLAYER_SPEED_PER_TICK, y: 0 }
   }
 }
 

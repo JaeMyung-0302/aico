@@ -43,7 +43,13 @@ const AdminFeedbackPage = () => {
   })
 
   const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: FeedbackStatus }) => {
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string
+      status: FeedbackStatus
+    }) => {
       await api.patch(`/feedback/admin/${id}/status`, { status })
     },
     onSuccess: () => {
@@ -58,7 +64,8 @@ const AdminFeedbackPage = () => {
   const totalPages = data ? Math.ceil(data.total / limit) : 0
 
   if (error) {
-    const statusCode = (error as { response?: { status?: number } })?.response?.status
+    const statusCode = (error as { response?: { status?: number } })?.response
+      ?.status
     if (statusCode === 403) {
       return (
         <div className={cx('container')}>
@@ -68,7 +75,9 @@ const AdminFeedbackPage = () => {
     }
     return (
       <div className={cx('container')}>
-        <div className={cx('errorMessage')}>데이터를 불러오는데 실패했습니다.</div>
+        <div className={cx('errorMessage')}>
+          데이터를 불러오는데 실패했습니다.
+        </div>
       </div>
     )
   }
@@ -86,28 +95,36 @@ const AdminFeedbackPage = () => {
         <select
           className={cx('filterSelect')}
           value={categoryFilter}
-          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1) }}
+          onChange={(e) => {
+            setCategoryFilter(e.target.value)
+            setPage(1)
+          }}
         >
           <option value="">전체 카테고리</option>
           {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>{label}</option>
+            <option key={key} value={key}>
+              {label}
+            </option>
           ))}
         </select>
 
         <select
           className={cx('filterSelect')}
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+          onChange={(e) => {
+            setStatusFilter(e.target.value)
+            setPage(1)
+          }}
         >
           <option value="">전체 상태</option>
           {Object.entries(STATUS_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>{label}</option>
+            <option key={key} value={key}>
+              {label}
+            </option>
           ))}
         </select>
 
-        {data && (
-          <span className={cx('totalCount')}>총 {data.total}건</span>
-        )}
+        {data && <span className={cx('totalCount')}>총 {data.total}건</span>}
       </div>
 
       {isFetching && (!data || data.data.length === 0) ? (
@@ -120,7 +137,12 @@ const AdminFeedbackPage = () => {
             {data.data.map((feedback) => (
               <div key={feedback.id} className={cx('feedbackCard')}>
                 <div className={cx('cardHeader')}>
-                  <span className={cx('categoryBadge', feedback.category.toLowerCase())}>
+                  <span
+                    className={cx(
+                      'categoryBadge',
+                      feedback.category.toLowerCase(),
+                    )}
+                  >
                     {CATEGORY_LABELS[feedback.category]}
                   </span>
                   <span className={cx('date')}>
@@ -132,16 +154,28 @@ const AdminFeedbackPage = () => {
 
                 <div className={cx('cardFooter')}>
                   <span className={cx('author')}>
-                    {feedback.user?.nickname || feedback.user?.email || '알 수 없음'}
+                    {feedback.user?.nickname ||
+                      feedback.user?.email ||
+                      '알 수 없음'}
                   </span>
                   <select
-                    className={cx('statusSelect', feedback.status.toLowerCase())}
+                    className={cx(
+                      'statusSelect',
+                      feedback.status.toLowerCase(),
+                    )}
                     value={feedback.status}
-                    onChange={(e) => handleStatusChange(feedback.id, e.target.value as FeedbackStatus)}
+                    onChange={(e) =>
+                      handleStatusChange(
+                        feedback.id,
+                        e.target.value as FeedbackStatus,
+                      )
+                    }
                     disabled={statusMutation.isPending}
                   >
                     {Object.entries(STATUS_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>{label}</option>
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -158,7 +192,9 @@ const AdminFeedbackPage = () => {
               >
                 이전
               </button>
-              <span className={cx('pageInfo')}>{page} / {totalPages}</span>
+              <span className={cx('pageInfo')}>
+                {page} / {totalPages}
+              </span>
               <button
                 className={cx('pageButton')}
                 disabled={page >= totalPages}

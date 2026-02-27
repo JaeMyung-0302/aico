@@ -20,36 +20,63 @@ const PARTICLE_Y = 12
 const RESPAWN_MARGIN = 50 // 화면 밖 마진
 
 // 맵별 파티클 설정
-const PARTICLE_THEMES: Record<MapId, {
-  color: number
-  minSize: number
-  maxSize: number
-  alpha: number
-  driftX: number
-  driftY: number // 양수=아래, 음수=위
-  wobble: number
-  minLifetime: number
-  maxLifetime: number
-}> = {
+const PARTICLE_THEMES: Record<
+  MapId,
+  {
+    color: number
+    minSize: number
+    maxSize: number
+    alpha: number
+    driftX: number
+    driftY: number // 양수=아래, 음수=위
+    wobble: number
+    minLifetime: number
+    maxLifetime: number
+  }
+> = {
   town: {
-    color: 0xddcc88, minSize: 2, maxSize: 3.5,
-    alpha: 0.4, driftX: 0.2, driftY: 0.15, wobble: 0.3,
-    minLifetime: 3000, maxLifetime: 7000,
+    color: 0xddcc88,
+    minSize: 2,
+    maxSize: 3.5,
+    alpha: 0.4,
+    driftX: 0.2,
+    driftY: 0.15,
+    wobble: 0.3,
+    minLifetime: 3000,
+    maxLifetime: 7000,
   },
   serpent_forest: {
-    color: 0x44aa44, minSize: 2, maxSize: 3,
-    alpha: 0.4, driftX: 0.3, driftY: 0.4, wobble: 0.5,
-    minLifetime: 3000, maxLifetime: 6000,
+    color: 0x44aa44,
+    minSize: 2,
+    maxSize: 3,
+    alpha: 0.4,
+    driftX: 0.3,
+    driftY: 0.4,
+    wobble: 0.5,
+    minLifetime: 3000,
+    maxLifetime: 6000,
   },
   ice_cave: {
-    color: 0xccddff, minSize: 1, maxSize: 2.5,
-    alpha: 0.5, driftX: 0.1, driftY: 0.3, wobble: 0.4,
-    minLifetime: 4000, maxLifetime: 8000,
+    color: 0xccddff,
+    minSize: 1,
+    maxSize: 2.5,
+    alpha: 0.5,
+    driftX: 0.1,
+    driftY: 0.3,
+    wobble: 0.4,
+    minLifetime: 4000,
+    maxLifetime: 8000,
   },
   flame_castle: {
-    color: 0xff6633, minSize: 1, maxSize: 2,
-    alpha: 0.5, driftX: 0.15, driftY: -0.3, wobble: 0.2,
-    minLifetime: 2000, maxLifetime: 5000,
+    color: 0xff6633,
+    minSize: 1,
+    maxSize: 2,
+    alpha: 0.5,
+    driftX: 0.15,
+    driftY: -0.3,
+    wobble: 0.2,
+    minLifetime: 2000,
+    maxLifetime: 5000,
   },
 }
 
@@ -73,12 +100,21 @@ interface EnvironmentParticlesProps {
 // 파티클 풀 생성 (useRef 초기값으로 즉시 할당 — useFrame이 useEffect보다 먼저 실행되므로)
 const createParticlePool = (): Particle[] =>
   Array.from({ length: MAX_PARTICLES }, () => ({
-    x: 0, y: 0, vx: 0, vy: 0,
-    age: 0, lifetime: 0, wobbleOffset: 0, size: 0,
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    age: 0,
+    lifetime: 0,
+    wobbleOffset: 0,
+    size: 0,
     active: false,
   }))
 
-export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesProps) => {
+export const EnvironmentParticles = ({
+  mapId,
+  enabled,
+}: EnvironmentParticlesProps) => {
   const pointsRef = useRef<Points>(null)
   const particles = useRef<Particle[]>(createParticlePool())
   const elapsedRef = useRef(0)
@@ -99,7 +135,9 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
     p.vx = theme.driftX * (0.5 + Math.random())
     p.vy = theme.driftY * (0.5 + Math.random())
     p.age = 0
-    p.lifetime = theme.minLifetime + Math.random() * (theme.maxLifetime - theme.minLifetime)
+    p.lifetime =
+      theme.minLifetime +
+      Math.random() * (theme.maxLifetime - theme.minLifetime)
     p.wobbleOffset = Math.random() * Math.PI * 2
     p.size = theme.minSize + Math.random() * (theme.maxSize - theme.minSize)
     p.active = true
@@ -133,18 +171,28 @@ export const EnvironmentParticles = ({ mapId, enabled }: EnvironmentParticlesPro
       p.y += p.vy * delta * 30
 
       // 수명 초과 또는 화면 밖 → 리사이클
-      if (p.age >= p.lifetime || Math.abs(p.x - camX) > halfW || Math.abs(p.y - camZ) > halfH) {
+      if (
+        p.age >= p.lifetime ||
+        Math.abs(p.x - camX) > halfW ||
+        Math.abs(p.y - camZ) > halfH
+      ) {
         spawnParticle(p)
       }
 
       // 페이드아웃 (수명 70% 이후)
       const fadeStart = p.lifetime * 0.7
-      const alpha = p.age > fadeStart
-        ? theme.alpha * (1 - (p.age - fadeStart) / (p.lifetime - fadeStart))
-        : theme.alpha
+      const alpha =
+        p.age > fadeStart
+          ? theme.alpha * (1 - (p.age - fadeStart) / (p.lifetime - fadeStart))
+          : theme.alpha
 
       positions.setXYZ(i, p.x, PARTICLE_Y, p.y)
-      colors.setXYZ(i, particleColor.r * alpha, particleColor.g * alpha, particleColor.b * alpha)
+      colors.setXYZ(
+        i,
+        particleColor.r * alpha,
+        particleColor.g * alpha,
+        particleColor.b * alpha,
+      )
     }
 
     positions.needsUpdate = true

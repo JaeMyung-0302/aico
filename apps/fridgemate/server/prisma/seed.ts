@@ -114,8 +114,12 @@ const seed = async () => {
   console.log(`Seed complete:`)
   console.log(`  Group: "${group.name}" (code: ${group.code})`)
   console.log(`  User: "${defaultUser.name}" (${defaultUser.email})`)
-  console.log(`  Fridge 1: "${kimchiFridge.name}" (${kimchiCompartments.length} compartments)`)
-  console.log(`  Fridge 2: "${samsungFridge.name}" (${samsungCompartments.length} compartments)`)
+  console.log(
+    `  Fridge 1: "${kimchiFridge.name}" (${kimchiCompartments.length} compartments)`,
+  )
+  console.log(
+    `  Fridge 2: "${samsungFridge.name}" (${samsungCompartments.length} compartments)`,
+  )
 }
 
 seed()

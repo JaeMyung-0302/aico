@@ -1,5 +1,14 @@
 import { create } from 'zustand'
-import type { Room, Player, Key, GamePhase, GameState, Direction, DeathEvent, RankingEntry } from '@wasd/shared'
+import type {
+  Room,
+  Player,
+  Key,
+  GamePhase,
+  GameState,
+  Direction,
+  DeathEvent,
+  RankingEntry,
+} from '@wasd/shared'
 
 interface GameResult {
   deaths: number
@@ -90,7 +99,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (isPredictionActive && current) {
       set({
-        gameState: { ...state, direction: current.direction, moving: current.moving },
+        gameState: {
+          ...state,
+          direction: current.direction,
+          moving: current.moving,
+        },
         gamePhase: state.phase,
       })
     } else {

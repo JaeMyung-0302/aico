@@ -8,24 +8,61 @@
 
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
-import { WORLD_WIDTH, WORLD_HEIGHT, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, calcDamage, CLASS_CONFIGS, BASE_ATTACK_COOLDOWN } from '@soulblade/shared'
+import {
+  WORLD_WIDTH,
+  WORLD_HEIGHT,
+  VIEWPORT_WIDTH,
+  VIEWPORT_HEIGHT,
+  calcDamage,
+  CLASS_CONFIGS,
+  BASE_ATTACK_COOLDOWN,
+} from '@soulblade/shared'
 import type { StatAllocationData } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import { useEntityStore } from '../stores/useEntityStore'
 import { applyMovementR3F } from '../systems/movement-r3f'
-import { physicsStep, clampToWorldBounds, distanceBetween, checkAABB } from '../physics/aabb'
+import {
+  physicsStep,
+  clampToWorldBounds,
+  distanceBetween,
+  checkAABB,
+} from '../physics/aabb'
 import { createLodState, updateLod } from '../systems/lod'
 import { useLodStore } from '../stores/useLodStore'
 import { monsterChasePlayer, monsterUpdateEffects } from '../data/monster-data'
 import { eliteChasePlayer, eliteUpdateEffects } from '../data/elite-data'
 import { bossUpdateAI, bossUpdateEffects } from '../data/boss-data'
-import { playerUpdateHolyShield, playerUpdateInvincibility, playerTakeDamage, playerAllocateStats } from '../data/player-data'
+import {
+  playerUpdateHolyShield,
+  playerUpdateInvincibility,
+  playerTakeDamage,
+  playerAllocateStats,
+} from '../data/player-data'
 import { updateProjectile } from '../data/projectile-data'
 import { monsterTakeDamage } from '../data/monster-data'
 import { eliteTakeDamage } from '../data/elite-data'
-import { createCombatState, processAttackR3F, processProjectileHitR3F, handleKill } from '../systems/combat-r3f'
-import { createSpawnManagerState, updateZoneSpawn, registerZones, clearAllSpawns } from '../systems/spawn-r3f'
-import { createMapState, switchMap, checkPortalCollision, checkNpcCollision, resolveObstacleCollisions, updateMapCooldowns, setNpcCooldown, setPortalCooldown } from '../systems/map-r3f'
+import {
+  createCombatState,
+  processAttackR3F,
+  processProjectileHitR3F,
+  handleKill,
+} from '../systems/combat-r3f'
+import {
+  createSpawnManagerState,
+  updateZoneSpawn,
+  registerZones,
+  clearAllSpawns,
+} from '../systems/spawn-r3f'
+import {
+  createMapState,
+  switchMap,
+  checkPortalCollision,
+  checkNpcCollision,
+  resolveObstacleCollisions,
+  updateMapCooldowns,
+  setNpcCooldown,
+  setPortalCooldown,
+} from '../systems/map-r3f'
 import { createProjectile, fireProjectile } from '../data/projectile-data'
 import { MAP_CONFIGS } from '../data/maps'
 import type { PlayerEntity, WorldBounds } from '../types'
@@ -88,7 +125,12 @@ export const GameLoop = () => {
       const mapId = data.mapId as MapId
       const config = switchMap(mapRef.current, mapId)
       stateRef.current.isSafeZone = config.isSafeZone
-      stateRef.current.worldBounds = { x: 0, y: 0, width: config.worldSize.width, height: config.worldSize.height }
+      stateRef.current.worldBounds = {
+        x: 0,
+        y: 0,
+        width: config.worldSize.width,
+        height: config.worldSize.height,
+      }
       registerZones(spawnRef.current, config.zones)
       stateRef.current.elapsedSeconds = 0
       stateRef.current.lastSecondTime = 0
@@ -101,7 +143,12 @@ export const GameLoop = () => {
       clearAllSpawns(monsters, elites, spawnRef.current)
       const config = switchMap(mapRef.current, data.targetMapId as MapId)
       stateRef.current.isSafeZone = config.isSafeZone
-      stateRef.current.worldBounds = { x: 0, y: 0, width: config.worldSize.width, height: config.worldSize.height }
+      stateRef.current.worldBounds = {
+        x: 0,
+        y: 0,
+        width: config.worldSize.width,
+        height: config.worldSize.height,
+      }
       registerZones(spawnRef.current, config.zones)
       stateRef.current.elapsedSeconds = 0
       stateRef.current.lastSecondTime = 0
@@ -135,7 +182,12 @@ export const GameLoop = () => {
         critDmg: player.critDmg,
         level: player.level,
         gold: combatRef.current.gold,
-        passiveSkills: Array.from(player.passiveSkills.entries()).map(([id, level]) => ({ id, level })),
+        passiveSkills: Array.from(player.passiveSkills.entries()).map(
+          ([id, level]) => ({
+            id,
+            level,
+          }),
+        ),
       })
     }
     // 초기 맵 존 등록 (town)
@@ -194,7 +246,11 @@ export const GameLoop = () => {
     // 3.5. 맵 쿨다운 업데이트 + 포탈/NPC 충돌 체크
     updateMapCooldowns(mapRef.current, deltaMs)
 
-    const portal = checkPortalCollision(mapRef.current, player.body.x, player.body.y)
+    const portal = checkPortalCollision(
+      mapRef.current,
+      player.body.x,
+      player.body.y,
+    )
     if (portal) {
       setPortalCooldown(mapRef.current)
       pendingPortalSpawnRef.current = portal.targetSpawnPoint
@@ -243,9 +299,11 @@ export const GameLoop = () => {
 
       const cdrLevel = player.passiveSkills.get('cooldown_reduction') ?? 0
       const atkSpdLevel = player.passiveSkills.get('attack_speed_up') ?? 0
-      const cooldown = (BASE_ATTACK_COOLDOWN * 1000)
-        * Math.max(0.2, 1 - cdrLevel * 0.08)
-        * Math.max(0.2, 1 - atkSpdLevel * 0.1)
+      const cooldown =
+        BASE_ATTACK_COOLDOWN *
+        1000 *
+        Math.max(0.2, 1 - cdrLevel * 0.08) *
+        Math.max(0.2, 1 - atkSpdLevel * 0.1)
 
       if (timeMs - combatRef.current.lastAttackTime >= cooldown) {
         combatRef.current.lastAttackTime = timeMs
@@ -262,7 +320,12 @@ export const GameLoop = () => {
         // 데미지 처리는 전투 지역에서만
         if (!stateRef.current.isSafeZone) {
           const { monsters, elites } = store
-          const projectileInfos = processAttackR3F(player, monsters, elites, combatRef.current)
+          const projectileInfos = processAttackR3F(
+            player,
+            monsters,
+            elites,
+            combatRef.current,
+          )
 
           // Archer 투사체 생성
           if (projectileInfos) {
@@ -363,7 +426,14 @@ export const GameLoop = () => {
             if (thornLevel > 0) {
               const killed = monsterTakeDamage(m, thornLevel * 3)
               if (killed) {
-                handleKill(player, m.expReward, m.goldReward, combatRef.current, m.body.x, m.body.y)
+                handleKill(
+                  player,
+                  m.expReward,
+                  m.goldReward,
+                  combatRef.current,
+                  m.body.x,
+                  m.body.y,
+                )
               }
             }
           }
@@ -396,7 +466,14 @@ export const GameLoop = () => {
             if (thornLevel > 0) {
               const killed = eliteTakeDamage(e, thornLevel * 3)
               if (killed) {
-                handleKill(player, e.expReward, e.goldReward, combatRef.current, e.body.x, e.body.y)
+                handleKill(
+                  player,
+                  e.expReward,
+                  e.goldReward,
+                  combatRef.current,
+                  e.body.x,
+                  e.body.y,
+                )
               }
             }
           }
@@ -418,7 +495,14 @@ export const GameLoop = () => {
         for (const m of monsters) {
           if (!m.active) continue
           if (checkAABB(p.body, m.body)) {
-            processProjectileHitR3F(p, m, player, combatRef.current, monsters, elites)
+            processProjectileHitR3F(
+              p,
+              m,
+              player,
+              combatRef.current,
+              monsters,
+              elites,
+            )
             if (!p.active) break
           }
         }
@@ -428,7 +512,14 @@ export const GameLoop = () => {
         for (const e of elites) {
           if (!e.active) continue
           if (checkAABB(p.body, e.body)) {
-            processProjectileHitR3F(p, e, player, combatRef.current, monsters, elites)
+            processProjectileHitR3F(
+              p,
+              e,
+              player,
+              combatRef.current,
+              monsters,
+              elites,
+            )
             if (!p.active) break
           }
         }
@@ -442,7 +533,10 @@ export const GameLoop = () => {
 
         for (const m of monsters) {
           if (!m.active) continue
-          if (distanceBetween(player.body.x, player.body.y, m.body.x, m.body.y) <= frozenRange) {
+          if (
+            distanceBetween(player.body.x, player.body.y, m.body.x, m.body.y) <=
+            frozenRange
+          ) {
             m.slowMultiplier = Math.min(slowPercent, 0.8)
           } else {
             m.slowMultiplier = 0
@@ -451,7 +545,10 @@ export const GameLoop = () => {
 
         for (const e of elites) {
           if (!e.active) continue
-          if (distanceBetween(player.body.x, player.body.y, e.body.x, e.body.y) <= frozenRange) {
+          if (
+            distanceBetween(player.body.x, player.body.y, e.body.x, e.body.y) <=
+            frozenRange
+          ) {
             e.slowMultiplier = Math.min(slowPercent, 0.8)
           } else {
             e.slowMultiplier = 0
@@ -472,14 +569,26 @@ export const GameLoop = () => {
 }
 
 // 접촉 데미지 계산 헬퍼
-const calcContactDamage = (player: PlayerEntity, monsterAtk: number, monsterLevel: number): number => {
+const calcContactDamage = (
+  player: PlayerEntity,
+  monsterAtk: number,
+  monsterLevel: number,
+): number => {
   if (player.invincible) return 0
 
   const dodgeLevel = player.passiveSkills.get('dodge_chance') ?? 0
   if (dodgeLevel > 0 && Math.random() < dodgeLevel * 0.05) return 0
 
   const passive = CLASS_CONFIGS[player.classType].classPassive
-  const rawDamage = calcDamage(monsterAtk, 0, player.def, 1.0, monsterLevel, player.level, 1.0)
+  const rawDamage = calcDamage(
+    monsterAtk,
+    0,
+    player.def,
+    1.0,
+    monsterLevel,
+    player.level,
+    1.0,
+  )
   return passive.type === 'damage_reduction'
     ? Math.floor(rawDamage * passive.value)
     : rawDamage

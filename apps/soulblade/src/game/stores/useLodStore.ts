@@ -13,5 +13,6 @@ interface LodStore {
 
 export const useLodStore = create<LodStore>((set) => ({
   quality: 'full',
-  setQuality: (quality) => set((state) => state.quality === quality ? state : { quality }),
+  setQuality: (quality) =>
+    set((state) => (state.quality === quality ? state : { quality })),
 }))

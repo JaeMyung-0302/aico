@@ -35,7 +35,9 @@ export const isAvailable = (): boolean => {
   return !!(process.env.PORTONE_API_SECRET && process.env.PORTONE_STORE_ID)
 }
 
-export const chargeBillingKey = async (params: ChargeBillingKeyParams): Promise<PortonePaymentResponse> => {
+export const chargeBillingKey = async (
+  params: ChargeBillingKeyParams,
+): Promise<PortonePaymentResponse> => {
   const { billingKey, paymentId, amount, orderName } = params
 
   const response = await fetch(
@@ -64,7 +66,9 @@ export const chargeBillingKey = async (params: ChargeBillingKeyParams): Promise<
   return response.json()
 }
 
-export const getPayment = async (paymentId: string): Promise<PortonePaymentResponse> => {
+export const getPayment = async (
+  paymentId: string,
+): Promise<PortonePaymentResponse> => {
   const response = await fetch(
     `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
     {
@@ -83,7 +87,10 @@ export const getPayment = async (paymentId: string): Promise<PortonePaymentRespo
   return response.json()
 }
 
-export const verifyWebhook = async (body: string, headers: Record<string, string>) => {
+export const verifyWebhook = async (
+  body: string,
+  headers: Record<string, string>,
+) => {
   try {
     return await PortOne.Webhook.verify(getWebhookSecret(), body, headers)
   } catch (error) {

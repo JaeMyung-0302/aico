@@ -15,7 +15,11 @@ interface CompartmentPanelProps {
   onItemChange?: () => void
 }
 
-export const CompartmentPanel = ({ compartment, onClose, onItemChange }: CompartmentPanelProps) => {
+export const CompartmentPanel = ({
+  compartment,
+  onClose,
+  onItemChange,
+}: CompartmentPanelProps) => {
   const { items, loading, fetchItems, deleteItem } = useFoodItemStore()
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState<FoodItemResponse | null>(null)

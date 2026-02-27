@@ -1,13 +1,18 @@
 import * as PortOne from '@portone/browser-sdk/v2'
 
 const STORE_ID = import.meta.env.VITE_PORTONE_STORE_ID as string | undefined
-const CHANNEL_KEY = import.meta.env.VITE_PORTONE_CHANNEL_KEY as string | undefined
+const CHANNEL_KEY = import.meta.env.VITE_PORTONE_CHANNEL_KEY as
+  | string
+  | undefined
 
 export const isPortoneConfigured = (): boolean => {
   return !!(STORE_ID && CHANNEL_KEY)
 }
 
-export const requestBillingKey = async (customerId: string, customerEmail: string): Promise<string> => {
+export const requestBillingKey = async (
+  customerId: string,
+  customerEmail: string,
+): Promise<string> => {
   if (!STORE_ID || !CHANNEL_KEY) {
     throw new Error('포트원이 설정되지 않았습니다.')
   }

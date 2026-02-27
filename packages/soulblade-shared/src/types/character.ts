@@ -12,10 +12,18 @@ export interface CharacterStats {
 }
 
 // 기본 공격 패턴
-export type BasicAttackPattern = 'melee_fan' | 'ranged_projectile' | 'aoe_circle' | 'mid_range_holy'
+export type BasicAttackPattern =
+  | 'melee_fan'
+  | 'ranged_projectile'
+  | 'aoe_circle'
+  | 'mid_range_holy'
 
 // 직업 고유 패시브 타입
-export type ClassPassiveType = 'damage_reduction' | 'crit_damage_bonus' | 'skill_multiplier' | 'heal_on_kill'
+export type ClassPassiveType =
+  | 'damage_reduction'
+  | 'crit_damage_bonus'
+  | 'skill_multiplier'
+  | 'heal_on_kill'
 
 export interface ClassPassive {
   readonly type: ClassPassiveType

@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import type { PermanentStats, SkillTreeNode } from '@soulblade/shared'
-import { EMPTY_PERMANENT_STATS, MAX_PERMANENT_STAT_LEVEL } from '@soulblade/shared'
+import {
+  EMPTY_PERMANENT_STATS,
+  MAX_PERMANENT_STAT_LEVEL,
+} from '@soulblade/shared'
 import { calcPermanentStatCost } from '@soulblade/shared'
 import { api } from '@/lib/api'
 
@@ -62,10 +65,10 @@ export const useMetaStore = create<MetaState>((set, get) => ({
     if (metaGold < cost) return false
 
     try {
-      const result = await api.post<{ newLevel: number; remainingGold: number }>(
-        '/upgrades/purchase',
-        { statType },
-      )
+      const result = await api.post<{
+        newLevel: number
+        remainingGold: number
+      }>('/upgrades/purchase', { statType })
 
       set({
         metaGold: result.remainingGold,

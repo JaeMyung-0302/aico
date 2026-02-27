@@ -16,7 +16,10 @@ export class RateLimiter {
   private readonly windowMs: number
   private readonly maxEvents: number
 
-  constructor(windowMs = RATE_LIMIT_WINDOW_MS, maxEvents = RATE_LIMIT_MAX_EVENTS) {
+  constructor(
+    windowMs = RATE_LIMIT_WINDOW_MS,
+    maxEvents = RATE_LIMIT_MAX_EVENTS,
+  ) {
     this.windowMs = windowMs
     this.maxEvents = maxEvents
   }
@@ -79,14 +82,20 @@ export class ConnectionTracker {
 
 export const sanitizeNickname = (raw: unknown): string | null => {
   if (typeof raw !== 'string') return null
-  const cleaned = raw.replace(CONTROL_CHARS, '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim()
+  const cleaned = raw
+    .replace(CONTROL_CHARS, '')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
   if (cleaned.length < 1 || cleaned.length > 10) return null
   return cleaned
 }
 
 // --- Secure Room Code ---
 
-export const generateSecureCode = (existingCodes: { has: (code: string) => boolean }): string => {
+export const generateSecureCode = (existingCodes: {
+  has: (code: string) => boolean
+}): string => {
   for (let attempt = 0; attempt < 10; attempt++) {
     let code = ''
     for (let i = 0; i < INVITE_CODE_LENGTH; i++) {

@@ -63,7 +63,10 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-export const createCelMaterial = (color: number, options?: CelMaterialOptions): ShaderMaterial => {
+export const createCelMaterial = (
+  color: number,
+  options?: CelMaterialOptions,
+): ShaderMaterial => {
   const c = new Color(color)
   const shadowC = new Color(options?.shadowColor ?? 0x443355)
   const rimC = new Color(options?.rimColor ?? 0xffffff)

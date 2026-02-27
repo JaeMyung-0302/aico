@@ -75,7 +75,9 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-export const createCelInstancedMaterial = (options?: CelMaterialOptions): ShaderMaterial => {
+export const createCelInstancedMaterial = (
+  options?: CelMaterialOptions,
+): ShaderMaterial => {
   const shadowC = new Color(options?.shadowColor ?? 0x443355)
 
   return new ShaderMaterial({

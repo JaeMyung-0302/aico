@@ -58,7 +58,10 @@ export const saveRemote = async (data: SaveData): Promise<void> => {
 // NestJS API 로드
 export const loadRemote = async (): Promise<SaveData | null> => {
   try {
-    const result = await api.get<{ saveData: unknown; updatedAt: string | null }>('/saves')
+    const result = await api.get<{
+      saveData: unknown
+      updatedAt: string | null
+    }>('/saves')
 
     if (!result?.saveData) return null
     if (!isSaveData(result.saveData)) return null
@@ -70,7 +73,10 @@ export const loadRemote = async (): Promise<SaveData | null> => {
 }
 
 // 머지: 서버 데이터가 최신이면 서버 우선, 아니면 로컬
-export const mergeSaveData = (local: SaveData | null, remote: SaveData | null): SaveData | null => {
+export const mergeSaveData = (
+  local: SaveData | null,
+  remote: SaveData | null,
+): SaveData | null => {
   if (!local && !remote) return null
   if (!local) return remote
   if (!remote) return local

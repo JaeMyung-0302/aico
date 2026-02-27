@@ -1,12 +1,12 @@
-import { IsEnum, IsString, MinLength, MaxLength } from 'class-validator';
-import { FeedbackCategory } from '../../generated/prisma';
+import { IsEnum, IsString, MinLength, MaxLength } from 'class-validator'
+import { FeedbackCategory } from '../../generated/prisma'
 
 export class CreateFeedbackDto {
   @IsEnum(FeedbackCategory)
-  category!: FeedbackCategory;
+  category!: FeedbackCategory
 
   @IsString()
   @MinLength(10)
   @MaxLength(1000)
-  content!: string;
+  content!: string
 }

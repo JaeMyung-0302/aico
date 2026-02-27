@@ -10,11 +10,22 @@ export interface LoadingProps {
   overlay?: boolean
 }
 
-const Loading = ({ loading, message, fullPage = false, overlay = false }: LoadingProps) => {
+const Loading = ({
+  loading,
+  message,
+  fullPage = false,
+  overlay = false,
+}: LoadingProps) => {
   if (overlay && !loading) return null
 
   return (
-    <div className={cx({ backdrop: overlay, container: !overlay, fullPage: !overlay && fullPage })}>
+    <div
+      className={cx({
+        backdrop: overlay,
+        container: !overlay,
+        fullPage: !overlay && fullPage,
+      })}
+    >
       <div className={cx('dots')}>
         <div className={cx('dot')} />
         <div className={cx('dot')} />

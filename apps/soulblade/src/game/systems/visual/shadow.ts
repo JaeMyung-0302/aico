@@ -20,7 +20,10 @@ const SHADOW_COLOR = 0x000000
 
 export class ShadowSystem {
   private scene: Phaser.Scene
-  private shadowMap = new Map<Phaser.Physics.Arcade.Sprite, Phaser.GameObjects.Ellipse>()
+  private shadowMap = new Map<
+    Phaser.Physics.Arcade.Sprite,
+    Phaser.GameObjects.Ellipse
+  >()
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene

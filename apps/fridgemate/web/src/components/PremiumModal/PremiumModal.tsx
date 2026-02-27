@@ -32,7 +32,8 @@ export const PremiumModal = ({ onClose, onSuccess }: PremiumModalProps) => {
       onClose()
     } catch (err) {
       if (err instanceof Error && err.message === 'USER_CANCELLED') return
-      const message = err instanceof Error ? err.message : '결제에 실패했습니다.'
+      const message =
+        err instanceof Error ? err.message : '결제에 실패했습니다.'
       setError(message)
     } finally {
       setIsProcessing(false)

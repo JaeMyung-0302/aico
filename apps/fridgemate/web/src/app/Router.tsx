@@ -35,16 +35,12 @@ export const router = createBrowserRouter([
       {
         path: '/select',
         element: <Layout />,
-        children: [
-          { index: true, element: <FridgeSelectPage /> },
-        ],
+        children: [{ index: true, element: <FridgeSelectPage /> }],
       },
       {
         path: '/setup',
         element: <Layout />,
-        children: [
-          { index: true, element: <SetupPage /> },
-        ],
+        children: [{ index: true, element: <SetupPage /> }],
       },
       {
         element: <Layout />,
@@ -58,9 +54,7 @@ export const router = createBrowserRouter([
       {
         path: '/settings',
         element: <Layout />,
-        children: [
-          { index: true, element: <SettingsPage /> },
-        ],
+        children: [{ index: true, element: <SettingsPage /> }],
       },
     ],
   },

@@ -108,7 +108,8 @@ export const Player3D = () => {
       groupRef.current.scale.y = MODEL_SCALE
     } else {
       // 대기: 호흡
-      groupRef.current.scale.y = MODEL_SCALE * (1 + Math.sin(anim.timer * 2) * 0.02)
+      groupRef.current.scale.y =
+        MODEL_SCALE * (1 + Math.sin(anim.timer * 2) * 0.02)
       if (rightArm) rightArm.rotation.x = 0
       if (leftArm) leftArm.rotation.x = 0
       if (rightLeg) rightLeg.rotation.x = 0

@@ -9,7 +9,8 @@ const cx = classNames.bind(styles)
 
 export const RegisterPage = () => {
   const navigate = useNavigate()
-  const { register, loading, error, isAuthenticated, needsGroup } = useAuthStore()
+  const { register, loading, error, isAuthenticated, needsGroup } =
+    useAuthStore()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,7 +18,8 @@ export const RegisterPage = () => {
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault()
-      if (!name.trim() || !email.trim() || password.length < 8 || loading) return
+      if (!name.trim() || !email.trim() || password.length < 8 || loading)
+        return
 
       const success = await register(email.trim(), password, name.trim())
       if (success) {
@@ -66,7 +68,9 @@ export const RegisterPage = () => {
         <button
           className={cx('submitBtn')}
           type="submit"
-          disabled={!name.trim() || !email.trim() || password.length < 8 || loading}
+          disabled={
+            !name.trim() || !email.trim() || password.length < 8 || loading
+          }
         >
           {loading ? '가입 중...' : '가입하기'}
         </button>
@@ -74,7 +78,10 @@ export const RegisterPage = () => {
 
       {error && <p className={cx('error')}>{error}</p>}
       <p className={cx('hint')}>
-        이미 계정이 있으신가요? <Link className={cx('link')} to="/login">로그인</Link>
+        이미 계정이 있으신가요?{' '}
+        <Link className={cx('link')} to="/login">
+          로그인
+        </Link>
       </p>
     </div>
   )

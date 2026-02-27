@@ -6,14 +6,22 @@
  */
 
 import type { PassiveSkillId, StatAllocationData } from '@soulblade/shared'
-import { CLASS_CONFIGS, calcExpForLevel, STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES } from '@soulblade/shared'
+import {
+  CLASS_CONFIGS,
+  calcExpForLevel,
+  STAT_POINTS_PER_LEVEL,
+  STAT_POINT_VALUES,
+} from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import type { PlayerEntity } from '../types'
 
 // ── 데미지 처리 ──
 
 /** @mutates player.hp, player.holyShieldActive, player.invincible, player.invincibleTimer, player.active */
-export const playerTakeDamage = (player: PlayerEntity, amount: number): void => {
+export const playerTakeDamage = (
+  player: PlayerEntity,
+  amount: number,
+): void => {
   if (player.invincible) return
 
   // holy_shield 패시브: 피해 1회 무효
@@ -71,13 +79,21 @@ export const playerGainExp = (player: PlayerEntity, amount: number): number => {
 // ── 패시브 스킬 ──
 
 /** @mutates player.passiveSkills, player 스탯 (패시브 효과별) */
-export const playerAddPassiveSkill = (player: PlayerEntity, skillId: PassiveSkillId, level: number): void => {
+export const playerAddPassiveSkill = (
+  player: PlayerEntity,
+  skillId: PassiveSkillId,
+  level: number,
+): void => {
   const prevLevel = player.passiveSkills.get(skillId) ?? 0
   player.passiveSkills.set(skillId, level)
   applyPassiveEffect(player, skillId, level - prevLevel)
 }
 
-const applyPassiveEffect = (player: PlayerEntity, skillId: PassiveSkillId, deltaLevel: number): void => {
+const applyPassiveEffect = (
+  player: PlayerEntity,
+  skillId: PassiveSkillId,
+  deltaLevel: number,
+): void => {
   switch (skillId) {
     case 'atk_boost':
       player.atk += deltaLevel * 3
@@ -115,7 +131,10 @@ const applyPassiveEffect = (player: PlayerEntity, skillId: PassiveSkillId, delta
 // ── 스탯 배분 ──
 
 /** @mutates player.maxHp, player.hp, player.atk, player.def, player.spd, player.crit */
-export const playerAllocateStats = (player: PlayerEntity, allocation: StatAllocationData): void => {
+export const playerAllocateStats = (
+  player: PlayerEntity,
+  allocation: StatAllocationData,
+): void => {
   const hpIncrease = allocation.hp * STAT_POINT_VALUES.hp
   player.maxHp += hpIncrease
   player.hp += hpIncrease
@@ -130,7 +149,10 @@ export const playerAllocateStats = (player: PlayerEntity, allocation: StatAlloca
 // ── 타이머 업데이트 (매 프레임) ──
 
 /** @mutates player.holyShieldActive, player.holyShieldTimer */
-export const playerUpdateHolyShield = (player: PlayerEntity, deltaMs: number): void => {
+export const playerUpdateHolyShield = (
+  player: PlayerEntity,
+  deltaMs: number,
+): void => {
   const shieldLevel = player.passiveSkills.get('holy_shield') ?? 0
   if (shieldLevel <= 0) return
   if (player.holyShieldActive) return
@@ -144,7 +166,10 @@ export const playerUpdateHolyShield = (player: PlayerEntity, deltaMs: number): v
 }
 
 /** @mutates player.invincible, player.invincibleTimer */
-export const playerUpdateInvincibility = (player: PlayerEntity, deltaMs: number): void => {
+export const playerUpdateInvincibility = (
+  player: PlayerEntity,
+  deltaMs: number,
+): void => {
   if (!player.invincible) return
 
   player.invincibleTimer -= deltaMs

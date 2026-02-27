@@ -8,7 +8,12 @@
  */
 
 import { useState, useEffect } from 'react'
-import { TextureLoader, LinearFilter, ClampToEdgeWrapping, RepeatWrapping } from 'three'
+import {
+  TextureLoader,
+  LinearFilter,
+  ClampToEdgeWrapping,
+  RepeatWrapping,
+} from 'three'
 import type { Texture } from 'three'
 import type { CharacterClass, MapId, NpcType } from '@soulblade/shared'
 import { getSpriteTextures } from './sprite-generator'
@@ -25,7 +30,9 @@ import type { SpriteAssetConfig } from './sprite-config'
 const loader = new TextureLoader()
 
 // 단일 스프라이트 텍스처 로드 (실패 시 null)
-const loadSpriteTexture = (config: SpriteAssetConfig): Promise<Texture | null> =>
+const loadSpriteTexture = (
+  config: SpriteAssetConfig,
+): Promise<Texture | null> =>
   new Promise((resolve) => {
     loader.load(
       config.path,
@@ -59,7 +66,7 @@ const loadAllSpriteTextures = async (): Promise<{
   // 플레이어 4클래스 병렬 로드
   const classKeys = Object.keys(PLAYER_SPRITE_ASSETS) as CharacterClass[]
   const playerResults = await Promise.all(
-    classKeys.map((cls) => loadSpriteTexture(PLAYER_SPRITE_ASSETS[cls]))
+    classKeys.map((cls) => loadSpriteTexture(PLAYER_SPRITE_ASSETS[cls])),
   )
 
   const playerMap = { ...base.player }
@@ -74,7 +81,7 @@ const loadAllSpriteTextures = async (): Promise<{
   // 엔티티 (몬스터/엘리트/보스/투사체) 병렬 로드
   const entityKeys = ['monster', 'elite', 'boss', 'projectile'] as const
   const entityResults = await Promise.all(
-    entityKeys.map((key) => loadSpriteTexture(ENTITY_SPRITE_ASSETS[key]))
+    entityKeys.map((key) => loadSpriteTexture(ENTITY_SPRITE_ASSETS[key])),
   )
 
   const entityMap: Record<string, Texture> = {}
@@ -98,7 +105,10 @@ const loadAllSpriteTextures = async (): Promise<{
 }
 
 // 모듈 레벨 캐시: 여러 컴포넌트에서 호출해도 한 번만 로드
-let _loadPromise: Promise<{ merged: SpriteTextures; imageOnly: LoadedImageTextures }> | null = null
+let _loadPromise: Promise<{
+  merged: SpriteTextures
+  imageOnly: LoadedImageTextures
+}> | null = null
 const loadAllCached = () => {
   if (!_loadPromise) {
     _loadPromise = loadAllSpriteTextures()
@@ -148,15 +158,19 @@ export const useSpriteTextures = (): {
   useEffect(() => {
     let cancelled = false
 
-    loadAllCached().then(({ merged }) => {
-      if (cancelled) return
-      setTextures(merged)
-      setLoaded(true)
-    }).catch(() => {
-      // 전체 실패 시 프로시저럴 유지
-    })
+    loadAllCached()
+      .then(({ merged }) => {
+        if (cancelled) return
+        setTextures(merged)
+        setLoaded(true)
+      })
+      .catch(() => {
+        // 전체 실패 시 프로시저럴 유지
+      })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return { textures, loaded }
@@ -184,25 +198,33 @@ export const useNpcTextures = (): {
   textures: Partial<Record<NpcType, Texture>>
   loaded: boolean
 } => {
-  const [textures, setTextures] = useState<Partial<Record<NpcType, Texture>>>({})
+  const [textures, setTextures] = useState<Partial<Record<NpcType, Texture>>>(
+    {},
+  )
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     const npcTypes = Object.keys(NPC_SPRITE_ASSETS) as NpcType[]
 
-    Promise.all(npcTypes.map((t) => loadNpcTexture(t))).then((results) => {
-      if (cancelled) return
-      const map: Partial<Record<NpcType, Texture>> = {}
-      npcTypes.forEach((t, i) => {
-        const tex = results[i]
-        if (tex) map[t] = tex
+    Promise.all(npcTypes.map((t) => loadNpcTexture(t)))
+      .then((results) => {
+        if (cancelled) return
+        const map: Partial<Record<NpcType, Texture>> = {}
+        npcTypes.forEach((t, i) => {
+          const tex = results[i]
+          if (tex) map[t] = tex
+        })
+        setTextures(map)
+        setLoaded(true)
       })
-      setTextures(map)
-      setLoaded(true)
-    }).catch(() => { /* fallback: 프로시저럴 유지 */ })
+      .catch(() => {
+        /* fallback: 프로시저럴 유지 */
+      })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return { textures, loaded }
@@ -211,8 +233,11 @@ export const useNpcTextures = (): {
 // 장애물 텍스처 로드 (spriteType 키 기반 캐시)
 const _obstacleCache: Partial<Record<string, Texture | null>> = {}
 
-export const loadObstacleTexture = (spriteType: string): Promise<Texture | null> => {
-  if (spriteType in _obstacleCache) return Promise.resolve(_obstacleCache[spriteType] ?? null)
+export const loadObstacleTexture = (
+  spriteType: string,
+): Promise<Texture | null> => {
+  if (spriteType in _obstacleCache)
+    return Promise.resolve(_obstacleCache[spriteType] ?? null)
   const config = OBSTACLE_SPRITE_ASSETS[spriteType]
   if (!config) return Promise.resolve(null)
   return loadSpriteTexture(config).then((tex) => {
@@ -227,7 +252,9 @@ export const disposeObstacleTextures = () => {
 }
 
 // 장애물 텍스처 React hook (사용중인 spriteType들만 로드)
-export const useObstacleTextures = (spriteTypes: readonly string[]): {
+export const useObstacleTextures = (
+  spriteTypes: readonly string[],
+): {
   textures: Record<string, Texture>
   loaded: boolean
 } => {
@@ -245,18 +272,24 @@ export const useObstacleTextures = (spriteTypes: readonly string[]): {
 
     let cancelled = false
 
-    Promise.all(types.map((t) => loadObstacleTexture(t))).then((results) => {
-      if (cancelled) return
-      const map: Record<string, Texture> = {}
-      types.forEach((t, i) => {
-        const tex = results[i]
-        if (tex) map[t] = tex
+    Promise.all(types.map((t) => loadObstacleTexture(t)))
+      .then((results) => {
+        if (cancelled) return
+        const map: Record<string, Texture> = {}
+        types.forEach((t, i) => {
+          const tex = results[i]
+          if (tex) map[t] = tex
+        })
+        setTextures(map)
+        setLoaded(true)
       })
-      setTextures(map)
-      setLoaded(true)
-    }).catch(() => { /* fallback: 프로시저럴 유지 */ })
+      .catch(() => {
+        /* fallback: 프로시저럴 유지 */
+      })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [cacheKey])
 
   return { textures, loaded }

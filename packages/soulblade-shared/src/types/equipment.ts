@@ -4,10 +4,21 @@ import type { CharacterStats } from './character.js'
 export type EquipmentType = 'weapon' | 'armor' | 'accessory'
 
 // 장비 등급 (5단계)
-export type EquipmentGrade = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+export type EquipmentGrade =
+  | 'common'
+  | 'uncommon'
+  | 'rare'
+  | 'epic'
+  | 'legendary'
 
 // 장비 태그 (6종 시너지)
-export type EquipmentTag = 'fire' | 'ice' | 'vampire' | 'thunder' | 'holy' | 'poison'
+export type EquipmentTag =
+  | 'fire'
+  | 'ice'
+  | 'vampire'
+  | 'thunder'
+  | 'holy'
+  | 'poison'
 
 // 장비 데이터
 export interface Equipment {

@@ -1,9 +1,16 @@
 import Phaser from 'phaser'
-import type { WaveConfig, MonsterType, EliteMutationType } from '@soulblade/shared'
+import type {
+  WaveConfig,
+  MonsterType,
+  EliteMutationType,
+} from '@soulblade/shared'
 import { Monster } from '../entities/Monster'
 import type { MonsterConfig } from '../entities/Monster'
 import { EliteMonster } from '../entities/EliteMonster'
-import { MAX_CONCURRENT_MONSTERS, MONSTER_TYPE_BASE_DEF } from '@soulblade/shared'
+import {
+  MAX_CONCURRENT_MONSTERS,
+  MONSTER_TYPE_BASE_DEF,
+} from '@soulblade/shared'
 import { GAME_WIDTH, GAME_HEIGHT } from '../config'
 
 interface SpawnState {
@@ -12,7 +19,10 @@ interface SpawnState {
 }
 
 // 몬스터 타입별 스탯 배율
-const MONSTER_TYPE_MULTIPLIERS: Record<MonsterType, { hp: number; atk: number; spd: number }> = {
+const MONSTER_TYPE_MULTIPLIERS: Record<
+  MonsterType,
+  { hp: number; atk: number; spd: number }
+> = {
   normal: { hp: 1.0, atk: 1.0, spd: 1.0 },
   fast: { hp: 0.6, atk: 0.8, spd: 2.0 },
   tank: { hp: 3.0, atk: 0.6, spd: 0.5 },
@@ -20,7 +30,13 @@ const MONSTER_TYPE_MULTIPLIERS: Record<MonsterType, { hp: number; atk: number; s
   swarm: { hp: 0.4, atk: 0.5, spd: 1.5 },
 }
 
-const ELITE_MUTATIONS: readonly EliteMutationType[] = ['speedy', 'armored', 'splitting', 'ranged', 'explosive']
+const ELITE_MUTATIONS: readonly EliteMutationType[] = [
+  'speedy',
+  'armored',
+  'splitting',
+  'ranged',
+  'explosive',
+]
 
 export const createSpawnState = (): SpawnState => ({
   lastSpawnTime: 0,
@@ -76,10 +92,7 @@ export const processSpawn = (
   state.waveNumber += 1
 
   // 한 번에 스폰할 몬스터 수 (시간에 따라 증가)
-  const spawnCount = Math.min(
-    1 + Math.floor(elapsedSeconds / 90),
-    5,
-  )
+  const spawnCount = Math.min(1 + Math.floor(elapsedSeconds / 90), 5)
 
   const config = getMonsterConfig(elapsedSeconds)
 
@@ -128,7 +141,9 @@ export const processWaveSpawn = (
   const interval = 1000 / wave.spawnRate
   if (time - state.lastSpawnTime < interval) return
 
-  const activeMonsters = monsterGroup.getChildren().filter((c) => c.active).length
+  const activeMonsters = monsterGroup
+    .getChildren()
+    .filter((c) => c.active).length
   const activeElites = eliteGroup.getChildren().filter((c) => c.active).length
   if (activeMonsters + activeElites >= wave.maxConcurrent) return
 

@@ -47,11 +47,15 @@ const GameCanvas = ({ gameState, tileMap, effectsRef }: GameCanvasProps) => {
   const mapWidth = (tileMap[0]?.length ?? 0) * TILE_SIZE
   const mapHeight = tileMap.length * TILE_SIZE
 
-  const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight })
+  const [viewport, setViewport] = useState({
+    w: window.innerWidth,
+    h: window.innerHeight,
+  })
 
   useEffect(() => {
     if (!isTouchDevice) return
-    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+    const onResize = () =>
+      setViewport({ w: window.innerWidth, h: window.innerHeight })
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
@@ -69,7 +73,10 @@ const GameCanvas = ({ gameState, tileMap, effectsRef }: GameCanvasProps) => {
     if (shouldResetInterpolation(prevStateRef.current, gameState)) {
       interpRef.current = createInterpolationState(gameState.position)
     } else {
-      interpRef.current = updateInterpolationState(interpRef.current, gameState.position)
+      interpRef.current = updateInterpolationState(
+        interpRef.current,
+        gameState.position,
+      )
     }
     prevStateRef.current = gameState
     collectedSetRef.current = new Set(gameState.collectedCoins)
@@ -77,32 +84,51 @@ const GameCanvas = ({ gameState, tileMap, effectsRef }: GameCanvasProps) => {
     tileMapRef.current = tileMap
   }, [gameState, tileMap])
 
-  const canvasRef = useCanvas((ctx) => {
-    const state = gameStateRef.current
-    const renderPosition = getInterpolatedPosition(interpRef.current, state.direction, state.moving)
+  const canvasRef = useCanvas(
+    (ctx) => {
+      const state = gameStateRef.current
+      const renderPosition = getInterpolatedPosition(
+        interpRef.current,
+        state.direction,
+        state.moving,
+      )
 
-    const cameraOffset = isTouchDevice
-      ? calcCameraOffset(renderPosition, canvasWidth, canvasHeight, mapWidth, mapHeight)
-      : { x: 0, y: 0 }
+      const cameraOffset = isTouchDevice
+        ? calcCameraOffset(
+            renderPosition,
+            canvasWidth,
+            canvasHeight,
+            mapWidth,
+            mapHeight,
+          )
+        : { x: 0, y: 0 }
 
-    // Update effects (particles physics, shake expiry)
-    effectsRef.current = updateEffects(effectsRef.current, DT)
+      // Update effects (particles physics, shake expiry)
+      effectsRef.current = updateEffects(effectsRef.current, DT)
 
-    const timestamp = performance.now()
-    renderFrame(
-      ctx,
-      tileMapRef.current,
-      state,
-      renderPosition,
-      collectedSetRef.current,
-      cameraOffset,
-      state.stage,
-      timestamp,
-      effectsRef.current,
-    )
-  }, canvasWidth, canvasHeight)
+      const timestamp = performance.now()
+      renderFrame(
+        ctx,
+        tileMapRef.current,
+        state,
+        renderPosition,
+        collectedSetRef.current,
+        cameraOffset,
+        state.stage,
+        timestamp,
+        effectsRef.current,
+      )
+    },
+    canvasWidth,
+    canvasHeight,
+  )
 
-  return <canvas ref={canvasRef} style={{ display: 'block', imageRendering: 'pixelated' }} />
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ display: 'block', imageRendering: 'pixelated' }}
+    />
+  )
 }
 
 export default GameCanvas

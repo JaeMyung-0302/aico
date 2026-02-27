@@ -6,7 +6,12 @@ import { useFridgeStore } from '@/stores/useFridgeStore'
 import { api } from '@/lib/api'
 import { FRIDGE_TYPE_LABELS } from '@/types'
 import type { JoinRequestResponse, SubscriptionStatusResponse } from '@/types'
-import { isPushSupported, isPushSubscribed, subscribeToPush, unsubscribeFromPush } from '@/lib/push'
+import {
+  isPushSupported,
+  isPushSubscribed,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from '@/lib/push'
 import { PremiumModal } from '@/components/PremiumModal/PremiumModal'
 import { CompartmentEditModal } from '@/components/CompartmentEditModal'
 import type { FridgeResponse } from '@/types'
@@ -16,7 +21,8 @@ const cx = classNames.bind(styles)
 
 export const SettingsPage = () => {
   const navigate = useNavigate()
-  const { user, groupName, groupCode, isAdmin, fetchMe, logout } = useAuthStore()
+  const { user, groupName, groupCode, isAdmin, fetchMe, logout } =
+    useAuthStore()
   const { fridges, fetchFridges, updateFridge, deleteFridge } = useFridgeStore()
   const [editingFridgeId, setEditingFridgeId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
@@ -27,12 +33,14 @@ export const SettingsPage = () => {
   const [joinRequests, setJoinRequests] = useState<JoinRequestResponse[]>([])
   const [requestLoading, setRequestLoading] = useState<string | null>(null)
   const [requestError, setRequestError] = useState<string | null>(null)
-  const [subscription, setSubscription] = useState<SubscriptionStatusResponse | null>(null)
+  const [subscription, setSubscription] =
+    useState<SubscriptionStatusResponse | null>(null)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
   const [confirmCancelSub, setConfirmCancelSub] = useState(false)
-  const [editingCompartmentsFridge, setEditingCompartmentsFridge] = useState<FridgeResponse | null>(null)
+  const [editingCompartmentsFridge, setEditingCompartmentsFridge] =
+    useState<FridgeResponse | null>(null)
 
   useEffect(() => {
     fetchFridges()
@@ -48,7 +56,9 @@ export const SettingsPage = () => {
     if (!isAdmin) return
     const fetchJoinRequests = async () => {
       try {
-        const data = await api.get<JoinRequestResponse[]>('/join-requests/pending')
+        const data = await api.get<JoinRequestResponse[]>(
+          '/join-requests/pending',
+        )
         setJoinRequests(data)
       } catch {
         // 참여 요청 조회 실패 시 무시
@@ -101,11 +111,15 @@ export const SettingsPage = () => {
         if (ok) {
           setPushEnabled(true)
         } else {
-          setPushError('알림 설정에 실패했습니다. 브라우저 알림 권한을 확인해주세요.')
+          setPushError(
+            '알림 설정에 실패했습니다. 브라우저 알림 권한을 확인해주세요.',
+          )
         }
       }
     } catch {
-      setPushError('알림 설정에 실패했습니다. 브라우저 알림 권한을 확인해주세요.')
+      setPushError(
+        '알림 설정에 실패했습니다. 브라우저 알림 권한을 확인해주세요.',
+      )
     } finally {
       setPushLoading(false)
     }
@@ -161,10 +175,13 @@ export const SettingsPage = () => {
     navigate('/login', { replace: true })
   }, [logout, navigate])
 
-  const handleEditStart = useCallback((fridgeId: string, currentName: string) => {
-    setEditingFridgeId(fridgeId)
-    setEditName(currentName)
-  }, [])
+  const handleEditStart = useCallback(
+    (fridgeId: string, currentName: string) => {
+      setEditingFridgeId(fridgeId)
+      setEditName(currentName)
+    },
+    [],
+  )
 
   const handleEditSave = useCallback(async () => {
     if (!editingFridgeId || !editName.trim()) return
@@ -264,7 +281,9 @@ export const SettingsPage = () => {
             <div key={fridge.id} className={cx('fridgeItem')}>
               <div className={cx('fridgeInfo')}>
                 <span className={cx('fridgeName')}>{fridge.name}</span>
-                <span className={cx('fridgeType')}>{FRIDGE_TYPE_LABELS[fridge.type]}</span>
+                <span className={cx('fridgeType')}>
+                  {FRIDGE_TYPE_LABELS[fridge.type]}
+                </span>
               </div>
               {isAdmin && (
                 <div className={cx('fridgeActions')}>
@@ -338,20 +357,30 @@ export const SettingsPage = () => {
           <div className={cx('card')}>
             <div className={cx('row')}>
               <span className={cx('rowLabel')}>구독 상태</span>
-              <span className={cx('subBadge', {
-                subActive: subscription.isPremium,
-                subInactive: !subscription.isPremium,
-              })}>
-                {subscription.isPremium ? 'Premium' : subscription.status === 'CANCELLED' ? '해지됨' : '미구독'}
+              <span
+                className={cx('subBadge', {
+                  subActive: subscription.isPremium,
+                  subInactive: !subscription.isPremium,
+                })}
+              >
+                {subscription.isPremium
+                  ? 'Premium'
+                  : subscription.status === 'CANCELLED'
+                    ? '해지됨'
+                    : '미구독'}
               </span>
             </div>
             {subscription.currentPeriodEnd && (
               <div className={cx('row')}>
                 <span className={cx('rowLabel')}>
-                  {subscription.status === 'CANCELLED' ? '만료 예정일' : '다음 결제일'}
+                  {subscription.status === 'CANCELLED'
+                    ? '만료 예정일'
+                    : '다음 결제일'}
                 </span>
                 <span className={cx('rowValue')}>
-                  {new Date(subscription.currentPeriodEnd).toLocaleDateString('ko-KR')}
+                  {new Date(subscription.currentPeriodEnd).toLocaleDateString(
+                    'ko-KR',
+                  )}
                 </span>
               </div>
             )}
@@ -365,7 +394,9 @@ export const SettingsPage = () => {
                 {subscription.isPremium && subscription.status === 'ACTIVE' ? (
                   confirmCancelSub ? (
                     <div className={cx('cancelConfirm')}>
-                      <span className={cx('cancelConfirmText')}>정말 해지하시겠습니까?</span>
+                      <span className={cx('cancelConfirmText')}>
+                        정말 해지하시겠습니까?
+                      </span>
                       <div className={cx('cancelConfirmActions')}>
                         <button
                           className={cx('cancelSubBtn')}
@@ -416,7 +447,10 @@ export const SettingsPage = () => {
 
       {/* 삭제 확인 모달 */}
       {deletingFridgeId && (
-        <div className={cx('editOverlay')} onClick={() => setDeletingFridgeId(null)}>
+        <div
+          className={cx('editOverlay')}
+          onClick={() => setDeletingFridgeId(null)}
+        >
           <div className={cx('editModal')} onClick={(e) => e.stopPropagation()}>
             <h3 className={cx('editTitle')}>냉장고 삭제</h3>
             <p className={cx('deleteWarning')}>

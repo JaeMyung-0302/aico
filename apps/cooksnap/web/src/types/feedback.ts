@@ -13,31 +13,31 @@ export enum FeedbackStatus {
 }
 
 export interface Feedback {
-  id: string;
-  userId: string;
-  category: FeedbackCategory;
-  content: string;
-  status: FeedbackStatus;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  userId: string
+  category: FeedbackCategory
+  content: string
+  status: FeedbackStatus
+  createdAt: string
+  updatedAt: string
   user?: {
-    email: string;
-    nickname: string | null;
-  };
+    email: string
+    nickname: string | null
+  }
 }
 
 export interface FeedbackListResponse {
-  data: Feedback[];
-  total: number;
-  page: number;
-  limit: number;
+  data: Feedback[]
+  total: number
+  page: number
+  limit: number
 }
 
 export interface CreateFeedbackRequest {
-  category: FeedbackCategory;
-  content: string;
+  category: FeedbackCategory
+  content: string
 }
 
 export interface UpdateFeedbackStatusRequest {
-  status: FeedbackStatus;
+  status: FeedbackStatus
 }

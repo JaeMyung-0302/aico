@@ -69,7 +69,11 @@ export const GroupSetupPage = () => {
   }, [logout, navigate])
 
   const handleRetry = useCallback(() => {
-    useAuthStore.setState({ joinRequestStatus: 'none', joinRequestGroupName: null, error: null })
+    useAuthStore.setState({
+      joinRequestStatus: 'none',
+      joinRequestGroupName: null,
+      error: null,
+    })
   }, [])
 
   if (!isAuthenticated) {
@@ -93,7 +97,9 @@ export const GroupSetupPage = () => {
 
         <div className={cx('statusCard')}>
           <div className={cx('statusIcon')}>⏳</div>
-          <p className={cx('statusText')}>관리자가 요청을 확인하면 알림을 보내드립니다</p>
+          <p className={cx('statusText')}>
+            관리자가 요청을 확인하면 알림을 보내드립니다
+          </p>
           <button
             className={cx('refreshBtn')}
             onClick={handleRefreshStatus}
@@ -126,7 +132,11 @@ export const GroupSetupPage = () => {
         <div className={cx('statusCard')}>
           <div className={cx('statusIcon')}>✅</div>
           <p className={cx('statusText')}>다시 로그인하면 그룹에 참여됩니다</p>
-          <button className={cx('submitBtn')} onClick={handleReLogin} type="button">
+          <button
+            className={cx('submitBtn')}
+            onClick={handleReLogin}
+            type="button"
+          >
             다시 로그인
           </button>
         </div>
@@ -148,8 +158,14 @@ export const GroupSetupPage = () => {
 
         <div className={cx('statusCard')}>
           <div className={cx('statusIcon')}>❌</div>
-          <p className={cx('statusText')}>다른 그룹에 참여하거나 새 그룹을 만들어보세요</p>
-          <button className={cx('submitBtn')} onClick={handleRetry} type="button">
+          <p className={cx('statusText')}>
+            다른 그룹에 참여하거나 새 그룹을 만들어보세요
+          </p>
+          <button
+            className={cx('submitBtn')}
+            onClick={handleRetry}
+            type="button"
+          >
             다시 시도
           </button>
         </div>
@@ -221,7 +237,9 @@ export const GroupSetupPage = () => {
       )}
 
       {error && <p className={cx('error')}>{error}</p>}
-      <p className={cx('hint')}>가족/룸메이트와 같은 그룹으로 냉장고를 공유하세요</p>
+      <p className={cx('hint')}>
+        가족/룸메이트와 같은 그룹으로 냉장고를 공유하세요
+      </p>
     </div>
   )
 }

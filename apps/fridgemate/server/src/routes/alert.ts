@@ -38,7 +38,9 @@ alertRouter.get('/', async (req, res: Response): Promise<void> => {
       category: item.category,
       quantity: item.quantity,
       unit: item.unit,
-      expiryDate: item.expiryDate ? item.expiryDate.toISOString().split('T')[0] : null,
+      expiryDate: item.expiryDate
+        ? item.expiryDate.toISOString().split('T')[0]
+        : null,
       memo: item.memo,
       expiryStatus: getExpiryStatus(item.expiryDate),
       createdAt: item.createdAt.toISOString(),
@@ -48,7 +50,9 @@ alertRouter.get('/', async (req, res: Response): Promise<void> => {
     }))
 
     // expiryDate가 null인 아이템은 제외 (유통기한 미설정)
-    const filtered = result.filter((item) => item.expiryStatus !== ExpiryStatus.SAFE)
+    const filtered = result.filter(
+      (item) => item.expiryStatus !== ExpiryStatus.SAFE,
+    )
 
     res.json(filtered)
   } catch {

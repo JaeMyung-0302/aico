@@ -16,7 +16,10 @@ const FridgeCard = ({
   fridge: FridgeResponse
   onClick: () => void
 }) => {
-  const totalItems = fridge.compartments.reduce((sum, c) => sum + c.itemCount, 0)
+  const totalItems = fridge.compartments.reduce(
+    (sum, c) => sum + c.itemCount,
+    0,
+  )
   const hasExpiring = fridge.compartments.some((c) => c.hasExpiringItems)
 
   return (
@@ -26,10 +29,14 @@ const FridgeCard = ({
       </div>
       <div className={cx('cardContent')}>
         <span className={cx('cardName')}>{fridge.name}</span>
-        <span className={cx('cardType')}>{FRIDGE_TYPE_LABELS[fridge.type]}</span>
+        <span className={cx('cardType')}>
+          {FRIDGE_TYPE_LABELS[fridge.type]}
+        </span>
         <span className={cx('cardInfo')}>
           {fridge.compartments.length}칸 · {totalItems}개 식재료
-          {hasExpiring && <span className={cx('cardWarning')}> · 유통기한 주의</span>}
+          {hasExpiring && (
+            <span className={cx('cardWarning')}> · 유통기한 주의</span>
+          )}
         </span>
       </div>
       <span className={cx('cardArrow')}>›</span>
@@ -39,7 +46,8 @@ const FridgeCard = ({
 
 export const FridgeSelectPage = () => {
   const navigate = useNavigate()
-  const { fridges, fetchFridges, setActiveFridge, loading, error } = useFridgeStore()
+  const { fridges, fetchFridges, setActiveFridge, loading, error } =
+    useFridgeStore()
 
   useEffect(() => {
     fetchFridges()
@@ -63,7 +71,11 @@ export const FridgeSelectPage = () => {
       <div className={cx('page')}>
         <div className={cx('error')}>
           <p>{error}</p>
-          <button className={cx('retryBtn')} onClick={() => fetchFridges()} type="button">
+          <button
+            className={cx('retryBtn')}
+            onClick={() => fetchFridges()}
+            type="button"
+          >
             다시 시도
           </button>
         </div>

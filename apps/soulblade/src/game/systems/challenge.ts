@@ -75,6 +75,8 @@ export const CHALLENGE_CONFIGS: readonly ChallengeConfig[] = [
 /**
  * 도전 모드 설정 조회
  */
-export const getChallengeConfig = (mode: ChallengeMode): ChallengeConfig | null => {
+export const getChallengeConfig = (
+  mode: ChallengeMode,
+): ChallengeConfig | null => {
   return CHALLENGE_CONFIGS.find((c) => c.mode === mode) ?? null
 }

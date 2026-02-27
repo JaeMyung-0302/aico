@@ -45,7 +45,8 @@ export const ActiveSkillButton = ({ classType }: ActiveSkillButtonProps) => {
     return () => clearInterval(id)
   }, [isOnCooldown])
 
-  const cooldownPercent = cooldownSec > 0 ? (cooldownRemaining / cooldownSec) * 100 : 0
+  const cooldownPercent =
+    cooldownSec > 0 ? (cooldownRemaining / cooldownSec) * 100 : 0
 
   return (
     <button

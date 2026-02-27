@@ -67,7 +67,10 @@ export const LoginPage = () => {
 
       {error && <p className={cx('error')}>{error}</p>}
       <p className={cx('hint')}>
-        계정이 없으신가요? <Link className={cx('link')} to="/register">회원가입</Link>
+        계정이 없으신가요?{' '}
+        <Link className={cx('link')} to="/register">
+          회원가입
+        </Link>
       </p>
     </div>
   )

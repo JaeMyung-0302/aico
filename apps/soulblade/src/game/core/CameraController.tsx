@@ -90,13 +90,15 @@ export const CameraController = ({ mapId }: CameraControllerProps) => {
     const mapH = mapConfig.worldSize.height
 
     // 맵이 화면보다 작으면 센터 고정, 크면 클램프
-    const clampedX = mapW <= halfViewW * 2
-      ? mapW / 2
-      : clamp(newX, halfViewW, mapW - halfViewW)
+    const clampedX =
+      mapW <= halfViewW * 2
+        ? mapW / 2
+        : clamp(newX, halfViewW, mapW - halfViewW)
 
-    const clampedY = mapH <= halfViewH * 2
-      ? -mapH / 2
-      : clamp(newY, -mapH + halfViewH, -halfViewH)
+    const clampedY =
+      mapH <= halfViewH * 2
+        ? -mapH / 2
+        : clamp(newY, -mapH + halfViewH, -halfViewH)
 
     camera.position.x = clampedX
     // 기울기 보정: 카메라를 Y+ 방향으로 이동하여 시점 중심 유지

@@ -18,7 +18,12 @@ import { Canvas } from '@react-three/fiber'
 import { useCallback, useEffect, useState } from 'react'
 import { PCFShadowMap } from 'three'
 import type { RootState } from '@react-three/fiber'
-import type { CharacterClass, CharacterStats, Equipment, MapId } from '@soulblade/shared'
+import type {
+  CharacterClass,
+  CharacterStats,
+  Equipment,
+  MapId,
+} from '@soulblade/shared'
 import { CLASS_CONFIGS } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import { useSaveStore } from '@/stores/useSaveStore'
@@ -57,7 +62,11 @@ const handleCreated = (state: RootState) => {
 }
 
 // R3F Canvas 외부의 React 이벤트 리스너 (game:start 등)
-const GameEventHandler = ({ onMapChange }: { onMapChange: (mapId: MapId) => void }) => {
+const GameEventHandler = ({
+  onMapChange,
+}: {
+  onMapChange: (mapId: MapId) => void
+}) => {
   useEffect(() => {
     initAudioR3F()
 
@@ -77,13 +86,15 @@ const GameEventHandler = ({ onMapChange }: { onMapChange: (mapId: MapId) => void
       const spawnY = mapConfig.playerSpawn.y
 
       // 플레이어 생성
-      useEntityStore.getState().initPlayer(
-        spawnX,
-        spawnY,
-        data.classType,
-        data.stats,
-        data.characterName,
-      )
+      useEntityStore
+        .getState()
+        .initPlayer(
+          spawnX,
+          spawnY,
+          data.classType,
+          data.stats,
+          data.characterName,
+        )
 
       // BGM 재생 + 맵 UI 업데이트
       playBgmR3F(data.mapId)
@@ -128,7 +139,11 @@ const GameEventHandler = ({ onMapChange }: { onMapChange: (mapId: MapId) => void
       startTimerId = setTimeout(() => eventBus.emit('game:start', pending), 0)
     } else {
       const saveState = useSaveStore.getState()
-      if (!useEntityStore.getState().player && saveState.loaded && saveState.classLocked) {
+      if (
+        !useEntityStore.getState().player &&
+        saveState.loaded &&
+        saveState.classLocked
+      ) {
         const config = CLASS_CONFIGS[saveState.characterClass]
         const base = config.baseStats
         const saved = saveState.characterStats
@@ -141,13 +156,17 @@ const GameEventHandler = ({ onMapChange }: { onMapChange: (mapId: MapId) => void
           crit: saved.crit - base.crit,
           critDmg: saved.critDmg - base.critDmg,
         }
-        startTimerId = setTimeout(() => eventBus.emit('game:start', {
-          mapId: saveState.currentMapId,
-          classType: saveState.characterClass,
-          stats: permanentDelta,
-          equippedItems: [],
-          characterName: saveState.characterName || undefined,
-        }), 0)
+        startTimerId = setTimeout(
+          () =>
+            eventBus.emit('game:start', {
+              mapId: saveState.currentMapId,
+              classType: saveState.characterClass,
+              stats: permanentDelta,
+              equippedItems: [],
+              characterName: saveState.characterName || undefined,
+            }),
+          0,
+        )
       }
     }
 
@@ -170,11 +189,16 @@ const SceneContents = ({ currentMapId }: { currentMapId: MapId }) => {
   const { loaded: spriteLoaded } = useSpriteTextures()
 
   // AI 스프라이트 로드 시 빌보드 우선, 아니면 기존 3D/빌보드 LOD 분기
-  const useBillboard = (config.preferBillboard && spriteLoaded) || !config.enable3DModels
+  const useBillboard =
+    (config.preferBillboard && spriteLoaded) || !config.enable3DModels
 
   return (
     <>
-      <LightingRig mapId={currentMapId} enabled={config.enableLighting} enableShadows={config.enableShadows} />
+      <LightingRig
+        mapId={currentMapId}
+        enabled={config.enableLighting}
+        enableShadows={config.enableShadows}
+      />
       <DynamicLights enabled={config.enableDynamicLights} />
       <MapScene mapId={currentMapId} />
       <VFXManager
@@ -183,11 +207,31 @@ const SceneContents = ({ currentMapId }: { currentMapId: MapId }) => {
         worldHeight={mapConfig.worldSize.height}
         quality={quality}
       />
-      {useBillboard ? <PlayerBillboard key="player-bb" /> : <Player3D key="player-3d" />}
-      {useBillboard ? <MonsterBillboard key="monster-bb" /> : <Monster3D key="monster-3d" />}
-      {useBillboard ? <EliteBillboard key="elite-bb" /> : <Elite3D key="elite-3d" />}
-      {useBillboard ? <ProjectileBillboard key="proj-bb" /> : <Projectile3D key="proj-3d" />}
-      {useBillboard ? <BossBillboard key="boss-bb" /> : <Boss3D key="boss-3d" />}
+      {useBillboard ? (
+        <PlayerBillboard key="player-bb" />
+      ) : (
+        <Player3D key="player-3d" />
+      )}
+      {useBillboard ? (
+        <MonsterBillboard key="monster-bb" />
+      ) : (
+        <Monster3D key="monster-3d" />
+      )}
+      {useBillboard ? (
+        <EliteBillboard key="elite-bb" />
+      ) : (
+        <Elite3D key="elite-3d" />
+      )}
+      {useBillboard ? (
+        <ProjectileBillboard key="proj-bb" />
+      ) : (
+        <Projectile3D key="proj-3d" />
+      )}
+      {useBillboard ? (
+        <BossBillboard key="boss-bb" />
+      ) : (
+        <Boss3D key="boss-3d" />
+      )}
       <HpBarOverlay />
       <DamageNumbers />
       <PostProcessing

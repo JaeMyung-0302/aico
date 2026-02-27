@@ -31,8 +31,10 @@ export const BottomNav = () => {
         <button
           key={item.path}
           className={cx('tab', {
-            tabActive: location.pathname.startsWith(item.path)
-              || (item.path === '/select' && location.pathname.startsWith('/fridge')),
+            tabActive:
+              location.pathname.startsWith(item.path) ||
+              (item.path === '/select' &&
+                location.pathname.startsWith('/fridge')),
           })}
           onClick={() => handleNavigate(item.path)}
           type="button"

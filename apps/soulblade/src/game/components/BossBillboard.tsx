@@ -34,7 +34,9 @@ export const BossBillboard = () => {
   }, [textures])
 
   useEffect(() => {
-    return () => { texture.dispose() }
+    return () => {
+      texture.dispose()
+    }
   }, [texture])
 
   useFrame((state, delta) => {
@@ -68,7 +70,11 @@ export const BossBillboard = () => {
         break
       case 'aoe': {
         const pulse = Math.sin(anim.timer * 10) * 0.08
-        meshRef.current.scale.set(MODEL_SCALE * (1 + pulse), MODEL_SCALE * (1 + pulse), 1)
+        meshRef.current.scale.set(
+          MODEL_SCALE * (1 + pulse),
+          MODEL_SCALE * (1 + pulse),
+          1,
+        )
         mat.color.setRGB(1, 0.8, 0.7)
         break
       }
@@ -90,7 +96,12 @@ export const BossBillboard = () => {
   return (
     <mesh ref={meshRef}>
       <planeGeometry args={[SPRITE_W, SPRITE_H]} />
-      <meshBasicMaterial ref={materialRef} map={texture} transparent alphaTest={0.1} />
+      <meshBasicMaterial
+        ref={materialRef}
+        map={texture}
+        transparent
+        alphaTest={0.1}
+      />
     </mesh>
   )
 }

@@ -13,7 +13,11 @@
 
 import { useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { EffectComposer, Bloom, ChromaticAberration } from '@react-three/postprocessing'
+import {
+  EffectComposer,
+  Bloom,
+  ChromaticAberration,
+} from '@react-three/postprocessing'
 import { Vector2 } from 'three'
 import { eventBus } from '@/lib/event-bus'
 
@@ -25,7 +29,10 @@ interface PostProcessingProps {
   enableChromaticAberration: boolean
 }
 
-export const PostProcessing = ({ enableBloom, enableChromaticAberration }: PostProcessingProps) => {
+export const PostProcessing = ({
+  enableBloom,
+  enableChromaticAberration,
+}: PostProcessingProps) => {
   const offsetRef = useRef(new Vector2(0, 0))
   const aberrationState = useRef({ age: 0, active: false })
 
@@ -33,7 +40,13 @@ export const PostProcessing = ({ enableBloom, enableChromaticAberration }: PostP
   useEffect(() => {
     if (!enableChromaticAberration) return
 
-    const onDamage = (data: { x: number; y: number; damage: number; isCrit: boolean; color?: string }) => {
+    const onDamage = (data: {
+      x: number
+      y: number
+      damage: number
+      isCrit: boolean
+      color?: string
+    }) => {
       // 플레이어 피격 (빨간색 데미지)
       if (data.color === '#ff4444') {
         aberrationState.current.age = 0
@@ -72,8 +85,8 @@ export const PostProcessing = ({ enableBloom, enableChromaticAberration }: PostP
   return (
     <EffectComposer enabled multisampling={0}>
       <Bloom
-        intensity={enableBloom ? 0.90 : 0}
-        luminanceThreshold={0.40}
+        intensity={enableBloom ? 0.9 : 0}
+        luminanceThreshold={0.4}
         luminanceSmoothing={0.4}
         mipmapBlur
       />

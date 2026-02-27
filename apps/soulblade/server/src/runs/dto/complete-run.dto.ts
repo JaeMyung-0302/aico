@@ -1,41 +1,50 @@
-import { IsString, IsNumber, IsBoolean, IsArray, Min, Max, IsNotEmpty, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsArray,
+  Min,
+  Max,
+  IsNotEmpty,
+  IsIn,
+} from 'class-validator'
 
 export class CompleteRunDto {
   @IsString()
   @IsNotEmpty()
-  characterId!: string;
+  characterId!: string
 
   @IsString()
   @IsIn(['Warrior', 'Archer', 'Mage', 'Paladin'])
-  classType!: string;
+  classType!: string
 
   @IsString()
   @IsIn(['serpent_forest', 'ice_cave', 'flame_castle'])
-  stageId!: string;
+  stageId!: string
 
   @IsNumber()
   @Min(0)
   @Max(9999999)
-  score!: number;
+  score!: number
 
   @IsNumber()
   @Min(0)
-  survivedSeconds!: number;
+  survivedSeconds!: number
 
   @IsNumber()
   @Min(0)
   @Max(10000)
-  monstersKilled!: number;
+  monstersKilled!: number
 
   @IsBoolean()
-  bossKilled!: boolean;
+  bossKilled!: boolean
 
   @IsNumber()
   @Min(1)
   @Max(100)
-  maxLevel!: number;
+  maxLevel!: number
 
   @IsArray()
   @IsString({ each: true })
-  skillsAcquired!: string[];
+  skillsAcquired!: string[]
 }

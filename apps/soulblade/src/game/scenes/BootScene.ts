@@ -1,5 +1,13 @@
 import Phaser from 'phaser'
-import { PLAYER_SPRITESHEET_KEYS, PLAYER_ANIM_KEYS, MONSTER_TEXTURES, PROJECTILE_TEXTURE, BG_TEXTURES, VFX_TEXTURES, PARALLAX_TEXTURES } from '../texture-keys'
+import {
+  PLAYER_SPRITESHEET_KEYS,
+  PLAYER_ANIM_KEYS,
+  MONSTER_TEXTURES,
+  PROJECTILE_TEXTURE,
+  BG_TEXTURES,
+  VFX_TEXTURES,
+  PARALLAX_TEXTURES,
+} from '../texture-keys'
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -34,7 +42,12 @@ export class BootScene extends Phaser.Scene {
   }
 
   // --- spritesheet 프레임 등록 헬퍼 ---
-  private registerSpritesheet(key: string, frameWidth: number, frameHeight: number, frameCount: number): void {
+  private registerSpritesheet(
+    key: string,
+    frameWidth: number,
+    frameHeight: number,
+    frameCount: number,
+  ): void {
     const tex = this.textures.get(key)
     for (let i = 0; i < frameCount; i++) {
       tex.add(i, 0, i * frameWidth, 0, frameWidth, frameHeight)
@@ -47,53 +60,77 @@ export class BootScene extends Phaser.Scene {
     const W = 32
 
     const drawBody = (ox: number, walkPhase: 0 | 1 | 2 = 0): void => {
-      g.fillStyle(0x666666, 1); g.fillCircle(ox + 16, 8, 7)
-      g.fillStyle(0x888888, 1); g.fillRect(ox + 10, 2, 12, 3)
-      g.fillStyle(0x222222, 1); g.fillRect(ox + 12, 7, 8, 2)
-      g.fillStyle(0x556677, 1); g.fillRoundedRect(ox + 8, 15, 16, 14, 2)
-      g.fillStyle(0x667788, 1); g.fillRect(ox + 12, 16, 8, 12)
+      g.fillStyle(0x666666, 1)
+      g.fillCircle(ox + 16, 8, 7)
+      g.fillStyle(0x888888, 1)
+      g.fillRect(ox + 10, 2, 12, 3)
+      g.fillStyle(0x222222, 1)
+      g.fillRect(ox + 12, 7, 8, 2)
+      g.fillStyle(0x556677, 1)
+      g.fillRoundedRect(ox + 8, 15, 16, 14, 2)
+      g.fillStyle(0x667788, 1)
+      g.fillRect(ox + 12, 16, 8, 12)
       g.fillStyle(0x778899, 1)
-      g.fillRoundedRect(ox + 4, 14, 8, 6, 2); g.fillRoundedRect(ox + 20, 14, 8, 6, 2)
+      g.fillRoundedRect(ox + 4, 14, 8, 6, 2)
+      g.fillRoundedRect(ox + 20, 14, 8, 6, 2)
       g.fillStyle(0x445566, 1)
       g.fillRoundedRect(ox + 3, 20, 6, 10, 1)
-      g.fillStyle(0x8899aa, 1); g.fillRect(ox + 4, 21, 4, 8)
+      g.fillStyle(0x8899aa, 1)
+      g.fillRect(ox + 4, 21, 4, 8)
       const lS = walkPhase === 1 ? -3 : walkPhase === 2 ? 3 : 0
       const rS = walkPhase === 1 ? 3 : walkPhase === 2 ? -3 : 0
       g.fillStyle(0x445566, 1)
-      g.fillRoundedRect(ox + 10, 29 + lS, 5, 12, 1); g.fillRoundedRect(ox + 17, 29 + rS, 5, 12, 1)
+      g.fillRoundedRect(ox + 10, 29 + lS, 5, 12, 1)
+      g.fillRoundedRect(ox + 17, 29 + rS, 5, 12, 1)
       g.fillStyle(0x554433, 1)
-      g.fillRoundedRect(ox + 9, 38 + lS, 7, 5, 1); g.fillRoundedRect(ox + 16, 38 + rS, 7, 5, 1)
+      g.fillRoundedRect(ox + 9, 38 + lS, 7, 5, 1)
+      g.fillRoundedRect(ox + 16, 38 + rS, 7, 5, 1)
     }
 
     // Frame 0: idle — 검 수직
     drawBody(0)
-    g.fillStyle(0x445566, 1); g.fillRoundedRect(23, 20, 5, 8, 1)
-    g.fillStyle(0xccccdd, 1); g.fillRect(25, 12, 2, 14)
-    g.fillStyle(0x886633, 1); g.fillRect(23, 25, 6, 2)
+    g.fillStyle(0x445566, 1)
+    g.fillRoundedRect(23, 20, 5, 8, 1)
+    g.fillStyle(0xccccdd, 1)
+    g.fillRect(25, 12, 2, 14)
+    g.fillStyle(0x886633, 1)
+    g.fillRect(23, 25, 6, 2)
 
     // Frame 1: 검 들어올림
     drawBody(W)
-    g.fillStyle(0x445566, 1); g.fillRoundedRect(W + 22, 14, 5, 8, 1)
-    g.fillStyle(0xccccdd, 1); g.fillRect(W + 24, 4, 2, 14)
-    g.fillStyle(0x886633, 1); g.fillRect(W + 22, 17, 6, 2)
+    g.fillStyle(0x445566, 1)
+    g.fillRoundedRect(W + 22, 14, 5, 8, 1)
+    g.fillStyle(0xccccdd, 1)
+    g.fillRect(W + 24, 4, 2, 14)
+    g.fillStyle(0x886633, 1)
+    g.fillRect(W + 22, 17, 6, 2)
 
     // Frame 2: 검 수평 휘두르기
     drawBody(W * 2)
-    g.fillStyle(0x445566, 1); g.fillRoundedRect(W * 2 + 22, 20, 8, 5, 1)
-    g.fillStyle(0xccccdd, 1); g.fillRect(W * 2 + 20, 21, 12, 2)
-    g.fillStyle(0x886633, 1); g.fillRect(W * 2 + 20, 19, 2, 6)
+    g.fillStyle(0x445566, 1)
+    g.fillRoundedRect(W * 2 + 22, 20, 8, 5, 1)
+    g.fillStyle(0xccccdd, 1)
+    g.fillRect(W * 2 + 20, 21, 12, 2)
+    g.fillStyle(0x886633, 1)
+    g.fillRect(W * 2 + 20, 19, 2, 6)
 
     // Frame 3: walk 1 — 왼발 앞
     drawBody(W * 3, 1)
-    g.fillStyle(0x445566, 1); g.fillRoundedRect(W * 3 + 23, 20, 5, 8, 1)
-    g.fillStyle(0xccccdd, 1); g.fillRect(W * 3 + 25, 12, 2, 14)
-    g.fillStyle(0x886633, 1); g.fillRect(W * 3 + 23, 25, 6, 2)
+    g.fillStyle(0x445566, 1)
+    g.fillRoundedRect(W * 3 + 23, 20, 5, 8, 1)
+    g.fillStyle(0xccccdd, 1)
+    g.fillRect(W * 3 + 25, 12, 2, 14)
+    g.fillStyle(0x886633, 1)
+    g.fillRect(W * 3 + 23, 25, 6, 2)
 
     // Frame 4: walk 2 — 오른발 앞
     drawBody(W * 4, 2)
-    g.fillStyle(0x445566, 1); g.fillRoundedRect(W * 4 + 23, 20, 5, 8, 1)
-    g.fillStyle(0xccccdd, 1); g.fillRect(W * 4 + 25, 12, 2, 14)
-    g.fillStyle(0x886633, 1); g.fillRect(W * 4 + 23, 25, 6, 2)
+    g.fillStyle(0x445566, 1)
+    g.fillRoundedRect(W * 4 + 23, 20, 5, 8, 1)
+    g.fillStyle(0xccccdd, 1)
+    g.fillRect(W * 4 + 25, 12, 2, 14)
+    g.fillStyle(0x886633, 1)
+    g.fillRect(W * 4 + 23, 25, 6, 2)
 
     g.generateTexture(PLAYER_SPRITESHEET_KEYS.Warrior, W * 5, 48)
     g.destroy()
@@ -106,62 +143,91 @@ export class BootScene extends Phaser.Scene {
     const W = 32
 
     const drawBody = (ox: number, walkPhase: 0 | 1 | 2 = 0): void => {
-      g.fillStyle(0x443366, 1); g.fillCircle(ox + 16, 8, 7)
-      g.fillStyle(0x332255, 1); g.fillTriangle(ox + 10, 4, ox + 16, 0, ox + 22, 4)
-      g.fillStyle(0x221133, 1); g.fillCircle(ox + 16, 9, 4)
+      g.fillStyle(0x443366, 1)
+      g.fillCircle(ox + 16, 8, 7)
+      g.fillStyle(0x332255, 1)
+      g.fillTriangle(ox + 10, 4, ox + 16, 0, ox + 22, 4)
+      g.fillStyle(0x221133, 1)
+      g.fillCircle(ox + 16, 9, 4)
       g.fillStyle(0xaa88ff, 0.8)
-      g.fillCircle(ox + 14, 8, 1.5); g.fillCircle(ox + 18, 8, 1.5)
-      g.fillStyle(0x443366, 1); g.fillTriangle(ox + 6, 44, ox + 16, 15, ox + 26, 44)
-      g.fillStyle(0x554477, 1); g.fillRect(ox + 13, 16, 6, 10)
-      g.fillStyle(0xaa8833, 1); g.fillRect(ox + 10, 26, 12, 2)
+      g.fillCircle(ox + 14, 8, 1.5)
+      g.fillCircle(ox + 18, 8, 1.5)
+      g.fillStyle(0x443366, 1)
+      g.fillTriangle(ox + 6, 44, ox + 16, 15, ox + 26, 44)
+      g.fillStyle(0x554477, 1)
+      g.fillRect(ox + 13, 16, 6, 10)
+      g.fillStyle(0xaa8833, 1)
+      g.fillRect(ox + 10, 26, 12, 2)
       if (walkPhase === 1) {
         g.fillStyle(0x332255, 1)
-        g.fillRoundedRect(ox + 9, 42, 5, 4, 1); g.fillRoundedRect(ox + 19, 44, 5, 3, 1)
+        g.fillRoundedRect(ox + 9, 42, 5, 4, 1)
+        g.fillRoundedRect(ox + 19, 44, 5, 3, 1)
       } else if (walkPhase === 2) {
         g.fillStyle(0x332255, 1)
-        g.fillRoundedRect(ox + 9, 44, 5, 3, 1); g.fillRoundedRect(ox + 19, 42, 5, 4, 1)
+        g.fillRoundedRect(ox + 9, 44, 5, 3, 1)
+        g.fillRoundedRect(ox + 19, 42, 5, 4, 1)
       }
     }
 
     // Frame 0: idle — 지팡이 수직
     drawBody(0)
     g.fillStyle(0x443366, 1)
-    g.fillRoundedRect(5, 20, 5, 8, 1); g.fillRoundedRect(22, 20, 5, 8, 1)
-    g.fillStyle(0x886644, 1); g.fillRect(25, 6, 2, 34)
-    g.fillStyle(0xaa66ff, 0.9); g.fillCircle(26, 5, 4)
-    g.fillStyle(0xcc99ff, 0.6); g.fillCircle(26, 5, 2)
+    g.fillRoundedRect(5, 20, 5, 8, 1)
+    g.fillRoundedRect(22, 20, 5, 8, 1)
+    g.fillStyle(0x886644, 1)
+    g.fillRect(25, 6, 2, 34)
+    g.fillStyle(0xaa66ff, 0.9)
+    g.fillCircle(26, 5, 4)
+    g.fillStyle(0xcc99ff, 0.6)
+    g.fillCircle(26, 5, 2)
 
     // Frame 1: 캐스팅 준비 — 양손 들어올림, 보주 밝아짐
     drawBody(W)
     g.fillStyle(0x443366, 1)
-    g.fillRoundedRect(W + 4, 14, 5, 8, 1); g.fillRoundedRect(W + 22, 14, 5, 8, 1)
-    g.fillStyle(0x886644, 1); g.fillRect(W + 25, 2, 2, 30)
-    g.fillStyle(0xcc88ff, 0.9); g.fillCircle(W + 26, 2, 5)
-    g.fillStyle(0xeeccff, 0.7); g.fillCircle(W + 26, 2, 3)
+    g.fillRoundedRect(W + 4, 14, 5, 8, 1)
+    g.fillRoundedRect(W + 22, 14, 5, 8, 1)
+    g.fillStyle(0x886644, 1)
+    g.fillRect(W + 25, 2, 2, 30)
+    g.fillStyle(0xcc88ff, 0.9)
+    g.fillCircle(W + 26, 2, 5)
+    g.fillStyle(0xeeccff, 0.7)
+    g.fillCircle(W + 26, 2, 3)
 
     // Frame 2: 캐스팅 발동 — 양손 앞으로, 보주 최대 발광
     drawBody(W * 2)
     g.fillStyle(0x443366, 1)
-    g.fillRoundedRect(W * 2 + 3, 18, 6, 6, 1); g.fillRoundedRect(W * 2 + 23, 18, 6, 6, 1)
-    g.fillStyle(0x886644, 1); g.fillRect(W * 2 + 25, 4, 2, 28)
-    g.fillStyle(0xdd99ff, 0.9); g.fillCircle(W * 2 + 26, 3, 6)
-    g.fillStyle(0xffffff, 0.5); g.fillCircle(W * 2 + 26, 3, 3)
+    g.fillRoundedRect(W * 2 + 3, 18, 6, 6, 1)
+    g.fillRoundedRect(W * 2 + 23, 18, 6, 6, 1)
+    g.fillStyle(0x886644, 1)
+    g.fillRect(W * 2 + 25, 4, 2, 28)
+    g.fillStyle(0xdd99ff, 0.9)
+    g.fillCircle(W * 2 + 26, 3, 6)
+    g.fillStyle(0xffffff, 0.5)
+    g.fillCircle(W * 2 + 26, 3, 3)
 
     // Frame 3: walk 1 — 왼발 앞
     drawBody(W * 3, 1)
     g.fillStyle(0x443366, 1)
-    g.fillRoundedRect(W * 3 + 5, 20, 5, 8, 1); g.fillRoundedRect(W * 3 + 22, 20, 5, 8, 1)
-    g.fillStyle(0x886644, 1); g.fillRect(W * 3 + 25, 6, 2, 34)
-    g.fillStyle(0xaa66ff, 0.9); g.fillCircle(W * 3 + 26, 5, 4)
-    g.fillStyle(0xcc99ff, 0.6); g.fillCircle(W * 3 + 26, 5, 2)
+    g.fillRoundedRect(W * 3 + 5, 20, 5, 8, 1)
+    g.fillRoundedRect(W * 3 + 22, 20, 5, 8, 1)
+    g.fillStyle(0x886644, 1)
+    g.fillRect(W * 3 + 25, 6, 2, 34)
+    g.fillStyle(0xaa66ff, 0.9)
+    g.fillCircle(W * 3 + 26, 5, 4)
+    g.fillStyle(0xcc99ff, 0.6)
+    g.fillCircle(W * 3 + 26, 5, 2)
 
     // Frame 4: walk 2 — 오른발 앞
     drawBody(W * 4, 2)
     g.fillStyle(0x443366, 1)
-    g.fillRoundedRect(W * 4 + 5, 20, 5, 8, 1); g.fillRoundedRect(W * 4 + 22, 20, 5, 8, 1)
-    g.fillStyle(0x886644, 1); g.fillRect(W * 4 + 25, 6, 2, 34)
-    g.fillStyle(0xaa66ff, 0.9); g.fillCircle(W * 4 + 26, 5, 4)
-    g.fillStyle(0xcc99ff, 0.6); g.fillCircle(W * 4 + 26, 5, 2)
+    g.fillRoundedRect(W * 4 + 5, 20, 5, 8, 1)
+    g.fillRoundedRect(W * 4 + 22, 20, 5, 8, 1)
+    g.fillStyle(0x886644, 1)
+    g.fillRect(W * 4 + 25, 6, 2, 34)
+    g.fillStyle(0xaa66ff, 0.9)
+    g.fillCircle(W * 4 + 26, 5, 4)
+    g.fillStyle(0xcc99ff, 0.6)
+    g.fillCircle(W * 4 + 26, 5, 2)
 
     g.generateTexture(PLAYER_SPRITESHEET_KEYS.Mage, W * 5, 48)
     g.destroy()
@@ -174,57 +240,79 @@ export class BootScene extends Phaser.Scene {
     const W = 32
 
     const drawBody = (ox: number, walkPhase: 0 | 1 | 2 = 0): void => {
-      g.fillStyle(0xccaa44, 1); g.fillCircle(ox + 16, 8, 7)
+      g.fillStyle(0xccaa44, 1)
+      g.fillCircle(ox + 16, 8, 7)
       g.fillStyle(0xddbb55, 1)
       g.fillTriangle(ox + 6, 6, ox + 10, 0, ox + 12, 8)
       g.fillTriangle(ox + 20, 8, ox + 22, 0, ox + 26, 6)
-      g.fillStyle(0x222222, 1); g.fillRect(ox + 12, 7, 8, 2)
+      g.fillStyle(0x222222, 1)
+      g.fillRect(ox + 12, 7, 8, 2)
       g.fillStyle(0xddddee, 0.6)
       g.fillTriangle(ox + 8, 15, ox + 16, 14, ox + 24, 15)
       g.fillTriangle(ox + 5, 42, ox + 16, 15, ox + 27, 42)
-      g.fillStyle(0xccaa44, 1); g.fillRoundedRect(ox + 8, 15, 16, 14, 2)
+      g.fillStyle(0xccaa44, 1)
+      g.fillRoundedRect(ox + 8, 15, 16, 14, 2)
       g.fillStyle(0xeedd66, 1)
-      g.fillRect(ox + 14, 17, 4, 10); g.fillRect(ox + 11, 20, 10, 3)
+      g.fillRect(ox + 14, 17, 4, 10)
+      g.fillRect(ox + 11, 20, 10, 3)
       g.fillStyle(0xddbb55, 1)
-      g.fillRoundedRect(ox + 4, 14, 7, 6, 2); g.fillRoundedRect(ox + 21, 14, 7, 6, 2)
+      g.fillRoundedRect(ox + 4, 14, 7, 6, 2)
+      g.fillRoundedRect(ox + 21, 14, 7, 6, 2)
       g.fillStyle(0xbbaa44, 1)
       g.fillRoundedRect(ox + 4, 20, 5, 9, 1)
       const lS = walkPhase === 1 ? -3 : walkPhase === 2 ? 3 : 0
       const rS = walkPhase === 1 ? 3 : walkPhase === 2 ? -3 : 0
-      g.fillRoundedRect(ox + 10, 29 + lS, 5, 11, 1); g.fillRoundedRect(ox + 17, 29 + rS, 5, 11, 1)
+      g.fillRoundedRect(ox + 10, 29 + lS, 5, 11, 1)
+      g.fillRoundedRect(ox + 17, 29 + rS, 5, 11, 1)
       g.fillStyle(0xaa8833, 1)
-      g.fillRoundedRect(ox + 9, 38 + lS, 7, 5, 1); g.fillRoundedRect(ox + 16, 38 + rS, 7, 5, 1)
+      g.fillRoundedRect(ox + 9, 38 + lS, 7, 5, 1)
+      g.fillRoundedRect(ox + 16, 38 + rS, 7, 5, 1)
     }
 
     // Frame 0: idle — 해머 옆으로
     drawBody(0)
-    g.fillStyle(0xbbaa44, 1); g.fillRoundedRect(23, 20, 5, 9, 1)
-    g.fillStyle(0x887733, 1); g.fillRect(25, 10, 2, 18)
-    g.fillStyle(0xccaa44, 1); g.fillRect(22, 8, 8, 5)
+    g.fillStyle(0xbbaa44, 1)
+    g.fillRoundedRect(23, 20, 5, 9, 1)
+    g.fillStyle(0x887733, 1)
+    g.fillRect(25, 10, 2, 18)
+    g.fillStyle(0xccaa44, 1)
+    g.fillRect(22, 8, 8, 5)
 
     // Frame 1: 해머 들어올리기 (머리 위)
     drawBody(W)
-    g.fillStyle(0xbbaa44, 1); g.fillRoundedRect(W + 22, 12, 5, 8, 1)
-    g.fillStyle(0x887733, 1); g.fillRect(W + 20, 2, 2, 14)
-    g.fillStyle(0xccaa44, 1); g.fillRect(W + 17, 0, 8, 5)
+    g.fillStyle(0xbbaa44, 1)
+    g.fillRoundedRect(W + 22, 12, 5, 8, 1)
+    g.fillStyle(0x887733, 1)
+    g.fillRect(W + 20, 2, 2, 14)
+    g.fillStyle(0xccaa44, 1)
+    g.fillRect(W + 17, 0, 8, 5)
 
     // Frame 2: 해머 내리치기 (아래로)
     drawBody(W * 2)
-    g.fillStyle(0xbbaa44, 1); g.fillRoundedRect(W * 2 + 22, 22, 8, 5, 1)
-    g.fillStyle(0x887733, 1); g.fillRect(W * 2 + 24, 18, 2, 14)
-    g.fillStyle(0xccaa44, 1); g.fillRect(W * 2 + 21, 30, 8, 5)
+    g.fillStyle(0xbbaa44, 1)
+    g.fillRoundedRect(W * 2 + 22, 22, 8, 5, 1)
+    g.fillStyle(0x887733, 1)
+    g.fillRect(W * 2 + 24, 18, 2, 14)
+    g.fillStyle(0xccaa44, 1)
+    g.fillRect(W * 2 + 21, 30, 8, 5)
 
     // Frame 3: walk 1 — 왼발 앞
     drawBody(W * 3, 1)
-    g.fillStyle(0xbbaa44, 1); g.fillRoundedRect(W * 3 + 23, 20, 5, 9, 1)
-    g.fillStyle(0x887733, 1); g.fillRect(W * 3 + 25, 10, 2, 18)
-    g.fillStyle(0xccaa44, 1); g.fillRect(W * 3 + 22, 8, 8, 5)
+    g.fillStyle(0xbbaa44, 1)
+    g.fillRoundedRect(W * 3 + 23, 20, 5, 9, 1)
+    g.fillStyle(0x887733, 1)
+    g.fillRect(W * 3 + 25, 10, 2, 18)
+    g.fillStyle(0xccaa44, 1)
+    g.fillRect(W * 3 + 22, 8, 8, 5)
 
     // Frame 4: walk 2 — 오른발 앞
     drawBody(W * 4, 2)
-    g.fillStyle(0xbbaa44, 1); g.fillRoundedRect(W * 4 + 23, 20, 5, 9, 1)
-    g.fillStyle(0x887733, 1); g.fillRect(W * 4 + 25, 10, 2, 18)
-    g.fillStyle(0xccaa44, 1); g.fillRect(W * 4 + 22, 8, 8, 5)
+    g.fillStyle(0xbbaa44, 1)
+    g.fillRoundedRect(W * 4 + 23, 20, 5, 9, 1)
+    g.fillStyle(0x887733, 1)
+    g.fillRect(W * 4 + 25, 10, 2, 18)
+    g.fillStyle(0xccaa44, 1)
+    g.fillRect(W * 4 + 22, 8, 8, 5)
 
     g.generateTexture(PLAYER_SPRITESHEET_KEYS.Paladin, W * 5, 48)
     g.destroy()
@@ -237,70 +325,114 @@ export class BootScene extends Phaser.Scene {
     const W = 32
 
     const drawBody = (ox: number, walkPhase: 0 | 1 | 2 = 0): void => {
-      g.fillStyle(0x336633, 1); g.fillCircle(ox + 16, 8, 6)
-      g.fillStyle(0x447744, 1); g.fillTriangle(ox + 13, 3, ox + 16, 0, ox + 19, 3)
-      g.fillStyle(0xddbb88, 1); g.fillCircle(ox + 16, 9, 4)
+      g.fillStyle(0x336633, 1)
+      g.fillCircle(ox + 16, 8, 6)
+      g.fillStyle(0x447744, 1)
+      g.fillTriangle(ox + 13, 3, ox + 16, 0, ox + 19, 3)
+      g.fillStyle(0xddbb88, 1)
+      g.fillCircle(ox + 16, 9, 4)
       g.fillStyle(0x224422, 1)
-      g.fillCircle(ox + 14, 8, 1); g.fillCircle(ox + 18, 8, 1)
-      g.fillStyle(0x557755, 1); g.fillRoundedRect(ox + 10, 15, 12, 12, 2)
-      g.fillStyle(0x775533, 1); g.fillRect(ox + 10, 25, 12, 2)
+      g.fillCircle(ox + 14, 8, 1)
+      g.fillCircle(ox + 18, 8, 1)
+      g.fillStyle(0x557755, 1)
+      g.fillRoundedRect(ox + 10, 15, 12, 12, 2)
+      g.fillStyle(0x775533, 1)
+      g.fillRect(ox + 10, 25, 12, 2)
       g.fillStyle(0x336633, 0.5)
       g.fillTriangle(ox + 8, 15, ox + 16, 14, ox + 24, 15)
       g.fillTriangle(ox + 7, 38, ox + 16, 15, ox + 25, 38)
-      g.fillStyle(0x557755, 1); g.fillRoundedRect(ox + 6, 17, 4, 8, 1)
-      g.fillStyle(0x664422, 1); g.fillRect(ox + 6, 16, 3, 14)
+      g.fillStyle(0x557755, 1)
+      g.fillRoundedRect(ox + 6, 17, 4, 8, 1)
+      g.fillStyle(0x664422, 1)
+      g.fillRect(ox + 6, 16, 3, 14)
       g.fillStyle(0xcccccc, 1)
-      g.fillRect(ox + 6, 14, 1, 4); g.fillRect(ox + 8, 14, 1, 3)
+      g.fillRect(ox + 6, 14, 1, 4)
+      g.fillRect(ox + 8, 14, 1, 3)
       const lS = walkPhase === 1 ? -3 : walkPhase === 2 ? 3 : 0
       const rS = walkPhase === 1 ? 3 : walkPhase === 2 ? -3 : 0
       g.fillStyle(0x557755, 1)
-      g.fillRoundedRect(ox + 11, 27 + lS, 4, 12, 1); g.fillRoundedRect(ox + 17, 27 + rS, 4, 12, 1)
+      g.fillRoundedRect(ox + 11, 27 + lS, 4, 12, 1)
+      g.fillRoundedRect(ox + 17, 27 + rS, 4, 12, 1)
       g.fillStyle(0x664422, 1)
-      g.fillRoundedRect(ox + 10, 37 + lS, 6, 5, 1); g.fillRoundedRect(ox + 16, 37 + rS, 6, 5, 1)
+      g.fillRoundedRect(ox + 10, 37 + lS, 6, 5, 1)
+      g.fillRoundedRect(ox + 16, 37 + rS, 6, 5, 1)
     }
 
     // Frame 0: idle — 활 쉬는 자세
     drawBody(0)
-    g.fillStyle(0x557755, 1); g.fillRoundedRect(22, 17, 4, 8, 1)
+    g.fillStyle(0x557755, 1)
+    g.fillRoundedRect(22, 17, 4, 8, 1)
     g.lineStyle(2, 0x886644, 1)
-    g.beginPath(); g.arc(28, 18, 14, -1.2, 1.2, false); g.strokePath()
+    g.beginPath()
+    g.arc(28, 18, 14, -1.2, 1.2, false)
+    g.strokePath()
     g.lineStyle(1, 0xcccccc, 0.8)
-    g.beginPath(); g.moveTo(28, 5); g.lineTo(28, 31); g.strokePath()
+    g.beginPath()
+    g.moveTo(28, 5)
+    g.lineTo(28, 31)
+    g.strokePath()
 
     // Frame 1: 활줄 당기기
     drawBody(W)
-    g.fillStyle(0x557755, 1); g.fillRoundedRect(W + 22, 17, 4, 8, 1)
+    g.fillStyle(0x557755, 1)
+    g.fillRoundedRect(W + 22, 17, 4, 8, 1)
     g.lineStyle(2, 0x886644, 1)
-    g.beginPath(); g.arc(W + 29, 18, 12, -1.0, 1.0, false); g.strokePath()
+    g.beginPath()
+    g.arc(W + 29, 18, 12, -1.0, 1.0, false)
+    g.strokePath()
     g.lineStyle(1, 0xcccccc, 0.8)
-    g.beginPath(); g.moveTo(W + 29, 7); g.lineTo(W + 22, 18); g.lineTo(W + 29, 29); g.strokePath()
+    g.beginPath()
+    g.moveTo(W + 29, 7)
+    g.lineTo(W + 22, 18)
+    g.lineTo(W + 29, 29)
+    g.strokePath()
     // 화살
-    g.fillStyle(0xcccccc, 1); g.fillRect(W + 18, 17, 8, 1)
-    g.fillStyle(0xaaaaaa, 1); g.fillTriangle(W + 17, 16, W + 17, 19, W + 15, 17)
+    g.fillStyle(0xcccccc, 1)
+    g.fillRect(W + 18, 17, 8, 1)
+    g.fillStyle(0xaaaaaa, 1)
+    g.fillTriangle(W + 17, 16, W + 17, 19, W + 15, 17)
 
     // Frame 2: 화살 발사
     drawBody(W * 2)
-    g.fillStyle(0x557755, 1); g.fillRoundedRect(W * 2 + 22, 17, 4, 8, 1)
+    g.fillStyle(0x557755, 1)
+    g.fillRoundedRect(W * 2 + 22, 17, 4, 8, 1)
     g.lineStyle(2, 0x886644, 1)
-    g.beginPath(); g.arc(W * 2 + 28, 18, 14, -1.2, 1.2, false); g.strokePath()
+    g.beginPath()
+    g.arc(W * 2 + 28, 18, 14, -1.2, 1.2, false)
+    g.strokePath()
     g.lineStyle(1, 0xcccccc, 0.8)
-    g.beginPath(); g.moveTo(W * 2 + 28, 5); g.lineTo(W * 2 + 28, 31); g.strokePath()
+    g.beginPath()
+    g.moveTo(W * 2 + 28, 5)
+    g.lineTo(W * 2 + 28, 31)
+    g.strokePath()
 
     // Frame 3: walk 1 — 왼발 앞
     drawBody(W * 3, 1)
-    g.fillStyle(0x557755, 1); g.fillRoundedRect(W * 3 + 22, 17, 4, 8, 1)
+    g.fillStyle(0x557755, 1)
+    g.fillRoundedRect(W * 3 + 22, 17, 4, 8, 1)
     g.lineStyle(2, 0x886644, 1)
-    g.beginPath(); g.arc(W * 3 + 28, 18, 14, -1.2, 1.2, false); g.strokePath()
+    g.beginPath()
+    g.arc(W * 3 + 28, 18, 14, -1.2, 1.2, false)
+    g.strokePath()
     g.lineStyle(1, 0xcccccc, 0.8)
-    g.beginPath(); g.moveTo(W * 3 + 28, 5); g.lineTo(W * 3 + 28, 31); g.strokePath()
+    g.beginPath()
+    g.moveTo(W * 3 + 28, 5)
+    g.lineTo(W * 3 + 28, 31)
+    g.strokePath()
 
     // Frame 4: walk 2 — 오른발 앞
     drawBody(W * 4, 2)
-    g.fillStyle(0x557755, 1); g.fillRoundedRect(W * 4 + 22, 17, 4, 8, 1)
+    g.fillStyle(0x557755, 1)
+    g.fillRoundedRect(W * 4 + 22, 17, 4, 8, 1)
     g.lineStyle(2, 0x886644, 1)
-    g.beginPath(); g.arc(W * 4 + 28, 18, 14, -1.2, 1.2, false); g.strokePath()
+    g.beginPath()
+    g.arc(W * 4 + 28, 18, 14, -1.2, 1.2, false)
+    g.strokePath()
     g.lineStyle(1, 0xcccccc, 0.8)
-    g.beginPath(); g.moveTo(W * 4 + 28, 5); g.lineTo(W * 4 + 28, 31); g.strokePath()
+    g.beginPath()
+    g.moveTo(W * 4 + 28, 5)
+    g.lineTo(W * 4 + 28, 31)
+    g.strokePath()
 
     g.generateTexture(PLAYER_SPRITESHEET_KEYS.Archer, W * 5, 48)
     g.destroy()
@@ -309,7 +441,12 @@ export class BootScene extends Phaser.Scene {
 
   // --- 클래스별 애니메이션 등록 ---
   private registerPlayerAnimations(): void {
-    const classes: readonly ('Warrior' | 'Mage' | 'Paladin' | 'Archer')[] = ['Warrior', 'Mage', 'Paladin', 'Archer']
+    const classes: readonly ('Warrior' | 'Mage' | 'Paladin' | 'Archer')[] = [
+      'Warrior',
+      'Mage',
+      'Paladin',
+      'Archer',
+    ]
     for (const cls of classes) {
       const ssKey = PLAYER_SPRITESHEET_KEYS[cls]
       const animKeys = PLAYER_ANIM_KEYS[cls]
@@ -322,14 +459,20 @@ export class BootScene extends Phaser.Scene {
 
       this.anims.create({
         key: animKeys.attack,
-        frames: [{ key: ssKey, frame: 1 }, { key: ssKey, frame: 2 }],
+        frames: [
+          { key: ssKey, frame: 1 },
+          { key: ssKey, frame: 2 },
+        ],
         frameRate: 8,
         repeat: 0,
       })
 
       this.anims.create({
         key: animKeys.walk,
-        frames: [{ key: ssKey, frame: 3 }, { key: ssKey, frame: 4 }],
+        frames: [
+          { key: ssKey, frame: 3 },
+          { key: ssKey, frame: 4 },
+        ],
         frameRate: 6,
         repeat: -1,
       })

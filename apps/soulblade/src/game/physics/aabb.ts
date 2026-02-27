@@ -39,7 +39,10 @@ export const checkCircle = (a: PhysicsBody, b: PhysicsBody): boolean => {
 
 // ── AABB 충돌 해소 (이동체 vs 정적체) ──
 /** @mutates moving — 최소 침투 방향으로 위치/속도를 in-place 보정 */
-export const resolveAABB = (moving: PhysicsBody, static_: PhysicsBody): CollisionResult => {
+export const resolveAABB = (
+  moving: PhysicsBody,
+  static_: PhysicsBody,
+): CollisionResult => {
   if (!checkAABB(moving, static_)) {
     return { overlapping: false, separationX: 0, separationY: 0 }
   }
@@ -109,7 +112,10 @@ export const checkFanSector = (
 
 // ── 월드 바운드 클램프 ──
 /** @mutates body — 월드 경계를 넘으면 위치/속도를 in-place 클램프 */
-export const clampToWorldBounds = (body: PhysicsBody, bounds: WorldBounds): void => {
+export const clampToWorldBounds = (
+  body: PhysicsBody,
+  bounds: WorldBounds,
+): void => {
   const halfW = body.width / 2
   const halfH = body.height / 2
 
@@ -152,18 +158,24 @@ export const resolveAllStaticCollisions = (
 // ── 수학 유틸 (Phaser.Math 대체) ──
 
 export const distanceBetween = (
-  x1: number, y1: number,
-  x2: number, y2: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
 ): number => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 export const distanceBetweenSq = (
-  x1: number, y1: number,
-  x2: number, y2: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
 ): number => (x2 - x1) ** 2 + (y2 - y1) ** 2
 
 export const angleBetween = (
-  x1: number, y1: number,
-  x2: number, y2: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
 ): number => Math.atan2(y2 - y1, x2 - x1)
 
 export const angleWrap = (angle: number): number => {
@@ -180,8 +192,10 @@ export const randomBetween = (min: number, max: number): number =>
 
 // 정규화된 방향 벡터
 export const normalizeDirection = (
-  x1: number, y1: number,
-  x2: number, y2: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
 ): { nx: number; ny: number } => {
   const dx = x2 - x1
   const dy = y2 - y1

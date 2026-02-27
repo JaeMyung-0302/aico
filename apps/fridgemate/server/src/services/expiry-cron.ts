@@ -39,7 +39,9 @@ export const startExpiryCron = (): void => {
         const expiry = item.expiryDate ? new Date(item.expiryDate) : null
         if (!expiry) continue
 
-        const diffDays = Math.floor((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        const diffDays = Math.floor(
+          (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+        )
 
         let label = ''
         if (diffDays <= 0) label = '[만료]'
@@ -60,7 +62,9 @@ export const startExpiryCron = (): void => {
 
         await sendPushToGroup(groupId, {
           title: `유통기한 알림 (${items.length}개)`,
-          body: items.slice(0, 3).join(', ') + (items.length > 3 ? ` 외 ${items.length - 3}개` : ''),
+          body:
+            items.slice(0, 3).join(', ') +
+            (items.length > 3 ? ` 외 ${items.length - 3}개` : ''),
           url: '/fridge',
         })
       }

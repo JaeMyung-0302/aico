@@ -4,11 +4,7 @@
  * - mergeAndCenter: 여러 geometry를 병합 후 pivot을 하단 중심으로 이동
  */
 
-import {
-  Color,
-  Float32BufferAttribute,
-  type BufferGeometry,
-} from 'three'
+import { Color, Float32BufferAttribute, type BufferGeometry } from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 
 /**
@@ -35,7 +31,9 @@ export const setVertexColor = (geometry: BufferGeometry, hex: number): void => {
  * 여러 BufferGeometry를 하나로 병합하고 pivot을 하단 중심으로 이동
  * mergeGeometries()는 vertex color attribute를 보존함 (Three.js r183)
  */
-export const mergeAndCenter = (geometries: BufferGeometry[]): BufferGeometry => {
+export const mergeAndCenter = (
+  geometries: BufferGeometry[],
+): BufferGeometry => {
   if (geometries.length === 0) {
     throw new Error('mergeAndCenter: geometries 배열이 비어있음')
   }
@@ -43,7 +41,9 @@ export const mergeAndCenter = (geometries: BufferGeometry[]): BufferGeometry => 
   // 입력 geometry는 merged에 복사되었으므로 GPU 메모리 해제
   for (const geo of geometries) geo.dispose()
   if (!merged) {
-    throw new Error('mergeGeometries failed: geometries의 attribute 구조가 일치하지 않음')
+    throw new Error(
+      'mergeGeometries failed: geometries의 attribute 구조가 일치하지 않음',
+    )
   }
 
   // pivot을 하단 중심으로 이동 (boundingBox 기준)

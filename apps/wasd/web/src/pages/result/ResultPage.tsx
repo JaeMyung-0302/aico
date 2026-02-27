@@ -36,11 +36,15 @@ const ResultPage = () => {
         <div className={cx('stats')}>
           <div className={cx('stat')}>
             <span className={cx('statLabel')}>소요 시간</span>
-            <span className={cx('statValue')}>{formatTime(gameResult.elapsedTime)}</span>
+            <span className={cx('statValue')}>
+              {formatTime(gameResult.elapsedTime)}
+            </span>
           </div>
           <div className={cx('stat')}>
             <span className={cx('statLabel')}>총 사망</span>
-            <span className={cx('statValue', { danger: gameResult.deaths > 0 })}>
+            <span
+              className={cx('statValue', { danger: gameResult.deaths > 0 })}
+            >
               {gameResult.deaths}회
             </span>
           </div>
@@ -65,11 +69,17 @@ const ResultPage = () => {
               {ranking.map((entry, index) => (
                 <div
                   key={`${entry.clearedAt}-${index}`}
-                  className={cx('rankingRow', { highlight: myRank === index + 1 })}
+                  className={cx('rankingRow', {
+                    highlight: myRank === index + 1,
+                  })}
                 >
                   <span className={cx('rankCol')}>{index + 1}</span>
-                  <span className={cx('nameCol')}>{entry.nicknames.join(', ')}</span>
-                  <span className={cx('timeCol')}>{formatTime(entry.elapsedTime)}</span>
+                  <span className={cx('nameCol')}>
+                    {entry.nicknames.join(', ')}
+                  </span>
+                  <span className={cx('timeCol')}>
+                    {formatTime(entry.elapsedTime)}
+                  </span>
                   <span className={cx('deathCol')}>{entry.deaths}</span>
                   <span className={cx('playerCol')}>{entry.playerCount}P</span>
                 </div>

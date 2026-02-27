@@ -8,7 +8,8 @@ interface UpgradePayload {
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 }
 
 const PERMANENT_STAT_BASE_COST = 50
@@ -24,7 +25,10 @@ const STAT_COLUMNS: Record<string, string> = {
 }
 
 const calcCost = (currentLevel: number): number =>
-  Math.floor(PERMANENT_STAT_BASE_COST * Math.pow(PERMANENT_STAT_COST_GROWTH, currentLevel))
+  Math.floor(
+    PERMANENT_STAT_BASE_COST *
+      Math.pow(PERMANENT_STAT_COST_GROWTH, currentLevel),
+  )
 
 serve(async (req: Request) => {
   // CORS preflight
@@ -45,10 +49,17 @@ serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
     // 유저 인증 확인
-    const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } },
-    })
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    const userClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      {
+        global: { headers: { Authorization: authHeader } },
+      },
+    )
+    const {
+      data: { user },
+      error: authError,
+    } = await userClient.auth.getUser()
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -92,16 +103,22 @@ serve(async (req: Request) => {
     const cost = calcCost(currentLevel)
 
     // 원자적 골드 차감 (TOCTOU 방지 — RPC가 잔액 검사 + 차감을 한 트랜잭션으로 처리)
-    const { data: remainingGold, error: goldError } = await adminClient.rpc('sb_deduct_meta_gold', {
-      p_user_id: user.id,
-      p_amount: cost,
-    })
+    const { data: remainingGold, error: goldError } = await adminClient.rpc(
+      'sb_deduct_meta_gold',
+      {
+        p_user_id: user.id,
+        p_amount: cost,
+      },
+    )
 
     if (goldError) {
-      return new Response(JSON.stringify({ error: 'Insufficient meta gold', required: cost }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return new Response(
+        JSON.stringify({ error: 'Insufficient meta gold', required: cost }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // 모든 캐릭터의 영구 스탯 일괄 업그레이드
@@ -114,10 +131,13 @@ serve(async (req: Request) => {
 
       if (upgradeError) {
         // 스탯 업그레이드 실패 시 골드 롤백
-        const { error: rollbackError } = await adminClient.rpc('sb_increment_meta_gold', {
-          p_user_id: user.id,
-          p_amount: cost,
-        })
+        const { error: rollbackError } = await adminClient.rpc(
+          'sb_increment_meta_gold',
+          {
+            p_user_id: user.id,
+            p_amount: cost,
+          },
+        )
 
         if (rollbackError) {
           console.error('[CRITICAL] Gold rollback failed', {
@@ -128,7 +148,12 @@ serve(async (req: Request) => {
         }
 
         const errorPayload = rollbackError
-          ? { error: 'Stat upgrade failed and rollback failed', rollbackFailed: true, userId: user.id, amount: cost }
+          ? {
+              error: 'Stat upgrade failed and rollback failed',
+              rollbackFailed: true,
+              userId: user.id,
+              amount: cost,
+            }
           : { error: 'Stat upgrade failed' }
 
         return new Response(JSON.stringify(errorPayload), {
@@ -138,15 +163,18 @@ serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({
-      statType: payload.statType,
-      newLevel: currentLevel + 1,
-      cost,
-      remainingGold,
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({
+        statType: payload.statType,
+        newLevel: currentLevel + 1,
+        cost,
+        remainingGold,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    )
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,

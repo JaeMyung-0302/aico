@@ -14,23 +14,33 @@ interface CompartmentEditModalProps {
   onClose: () => void
 }
 
-export const CompartmentEditModal = ({ fridge, onClose }: CompartmentEditModalProps) => {
+export const CompartmentEditModal = ({
+  fridge,
+  onClose,
+}: CompartmentEditModalProps) => {
   const { updateCompartments } = useFridgeStore()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // 기존 칸 데이터를 CompartmentPreset 형태로 변환
-  const initialCompartments: CompartmentPreset[] = fridge.compartments.map((c) => ({
-    type: c.type,
-    label: c.label,
-    position: c.position,
-    column: isEncodedExtraPosition(c.position) ? decodeExtraColumn(c.position) : undefined,
-  }))
+  const initialCompartments: CompartmentPreset[] = fridge.compartments.map(
+    (c) => ({
+      type: c.type,
+      label: c.label,
+      position: c.position,
+      column: isEncodedExtraPosition(c.position)
+        ? decodeExtraColumn(c.position)
+        : undefined,
+    }),
+  )
 
-  const [compartments, setCompartments] = useState<CompartmentPreset[]>(initialCompartments)
+  const [compartments, setCompartments] =
+    useState<CompartmentPreset[]>(initialCompartments)
 
   // 식재료가 있는 칸이 있는지 확인
-  const hasOccupiedCompartments = fridge.compartments.some((c) => c.itemCount > 0)
+  const hasOccupiedCompartments = fridge.compartments.some(
+    (c) => c.itemCount > 0,
+  )
 
   const handleReset = useCallback(() => {
     const presets = COMPARTMENT_PRESETS[fridge.type]
@@ -63,13 +73,13 @@ export const CompartmentEditModal = ({ fridge, onClose }: CompartmentEditModalPr
           </p>
         )}
 
-        <CompartmentEditor compartments={compartments} onChange={setCompartments} fridgeType={fridge.type} />
+        <CompartmentEditor
+          compartments={compartments}
+          onChange={setCompartments}
+          fridgeType={fridge.type}
+        />
 
-        <button
-          className={cx('resetBtn')}
-          onClick={handleReset}
-          type="button"
-        >
+        <button className={cx('resetBtn')} onClick={handleReset} type="button">
           기본값으로 초기화
         </button>
 

@@ -15,10 +15,13 @@ import { Color } from 'three'
 import type { MapId } from '@soulblade/shared'
 
 // 맵별 분위기 설정
-const ATMOSPHERE_CONFIG: Record<MapId, {
-  tint: string
-  alpha: number
-}> = {
+const ATMOSPHERE_CONFIG: Record<
+  MapId,
+  {
+    tint: string
+    alpha: number
+  }
+> = {
   town: { tint: '#ffcc88', alpha: 0.4 },
   serpent_forest: { tint: '#33aa44', alpha: 0.4 },
   ice_cave: { tint: '#4488cc', alpha: 0.4 },
@@ -56,16 +59,22 @@ interface AtmosphereVignetteProps {
   enabled: boolean
 }
 
-export const AtmosphereVignette = ({ mapId, enabled }: AtmosphereVignetteProps) => {
+export const AtmosphereVignette = ({
+  mapId,
+  enabled,
+}: AtmosphereVignetteProps) => {
   const meshRef = useRef<Mesh>(null)
   const matRef = useRef<ShaderMaterial>(null)
   const { camera } = useThree()
   const config = ATMOSPHERE_CONFIG[mapId]
 
-  const uniforms = useMemo(() => ({
-    uColor: { value: new Color(config.tint) },
-    uAlpha: { value: config.alpha },
-  }), [config.tint, config.alpha])
+  const uniforms = useMemo(
+    () => ({
+      uColor: { value: new Color(config.tint) },
+      uAlpha: { value: config.alpha },
+    }),
+    [config.tint, config.alpha],
+  )
 
   // 카메라 앞에 위치하여 화면 고정
   useFrame(() => {

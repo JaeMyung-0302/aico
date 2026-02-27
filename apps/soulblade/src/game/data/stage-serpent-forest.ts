@@ -50,7 +50,5 @@ export const SERPENT_FOREST_CONFIG: StageConfig = {
     atk: 20,
     phases: 2,
   },
-  events: [
-    { type: 'merchant', triggerTime: 420, duration: 30 },
-  ],
+  events: [{ type: 'merchant', triggerTime: 420, duration: 30 }],
 }

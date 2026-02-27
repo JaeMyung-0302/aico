@@ -18,11 +18,17 @@ export const validateNameLocal = (name: string): NameValidationResult => {
   const trimmed = name.trim()
 
   if (trimmed.length < NAME_MIN_LENGTH) {
-    return { valid: false, error: `이름은 ${NAME_MIN_LENGTH}자 이상이어야 합니다.` }
+    return {
+      valid: false,
+      error: `이름은 ${NAME_MIN_LENGTH}자 이상이어야 합니다.`,
+    }
   }
 
   if (trimmed.length > NAME_MAX_LENGTH) {
-    return { valid: false, error: `이름은 ${NAME_MAX_LENGTH}자 이하여야 합니다.` }
+    return {
+      valid: false,
+      error: `이름은 ${NAME_MAX_LENGTH}자 이하여야 합니다.`,
+    }
   }
 
   if (!NAME_PATTERN.test(trimmed)) {
@@ -34,7 +40,9 @@ export const validateNameLocal = (name: string): NameValidationResult => {
 
 // Supabase RPC로 이름 중복 검사
 // NOTE: TOCTOU 경합 가능. INSERT 시 unique_violation(23505) 별도 처리 필요
-export const checkNameAvailable = async (name: string): Promise<NameValidationResult> => {
+export const checkNameAvailable = async (
+  name: string,
+): Promise<NameValidationResult> => {
   const localResult = validateNameLocal(name)
   if (!localResult.valid) return localResult
 

@@ -24,7 +24,10 @@ export const initAnalytics = (): void => {
   // Phase 2: mixpanel.init(MIXPANEL_TOKEN)
 }
 
-export const trackEvent = (name: EventName, properties?: EventProperties): void => {
+export const trackEvent = (
+  name: EventName,
+  properties?: EventProperties,
+): void => {
   if (!initialized) return
 
   if (import.meta.env.DEV) {

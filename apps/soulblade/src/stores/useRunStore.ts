@@ -1,5 +1,10 @@
 import { create } from 'zustand'
-import type { CharacterClass, CharacterStats, Equipment, MapId } from '@soulblade/shared'
+import type {
+  CharacterClass,
+  CharacterStats,
+  Equipment,
+  MapId,
+} from '@soulblade/shared'
 import type { StageId } from '@soulblade/shared'
 import type { PassiveSkillId } from '@soulblade/shared'
 

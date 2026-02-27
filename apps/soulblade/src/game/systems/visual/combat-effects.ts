@@ -16,7 +16,12 @@ export class CombatEffectsSystem {
   }
 
   // 적 히트 시 스파크 이펙트
-  onEntityHit = (x: number, y: number, isCrit: boolean, level: CombatEffectLevel): void => {
+  onEntityHit = (
+    x: number,
+    y: number,
+    isCrit: boolean,
+    level: CombatEffectLevel,
+  ): void => {
     if (level === 'none') return
 
     // basic: 작은 스파크만
@@ -26,7 +31,13 @@ export class CombatEffectsSystem {
     for (let i = 0; i < sparkCount; i++) {
       const angle = Math.random() * Math.PI * 2
       const speed = 15 + Math.random() * 25
-      const spark = this.scene.add.circle(x, y, isCrit ? 2 : 1.5, sparkColor, 0.9)
+      const spark = this.scene.add.circle(
+        x,
+        y,
+        isCrit ? 2 : 1.5,
+        sparkColor,
+        0.9,
+      )
       spark.setDepth(15)
 
       this.scene.tweens.add({
@@ -56,7 +67,12 @@ export class CombatEffectsSystem {
   }
 
   // 적 사망 시 강화 이펙트 (기존 spawnDeathParticles 보완)
-  onEntityDeath = (x: number, y: number, entityType: 'normal' | 'elite', level: CombatEffectLevel): void => {
+  onEntityDeath = (
+    x: number,
+    y: number,
+    entityType: 'normal' | 'elite',
+    level: CombatEffectLevel,
+  ): void => {
     if (level === 'none') return
 
     // basic: 간단한 바닥 마크만
@@ -87,7 +103,13 @@ export class CombatEffectsSystem {
     })
 
     // 잔류 바닥 글로우
-    const glow = this.scene.add.circle(x, y, entityType === 'elite' ? 10 : 6, ringColor, 0.15)
+    const glow = this.scene.add.circle(
+      x,
+      y,
+      entityType === 'elite' ? 10 : 6,
+      ringColor,
+      0.15,
+    )
     glow.setDepth(0)
 
     this.scene.tweens.add({

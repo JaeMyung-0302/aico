@@ -33,7 +33,13 @@ export const renderFrame = (
 
   renderTileMap(ctx, tileMap, collectedSet, theme, timestamp)
   renderObstacles(ctx, gameState.obstacles, theme, timestamp)
-  renderPlayer(ctx, renderPosition, gameState.direction, gameState.moving, timestamp)
+  renderPlayer(
+    ctx,
+    renderPosition,
+    gameState.direction,
+    gameState.moving,
+    timestamp,
+  )
 
   // Particles (camera space)
   if (effects) {

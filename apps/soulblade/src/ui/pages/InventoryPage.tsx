@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
-import type { Equipment, EquipmentType, EquipmentGrade } from '@soulblade/shared'
+import type {
+  Equipment,
+  EquipmentType,
+  EquipmentGrade,
+} from '@soulblade/shared'
 import { useInventoryStore } from '@/stores/useInventoryStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useCharacterStore } from '@/stores/useCharacterStore'
@@ -96,9 +100,13 @@ export const InventoryPage = () => {
           <h3 className={cx('synergyTitle')}>시너지 보너스</h3>
           {activeSynergies.map((s) => (
             <div key={s.tag} className={cx('synergyItem')}>
-              <span className={cx('synergyTag')}>{s.tag} {s.count}세트</span>
+              <span className={cx('synergyTag')}>
+                {s.tag} {s.count}세트
+              </span>
               <span className={cx('synergyBonus')}>
-                {Object.entries(s.bonus).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ')}
+                {Object.entries(s.bonus)
+                  .map(([k, v]) => `${k.toUpperCase()}+${v}`)
+                  .join(' ')}
               </span>
             </div>
           ))}
@@ -121,7 +129,9 @@ export const InventoryPage = () => {
                   <span className={cx('itemName')}>{item.name}</span>
                   <span className={cx('itemStats')}>
                     {Object.entries(item.stats).map(([k, v]) => (
-                      <span key={k}>{k.toUpperCase()}+{v} </span>
+                      <span key={k}>
+                        {k.toUpperCase()}+{v}{' '}
+                      </span>
                     ))}
                   </span>
                 </button>

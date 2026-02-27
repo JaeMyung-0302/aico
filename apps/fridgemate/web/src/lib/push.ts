@@ -14,7 +14,11 @@ const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
 }
 
 export const isPushSupported = (): boolean => {
-  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
+  return (
+    'serviceWorker' in navigator &&
+    'PushManager' in window &&
+    'Notification' in window
+  )
 }
 
 export const subscribeToPush = async (): Promise<boolean> => {
@@ -22,14 +26,17 @@ export const subscribeToPush = async (): Promise<boolean> => {
 
   try {
     // Push 전용 SW 등록 (이미 등록되어 있으면 재사용)
-    let registration = await navigator.serviceWorker.getRegistration(SW_PUSH_PATH)
+    let registration =
+      await navigator.serviceWorker.getRegistration(SW_PUSH_PATH)
     if (!registration) {
       registration = await navigator.serviceWorker.register(SW_PUSH_PATH)
     }
     await registration.update()
 
     // VAPID 공개키 가져오기
-    const { publicKey } = await api.get<{ publicKey: string }>('/push/vapid-public-key')
+    const { publicKey } = await api.get<{ publicKey: string }>(
+      '/push/vapid-public-key',
+    )
     if (!publicKey) return false
 
     // 알림 권한 요청
@@ -39,7 +46,8 @@ export const subscribeToPush = async (): Promise<boolean> => {
     // Push 구독
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey).buffer as ArrayBuffer,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+        .buffer as ArrayBuffer,
     })
 
     const subscriptionJson = subscription.toJSON()
@@ -64,7 +72,8 @@ export const unsubscribeFromPush = async (): Promise<boolean> => {
   if (!isPushSupported()) return false
 
   try {
-    const registration = await navigator.serviceWorker.getRegistration(SW_PUSH_PATH)
+    const registration =
+      await navigator.serviceWorker.getRegistration(SW_PUSH_PATH)
     if (!registration) return false
 
     const subscription = await registration.pushManager.getSubscription()
@@ -86,7 +95,8 @@ export const isPushSubscribed = async (): Promise<boolean> => {
   if (!isPushSupported()) return false
 
   try {
-    const registration = await navigator.serviceWorker.getRegistration(SW_PUSH_PATH)
+    const registration =
+      await navigator.serviceWorker.getRegistration(SW_PUSH_PATH)
     if (!registration) return false
 
     const subscription = await registration.pushManager.getSubscription()

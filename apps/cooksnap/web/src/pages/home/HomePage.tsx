@@ -54,7 +54,7 @@ const Landing = () => {
       setLoadingStep(0)
       intervalRef.current = setInterval(() => {
         setLoadingStep((prev) =>
-          prev < LOADING_STEPS.length - 1 ? prev + 1 : prev
+          prev < LOADING_STEPS.length - 1 ? prev + 1 : prev,
         )
       }, 8000)
     } else {
@@ -68,7 +68,9 @@ const Landing = () => {
     }
   }, [isLoading])
 
-  const quotaExhausted = Boolean(user && quotaStatus && !quotaStatus.isPremium && !quotaStatus.allowed)
+  const quotaExhausted = Boolean(
+    user && quotaStatus && !quotaStatus.isPremium && !quotaStatus.allowed,
+  )
 
   const handleAnalyze = async () => {
     setError('')
@@ -99,7 +101,9 @@ const Landing = () => {
     setIsLoading(true)
 
     try {
-      const { data } = await api.post<AnalyzeResponse>('/recipes/analyze', { url: url.trim() })
+      const { data } = await api.post<AnalyzeResponse>('/recipes/analyze', {
+        url: url.trim(),
+      })
       await fetchQuota()
       queryClient.invalidateQueries({ queryKey: ['my-history'] })
       navigate(`/result/${data.id}`)
@@ -110,7 +114,9 @@ const Landing = () => {
         setShowPremiumModal(true)
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const message = (err as any)?.response?.data?.message || '분석 중 오류가 발생했습니다. 다시 시도해주세요.'
+        const message =
+          (err as any)?.response?.data?.message ||
+          '분석 중 오류가 발생했습니다. 다시 시도해주세요.'
         setError(message)
       }
     } finally {
@@ -148,7 +154,10 @@ const Landing = () => {
     <div className={cx('landing')}>
       <Helmet>
         <title>CookSnap - 영상 붙여넣으면, 재료비부터 주문까지</title>
-        <meta name="description" content="숏폼 레시피 영상 URL 하나로 레시피, 재료, 가격, 주문까지 원스톱. Instagram Reels, TikTok, YouTube Shorts 지원." />
+        <meta
+          name="description"
+          content="숏폼 레시피 영상 URL 하나로 레시피, 재료, 가격, 주문까지 원스톱. Instagram Reels, TikTok, YouTube Shorts 지원."
+        />
         <link rel="canonical" href="https://aico-cooksnap.vercel.app/" />
       </Helmet>
       <h1 className={cx('headline')}>
@@ -173,7 +182,9 @@ const Landing = () => {
           />
           <button
             className={cx('analyzeButton', { exhausted: quotaExhausted })}
-            onClick={quotaExhausted ? () => setShowPremiumModal(true) : handleAnalyze}
+            onClick={
+              quotaExhausted ? () => setShowPremiumModal(true) : handleAnalyze
+            }
             disabled={isLoading}
           >
             {quotaExhausted ? '오늘 무료 분석을 모두 사용했어요' : '분석하기'}
@@ -185,7 +196,9 @@ const Landing = () => {
       {/* 쿼터 표시 */}
       {user && quotaStatus && !quotaStatus.isPremium && (
         <p className={cx('quotaBadge', { exhausted: quotaExhausted })}>
-          {quotaExhausted ? '오늘 무료 분석을 모두 사용했어요' : `오늘 ${quotaStatus.remaining}회 남음`}
+          {quotaExhausted
+            ? '오늘 무료 분석을 모두 사용했어요'
+            : `오늘 ${quotaStatus.remaining}회 남음`}
         </p>
       )}
 

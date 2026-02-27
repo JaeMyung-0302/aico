@@ -13,5 +13,11 @@ export const getKSTWeekStart = (): Date => {
   const today = getKSTToday()
   const day = today.getUTCDay() // 0=일, 1=월, ..., 6=토
   const diff = day === 0 ? 6 : day - 1 // 일요일이면 6일 전 월요일
-  return new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - diff))
+  return new Date(
+    Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate() - diff,
+    ),
+  )
 }

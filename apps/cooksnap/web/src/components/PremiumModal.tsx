@@ -30,7 +30,8 @@ const PremiumModal = ({ onClose }: PremiumModalProps) => {
       await initialize()
       onClose()
     } catch (err) {
-      const message = err instanceof Error ? err.message : '결제에 실패했습니다.'
+      const message =
+        err instanceof Error ? err.message : '결제에 실패했습니다.'
       setError(message)
     } finally {
       setIsProcessing(false)
@@ -88,7 +89,12 @@ const PremiumModal = ({ onClose }: PremiumModalProps) => {
 
         <div className={cx('terms')}>
           <p>결제 후 즉시 이용 가능</p>
-          <p>디지털 콘텐츠 특성상 이용 시작 후 환불이 불가하며, 미이용 시 결제일로부터 7일 이내 전액 환불 가능합니다. 구독 해지는 마이페이지에서 언제든 가능하며, 해지 시 현재 결제 기간 종료까지 서비스를 이용할 수 있습니다.</p>
+          <p>
+            디지털 콘텐츠 특성상 이용 시작 후 환불이 불가하며, 미이용 시
+            결제일로부터 7일 이내 전액 환불 가능합니다. 구독 해지는
+            마이페이지에서 언제든 가능하며, 해지 시 현재 결제 기간 종료까지
+            서비스를 이용할 수 있습니다.
+          </p>
         </div>
       </div>
     </div>

@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../lib/prisma.js'
 import type { AuthRequest } from './auth.js'
 
-export const groupAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const groupAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   const { userId, groupId } = req as AuthRequest
 
   try {

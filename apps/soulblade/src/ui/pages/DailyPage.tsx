@@ -106,7 +106,11 @@ export const DailyPage = () => {
         onClick={handleClaim}
         disabled={state.claimed || state.loading}
       >
-        {state.claimed ? '수령 완료' : state.loading ? '로딩...' : '출석 보상 수령'}
+        {state.claimed
+          ? '수령 완료'
+          : state.loading
+            ? '로딩...'
+            : '출석 보상 수령'}
       </button>
     </div>
   )

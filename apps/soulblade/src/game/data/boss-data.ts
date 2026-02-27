@@ -65,7 +65,7 @@ export const createBoss = (
 // 페이즈 지속시간 (HP 비율에 따라 단축)
 const getPhaseDuration = (boss: BossEntity): number => {
   const hpRatio = boss.hp / boss.maxHp
-  if (hpRatio < 0.33) return 2000  // 격노
+  if (hpRatio < 0.33) return 2000 // 격노
   if (hpRatio < 0.66) return 2500
   return 3000
 }
@@ -132,7 +132,12 @@ export const bossUpdateAI = (
         boss.isCharging = true
       }
       if (boss.chargeTarget) {
-        const angle = angleBetween(boss.body.x, boss.body.y, boss.chargeTarget.x, boss.chargeTarget.y)
+        const angle = angleBetween(
+          boss.body.x,
+          boss.body.y,
+          boss.chargeTarget.x,
+          boss.chargeTarget.y,
+        )
         const chargeSpeed = speed * 2.5
         boss.body.vx = Math.cos(angle) * chargeSpeed
         boss.body.vy = Math.sin(angle) * chargeSpeed
@@ -169,7 +174,11 @@ export const bossTakeDamage = (boss: BossEntity, amount: number): boolean => {
 // ── 상태 효과 ──
 
 /** @mutates boss.dotDamage, boss.dotTimer, boss.dotTickTimer */
-export const bossApplyDot = (boss: BossEntity, damage: number, durationMs: number): void => {
+export const bossApplyDot = (
+  boss: BossEntity,
+  damage: number,
+  durationMs: number,
+): void => {
   boss.dotDamage = damage
   boss.dotTimer = durationMs
   boss.dotTickTimer = 0
@@ -181,7 +190,10 @@ export const bossApplySlow = (boss: BossEntity, percent: number): void => {
 }
 
 /** @mutates boss.dotTimer, boss.dotTickTimer, boss.dotDamage, boss.hp, boss.active */
-export const bossUpdateEffects = (boss: BossEntity, deltaMs: number): boolean => {
+export const bossUpdateEffects = (
+  boss: BossEntity,
+  deltaMs: number,
+): boolean => {
   if (!boss.active) return false
 
   let killed = false

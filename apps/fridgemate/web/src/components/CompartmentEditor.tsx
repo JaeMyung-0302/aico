@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import classNames from 'classnames/bind'
-import { FridgeType, COMPARTMENT_PRESETS, COMPARTMENT_TYPE_LABELS, COMPARTMENT_TYPE_COLORS } from '@/types'
+import {
+  FridgeType,
+  COMPARTMENT_PRESETS,
+  COMPARTMENT_TYPE_LABELS,
+  COMPARTMENT_TYPE_COLORS,
+} from '@/types'
 import { CompartmentType } from '@/types'
 import type { CompartmentPreset } from '@/types'
 import {
@@ -14,7 +19,10 @@ import {
   decodeExtraColumn,
   EXTRA_BASE_OFFSET,
 } from '@/utils/fridgeLayout'
-import { EditableCompartmentCell, GROUP_OPTIONS } from './EditableCompartmentCell'
+import {
+  EditableCompartmentCell,
+  GROUP_OPTIONS,
+} from './EditableCompartmentCell'
 import styles from './CompartmentEditor.module.scss'
 
 const cx = classNames.bind(styles)
@@ -25,7 +33,11 @@ interface CompartmentEditorProps {
   fridgeType?: FridgeType
 }
 
-export const CompartmentEditor = ({ compartments, onChange, fridgeType }: CompartmentEditorProps) => {
+export const CompartmentEditor = ({
+  compartments,
+  onChange,
+  fridgeType,
+}: CompartmentEditorProps) => {
   const effectiveFridgeType = fridgeType ?? FridgeType.TWO_DOOR
   const isDoorType = DOOR_SECTIONS[effectiveFridgeType] !== undefined
   const [showAddExtra, setShowAddExtra] = useState(false)
@@ -76,14 +88,21 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
       const filtered = compartments.filter((c) => c.position !== position)
 
       // SBS DOOR: 섹션별로 분리 재번호 (position 기반)
-      if (effectiveFridgeType === FridgeType.SIDE_BY_SIDE && deleted.type === CompartmentType.DOOR) {
-        const deletedIsFreezer = (deleted.position >= 15 && deleted.position <= 19) ||
-          (deleted.position >= EXTRA_BASE_OFFSET && decodeExtraColumn(deleted.position) === 2)
+      if (
+        effectiveFridgeType === FridgeType.SIDE_BY_SIDE &&
+        deleted.type === CompartmentType.DOOR
+      ) {
+        const deletedIsFreezer =
+          (deleted.position >= 15 && deleted.position <= 19) ||
+          (deleted.position >= EXTRA_BASE_OFFSET &&
+            decodeExtraColumn(deleted.position) === 2)
         const sameGroup = filtered
           .filter((c) => {
             if (c.type !== CompartmentType.DOOR) return false
-            const isFreezer = (c.position >= 15 && c.position <= 19) ||
-              (c.position >= EXTRA_BASE_OFFSET && decodeExtraColumn(c.position) === 2)
+            const isFreezer =
+              (c.position >= 15 && c.position <= 19) ||
+              (c.position >= EXTRA_BASE_OFFSET &&
+                decodeExtraColumn(c.position) === 2)
             return isFreezer === deletedIsFreezer
           })
           .sort((a, b) => a.position - b.position)
@@ -99,7 +118,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
       }
 
       // 같은 타입의 칸들을 position 순으로 재번호 매기기
-      const prefix = EXTRA_LABEL_PREFIX[deleted.type] ?? COMPARTMENT_TYPE_LABELS[deleted.type]
+      const prefix =
+        EXTRA_LABEL_PREFIX[deleted.type] ??
+        COMPARTMENT_TYPE_LABELS[deleted.type]
       const sameTypeSorted = filtered
         .filter((c) => c.type === deleted.type)
         .sort((a, b) => a.position - b.position)
@@ -117,7 +138,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
 
   const handleAdd = useCallback(
     (preset: CompartmentPreset) => {
-      const updated = [...compartments, preset].sort((a, b) => a.position - b.position)
+      const updated = [...compartments, preset].sort(
+        (a, b) => a.position - b.position,
+      )
       onChange(updated)
     },
     [compartments, onChange],
@@ -133,7 +156,8 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
     [compartments, onChange],
   )
 
-  const maxCompartments = effectiveFridgeType === FridgeType.SIDE_BY_SIDE ? 24 : 15
+  const maxCompartments =
+    effectiveFridgeType === FridgeType.SIDE_BY_SIDE ? 24 : 15
 
   const handleAddExtra = useCallback(
     (type: CompartmentType, column?: 1 | 2) => {
@@ -145,13 +169,18 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
       let prefix: string
       let sameCount: number
 
-      if (effectiveFridgeType === FridgeType.SIDE_BY_SIDE && type === CompartmentType.DOOR) {
+      if (
+        effectiveFridgeType === FridgeType.SIDE_BY_SIDE &&
+        type === CompartmentType.DOOR
+      ) {
         // SBS: 문 수납은 섹션별로 분리 (position 기반)
         prefix = '문 수납'
         sameCount = compartments.filter((c) => {
           if (c.type !== CompartmentType.DOOR) return false
-          const isFreezer = (c.position >= 15 && c.position <= 19) ||
-            (c.position >= EXTRA_BASE_OFFSET && decodeExtraColumn(c.position) === 2)
+          const isFreezer =
+            (c.position >= 15 && c.position <= 19) ||
+            (c.position >= EXTRA_BASE_OFFSET &&
+              decodeExtraColumn(c.position) === 2)
           return column === 2 ? isFreezer : !isFreezer
         }).length
       } else {
@@ -198,7 +227,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
           preset={empty}
           fridgeType={effectiveFridgeType}
           isEmpty
-          onAdd={(type: CompartmentType) => handleAdd({ ...empty, type, label: COMPARTMENT_TYPE_LABELS[type] })}
+          onAdd={(type: CompartmentType) =>
+            handleAdd({ ...empty, type, label: COMPARTMENT_TYPE_LABELS[type] })
+          }
           className={className}
         />
       )
@@ -214,8 +245,12 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
       const presets = COMPARTMENT_PRESETS[effectiveFridgeType]
       const bodyPresets = presets.filter((p) => p.type !== CompartmentType.DOOR)
       const doorPresets = presets.filter((p) => p.type === CompartmentType.DOOR)
-      const bodyExtras = extraCompartments.filter((c) => c.type !== CompartmentType.DOOR)
-      const doorExtras = extraCompartments.filter((c) => c.type === CompartmentType.DOOR)
+      const bodyExtras = extraCompartments.filter(
+        (c) => c.type !== CompartmentType.DOOR,
+      )
+      const doorExtras = extraCompartments.filter(
+        (c) => c.type === CompartmentType.DOOR,
+      )
 
       return (
         <div className={cx('fridgeBody')}>
@@ -228,7 +263,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                   preset={comp}
                   fridgeType={effectiveFridgeType}
                   onDelete={() => handleDelete(comp.position)}
-                  onLabelChange={(label) => handleLabelChange(comp.position, label)}
+                  onLabelChange={(label) =>
+                    handleLabelChange(comp.position, label)
+                  }
                   canDelete={compartments.length > 1}
                 />
               ))}
@@ -241,7 +278,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                   preset={comp}
                   fridgeType={effectiveFridgeType}
                   onDelete={() => handleDelete(comp.position)}
-                  onLabelChange={(label) => handleLabelChange(comp.position, label)}
+                  onLabelChange={(label) =>
+                    handleLabelChange(comp.position, label)
+                  }
                   canDelete={compartments.length > 1}
                 />
               ))}
@@ -261,7 +300,12 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
           {presets.map((preset) =>
             renderCell(
               preset.position,
-              cx(getCompartmentPositionClass(effectiveFridgeType, preset.position)),
+              cx(
+                getCompartmentPositionClass(
+                  effectiveFridgeType,
+                  preset.position,
+                ),
+              ),
             ),
           )}
           {extraCompartments.map((comp) => (
@@ -272,7 +316,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
               onDelete={() => handleDelete(comp.position)}
               onLabelChange={(label) => handleLabelChange(comp.position, label)}
               canDelete={compartments.length > 1}
-              className={cx(getExtraColumnClass(comp.position) ?? 'extraInGrid')}
+              className={cx(
+                getExtraColumnClass(comp.position) ?? 'extraInGrid',
+              )}
             />
           ))}
         </div>
@@ -286,9 +332,10 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
     if (!sections) return null
     const presets = COMPARTMENT_PRESETS[effectiveFridgeType]
     // SBS: 에디터에서는 냉장실을 위에 표시 (DOOR_SECTIONS는 닫힌뷰 좌우 배치용으로 냉동실이 먼저)
-    const orderedSections = effectiveFridgeType === FridgeType.SIDE_BY_SIDE
-      ? [...sections].reverse()
-      : sections
+    const orderedSections =
+      effectiveFridgeType === FridgeType.SIDE_BY_SIDE
+        ? [...sections].reverse()
+        : sections
 
     return (
       <div className={cx('doorSectionsContainer')}>
@@ -299,19 +346,21 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
           )
 
           // TWO_DOOR/SBS: 추가 칸을 해당 섹션에 배치
-          const sectionExtras = (effectiveFridgeType === FridgeType.TWO_DOOR || effectiveFridgeType === FridgeType.SIDE_BY_SIDE)
-            ? extraCompartments.filter((comp) => {
-                if (effectiveFridgeType === FridgeType.TWO_DOOR) {
+          const sectionExtras =
+            effectiveFridgeType === FridgeType.TWO_DOOR ||
+            effectiveFridgeType === FridgeType.SIDE_BY_SIDE
+              ? extraCompartments.filter((comp) => {
+                  if (effectiveFridgeType === FridgeType.TWO_DOOR) {
+                    return section.isFreezer
+                      ? comp.type === CompartmentType.FREEZER
+                      : comp.type !== CompartmentType.FREEZER
+                  }
+                  // SBS: column 기반 섹션 배분
                   return section.isFreezer
-                    ? comp.type === CompartmentType.FREEZER
-                    : comp.type !== CompartmentType.FREEZER
-                }
-                // SBS: column 기반 섹션 배분
-                return section.isFreezer
-                  ? decodeExtraColumn(comp.position) === 2
-                  : decodeExtraColumn(comp.position) === 1
-              })
-            : []
+                    ? decodeExtraColumn(comp.position) === 2
+                    : decodeExtraColumn(comp.position) === 1
+                })
+              : []
 
           const renderExtraCell = (comp: CompartmentPreset) => (
             <EditableCompartmentCell
@@ -339,8 +388,13 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
             }
 
             if (section.layout === 'twoColumn') {
-              const leftPositions = sectionPositions.slice(0, section.columnSplit!)
-              const rightPositions = sectionPositions.slice(section.columnSplit!)
+              const leftPositions = sectionPositions.slice(
+                0,
+                section.columnSplit!,
+              )
+              const rightPositions = sectionPositions.slice(
+                section.columnSplit!,
+              )
               const leftExtras = section.reverseColumns
                 ? sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
                 : sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
@@ -348,7 +402,12 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                 ? sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
                 : sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
               return (
-                <div className={cx('twoColumnLayout', { twoColumnWideLeft: effectiveFridgeType === FridgeType.TWO_DOOR })}>
+                <div
+                  className={cx('twoColumnLayout', {
+                    twoColumnWideLeft:
+                      effectiveFridgeType === FridgeType.TWO_DOOR,
+                  })}
+                >
                   <div className={cx('fridgeColumn')}>
                     {leftPositions.map((pos) => renderCell(pos))}
                     {leftExtras.map(renderExtraCell)}
@@ -363,7 +422,13 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
 
             // grid3x2 or grid2x1
             return (
-              <div className={cx(section.layout === 'grid3x2' ? 'gridLayout3x2' : 'gridLayout2x1')}>
+              <div
+                className={cx(
+                  section.layout === 'grid3x2'
+                    ? 'gridLayout3x2'
+                    : 'gridLayout2x1',
+                )}
+              >
                 {sectionPositions.map((pos) => renderCell(pos))}
               </div>
             )
@@ -372,7 +437,9 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
           return (
             <div
               key={section.label}
-              className={cx('doorSection', { doorSectionFull: section.spanFull })}
+              className={cx('doorSection', {
+                doorSectionFull: section.spanFull,
+              })}
             >
               <div className={cx('doorSectionLabel')}>{section.label}</div>
               <div className={cx('doorSectionContent')}>
@@ -381,25 +448,29 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
             </div>
           )
         })}
-        {effectiveFridgeType !== FridgeType.TWO_DOOR && effectiveFridgeType !== FridgeType.SIDE_BY_SIDE && extraCompartments.length > 0 && (
-          <div className={cx('doorSection')}>
-            <div className={cx('doorSectionLabel')}>추가 칸</div>
-            <div className={cx('doorSectionContent')}>
-              <div className={cx('fridgeColumn')}>
-                {extraCompartments.map((comp) => (
-                  <EditableCompartmentCell
-                    key={`extra-${comp.position}`}
-                    preset={comp}
-                    fridgeType={effectiveFridgeType}
-                    onDelete={() => handleDelete(comp.position)}
-                    onLabelChange={(label) => handleLabelChange(comp.position, label)}
-                    canDelete={compartments.length > 1}
-                  />
-                ))}
+        {effectiveFridgeType !== FridgeType.TWO_DOOR &&
+          effectiveFridgeType !== FridgeType.SIDE_BY_SIDE &&
+          extraCompartments.length > 0 && (
+            <div className={cx('doorSection')}>
+              <div className={cx('doorSectionLabel')}>추가 칸</div>
+              <div className={cx('doorSectionContent')}>
+                <div className={cx('fridgeColumn')}>
+                  {extraCompartments.map((comp) => (
+                    <EditableCompartmentCell
+                      key={`extra-${comp.position}`}
+                      preset={comp}
+                      fridgeType={effectiveFridgeType}
+                      onDelete={() => handleDelete(comp.position)}
+                      onLabelChange={(label) =>
+                        handleLabelChange(comp.position, label)
+                      }
+                      canDelete={compartments.length > 1}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     )
   }
@@ -429,22 +500,33 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                   setShowAddExtra(false)
                 }}
               />
-              <div className={cx('addExtraPopover')} onClick={(e) => e.stopPropagation()}>
+              <div
+                className={cx('addExtraPopover')}
+                onClick={(e) => e.stopPropagation()}
+              >
                 {effectiveFridgeType === FridgeType.SIDE_BY_SIDE ? (
                   <>
                     <div className={cx('addExtraSectionHeader')}>냉장실</div>
                     <button
                       type="button"
                       className={cx('addExtraOption')}
-                      style={{ borderLeftColor: COMPARTMENT_TYPE_COLORS[CompartmentType.FRIDGE_UPPER] }}
-                      onClick={() => handleAddExtra(CompartmentType.FRIDGE_UPPER, 1)}
+                      style={{
+                        borderLeftColor:
+                          COMPARTMENT_TYPE_COLORS[CompartmentType.FRIDGE_UPPER],
+                      }}
+                      onClick={() =>
+                        handleAddExtra(CompartmentType.FRIDGE_UPPER, 1)
+                      }
                     >
                       {COMPARTMENT_TYPE_LABELS[CompartmentType.FRIDGE_UPPER]}
                     </button>
                     <button
                       type="button"
                       className={cx('addExtraOption')}
-                      style={{ borderLeftColor: COMPARTMENT_TYPE_COLORS[CompartmentType.DOOR] }}
+                      style={{
+                        borderLeftColor:
+                          COMPARTMENT_TYPE_COLORS[CompartmentType.DOOR],
+                      }}
                       onClick={() => handleAddExtra(CompartmentType.DOOR, 1)}
                     >
                       {COMPARTMENT_TYPE_LABELS[CompartmentType.DOOR]}
@@ -453,7 +535,10 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                     <button
                       type="button"
                       className={cx('addExtraOption')}
-                      style={{ borderLeftColor: COMPARTMENT_TYPE_COLORS[CompartmentType.FREEZER] }}
+                      style={{
+                        borderLeftColor:
+                          COMPARTMENT_TYPE_COLORS[CompartmentType.FREEZER],
+                      }}
                       onClick={() => handleAddExtra(CompartmentType.FREEZER, 2)}
                     >
                       {COMPARTMENT_TYPE_LABELS[CompartmentType.FREEZER]}
@@ -461,7 +546,10 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                     <button
                       type="button"
                       className={cx('addExtraOption')}
-                      style={{ borderLeftColor: COMPARTMENT_TYPE_COLORS[CompartmentType.DOOR] }}
+                      style={{
+                        borderLeftColor:
+                          COMPARTMENT_TYPE_COLORS[CompartmentType.DOOR],
+                      }}
                       onClick={() => handleAddExtra(CompartmentType.DOOR, 2)}
                     >
                       {COMPARTMENT_TYPE_LABELS[CompartmentType.DOOR]}
@@ -469,7 +557,11 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                   </>
                 ) : isDoorType ? (
                   (effectiveFridgeType === FridgeType.TWO_DOOR
-                    ? [CompartmentType.FRIDGE_UPPER, CompartmentType.DOOR, CompartmentType.FREEZER]
+                    ? [
+                        CompartmentType.FRIDGE_UPPER,
+                        CompartmentType.DOOR,
+                        CompartmentType.FREEZER,
+                      ]
                     : GROUP_OPTIONS
                   ).map((type) => (
                     <button
@@ -483,17 +575,26 @@ export const CompartmentEditor = ({ compartments, onChange, fridgeType }: Compar
                     </button>
                   ))
                 ) : (
-                  [CompartmentType.FRIDGE_UPPER, CompartmentType.DOOR].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      className={cx('addExtraOption')}
-                      style={{ borderLeftColor: COMPARTMENT_TYPE_COLORS[type] }}
-                      onClick={() => handleAddExtra(type, type === CompartmentType.DOOR ? 2 : 1)}
-                    >
-                      {COMPARTMENT_TYPE_LABELS[type]}
-                    </button>
-                  ))
+                  [CompartmentType.FRIDGE_UPPER, CompartmentType.DOOR].map(
+                    (type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        className={cx('addExtraOption')}
+                        style={{
+                          borderLeftColor: COMPARTMENT_TYPE_COLORS[type],
+                        }}
+                        onClick={() =>
+                          handleAddExtra(
+                            type,
+                            type === CompartmentType.DOOR ? 2 : 1,
+                          )
+                        }
+                      >
+                        {COMPARTMENT_TYPE_LABELS[type]}
+                      </button>
+                    ),
+                  )
                 )}
               </div>
             </>

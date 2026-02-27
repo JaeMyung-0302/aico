@@ -40,7 +40,15 @@ export const DynamicLights = ({ enabled }: DynamicLightsProps) => {
   useEffect(() => {
     const pool: FlashLight[] = []
     for (let i = 0; i < MAX_LIGHTS; i++) {
-      pool.push({ x: 0, y: 0, intensity: 0, color: 0xffffff, age: 0, maxAge: 0, active: false })
+      pool.push({
+        x: 0,
+        y: 0,
+        intensity: 0,
+        color: 0xffffff,
+        age: 0,
+        maxAge: 0,
+        active: false,
+      })
     }
     lights.current = pool
   }, [])
@@ -50,13 +58,17 @@ export const DynamicLights = ({ enabled }: DynamicLightsProps) => {
     if (!enabled) return
 
     const colorMap: Record<BasicAttackPattern, number> = {
-      melee_fan: 0xffaa44,         // 전사: 오렌지
+      melee_fan: 0xffaa44, // 전사: 오렌지
       ranged_projectile: 0x44ff88, // 궁수: 녹색
-      aoe_circle: 0x8844ff,        // 마법사: 보라
-      mid_range_holy: 0xffee88,    // 팔라딘: 금색
+      aoe_circle: 0x8844ff, // 마법사: 보라
+      mid_range_holy: 0xffee88, // 팔라딘: 금색
     }
 
-    const onAttack = (data: { attackPattern: BasicAttackPattern; x: number; y: number }) => {
+    const onAttack = (data: {
+      attackPattern: BasicAttackPattern
+      x: number
+      y: number
+    }) => {
       const light = lights.current.find((l) => !l.active)
       if (!light) return
 

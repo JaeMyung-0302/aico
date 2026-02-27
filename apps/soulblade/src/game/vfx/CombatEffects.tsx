@@ -56,13 +56,31 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
   useEffect(() => {
     const sparkPool: Spark[] = []
     for (let i = 0; i < MAX_SPARKS; i++) {
-      sparkPool.push({ x: 0, y: 0, vx: 0, vy: 0, height: 0, vHeight: 0, age: 0, color: new Color(), active: false })
+      sparkPool.push({
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        height: 0,
+        vHeight: 0,
+        age: 0,
+        color: new Color(),
+        active: false,
+      })
     }
     sparks.current = sparkPool
 
     const ringPool: Ring[] = []
     for (let i = 0; i < MAX_RINGS; i++) {
-      ringPool.push({ x: 0, y: 0, age: 0, maxAge: 0, maxScale: 0, color: new Color(), active: false })
+      ringPool.push({
+        x: 0,
+        y: 0,
+        age: 0,
+        maxAge: 0,
+        maxScale: 0,
+        color: new Color(),
+        active: false,
+      })
     }
     rings.current = ringPool
   }, [])
@@ -177,7 +195,12 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
 
       if (activeCount < MAX_SPARKS) {
         positions.setXYZ(activeCount, spark.x, spark.height, spark.y)
-        colors.setXYZ(activeCount, spark.color.r * alpha, spark.color.g * alpha, spark.color.b * alpha)
+        colors.setXYZ(
+          activeCount,
+          spark.color.r * alpha,
+          spark.color.g * alpha,
+          spark.color.b * alpha,
+        )
         activeCount++
       }
     }
@@ -227,27 +250,29 @@ export const CombatEffects = ({ effectLevel }: CombatEffectsProps) => {
       </points>
 
       {/* 충격파 링 */}
-      {rings.current.filter((r) => r.active).map((ring, i) => {
-        const progress = ring.age / ring.maxAge
-        const scale = ring.maxScale * progress
-        const alpha = 1 - progress
-        return (
-          <mesh
-            key={`ring-${i}`}
-            position={[ring.x, 5, ring.y]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            scale={[scale * 10, scale * 10, 1]}
-          >
-            <ringGeometry args={[0.8, 1, 16]} />
-            <meshBasicMaterial
-              color={ring.color}
-              transparent
-              opacity={alpha * 0.6}
-              depthWrite={false}
-            />
-          </mesh>
-        )
-      })}
+      {rings.current
+        .filter((r) => r.active)
+        .map((ring, i) => {
+          const progress = ring.age / ring.maxAge
+          const scale = ring.maxScale * progress
+          const alpha = 1 - progress
+          return (
+            <mesh
+              key={`ring-${i}`}
+              position={[ring.x, 5, ring.y]}
+              rotation={[-Math.PI / 2, 0, 0]}
+              scale={[scale * 10, scale * 10, 1]}
+            >
+              <ringGeometry args={[0.8, 1, 16]} />
+              <meshBasicMaterial
+                color={ring.color}
+                transparent
+                opacity={alpha * 0.6}
+                depthWrite={false}
+              />
+            </mesh>
+          )
+        })}
     </group>
   )
 }

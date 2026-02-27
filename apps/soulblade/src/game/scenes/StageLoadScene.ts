@@ -21,17 +21,27 @@ export class StageLoadScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(bg.color)
 
     // 스테이지명 표시
-    const nameText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, bg.name, {
-      fontSize: '36px',
-      color: '#ffffff',
-      fontStyle: 'bold',
-    })
+    const nameText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 40,
+      bg.name,
+      {
+        fontSize: '36px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      },
+    )
     nameText.setOrigin(0.5)
 
-    const loadingText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20, '준비 중...', {
-      fontSize: '18px',
-      color: 'rgba(255,255,255,0.6)',
-    })
+    const loadingText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 20,
+      '준비 중...',
+      {
+        fontSize: '18px',
+        color: 'rgba(255,255,255,0.6)',
+      },
+    )
     loadingText.setOrigin(0.5)
 
     // 1초 후 GameScene 전환

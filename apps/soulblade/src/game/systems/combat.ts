@@ -4,7 +4,11 @@ import { Monster } from '../entities/Monster'
 import { EliteMonster } from '../entities/EliteMonster'
 import { Projectile } from '../entities/Projectile'
 import type { ProjectileConfig } from '../entities/Projectile'
-import { calcDamage, BASE_ATTACK_COOLDOWN, CLASS_CONFIGS } from '@soulblade/shared'
+import {
+  calcDamage,
+  BASE_ATTACK_COOLDOWN,
+  CLASS_CONFIGS,
+} from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
 import { spawnDeathParticles, showDamageNumber, screenShake } from './juiciness'
 import type { VisualFxManager } from './visual-fx'
@@ -107,7 +111,13 @@ const handleKill = (
 
   // 사망 파티클 + 화면 흔들림 (LOD 조건)
   if (state.juicy.enableParticles && state.juicy.deathParticles > 0) {
-    spawnDeathParticles(player.scene, monster.x, monster.y, state.juicy.deathParticles, state.juicy.enableEffectGlow)
+    spawnDeathParticles(
+      player.scene,
+      monster.x,
+      monster.y,
+      state.juicy.deathParticles,
+      state.juicy.enableEffectGlow,
+    )
   }
   if (state.juicy.enableScreenShake) {
     screenShake(player.scene, 0.003, 80)
@@ -115,8 +125,14 @@ const handleKill = (
 
   // 사망 강화 이펙트 (충격파/잔류 글로우)
   if (state.visualFx) {
-    const entityType = monster instanceof EliteMonster ? 'elite' as const : 'normal' as const
-    state.visualFx.onEntityDeath(monster.x, monster.y, entityType, state.juicy.combatEffectLevel)
+    const entityType =
+      monster instanceof EliteMonster ? ('elite' as const) : ('normal' as const)
+    state.visualFx.onEntityDeath(
+      monster.x,
+      monster.y,
+      entityType,
+      state.juicy.combatEffectLevel,
+    )
   }
 
   // 직업 패시브: heal_on_kill (Paladin)
@@ -141,14 +157,24 @@ const handleKill = (
     const chainRange = 120
     const chainDmg = chainLevel * 5
     let chainCount = 0
-    const scene = player.scene as Phaser.Scene & { enemies?: Phaser.Physics.Arcade.Group; eliteGroup?: Phaser.Physics.Arcade.Group }
-    const groups = [scene.enemies, scene.eliteGroup].filter(Boolean) as Phaser.Physics.Arcade.Group[]
+    const scene = player.scene as Phaser.Scene & {
+      enemies?: Phaser.Physics.Arcade.Group
+      eliteGroup?: Phaser.Physics.Arcade.Group
+    }
+    const groups = [scene.enemies, scene.eliteGroup].filter(
+      Boolean,
+    ) as Phaser.Physics.Arcade.Group[]
     for (const group of groups) {
       for (const child of group.getChildren()) {
         if (chainCount >= 3) break
         const target = child as Monster
         if (!target.active || target === monster) continue
-        const dist = Phaser.Math.Distance.Between(monster.x, monster.y, target.x, target.y)
+        const dist = Phaser.Math.Distance.Between(
+          monster.x,
+          monster.y,
+          target.x,
+          target.y,
+        )
         if (dist <= chainRange) {
           target.takeDamage(chainDmg)
           chainCount++
@@ -162,7 +188,13 @@ const handleKill = (
 // --- 공격 이펙트 ---
 
 // 부채꼴 슬래시 (Warrior) — 멀티레이어 잔상 + 글로우
-const showSlashEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: number, juicy: JuicyConfig): void => {
+const showSlashEffect = (
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  facingAngle: number,
+  juicy: JuicyConfig,
+): void => {
   const g = scene.add.graphics()
   g.setDepth(15)
   const ba = facingAngle
@@ -190,7 +222,12 @@ const showSlashEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle:
     g.strokePath()
   }
 
-  scene.tweens.add({ targets: g, alpha: 0, duration: 180, onComplete: () => g.destroy() })
+  scene.tweens.add({
+    targets: g,
+    alpha: 0,
+    duration: 180,
+    onComplete: () => g.destroy(),
+  })
 
   // Layer 4: 잔상 + 스파크 (full only)
   if (layers >= 4) {
@@ -200,7 +237,13 @@ const showSlashEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle:
     afterG.beginPath()
     afterG.arc(x, y, 50, ba - 0.75, ba + 0.75)
     afterG.strokePath()
-    scene.tweens.add({ targets: afterG, alpha: 0, duration: 250, delay: 40, onComplete: () => afterG.destroy() })
+    scene.tweens.add({
+      targets: afterG,
+      alpha: 0,
+      duration: 250,
+      delay: 40,
+      onComplete: () => afterG.destroy(),
+    })
 
     // 스파크 입자
     for (let i = 0; i < 5; i++) {
@@ -223,7 +266,13 @@ const showSlashEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle:
 }
 
 // AoE 마법진 (Mage) — 동심원 + 확산 파동 + 스파크
-const showAoeEffect = (scene: Phaser.Scene, x: number, y: number, radius: number, juicy: JuicyConfig): void => {
+const showAoeEffect = (
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  radius: number,
+  juicy: JuicyConfig,
+): void => {
   const g = scene.add.graphics()
   g.setDepth(15)
   const layers = juicy.effectLayers
@@ -254,7 +303,12 @@ const showAoeEffect = (scene: Phaser.Scene, x: number, y: number, radius: number
     }
   }
 
-  scene.tweens.add({ targets: g, alpha: 0, duration: 280, onComplete: () => g.destroy() })
+  scene.tweens.add({
+    targets: g,
+    alpha: 0,
+    duration: 280,
+    onComplete: () => g.destroy(),
+  })
 
   // Layer 4: 확산 파동 + 스파크 (full only)
   if (layers >= 4) {
@@ -293,15 +347,23 @@ const showAoeEffect = (scene: Phaser.Scene, x: number, y: number, radius: number
 }
 
 // 성스러운 빛 (Paladin) — 황금 성광 + 십자 + 입자
-const showHolyEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: number, range: number, width: number, juicy: JuicyConfig): void => {
+const showHolyEffect = (
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  facingAngle: number,
+  range: number,
+  width: number,
+  juicy: JuicyConfig,
+): void => {
   const g = scene.add.graphics()
   g.setDepth(15)
   const layers = juicy.effectLayers
 
   const cosA = Math.cos(facingAngle)
   const sinA = Math.sin(facingAngle)
-  const rectX = x + cosA * range / 2 - range / 2
-  const rectY = y + sinA * range / 2 - width / 2
+  const rectX = x + (cosA * range) / 2 - range / 2
+  const rectY = y + (sinA * range) / 2 - width / 2
 
   // Layer 1: 성스러운 빛 사각형
   g.fillStyle(0xffdd44, 0.2)
@@ -324,7 +386,12 @@ const showHolyEffect = (scene: Phaser.Scene, x: number, y: number, facingAngle: 
     g.fillRect(rectX - 4, rectY - 4, range + 8, width + 8)
   }
 
-  scene.tweens.add({ targets: g, alpha: 0, duration: 220, onComplete: () => g.destroy() })
+  scene.tweens.add({
+    targets: g,
+    alpha: 0,
+    duration: 220,
+    onComplete: () => g.destroy(),
+  })
 
   // Layer 4: 성스러운 입자 (full only)
   if (layers >= 4) {
@@ -360,7 +427,11 @@ export const processAttack = (
 ): void => {
   const cdrLevel = player.passiveSkills.get('cooldown_reduction') ?? 0
   const atkSpdLevel = player.passiveSkills.get('attack_speed_up') ?? 0
-  const cooldown = (BASE_ATTACK_COOLDOWN * 1000) * (1 - cdrLevel * 0.08) * (1 - atkSpdLevel * 0.1)
+  const cooldown =
+    BASE_ATTACK_COOLDOWN *
+    1000 *
+    (1 - cdrLevel * 0.08) *
+    (1 - atkSpdLevel * 0.1)
   if (time - state.lastAttackTime < cooldown) return
 
   state.lastAttackTime = time
@@ -371,7 +442,13 @@ export const processAttack = (
 
   switch (player.attackPattern) {
     case 'melee_fan':
-      showSlashEffect(player.scene, player.x, player.y, player.facingAngle, state.juicy)
+      showSlashEffect(
+        player.scene,
+        player.x,
+        player.y,
+        player.facingAngle,
+        state.juicy,
+      )
       attackMeleeFan(player, allGroups, state)
       break
     case 'ranged_projectile': {
@@ -381,12 +458,26 @@ export const processAttack = (
     case 'aoe_circle': {
       const aoeBoost = player.passiveSkills.get('aoe_range_up') ?? 0
       const effectiveRange = 180 + aoeBoost * 20
-      showAoeEffect(player.scene, player.x, player.y, effectiveRange, state.juicy)
+      showAoeEffect(
+        player.scene,
+        player.x,
+        player.y,
+        effectiveRange,
+        state.juicy,
+      )
       attackAoeCircle(player, allGroups, state)
       break
     }
     case 'mid_range_holy':
-      showHolyEffect(player.scene, player.x, player.y, player.facingAngle, 150, 60, state.juicy)
+      showHolyEffect(
+        player.scene,
+        player.x,
+        player.y,
+        player.facingAngle,
+        150,
+        60,
+        state.juicy,
+      )
       attackMidRangeHoly(player, allGroups, state)
       break
   }
@@ -407,10 +498,20 @@ const attackMeleeFan = (
       const enemy = child as Monster
       if (!enemy.active) continue
 
-      const dist = Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y)
+      const dist = Phaser.Math.Distance.Between(
+        player.x,
+        player.y,
+        enemy.x,
+        enemy.y,
+      )
       if (dist > range) continue
 
-      const angle = Phaser.Math.Angle.Between(player.x, player.y, enemy.x, enemy.y)
+      const angle = Phaser.Math.Angle.Between(
+        player.x,
+        player.y,
+        enemy.x,
+        enemy.y,
+      )
       const angleDiff = Math.abs(Phaser.Math.Angle.Wrap(angle - playerAngle))
 
       if (angleDiff <= fanAngle / 2) {
@@ -430,18 +531,28 @@ const attackRangedProjectile = (
 
   const isCrit = Math.random() < player.crit
   const passive = CLASS_CONFIGS[player.classType].classPassive
-  const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
+  const critBonus =
+    isCrit && passive.type === 'crit_damage_bonus' ? passive.value : 1.0
   const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
-  const damage = calcDamage(player.atk, player.weaponPower, 0, 1.0, player.level, 1, critMultiplier)
+  const damage = calcDamage(
+    player.atk,
+    player.weaponPower,
+    0,
+    1.0,
+    player.level,
+    1,
+    critMultiplier,
+  )
 
   const extraCount = player.passiveSkills.get('extra_projectile') ?? 0
   const totalProjectiles = 1 + extraCount
   const spreadAngle = totalProjectiles > 1 ? 0.15 : 0
 
   for (let i = 0; i < totalProjectiles; i++) {
-    const offsetAngle = totalProjectiles > 1
-      ? angle + (i - (totalProjectiles - 1) / 2) * spreadAngle
-      : angle
+    const offsetAngle =
+      totalProjectiles > 1
+        ? angle + (i - (totalProjectiles - 1) / 2) * spreadAngle
+        : angle
 
     fireProjectile(player, projectiles, offsetAngle, {
       speed: 400,
@@ -467,7 +578,12 @@ const attackAoeCircle = (
       const enemy = child as Monster
       if (!enemy.active) continue
 
-      const dist = Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y)
+      const dist = Phaser.Math.Distance.Between(
+        player.x,
+        player.y,
+        enemy.x,
+        enemy.y,
+      )
       if (dist <= effectiveRange) {
         applyDamageToMonster(player, enemy, state)
       }
@@ -511,10 +627,19 @@ const applyDamageToMonster = (
 ): boolean => {
   const passive = CLASS_CONFIGS[player.classType].classPassive
   const isCrit = Math.random() < player.crit
-  const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
+  const critBonus =
+    isCrit && passive.type === 'crit_damage_bonus' ? passive.value : 1.0
   const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
   const skillMul = passive.type === 'skill_multiplier' ? passive.value : 1.0
-  const damage = calcDamage(player.atk, player.weaponPower, monster.def, skillMul, player.level, monster.level, critMultiplier)
+  const damage = calcDamage(
+    player.atk,
+    player.weaponPower,
+    monster.def,
+    skillMul,
+    player.level,
+    monster.level,
+    critMultiplier,
+  )
 
   // 데미지 텍스트 (LOD 조건)
   if (state.juicy.enableDamageNumbers) {
@@ -523,7 +648,12 @@ const applyDamageToMonster = (
 
   // 히트 스파크 이펙트
   if (state.visualFx) {
-    state.visualFx.onEntityHit(monster.x, monster.y, isCrit, state.juicy.combatEffectLevel)
+    state.visualFx.onEntityHit(
+      monster.x,
+      monster.y,
+      isCrit,
+      state.juicy.combatEffectLevel,
+    )
   }
 
   const killed = monster.takeDamage(damage)
@@ -562,10 +692,19 @@ export const processEnemyDamage = (
   }
 
   const passive = CLASS_CONFIGS[player.classType].classPassive
-  const rawDamage = calcDamage(monster.atk, 0, player.def, 1.0, monster.level, player.level, 1.0)
-  const damage = passive.type === 'damage_reduction'
-    ? Math.floor(rawDamage * passive.value)
-    : rawDamage
+  const rawDamage = calcDamage(
+    monster.atk,
+    0,
+    player.def,
+    1.0,
+    monster.level,
+    player.level,
+    1.0,
+  )
+  const damage =
+    passive.type === 'damage_reduction'
+      ? Math.floor(rawDamage * passive.value)
+      : rawDamage
 
   // 피격 데미지 숫자 (빨간색)
   if (state.juicy.enableDamageNumbers) {
@@ -586,12 +725,23 @@ export const processProjectileHit = (
 ): void => {
   // 데미지 텍스트 (LOD 조건)
   if (state.juicy.enableDamageNumbers) {
-    showDamageNumber(player.scene, monster.x, monster.y, projectile.damage, false)
+    showDamageNumber(
+      player.scene,
+      monster.x,
+      monster.y,
+      projectile.damage,
+      false,
+    )
   }
 
   // 히트 스파크 이펙트
   if (state.visualFx) {
-    state.visualFx.onEntityHit(monster.x, monster.y, false, state.juicy.combatEffectLevel)
+    state.visualFx.onEntityHit(
+      monster.x,
+      monster.y,
+      false,
+      state.juicy.combatEffectLevel,
+    )
   }
 
   const killed = monster.takeDamage(projectile.damage)
@@ -627,7 +777,12 @@ const findNearestEnemy = (
     for (const child of group.getChildren()) {
       const enemy = child as Monster
       if (!enemy.active) continue
-      const dist = Phaser.Math.Distance.Between(player.x, player.y, enemy.x, enemy.y)
+      const dist = Phaser.Math.Distance.Between(
+        player.x,
+        player.y,
+        enemy.x,
+        enemy.y,
+      )
       if (dist < minDist) {
         minDist = dist
         nearest = enemy

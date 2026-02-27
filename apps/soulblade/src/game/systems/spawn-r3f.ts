@@ -6,11 +6,23 @@
  * Phaser.Math.Between → Math.random() 사용
  */
 
-import type { ZoneConfig, MonsterType, EliteMutationType } from '@soulblade/shared'
+import type {
+  ZoneConfig,
+  MonsterType,
+  EliteMutationType,
+} from '@soulblade/shared'
 import { CULLING_PADDING, MAX_CONCURRENT_MONSTERS } from '@soulblade/shared'
 import type { MonsterEntity, EliteEntity } from '../types'
-import { createMonster, getMonsterConfigByLevel, monsterReset } from '../data/monster-data'
-import { createElite, ELITE_MUTATION_TYPES, eliteReset } from '../data/elite-data'
+import {
+  createMonster,
+  getMonsterConfigByLevel,
+  monsterReset,
+} from '../data/monster-data'
+import {
+  createElite,
+  ELITE_MUTATION_TYPES,
+  eliteReset,
+} from '../data/elite-data'
 import type { MonsterSpawnConfig } from '../data/monster-data'
 import { randomBetween } from '../physics/aabb'
 
@@ -34,7 +46,10 @@ export const createSpawnManagerState = (): SpawnManagerState => ({
 // ── 존 등록 ──
 
 /** @mutates state.zones, state.zoneStates */
-export const registerZones = (state: SpawnManagerState, zones: readonly ZoneConfig[]): void => {
+export const registerZones = (
+  state: SpawnManagerState,
+  zones: readonly ZoneConfig[],
+): void => {
   state.zones = zones
   state.zoneStates.clear()
   for (const zone of zones) {
@@ -50,8 +65,14 @@ export const registerZones = (state: SpawnManagerState, zones: readonly ZoneConf
 const getZoneSpawnPosition = (zone: ZoneConfig): { x: number; y: number } => {
   const margin = 20
   return {
-    x: randomBetween(zone.bounds.x + margin, zone.bounds.x + zone.bounds.width - margin),
-    y: randomBetween(zone.bounds.y + margin, zone.bounds.y + zone.bounds.height - margin),
+    x: randomBetween(
+      zone.bounds.x + margin,
+      zone.bounds.x + zone.bounds.width - margin,
+    ),
+    y: randomBetween(
+      zone.bounds.y + margin,
+      zone.bounds.y + zone.bounds.height - margin,
+    ),
   }
 }
 
@@ -90,12 +111,24 @@ const countActiveInZone = (
   let count = 0
 
   for (const m of monsters) {
-    if (m.active && m.body.x >= b.x && m.body.x <= b.x + b.width && m.body.y >= b.y && m.body.y <= b.y + b.height) {
+    if (
+      m.active &&
+      m.body.x >= b.x &&
+      m.body.x <= b.x + b.width &&
+      m.body.y >= b.y &&
+      m.body.y <= b.y + b.height
+    ) {
       count++
     }
   }
   for (const e of elites) {
-    if (e.active && e.body.x >= b.x && e.body.x <= b.x + b.width && e.body.y >= b.y && e.body.y <= b.y + b.height) {
+    if (
+      e.active &&
+      e.body.x >= b.x &&
+      e.body.x <= b.x + b.width &&
+      e.body.y >= b.y &&
+      e.body.y <= b.y + b.height
+    ) {
       count++
     }
   }
@@ -105,14 +138,18 @@ const countActiveInZone = (
 
 // ── 오브젝트 풀에서 비활성 엔티티 찾기 ──
 
-const findInactiveMonster = (monsters: readonly MonsterEntity[]): MonsterEntity | null => {
+const findInactiveMonster = (
+  monsters: readonly MonsterEntity[],
+): MonsterEntity | null => {
   for (const m of monsters) {
     if (!m.active) return m
   }
   return null
 }
 
-const findInactiveElite = (elites: readonly EliteEntity[]): EliteEntity | null => {
+const findInactiveElite = (
+  elites: readonly EliteEntity[],
+): EliteEntity | null => {
   for (const e of elites) {
     if (!e.active) return e
   }
@@ -144,7 +181,9 @@ export const updateZoneSpawn = (
   const result: SpawnResult = { newMonsters: [], newElites: [] }
 
   // 총 활성 몬스터 상한
-  const totalActive = monsters.filter((m) => m.active).length + elites.filter((e) => e.active).length
+  const totalActive =
+    monsters.filter((m) => m.active).length +
+    elites.filter((e) => e.active).length
   if (totalActive >= MAX_CONCURRENT_MONSTERS) return result
 
   for (const zone of state.zones) {
@@ -158,7 +197,8 @@ export const updateZoneSpawn = (
     if (timeMs - zoneState.lastSpawnTime < zone.respawnDelay) continue
 
     // 존 내 활성 수 체크
-    if (countActiveInZone(zone, monsters, elites) >= zone.maxConcurrent) continue
+    if (countActiveInZone(zone, monsters, elites) >= zone.maxConcurrent)
+      continue
 
     zoneState.lastSpawnTime = timeMs
     const baseConfig = getMonsterConfigByLevel(zone.monsterLevel)
@@ -166,7 +206,9 @@ export const updateZoneSpawn = (
 
     // 엘리트 확률
     if (zone.eliteChance > 0 && Math.random() < zone.eliteChance) {
-      const mutationIdx = Math.floor(Math.random() * ELITE_MUTATION_TYPES.length)
+      const mutationIdx = Math.floor(
+        Math.random() * ELITE_MUTATION_TYPES.length,
+      )
       const mutation = ELITE_MUTATION_TYPES[mutationIdx]!
       const inactive = findInactiveElite(elites)
       if (inactive) {

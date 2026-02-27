@@ -133,7 +133,9 @@ export const LobbyPage = () => {
   // --- 기존 플레이어 로비 ---
   if (classLocked) {
     const config = CLASS_CONFIGS[savedClass]
-    const passive = PASSIVE_DESC[config.classPassive.type](config.classPassive.value)
+    const passive = PASSIVE_DESC[config.classPassive.type](
+      config.classPassive.value,
+    )
 
     return (
       <div className={cx('lobby')}>
@@ -144,9 +146,13 @@ export const LobbyPage = () => {
           <ClassPreview classType={savedClass} />
           <div className={cx('lockedDetails')}>
             {savedName && <span className={cx('lockedName')}>{savedName}</span>}
-            <span className={cx('lockedClass')}>{CLASS_NAME_KR[savedClass]}</span>
+            <span className={cx('lockedClass')}>
+              {CLASS_NAME_KR[savedClass]}
+            </span>
             <span className={cx('lockedLevel')}>Lv. {savedLevel}</span>
-            <span className={cx('lockedStat')}>HP {savedStats.hp} / ATK {savedStats.atk} / DEF {savedStats.def}</span>
+            <span className={cx('lockedStat')}>
+              HP {savedStats.hp} / ATK {savedStats.atk} / DEF {savedStats.def}
+            </span>
             <span className={cx('lockedPassive')}>{passive}</span>
             <span className={cx('lockedGold')}>Gold {savedGold}</span>
           </div>
@@ -157,19 +163,34 @@ export const LobbyPage = () => {
         </button>
 
         <div className={cx('menuList')}>
-          <button className={cx('menuButton')} onClick={() => navigate('/inventory')}>
+          <button
+            className={cx('menuButton')}
+            onClick={() => navigate('/inventory')}
+          >
             인벤토리
           </button>
-          <button className={cx('menuButton')} onClick={() => navigate('/upgrade')}>
+          <button
+            className={cx('menuButton')}
+            onClick={() => navigate('/upgrade')}
+          >
             영구 강화
           </button>
-          <button className={cx('menuButton')} onClick={() => navigate('/skill-tree')}>
+          <button
+            className={cx('menuButton')}
+            onClick={() => navigate('/skill-tree')}
+          >
             스킬 진화
           </button>
-          <button className={cx('menuButton')} onClick={() => navigate('/daily')}>
+          <button
+            className={cx('menuButton')}
+            onClick={() => navigate('/daily')}
+          >
             일일 출석
           </button>
-          <button className={cx('menuButton')} onClick={() => navigate('/challenge')}>
+          <button
+            className={cx('menuButton')}
+            onClick={() => navigate('/challenge')}
+          >
             도전 모드
           </button>
         </div>
@@ -179,7 +200,9 @@ export const LobbyPage = () => {
 
   // --- 신규 플레이어: 클래스 선택 UI ---
   const selectedConfig = CLASS_CONFIGS[selectedClass]
-  const selectedPassive = PASSIVE_DESC[selectedConfig.classPassive.type](selectedConfig.classPassive.value)
+  const selectedPassive = PASSIVE_DESC[selectedConfig.classPassive.type](
+    selectedConfig.classPassive.value,
+  )
 
   return (
     <div className={cx('lobby')}>
@@ -196,7 +219,11 @@ export const LobbyPage = () => {
               <button
                 key={cls}
                 className={cx('classTab', { selected: selectedClass === cls })}
-                onClick={() => { setSelectedClass(cls); setConfirming(false); setNameError('') }}
+                onClick={() => {
+                  setSelectedClass(cls)
+                  setConfirming(false)
+                  setNameError('')
+                }}
               >
                 {CLASS_NAME_KR[cls]}
               </button>
@@ -207,11 +234,21 @@ export const LobbyPage = () => {
             <p className={cx('detailDesc')}>{selectedConfig.description}</p>
 
             <div className={cx('detailStats')}>
-              <span className={cx('statRow')}>HP {selectedConfig.baseStats.hp}</span>
-              <span className={cx('statRow')}>ATK {selectedConfig.baseStats.atk}</span>
-              <span className={cx('statRow')}>DEF {selectedConfig.baseStats.def}</span>
-              <span className={cx('statRow')}>SPD {selectedConfig.baseStats.spd}</span>
-              <span className={cx('statRow')}>CRIT {Math.round(selectedConfig.baseStats.crit * 100)}%</span>
+              <span className={cx('statRow')}>
+                HP {selectedConfig.baseStats.hp}
+              </span>
+              <span className={cx('statRow')}>
+                ATK {selectedConfig.baseStats.atk}
+              </span>
+              <span className={cx('statRow')}>
+                DEF {selectedConfig.baseStats.def}
+              </span>
+              <span className={cx('statRow')}>
+                SPD {selectedConfig.baseStats.spd}
+              </span>
+              <span className={cx('statRow')}>
+                CRIT {Math.round(selectedConfig.baseStats.crit * 100)}%
+              </span>
             </div>
 
             <div className={cx('detailPassive')}>
@@ -229,7 +266,9 @@ export const LobbyPage = () => {
 
       {/* 이름 입력 */}
       <div className={cx('nameInputGroup')}>
-        <label className={cx('nameLabel')} htmlFor="char-name">캐릭터명</label>
+        <label className={cx('nameLabel')} htmlFor="char-name">
+          캐릭터명
+        </label>
         <input
           id="char-name"
           className={cx('nameInput', { error: !!nameError })}
@@ -249,18 +288,29 @@ export const LobbyPage = () => {
           onClick={handleProceedToConfirm}
           disabled={nameChecking || charName.trim().length === 0}
         >
-          {nameChecking ? '확인 중...' : `${CLASS_NAME_KR[selectedClass]}(으)로 시작`}
+          {nameChecking
+            ? '확인 중...'
+            : `${CLASS_NAME_KR[selectedClass]}(으)로 시작`}
         </button>
       ) : (
         <div className={cx('confirmGroup')}>
           <p className={cx('confirmText')}>
-            한 번 선택하면 변경할 수 없습니다. &quot;{charName.trim()}&quot; {CLASS_NAME_KR[selectedClass]}(으)로 확정할까요?
+            한 번 선택하면 변경할 수 없습니다. &quot;{charName.trim()}&quot;{' '}
+            {CLASS_NAME_KR[selectedClass]}(으)로 확정할까요?
           </p>
           <div className={cx('confirmButtons')}>
-            <button className={cx('confirmButton')} onClick={handleConfirmClass} disabled={nameChecking}>
+            <button
+              className={cx('confirmButton')}
+              onClick={handleConfirmClass}
+              disabled={nameChecking}
+            >
               {nameChecking ? '확인 중...' : '확정'}
             </button>
-            <button className={cx('cancelButton')} onClick={() => setConfirming(false)} disabled={nameChecking}>
+            <button
+              className={cx('cancelButton')}
+              onClick={() => setConfirming(false)}
+              disabled={nameChecking}
+            >
               취소
             </button>
           </div>

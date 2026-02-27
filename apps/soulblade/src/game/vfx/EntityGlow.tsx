@@ -85,11 +85,7 @@ export const EntityGlow = ({ enableGlow }: EntityGlowProps) => {
   return (
     <instancedMesh ref={glowRef} args={[undefined, undefined, MAX_GLOWS]}>
       <circleGeometry args={[1, 12]} />
-      <meshBasicMaterial
-        transparent
-        opacity={GLOW_ALPHA}
-        depthWrite={false}
-      />
+      <meshBasicMaterial transparent opacity={GLOW_ALPHA} depthWrite={false} />
     </instancedMesh>
   )
 }

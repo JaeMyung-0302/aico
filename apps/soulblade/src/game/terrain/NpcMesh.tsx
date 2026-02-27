@@ -131,9 +131,18 @@ const BlacksmithMesh = ({ npc }: { npc: NpcConfig }) => {
       </mesh>
 
       {/* 굴뚝 연기 (정적, 투명) */}
-      <mesh ref={smokeRef} position={[16, 48, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        ref={smokeRef}
+        position={[16, 48, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
         <circleGeometry args={[5, 8]} />
-        <meshBasicMaterial color="#999999" transparent opacity={0.2} depthWrite={false} />
+        <meshBasicMaterial
+          color="#999999"
+          transparent
+          opacity={0.2}
+          depthWrite={false}
+        />
       </mesh>
 
       {/* 문 (어두운 입구) */}
@@ -220,7 +229,12 @@ const PortalGuideMesh = ({ npc }: { npc: NpcConfig }) => {
       {/* 볼류메트릭 빛 이펙트 (구형) */}
       <mesh ref={lightRef} position={[0, 54, 0]}>
         <sphereGeometry args={[8, 8, 6]} />
-        <meshBasicMaterial color="#88ccff" transparent opacity={0.5} depthWrite={false} />
+        <meshBasicMaterial
+          color="#88ccff"
+          transparent
+          opacity={0.5}
+          depthWrite={false}
+        />
       </mesh>
     </group>
   )

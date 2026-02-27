@@ -41,7 +41,10 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
   switch (obstacleType) {
     case 'rect': {
       return (
-        <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
+        <mesh
+          position={[posX, height3d / 2, posZ]}
+          castShadow={obs.collidable !== false}
+        >
           <boxGeometry args={[obs.width, height3d, obs.height]} />
           <meshLambertMaterial
             color={color}
@@ -54,7 +57,10 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
     case 'circle': {
       const radius = obs.radius ?? obs.width / 2
       return (
-        <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
+        <mesh
+          position={[posX, height3d / 2, posZ]}
+          castShadow={obs.collidable !== false}
+        >
           <cylinderGeometry args={[radius, radius, height3d, 12]} />
           <meshLambertMaterial
             color={color}
@@ -67,7 +73,10 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
     case 'triangle': {
       const radius = Math.max(obs.width, obs.height) / 2
       return (
-        <mesh position={[posX, height3d / 2, posZ]} castShadow={obs.collidable !== false}>
+        <mesh
+          position={[posX, height3d / 2, posZ]}
+          castShadow={obs.collidable !== false}
+        >
           <coneGeometry args={[radius, height3d, 6]} />
           <meshLambertMaterial
             color={color}
@@ -81,7 +90,11 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
       const radiusX = obs.width / 2
       const radiusY = obs.height / 2
       return (
-        <mesh position={[posX, height3d / 2, posZ]} scale={[radiusX / radiusY, 1, 1]} castShadow={obs.collidable !== false}>
+        <mesh
+          position={[posX, height3d / 2, posZ]}
+          scale={[radiusX / radiusY, 1, 1]}
+          castShadow={obs.collidable !== false}
+        >
           <cylinderGeometry args={[radiusY, radiusY, height3d, 12]} />
           <meshLambertMaterial
             color={color}
@@ -95,7 +108,13 @@ const ObstacleItem = ({ obs }: { obs: ObstacleConfig }) => {
 }
 
 // 스프라이트 빌보드 장애물 (spriteType이 있고 텍스처 로드됨)
-const ObstacleBillboard = ({ obs, textures }: { obs: ObstacleConfig; textures: Record<string, import('three').Texture> }) => {
+const ObstacleBillboard = ({
+  obs,
+  textures,
+}: {
+  obs: ObstacleConfig
+  textures: Record<string, import('three').Texture>
+}) => {
   const meshRef = useRef<Mesh>(null)
   const spriteType = obs.spriteType!
   const tex = textures[spriteType]

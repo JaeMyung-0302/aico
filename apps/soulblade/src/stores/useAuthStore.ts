@@ -31,13 +31,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Auth timeout')), 5000),
       )
-      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise])
-      set({ session, user: session?.user ?? null, loading: false, initialized: true })
+      const {
+        data: { session },
+      } = await Promise.race([sessionPromise, timeoutPromise])
+      set({
+        session,
+        user: session?.user ?? null,
+        loading: false,
+        initialized: true,
+      })
 
       // 기존 구독 해제 후 새 구독 (HMR 대비)
       authSubscription?.unsubscribe()
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
         set({ session, user: session?.user ?? null })
       })
       authSubscription = subscription

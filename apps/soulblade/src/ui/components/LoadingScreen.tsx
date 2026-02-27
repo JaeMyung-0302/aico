@@ -7,7 +7,9 @@ interface LoadingScreenProps {
   readonly message?: string
 }
 
-export const LoadingScreen = ({ message = 'Loading...' }: LoadingScreenProps) => (
+export const LoadingScreen = ({
+  message = 'Loading...',
+}: LoadingScreenProps) => (
   <div className={cx('loading')}>
     <h1 className={cx('title')}>SoulBlade</h1>
     <p className={cx('subtitle')}>영혼의 전장</p>

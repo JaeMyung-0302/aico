@@ -3,7 +3,11 @@ import type { FormEvent } from 'react'
 import classNames from 'classnames/bind'
 import { useFoodItemStore } from '@/stores/useFoodItemStore'
 import { FoodCategory, FOOD_CATEGORY_LABELS } from '@/types'
-import type { FoodItemResponse, CreateFoodItemInput, UpdateFoodItemInput } from '@/types'
+import type {
+  FoodItemResponse,
+  CreateFoodItemInput,
+  UpdateFoodItemInput,
+} from '@/types'
 import styles from './FoodItemForm.module.scss'
 
 const cx = classNames.bind(styles)
@@ -30,10 +34,14 @@ export const FoodItemForm = ({
   const modalRef = useRef<HTMLDivElement>(null)
 
   const [name, setName] = useState(editItem?.name ?? '')
-  const [category, setCategory] = useState<FoodCategory>(editItem?.category ?? FoodCategory.OTHER)
+  const [category, setCategory] = useState<FoodCategory>(
+    editItem?.category ?? FoodCategory.OTHER,
+  )
   const [quantity, setQuantity] = useState(editItem?.quantity?.toString() ?? '')
   const [unit, setUnit] = useState(editItem?.unit ?? '')
-  const [expiryDate, setExpiryDate] = useState(editItem?.expiryDate?.slice(0, 10) ?? '')
+  const [expiryDate, setExpiryDate] = useState(
+    editItem?.expiryDate?.slice(0, 10) ?? '',
+  )
   const [memo, setMemo] = useState(editItem?.memo ?? '')
   const [submitting, setSubmitting] = useState(false)
 
@@ -75,9 +83,20 @@ export const FoodItemForm = ({
       }
     },
     [
-      name, category, quantity, unit, expiryDate, memo,
-      isValid, submitting, isEditing, editItem,
-      compartmentId, createItem, updateItem, onSuccess,
+      name,
+      category,
+      quantity,
+      unit,
+      expiryDate,
+      memo,
+      isValid,
+      submitting,
+      isEditing,
+      editItem,
+      compartmentId,
+      createItem,
+      updateItem,
+      onSuccess,
     ],
   )
 
@@ -89,17 +108,26 @@ export const FoodItemForm = ({
     e.stopPropagation()
   }, [])
 
-  const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setTimeout(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }, 300)
-  }, [])
+  const handleFocus = useCallback(
+    (
+      e: React.FocusEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >,
+    ) => {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    },
+    [],
+  )
 
   return (
     <div className={cx('overlay')} onClick={handleOverlayClick}>
       <div className={cx('modal')} ref={modalRef} onClick={handleModalClick}>
         <div className={cx('header')}>
-          <h3 className={cx('title')}>{isEditing ? '식재료 수정' : '식재료 추가'}</h3>
+          <h3 className={cx('title')}>
+            {isEditing ? '식재료 수정' : '식재료 추가'}
+          </h3>
           <button className={cx('closeBtn')} onClick={onClose} type="button">
             ✕
           </button>

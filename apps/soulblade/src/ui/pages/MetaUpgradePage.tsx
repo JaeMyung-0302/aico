@@ -2,7 +2,10 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
 import type { PermanentStats } from '@soulblade/shared'
-import { MAX_PERMANENT_STAT_LEVEL, calcPermanentStatCost } from '@soulblade/shared'
+import {
+  MAX_PERMANENT_STAT_LEVEL,
+  calcPermanentStatCost,
+} from '@soulblade/shared'
 import { useMetaStore } from '@/stores/useMetaStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import styles from './MetaUpgradePage.module.scss'
@@ -60,7 +63,9 @@ export const MetaUpgradePage = () => {
             <div key={key} className={cx('statRow')}>
               <div className={cx('statInfo')}>
                 <span className={cx('statLabel')}>{label}</span>
-                <span className={cx('statLevel')}>Lv.{level}/{MAX_PERMANENT_STAT_LEVEL}</span>
+                <span className={cx('statLevel')}>
+                  Lv.{level}/{MAX_PERMANENT_STAT_LEVEL}
+                </span>
                 <span className={cx('statDesc')}>{desc}</span>
               </div>
               <button

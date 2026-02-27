@@ -24,8 +24,8 @@ export interface OutlineUniforms {
 
 /** 셀 머티리얼 생성 옵션 */
 export interface CelMaterialOptions {
-  readonly steps?: number       // 명암 단계 (default: 2)
-  readonly rimPower?: number    // 림 라이트 세기 (default: 3.0)
+  readonly steps?: number // 명암 단계 (default: 2)
+  readonly rimPower?: number // 림 라이트 세기 (default: 3.0)
   readonly shadowColor?: number // 그림자 색상 hex (default: 0x443355)
-  readonly rimColor?: number    // 림 라이트 색상 hex (default: 0xffffff)
+  readonly rimColor?: number // 림 라이트 색상 hex (default: 0xffffff)
 }

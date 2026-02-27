@@ -23,7 +23,9 @@ const DeathTimeline = ({ log, culpritId }: DeathTimelineProps) => (
         key={i}
         className={cx('entry', { culprit: entry.playerId === culpritId })}
       >
-        <span className={cx('arrow')}>{DIRECTION_ARROW[entry.direction] ?? '?'}</span>
+        <span className={cx('arrow')}>
+          {DIRECTION_ARROW[entry.direction] ?? '?'}
+        </span>
         <span className={cx('key')}>{entry.key.toUpperCase()}</span>
         <span className={cx('name')}>{entry.nickname}</span>
       </div>

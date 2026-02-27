@@ -4,7 +4,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 }
 
 const ATTENDANCE_BONUS: Record<number, number> = {
@@ -45,10 +46,17 @@ serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } },
-    })
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    const userClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      {
+        global: { headers: { Authorization: authHeader } },
+      },
+    )
+    const {
+      data: { user },
+      error: authError,
+    } = await userClient.auth.getUser()
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -125,10 +133,13 @@ serve(async (req: Request) => {
     }
 
     // 메타 골드 지급 (원자적)
-    const { data: newGold, error: goldError } = await adminClient.rpc('sb_increment_meta_gold', {
-      p_user_id: user.id,
-      p_amount: goldReward,
-    })
+    const { data: newGold, error: goldError } = await adminClient.rpc(
+      'sb_increment_meta_gold',
+      {
+        p_user_id: user.id,
+        p_amount: goldReward,
+      },
+    )
 
     // 골드 지급 실패 시 출석 기록 롤백
     if (goldError) {
@@ -146,20 +157,28 @@ serve(async (req: Request) => {
           .eq('date', today)
       }
 
-      return new Response(JSON.stringify({ error: 'Gold increment failed, attendance rolled back' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return new Response(
+        JSON.stringify({
+          error: 'Gold increment failed, attendance rolled back',
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
-    return new Response(JSON.stringify({
-      consecutiveDays: newConsecutive,
-      goldReward,
-      newGold,
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({
+        consecutiveDays: newConsecutive,
+        goldReward,
+        newGold,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    )
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,

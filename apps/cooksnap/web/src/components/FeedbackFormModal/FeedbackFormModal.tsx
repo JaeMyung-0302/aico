@@ -18,7 +18,9 @@ const CATEGORY_LABELS: Record<FeedbackCategory, string> = {
 }
 
 const FeedbackFormModal = ({ onClose }: FeedbackFormModalProps) => {
-  const [category, setCategory] = useState<FeedbackCategory>(FeedbackCategory.IMPROVEMENT)
+  const [category, setCategory] = useState<FeedbackCategory>(
+    FeedbackCategory.IMPROVEMENT,
+  )
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -87,7 +89,9 @@ const FeedbackFormModal = ({ onClose }: FeedbackFormModalProps) => {
                 maxLength={1000}
                 rows={5}
               />
-              <span className={cx('charCounter', { warning: content.length > 900 })}>
+              <span
+                className={cx('charCounter', { warning: content.length > 900 })}
+              >
                 {content.length}/1000
               </span>
             </div>

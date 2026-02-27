@@ -6,7 +6,13 @@
  * Phaser StaticGroup → PhysicsBody[] 배열
  */
 
-import type { MapId, WorldMapConfig, PortalConfig, NpcConfig, ObstacleConfig } from '@soulblade/shared'
+import type {
+  MapId,
+  WorldMapConfig,
+  PortalConfig,
+  NpcConfig,
+  ObstacleConfig,
+} from '@soulblade/shared'
 import type { PhysicsBody } from '../types'
 import { MAP_CONFIGS } from '../data/maps'
 
@@ -28,7 +34,9 @@ export const createMapState = (initialMapId: MapId = 'town'): MapState => ({
 
 // ── 장애물 AABB 생성 ──
 
-const buildObstacleAABBs = (obstacles: readonly ObstacleConfig[]): PhysicsBody[] => {
+const buildObstacleAABBs = (
+  obstacles: readonly ObstacleConfig[],
+): PhysicsBody[] => {
   const bodies: PhysicsBody[] = []
   for (const obs of obstacles) {
     if (obs.collidable === false) continue
@@ -48,7 +56,10 @@ const buildObstacleAABBs = (obstacles: readonly ObstacleConfig[]): PhysicsBody[]
 // ── 맵 전환 ──
 
 /** @mutates state (currentMapId, obstacleAABBs, cooldowns) */
-export const switchMap = (state: MapState, targetMapId: MapId): WorldMapConfig => {
+export const switchMap = (
+  state: MapState,
+  targetMapId: MapId,
+): WorldMapConfig => {
   state.currentMapId = targetMapId
   const config = MAP_CONFIGS[targetMapId]
   state.obstacleAABBs = buildObstacleAABBs(config.obstacles)
@@ -81,8 +92,10 @@ export const checkPortalCollision = (
     const hh = portal.size.height / 2
 
     if (
-      playerX >= px - hw && playerX <= px + hw &&
-      playerY >= py - hh && playerY <= py + hh
+      playerX >= px - hw &&
+      playerX <= px + hw &&
+      playerY >= py - hh &&
+      playerY <= py + hh
     ) {
       return portal
     }

@@ -23,22 +23,30 @@ export interface MonsterSpawnConfig {
 }
 
 // 몬스터 타입별 스탯 배율
-const MONSTER_TYPE_MULTIPLIERS: Record<MonsterType, { hp: number; atk: number; spd: number }> = {
+const MONSTER_TYPE_MULTIPLIERS: Record<
+  MonsterType,
+  { hp: number; atk: number; spd: number }
+> = {
   normal: { hp: 1.0, atk: 1.0, spd: 1.0 },
-  fast:   { hp: 0.6, atk: 0.8, spd: 2.0 },
-  tank:   { hp: 3.0, atk: 0.6, spd: 0.5 },
+  fast: { hp: 0.6, atk: 0.8, spd: 2.0 },
+  tank: { hp: 3.0, atk: 0.6, spd: 0.5 },
   ranged: { hp: 0.8, atk: 1.5, spd: 0.8 },
-  swarm:  { hp: 0.4, atk: 0.5, spd: 1.5 },
+  swarm: { hp: 0.4, atk: 0.5, spd: 1.5 },
 }
 
 // 레벨 기반 몬스터 기본 스탯
-export const getMonsterConfigByLevel = (level: number, monsterType: MonsterType = 'normal'): MonsterSpawnConfig => {
+export const getMonsterConfigByLevel = (
+  level: number,
+  monsterType: MonsterType = 'normal',
+): MonsterSpawnConfig => {
   const scale = 1 + (level - 1) * 0.25
   const mul = MONSTER_TYPE_MULTIPLIERS[monsterType]
   return {
     hp: Math.floor(10 * scale * mul.hp),
     atk: Math.floor(4 * scale * mul.atk),
-    def: Math.floor(MONSTER_TYPE_BASE_DEF[monsterType] * (1 + 0.25 * (level - 1))),
+    def: Math.floor(
+      MONSTER_TYPE_BASE_DEF[monsterType] * (1 + 0.25 * (level - 1)),
+    ),
     spd: Math.min(2 + Math.floor(level / 10), 6) * mul.spd,
     level,
     expReward: Math.floor(5 + level * 2),
@@ -86,7 +94,11 @@ export const createMonster = (
 // ── AI: 플레이어 추적 ──
 
 /** @mutates monster.body.vx, monster.body.vy */
-export const monsterChasePlayer = (monster: MonsterEntity, playerX: number, playerY: number): void => {
+export const monsterChasePlayer = (
+  monster: MonsterEntity,
+  playerX: number,
+  playerY: number,
+): void => {
   if (!monster.active) return
 
   const angle = angleBetween(monster.body.x, monster.body.y, playerX, playerY)
@@ -100,7 +112,10 @@ export const monsterChasePlayer = (monster: MonsterEntity, playerX: number, play
 // ── 데미지 처리 ──
 
 /** @mutates monster.hp, monster.active */
-export const monsterTakeDamage = (monster: MonsterEntity, amount: number): boolean => {
+export const monsterTakeDamage = (
+  monster: MonsterEntity,
+  amount: number,
+): boolean => {
   monster.hp -= amount
 
   if (monster.hp <= 0) {
@@ -115,19 +130,29 @@ export const monsterTakeDamage = (monster: MonsterEntity, amount: number): boole
 // ── 상태 효과 ──
 
 /** @mutates monster.dotDamage, monster.dotTimer, monster.dotTickTimer */
-export const monsterApplyDot = (monster: MonsterEntity, damage: number, durationMs: number): void => {
+export const monsterApplyDot = (
+  monster: MonsterEntity,
+  damage: number,
+  durationMs: number,
+): void => {
   monster.dotDamage = damage
   monster.dotTimer = durationMs
   monster.dotTickTimer = 0
 }
 
 /** @mutates monster.slowMultiplier */
-export const monsterApplySlow = (monster: MonsterEntity, percent: number): void => {
+export const monsterApplySlow = (
+  monster: MonsterEntity,
+  percent: number,
+): void => {
   monster.slowMultiplier = Math.min(percent, 0.8)
 }
 
 /** @mutates monster.dotTimer, monster.dotTickTimer, monster.dotDamage, monster.hp, monster.active */
-export const monsterUpdateEffects = (monster: MonsterEntity, deltaMs: number): boolean => {
+export const monsterUpdateEffects = (
+  monster: MonsterEntity,
+  deltaMs: number,
+): boolean => {
   if (!monster.active) return false
 
   let killed = false

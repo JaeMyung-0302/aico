@@ -11,7 +11,12 @@ export type EventType = 'merchant' | 'curse' | 'miniboss_rush'
 export type MonsterType = 'normal' | 'fast' | 'tank' | 'ranged' | 'swarm'
 
 // 엘리트 변이 타입 (5종)
-export type EliteMutationType = 'speedy' | 'armored' | 'splitting' | 'ranged' | 'explosive'
+export type EliteMutationType =
+  | 'speedy'
+  | 'armored'
+  | 'splitting'
+  | 'ranged'
+  | 'explosive'
 
 // 보스 타입
 export type BossType = 'serpent_king' | 'ice_golem' | 'flame_dragon'

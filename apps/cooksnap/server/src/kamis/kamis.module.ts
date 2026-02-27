@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { KamisService } from './kamis.service';
+import { Module } from '@nestjs/common'
+import { KamisService } from './kamis.service'
 
 @Module({
   providers: [KamisService],

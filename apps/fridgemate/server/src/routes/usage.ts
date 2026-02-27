@@ -22,8 +22,14 @@ usageRouter.get('/remaining', async (req, res: Response): Promise<void> => {
       }),
     ])
 
-    const isPremium = !!(group?.isPremium && group.premiumExpiresAt && group.premiumExpiresAt > new Date())
-    const remainingCount = isPremium ? -1 : Math.max(0, FREE_WEEKLY_LIMIT - (usage?.count ?? 0))
+    const isPremium = !!(
+      group?.isPremium &&
+      group.premiumExpiresAt &&
+      group.premiumExpiresAt > new Date()
+    )
+    const remainingCount = isPremium
+      ? -1
+      : Math.max(0, FREE_WEEKLY_LIMIT - (usage?.count ?? 0))
     res.json({ remainingCount, isPremium })
   } catch {
     res.status(500).json({ error: 'Failed to check remaining count' })

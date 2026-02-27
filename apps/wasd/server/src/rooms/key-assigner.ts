@@ -4,8 +4,14 @@ const ALL_KEYS: readonly Key[] = ['w', 'a', 's', 'd']
 
 // 교차 대각선 조합: 각 플레이어가 안전 방향 최소 1개 보장
 const DIAGONAL_SPLITS: readonly [readonly Key[], readonly Key[]][] = [
-  [['w', 'd'], ['a', 's']],
-  [['a', 's'], ['w', 'd']],
+  [
+    ['w', 'd'],
+    ['a', 's'],
+  ],
+  [
+    ['a', 's'],
+    ['w', 'd'],
+  ],
 ]
 
 const shuffle = <T>(array: readonly T[]): T[] => {
@@ -39,7 +45,10 @@ export const assignKeys = (playerIds: string[]): KeyAssignment[] => {
     return [
       { playerId: shuffledPlayers[0]!, keys: [shuffledKeys[0]!] },
       { playerId: shuffledPlayers[1]!, keys: [shuffledKeys[1]!] },
-      { playerId: shuffledPlayers[2]!, keys: [shuffledKeys[2]!, shuffledKeys[3]!] },
+      {
+        playerId: shuffledPlayers[2]!,
+        keys: [shuffledKeys[2]!, shuffledKeys[3]!],
+      },
     ]
   }
 

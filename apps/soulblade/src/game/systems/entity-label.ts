@@ -63,40 +63,74 @@ export const updateEntityLabelPosition = (
   label.setPosition(x, y + yOffset)
 }
 
-export const createPlayerLabel = (scene: Phaser.Scene, name: string, level: number): Phaser.GameObjects.Text =>
+export const createPlayerLabel = (
+  scene: Phaser.Scene,
+  name: string,
+  level: number,
+): Phaser.GameObjects.Text =>
   createEntityLabel(scene, `${name} Lv.${level}`, PLAYER_LABEL_CONFIG)
 
-export const updatePlayerLabel = (label: Phaser.GameObjects.Text, name: string, level: number): void => {
+export const updatePlayerLabel = (
+  label: Phaser.GameObjects.Text,
+  name: string,
+  level: number,
+): void => {
   label.setText(`${name} Lv.${level}`)
 }
 
-export const syncPlayerLabel = (label: Phaser.GameObjects.Text, x: number, y: number): void => {
+export const syncPlayerLabel = (
+  label: Phaser.GameObjects.Text,
+  x: number,
+  y: number,
+): void => {
   updateEntityLabelPosition(label, x, y, PLAYER_LABEL_CONFIG.yOffset)
 }
 
-export const createMonsterLabel = (scene: Phaser.Scene, level: number): Phaser.GameObjects.Text =>
+export const createMonsterLabel = (
+  scene: Phaser.Scene,
+  level: number,
+): Phaser.GameObjects.Text =>
   createEntityLabel(scene, `Lv.${level}`, MONSTER_LABEL_CONFIG)
 
-export const updateMonsterLabel = (label: Phaser.GameObjects.Text, level: number): void => {
+export const updateMonsterLabel = (
+  label: Phaser.GameObjects.Text,
+  level: number,
+): void => {
   label.setText(`Lv.${level}`)
 }
 
-export const syncMonsterLabel = (label: Phaser.GameObjects.Text, x: number, y: number): void => {
+export const syncMonsterLabel = (
+  label: Phaser.GameObjects.Text,
+  x: number,
+  y: number,
+): void => {
   updateEntityLabelPosition(label, x, y, MONSTER_LABEL_CONFIG.yOffset)
 }
 
-export const createEliteLabel = (scene: Phaser.Scene, level: number): Phaser.GameObjects.Text =>
+export const createEliteLabel = (
+  scene: Phaser.Scene,
+  level: number,
+): Phaser.GameObjects.Text =>
   createEntityLabel(scene, `Lv.${level}`, ELITE_LABEL_CONFIG)
 
-export const updateEliteLabel = (label: Phaser.GameObjects.Text, level: number): void => {
+export const updateEliteLabel = (
+  label: Phaser.GameObjects.Text,
+  level: number,
+): void => {
   label.setText(`Lv.${level}`)
 }
 
-export const syncEliteLabel = (label: Phaser.GameObjects.Text, x: number, y: number): void => {
+export const syncEliteLabel = (
+  label: Phaser.GameObjects.Text,
+  x: number,
+  y: number,
+): void => {
   updateEntityLabelPosition(label, x, y, ELITE_LABEL_CONFIG.yOffset)
 }
 
-export const destroyEntityLabel = (label: Phaser.GameObjects.Text | null): void => {
+export const destroyEntityLabel = (
+  label: Phaser.GameObjects.Text | null,
+): void => {
   if (label && label.scene) {
     label.destroy()
   }

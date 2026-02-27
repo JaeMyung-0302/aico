@@ -1,4 +1,8 @@
-import type { BasicAttackPattern, CharacterClass, CharacterStats } from './character.js'
+import type {
+  BasicAttackPattern,
+  CharacterClass,
+  CharacterStats,
+} from './character.js'
 import type { Equipment } from './equipment.js'
 import type { MapId, NpcType } from './map.js'
 import type { PassiveSkillId, SkillEvolution } from './skill.js'
@@ -103,7 +107,10 @@ export interface PhaserToReactEvents {
     readonly critDmg: number
     readonly level: number
     readonly gold: number
-    readonly passiveSkills: ReadonlyArray<{ readonly id: PassiveSkillId; readonly level: number }>
+    readonly passiveSkills: ReadonlyArray<{
+      readonly id: PassiveSkillId
+      readonly level: number
+    }>
   }
 }
 

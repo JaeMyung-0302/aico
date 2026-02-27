@@ -1,8 +1,12 @@
 export const configuration = () => {
-  const required = ['DATABASE_URL', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
+  const required = [
+    'DATABASE_URL',
+    'SUPABASE_URL',
+    'SUPABASE_SERVICE_ROLE_KEY',
+  ] as const
   for (const key of required) {
     if (!process.env[key]) {
-      throw new Error(`Missing required env: ${key}`);
+      throw new Error(`Missing required env: ${key}`)
     }
   }
 
@@ -14,5 +18,5 @@ export const configuration = () => {
       serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
     },
     corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:5175',
-  };
-};
+  }
+}

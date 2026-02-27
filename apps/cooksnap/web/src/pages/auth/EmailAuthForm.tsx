@@ -22,8 +22,10 @@ const EmailAuthForm = () => {
     if (!email.trim()) return '이메일을 입력해주세요.'
     if (!EMAIL_REGEX.test(email.trim())) return '올바른 이메일 형식이 아닙니다.'
     if (!password) return '비밀번호를 입력해주세요.'
-    if (password.length < MIN_PASSWORD_LENGTH) return `비밀번호는 ${MIN_PASSWORD_LENGTH}자 이상이어야 합니다.`
-    if (mode === 'signup' && password !== confirmPassword) return '비밀번호가 일치하지 않습니다.'
+    if (password.length < MIN_PASSWORD_LENGTH)
+      return `비밀번호는 ${MIN_PASSWORD_LENGTH}자 이상이어야 합니다.`
+    if (mode === 'signup' && password !== confirmPassword)
+      return '비밀번호가 일치하지 않습니다.'
     return null
   }
 
@@ -69,9 +71,16 @@ const EmailAuthForm = () => {
       <div className={cx('confirmation')}>
         <p className={cx('confirmationTitle')}>인증 이메일을 발송했습니다</p>
         <p className={cx('confirmationText')}>
-          <strong>{email}</strong>으로 발송된 인증 링크를 클릭하여 가입을 완료해주세요.
+          <strong>{email}</strong>으로 발송된 인증 링크를 클릭하여 가입을
+          완료해주세요.
         </p>
-        <button className={cx('backButton')} onClick={() => { setShowConfirmation(false); setMode('signin') }}>
+        <button
+          className={cx('backButton')}
+          onClick={() => {
+            setShowConfirmation(false)
+            setMode('signin')
+          }}
+        >
           로그인으로 돌아가기
         </button>
       </div>
@@ -79,7 +88,13 @@ const EmailAuthForm = () => {
   }
 
   return (
-    <form className={cx('emailForm')} onSubmit={(e) => { e.preventDefault(); handleSubmit() }}>
+    <form
+      className={cx('emailForm')}
+      onSubmit={(e) => {
+        e.preventDefault()
+        handleSubmit()
+      }}
+    >
       <input
         className={cx('input')}
         type="email"
@@ -110,15 +125,30 @@ const EmailAuthForm = () => {
         />
       )}
       {error && <p className={cx('error')}>{error}</p>}
-      <button className={cx('submitButton')} type="submit" disabled={isSubmitting}>
-        {isSubmitting ? '처리 중...' : mode === 'signup' ? '회원가입' : '로그인'}
+      <button
+        className={cx('submitButton')}
+        type="submit"
+        disabled={isSubmitting}
+      >
+        {isSubmitting
+          ? '처리 중...'
+          : mode === 'signup'
+            ? '회원가입'
+            : '로그인'}
       </button>
       {mode === 'signup' && (
-        <p className={cx('warning')}>비밀번호를 안전하게 보관해주세요. 현재 비밀번호 재설정은 지원되지 않습니다.</p>
+        <p className={cx('warning')}>
+          비밀번호를 안전하게 보관해주세요. 현재 비밀번호 재설정은 지원되지
+          않습니다.
+        </p>
       )}
       <p className={cx('toggle')}>
         {mode === 'signin' ? '계정이 없으신가요? ' : '이미 계정이 있으신가요? '}
-        <button className={cx('toggleButton')} onClick={toggleMode} disabled={isSubmitting}>
+        <button
+          className={cx('toggleButton')}
+          onClick={toggleMode}
+          disabled={isSubmitting}
+        >
           {mode === 'signin' ? '회원가입' : '로그인'}
         </button>
       </p>

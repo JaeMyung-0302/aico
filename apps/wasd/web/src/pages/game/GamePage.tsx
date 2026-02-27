@@ -79,7 +79,12 @@ const GamePage = () => {
       }
     }
 
-    const handleGameComplete = (data: { deaths: number; elapsedTime: number; ranking?: RankingEntry[]; myRank?: number | null }) => {
+    const handleGameComplete = (data: {
+      deaths: number
+      elapsedTime: number
+      ranking?: RankingEntry[]
+      myRank?: number | null
+    }) => {
       sound.gameComplete()
       useGameStore.getState().setGameResult(data)
     }
@@ -118,14 +123,20 @@ const GamePage = () => {
     <div className={cx('container')}>
       <GameHUD gameState={gameState} />
       <div className={cx('gameArea')}>
-        <GameCanvas gameState={gameState} tileMap={tileMap} effectsRef={effectsRef} />
+        <GameCanvas
+          gameState={gameState}
+          tileMap={tileMap}
+          effectsRef={effectsRef}
+        />
       </div>
       <KeyIndicator myKeys={myKeys} />
 
       {deathEvent && (
         <DeathLog deathEvent={deathEvent} onDismiss={handleDismissDeathLog} />
       )}
-      {gamePhase === 'stage-clear' && <StageTransition stage={gameState.stage} />}
+      {gamePhase === 'stage-clear' && (
+        <StageTransition stage={gameState.stage} />
+      )}
     </div>
   )
 }

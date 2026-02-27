@@ -1,7 +1,17 @@
 import Phaser from 'phaser'
 import { MONSTER_TEXTURES } from '../texture-keys'
-import { createHpBar, updateHpBar, destroyHpBar, type HpBarConfig } from '../systems/hp-bar'
-import { createMonsterLabel, updateMonsterLabel, syncMonsterLabel, destroyEntityLabel } from '../systems/entity-label'
+import {
+  createHpBar,
+  updateHpBar,
+  destroyHpBar,
+  type HpBarConfig,
+} from '../systems/hp-bar'
+import {
+  createMonsterLabel,
+  updateMonsterLabel,
+  syncMonsterLabel,
+  destroyEntityLabel,
+} from '../systems/entity-label'
 
 export interface MonsterConfig {
   readonly hp: number
@@ -25,7 +35,12 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
 
   // HP 바
   private hpBar: Phaser.GameObjects.Graphics | null = null
-  private readonly hpBarConfig: HpBarConfig = { width: 24, height: 3, yOffset: -4, showBorder: false }
+  private readonly hpBarConfig: HpBarConfig = {
+    width: 24,
+    height: 3,
+    yOffset: -4,
+    showBorder: false,
+  }
 
   // 레벨 라벨
   private levelLabel: Phaser.GameObjects.Text | null = null
@@ -71,10 +86,7 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     const baseSpeed = 50 + this.spd * 10
     const speed = baseSpeed * (1 - this.slowMultiplier)
 
-    this.setVelocity(
-      Math.cos(angle) * speed,
-      Math.sin(angle) * speed,
-    )
+    this.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed)
   }
 
   takeDamage = (amount: number): boolean => {
@@ -128,7 +140,13 @@ export class Monster extends Phaser.Physics.Arcade.Sprite {
     if (!enableHpBars) {
       if (this.hpBar) this.hpBar.setAlpha(0)
     } else if (this.hpBar && this.hpBar.alpha > 0) {
-      updateHpBar(this.hpBar, this.x, this.y, this.hp / this.maxHp, this.hpBarConfig)
+      updateHpBar(
+        this.hpBar,
+        this.x,
+        this.y,
+        this.hp / this.maxHp,
+        this.hpBarConfig,
+      )
     }
 
     // 레벨 라벨 위치 동기화 (LOD 조건)

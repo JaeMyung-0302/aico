@@ -1,4 +1,12 @@
-import type { Position, Direction, GamePhase, GameState, Key, TileMap, Obstacle } from '@wasd/shared'
+import type {
+  Position,
+  Direction,
+  GamePhase,
+  GameState,
+  Key,
+  TileMap,
+  Obstacle,
+} from '@wasd/shared'
 import { TILE_SIZE, PLAYER_SIZE, TileType, STAGES } from '@wasd/shared'
 
 export interface InputEntry {

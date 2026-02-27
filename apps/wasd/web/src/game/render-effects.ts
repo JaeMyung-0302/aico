@@ -29,7 +29,11 @@ const createParticle = (
   }
 }
 
-export const emitDeathParticles = (state: EffectsState, x: number, y: number): EffectsState => {
+export const emitDeathParticles = (
+  state: EffectsState,
+  x: number,
+  y: number,
+): EffectsState => {
   const colors = ['#ff4444', '#ff6666', '#cc2222', '#ff8888']
   const newParticles: Particle[] = []
 
@@ -74,12 +78,18 @@ export const emitStageClearParticles = (
 
 // --- Screen shake ---
 
-export const triggerScreenShake = (state: EffectsState, intensity: number = 4, duration: number = 150): EffectsState => ({
+export const triggerScreenShake = (
+  state: EffectsState,
+  intensity: number = 4,
+  duration: number = 150,
+): EffectsState => ({
   ...state,
   shake: { intensity, duration, startTime: performance.now() },
 })
 
-const getShakeOffset = (shake: ScreenShake | null): { x: number; y: number } => {
+const getShakeOffset = (
+  shake: ScreenShake | null,
+): { x: number; y: number } => {
   if (!shake) return { x: 0, y: 0 }
 
   const elapsed = performance.now() - shake.startTime
@@ -97,7 +107,10 @@ const getShakeOffset = (shake: ScreenShake | null): { x: number; y: number } => 
 
 // --- Update & Render ---
 
-export const updateEffects = (state: EffectsState, dt: number): EffectsState => {
+export const updateEffects = (
+  state: EffectsState,
+  dt: number,
+): EffectsState => {
   // Update particles
   const particles = state.particles
     .map((p) => ({
@@ -111,9 +124,11 @@ export const updateEffects = (state: EffectsState, dt: number): EffectsState => 
     .filter((p) => p.life > 0)
 
   // Clean expired shake
-  const shake = state.shake && (performance.now() - state.shake.startTime < state.shake.duration)
-    ? state.shake
-    : null
+  const shake =
+    state.shake &&
+    performance.now() - state.shake.startTime < state.shake.duration
+      ? state.shake
+      : null
 
   return { particles, shake }
 }

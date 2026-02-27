@@ -1,4 +1,8 @@
-import type { EquipmentGrade, EquipmentTag, EquipmentType } from '@soulblade/shared'
+import type {
+  EquipmentGrade,
+  EquipmentTag,
+  EquipmentType,
+} from '@soulblade/shared'
 import { GRADE_DROP_RATES, GRADE_STAT_RANGES } from '@soulblade/shared'
 import type { CharacterStats } from '@soulblade/shared'
 import { eventBus } from '@/lib/event-bus'
@@ -17,8 +21,19 @@ const BASE_DROP_CHANCE = 0.08
 const BOSS_DROP_MULTIPLIER = 3.0
 const ELITE_DROP_MULTIPLIER = 2.0
 
-const EQUIPMENT_TYPES: readonly EquipmentType[] = ['weapon', 'armor', 'accessory']
-const EQUIPMENT_TAGS: readonly EquipmentTag[] = ['fire', 'ice', 'vampire', 'thunder', 'holy', 'poison']
+const EQUIPMENT_TYPES: readonly EquipmentType[] = [
+  'weapon',
+  'armor',
+  'accessory',
+]
+const EQUIPMENT_TAGS: readonly EquipmentTag[] = [
+  'fire',
+  'ice',
+  'vampire',
+  'thunder',
+  'holy',
+  'poison',
+]
 const STAT_KEYS: readonly (keyof CharacterStats)[] = ['hp', 'atk', 'def', 'spd']
 
 const pickRandom = <T>(arr: readonly T[]): T =>
@@ -30,17 +45,31 @@ const randomBetween = (min: number, max: number): number =>
 // 등급 결정 (가중치 기반)
 const rollGrade = (luckBonus: number): EquipmentGrade => {
   const roll = Math.random() - luckBonus * 0.001
-  const grades: readonly EquipmentGrade[] = ['legendary', 'epic', 'rare', 'uncommon', 'common']
+  const grades: readonly EquipmentGrade[] = [
+    'legendary',
+    'epic',
+    'rare',
+    'uncommon',
+    'common',
+  ]
   const thresholds = [
     1 - GRADE_DROP_RATES.legendary,
     1 - GRADE_DROP_RATES.legendary - GRADE_DROP_RATES.epic,
-    1 - GRADE_DROP_RATES.legendary - GRADE_DROP_RATES.epic - GRADE_DROP_RATES.rare,
-    1 - GRADE_DROP_RATES.legendary - GRADE_DROP_RATES.epic - GRADE_DROP_RATES.rare - GRADE_DROP_RATES.uncommon,
+    1 -
+      GRADE_DROP_RATES.legendary -
+      GRADE_DROP_RATES.epic -
+      GRADE_DROP_RATES.rare,
+    1 -
+      GRADE_DROP_RATES.legendary -
+      GRADE_DROP_RATES.epic -
+      GRADE_DROP_RATES.rare -
+      GRADE_DROP_RATES.uncommon,
   ]
 
   for (let i = 0; i < thresholds.length; i++) {
     const threshold = thresholds[i]
-    if (threshold !== undefined && roll >= threshold) return grades[i] as EquipmentGrade
+    if (threshold !== undefined && roll >= threshold)
+      return grades[i] as EquipmentGrade
   }
   return 'common'
 }
@@ -65,7 +94,8 @@ const generateLoot = (luckBonus: number): LootDrop => {
   for (let i = 0; i < statCount; i++) {
     const key = pickRandom(STAT_KEYS)
     const current = (stats[key] as number | undefined) ?? 0
-    ;(stats as Record<string, number>)[key] = current + randomBetween(range.min, range.max)
+    ;(stats as Record<string, number>)[key] =
+      current + randomBetween(range.min, range.max)
   }
 
   const gradePrefix: Record<EquipmentGrade, string> = {
@@ -98,11 +128,12 @@ export const processLootDrop = (
   killType: 'normal' | 'elite' | 'boss',
   goldBoostLevel: number,
 ): LootDrop | null => {
-  const multiplier = killType === 'boss'
-    ? BOSS_DROP_MULTIPLIER
-    : killType === 'elite'
-      ? ELITE_DROP_MULTIPLIER
-      : 1.0
+  const multiplier =
+    killType === 'boss'
+      ? BOSS_DROP_MULTIPLIER
+      : killType === 'elite'
+        ? ELITE_DROP_MULTIPLIER
+        : 1.0
 
   const dropChance = BASE_DROP_CHANCE * multiplier
   if (Math.random() > dropChance) return null

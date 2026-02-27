@@ -9,11 +9,14 @@ const EYE_COLOR = '#ffffff'
 const PUPIL_COLOR = '#1a1a2e'
 
 // 방향별 눈 오프셋 (cx 기준)
-const EYE_OFFSETS: Record<Direction, { lx: number; ly: number; rx: number; ry: number }> = {
+const EYE_OFFSETS: Record<
+  Direction,
+  { lx: number; ly: number; rx: number; ry: number }
+> = {
   right: { lx: 1, ly: -2.5, rx: 1, ry: 0.5 },
-  left:  { lx: -1, ly: -2.5, rx: -1, ry: 0.5 },
-  up:    { lx: -2.5, ly: -2, rx: 2.5, ry: -2 },
-  down:  { lx: -2.5, ly: 1, rx: 2.5, ry: 1 },
+  left: { lx: -1, ly: -2.5, rx: -1, ry: 0.5 },
+  up: { lx: -2.5, ly: -2, rx: 2.5, ry: -2 },
+  down: { lx: -2.5, ly: 1, rx: 2.5, ry: 1 },
 }
 
 export const renderPlayer = (

@@ -1,8 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import classNames from 'classnames/bind'
-import { CompartmentType, COMPARTMENT_TYPE_COLORS, COMPARTMENT_TYPE_LABELS } from '@/types'
+import {
+  CompartmentType,
+  COMPARTMENT_TYPE_COLORS,
+  COMPARTMENT_TYPE_LABELS,
+} from '@/types'
 import type { CompartmentPreset, FridgeType } from '@/types'
-import { isFreezerZone, isDrawerPosition, isShowcasePosition } from '@/utils/fridgeLayout'
+import {
+  isFreezerZone,
+  isDrawerPosition,
+  isShowcasePosition,
+} from '@/utils/fridgeLayout'
 import styles from './EditableCompartmentCell.module.scss'
 
 const cx = classNames.bind(styles)
@@ -117,7 +125,10 @@ export const EditableCompartmentCell = ({
                 setShowGroupSelector(false)
               }}
             />
-            <div className={cx('groupSelector')} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={cx('groupSelector')}
+              onClick={(e) => e.stopPropagation()}
+            >
               {GROUP_OPTIONS.map((type) => (
                 <button
                   key={type}
@@ -188,12 +199,16 @@ export const EditableCompartmentCell = ({
           onClick={handleStartEdit}
           role={onLabelChange ? 'button' : undefined}
           tabIndex={onLabelChange ? 0 : undefined}
-          onKeyDown={onLabelChange ? (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              handleStartEdit()
-            }
-          } : undefined}
+          onKeyDown={
+            onLabelChange
+              ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleStartEdit()
+                  }
+                }
+              : undefined
+          }
         >
           {preset.label}
         </span>

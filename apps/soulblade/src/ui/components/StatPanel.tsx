@@ -41,17 +41,33 @@ const STAT_ROWS: ReadonlyArray<{ key: string; label: string }> = [
 
 type StatKey = 'hp' | 'atk' | 'def' | 'spd' | 'crit'
 
-const ALLOCATABLE_STATS: ReadonlyArray<{ key: StatKey; label: string; perPoint: string }> = [
+const ALLOCATABLE_STATS: ReadonlyArray<{
+  key: StatKey
+  label: string
+  perPoint: string
+}> = [
   { key: 'hp', label: 'HP', perPoint: `+${STAT_POINT_VALUES.hp}` },
   { key: 'atk', label: 'ATK', perPoint: `+${STAT_POINT_VALUES.atk}` },
   { key: 'def', label: 'DEF', perPoint: `+${STAT_POINT_VALUES.def}` },
   { key: 'spd', label: 'SPD', perPoint: `+${STAT_POINT_VALUES.spd}` },
-  { key: 'crit', label: 'CRIT', perPoint: `+${(STAT_POINT_VALUES.crit * 100).toFixed(0)}%` },
+  {
+    key: 'crit',
+    label: 'CRIT',
+    perPoint: `+${(STAT_POINT_VALUES.crit * 100).toFixed(0)}%`,
+  },
 ]
 
-export const StatPanel = ({ stats, pendingStatPoints = 0, onAllocate }: StatPanelProps) => {
+export const StatPanel = ({
+  stats,
+  pendingStatPoints = 0,
+  onAllocate,
+}: StatPanelProps) => {
   const [allocation, setAllocation] = useState<Record<StatKey, number>>({
-    hp: 0, atk: 0, def: 0, spd: 0, crit: 0,
+    hp: 0,
+    atk: 0,
+    def: 0,
+    spd: 0,
+    crit: 0,
   })
 
   // pendingStatPoints 변경 시 allocation 리셋
@@ -62,10 +78,13 @@ export const StatPanel = ({ stats, pendingStatPoints = 0, onAllocate }: StatPane
   const usedPoints = Object.values(allocation).reduce((sum, v) => sum + v, 0)
   const remaining = Math.max(0, pendingStatPoints - usedPoints)
 
-  const handleIncrement = useCallback((key: StatKey) => {
-    if (remaining <= 0) return
-    setAllocation((prev) => ({ ...prev, [key]: prev[key] + 1 }))
-  }, [remaining])
+  const handleIncrement = useCallback(
+    (key: StatKey) => {
+      if (remaining <= 0) return
+      setAllocation((prev) => ({ ...prev, [key]: prev[key] + 1 }))
+    },
+    [remaining],
+  )
 
   const handleDecrement = useCallback((key: StatKey) => {
     setAllocation((prev) => {
@@ -86,7 +105,9 @@ export const StatPanel = ({ stats, pendingStatPoints = 0, onAllocate }: StatPane
         <div className={cx('allocSection')}>
           <div className={cx('allocHeader')}>
             <span className={cx('allocTitle')}>포인트 배분</span>
-            <span className={cx('allocRemaining')}>남은 포인트: {remaining}</span>
+            <span className={cx('allocRemaining')}>
+              남은 포인트: {remaining}
+            </span>
           </div>
           {ALLOCATABLE_STATS.map(({ key, label, perPoint }) => (
             <div key={key} className={cx('allocRow')}>
@@ -97,13 +118,17 @@ export const StatPanel = ({ stats, pendingStatPoints = 0, onAllocate }: StatPane
                   className={cx('allocBtn')}
                   onClick={() => handleDecrement(key)}
                   disabled={allocation[key] <= 0}
-                >-</button>
+                >
+                  -
+                </button>
                 <span className={cx('allocValue')}>{allocation[key]}</span>
                 <button
                   className={cx('allocBtn')}
                   onClick={() => handleIncrement(key)}
                   disabled={remaining <= 0}
-                >+</button>
+                >
+                  +
+                </button>
               </div>
             </div>
           ))}
@@ -117,9 +142,10 @@ export const StatPanel = ({ stats, pendingStatPoints = 0, onAllocate }: StatPane
         </div>
       )}
       {STAT_ROWS.map(({ key, label }) => {
-        const value = key === 'hp'
-          ? `${Math.floor(stats.hp)} / ${Math.floor(stats.maxHp)}`
-          : formatStat(key, stats[key as keyof typeof stats] as number)
+        const value =
+          key === 'hp'
+            ? `${Math.floor(stats.hp)} / ${Math.floor(stats.maxHp)}`
+            : formatStat(key, stats[key as keyof typeof stats] as number)
         return (
           <div key={key} className={cx('row')}>
             <span className={cx('label')}>{label}</span>

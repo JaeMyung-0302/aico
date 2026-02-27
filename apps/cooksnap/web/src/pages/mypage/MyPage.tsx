@@ -8,7 +8,11 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { Loading } from '@repo/ui'
 import useRedirectUrl from '@/hooks/useRedirectUrl'
 import PremiumModal from '@/components/PremiumModal'
-import type { SavedRecipe, AnalysisHistoryItem, SubscriptionInfo } from '@/types/user'
+import type {
+  SavedRecipe,
+  AnalysisHistoryItem,
+  SubscriptionInfo,
+} from '@/types/user'
 import styles from './MyPage.module.scss'
 
 const cx = classnames.bind(styles)
@@ -24,7 +28,9 @@ const MyPage = () => {
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
 
-  const { data: savedRecipes = [], isFetching: isSavedFetching } = useQuery<SavedRecipe[]>({
+  const { data: savedRecipes = [], isFetching: isSavedFetching } = useQuery<
+    SavedRecipe[]
+  >({
     queryKey: ['my-recipes'],
     queryFn: async () => {
       const { data } = await api.get('/users/me/recipes')
@@ -32,7 +38,9 @@ const MyPage = () => {
     },
   })
 
-  const { data: history = [], isFetching: isHistoryFetching } = useQuery<AnalysisHistoryItem[]>({
+  const { data: history = [], isFetching: isHistoryFetching } = useQuery<
+    AnalysisHistoryItem[]
+  >({
     queryKey: ['my-history'],
     queryFn: async () => {
       const { data } = await api.get('/users/me/history')
@@ -54,7 +62,12 @@ const MyPage = () => {
   }
 
   const handleCancelSubscription = async () => {
-    if (!confirm('정말 구독을 해지하시겠습니까?\n현재 결제 기간이 끝날 때까지 프리미엄을 이용할 수 있습니다.')) return
+    if (
+      !confirm(
+        '정말 구독을 해지하시겠습니까?\n현재 결제 기간이 끝날 때까지 프리미엄을 이용할 수 있습니다.',
+      )
+    )
+      return
 
     setIsCancelling(true)
     try {
@@ -107,25 +120,28 @@ const MyPage = () => {
           )}
           {user?.isPremium && subscription?.hasSubscription && (
             <div className={cx('subscriptionInfo')}>
-              {subscription.status === 'ACTIVE' && subscription.currentPeriodEnd && (
-                <>
-                  <span className={cx('subscriptionText')}>
-                    다음 갱신일: {formatDate(subscription.currentPeriodEnd)}
+              {subscription.status === 'ACTIVE' &&
+                subscription.currentPeriodEnd && (
+                  <>
+                    <span className={cx('subscriptionText')}>
+                      다음 갱신일: {formatDate(subscription.currentPeriodEnd)}
+                    </span>
+                    <button
+                      className={cx('cancelButton')}
+                      onClick={handleCancelSubscription}
+                      disabled={isCancelling}
+                    >
+                      {isCancelling ? '처리 중...' : '구독 해지'}
+                    </button>
+                  </>
+                )}
+              {subscription.status === 'CANCELLED' &&
+                subscription.currentPeriodEnd && (
+                  <span className={cx('subscriptionText', 'cancelled')}>
+                    {formatDate(subscription.currentPeriodEnd)}까지 프리미엄
+                    유지
                   </span>
-                  <button
-                    className={cx('cancelButton')}
-                    onClick={handleCancelSubscription}
-                    disabled={isCancelling}
-                  >
-                    {isCancelling ? '처리 중...' : '구독 해지'}
-                  </button>
-                </>
-              )}
-              {subscription.status === 'CANCELLED' && subscription.currentPeriodEnd && (
-                <span className={cx('subscriptionText', 'cancelled')}>
-                  {formatDate(subscription.currentPeriodEnd)}까지 프리미엄 유지
-                </span>
-              )}
+                )}
             </div>
           )}
         </div>
@@ -199,10 +215,7 @@ const MyPage = () => {
             <div className={cx('empty')}>분석 히스토리가 없습니다.</div>
           ) : (
             history.map((item) => (
-              <div
-                key={item.id}
-                className={cx('historyItem')}
-              >
+              <div key={item.id} className={cx('historyItem')}>
                 <div className={cx('historyInfo')}>
                   <p className={cx('historyTitle')}>{item.recipe.title}</p>
                   {user?.isPremium && (

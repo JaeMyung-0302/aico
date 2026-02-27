@@ -42,7 +42,9 @@ export const PlayerBillboard = () => {
 
   // 클래스 전환 시 이전 클론 텍스처 GPU 해제
   useEffect(() => {
-    return () => { texture?.dispose() }
+    return () => {
+      texture?.dispose()
+    }
   }, [texture])
 
   useFrame((state, delta) => {
@@ -74,7 +76,7 @@ export const PlayerBillboard = () => {
       frameIdx = anim.timer % (ATTACK_FRAME_MS * 2) < ATTACK_FRAME_MS ? 1 : 2
 
       // 공격 시각 피드백: 스케일 펌프 (1.0 → 1.3 → 1.0)
-      const attackProgress = 1 - (player.attackTimer / 200)
+      const attackProgress = 1 - player.attackTimer / 200
       const pump = 1 + Math.sin(attackProgress * Math.PI) * 0.3
       const flipX = meshRef.current.scale.x < 0 ? -1 : 1
       meshRef.current.scale.set(flipX * pump, pump, 1)
@@ -108,8 +110,15 @@ export const PlayerBillboard = () => {
 
   return (
     <mesh ref={meshRef}>
-      <planeGeometry args={[config?.frameWidth ?? 32, config?.frameHeight ?? 48]} />
-      <meshBasicMaterial ref={materialRef} map={texture} transparent alphaTest={0.1} />
+      <planeGeometry
+        args={[config?.frameWidth ?? 32, config?.frameHeight ?? 48]}
+      />
+      <meshBasicMaterial
+        ref={materialRef}
+        map={texture}
+        transparent
+        alphaTest={0.1}
+      />
     </mesh>
   )
 }

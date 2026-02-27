@@ -36,7 +36,12 @@ export const registerRoutes = (app: Express): void => {
   app.use('/api/push', pushRouter)
 
   // 참여 요청 (pending/approve/reject는 jwtAuth, my-status는 jwtAuthOptionalGroup)
-  app.use('/api/join-requests', joinRequestRateLimiter, jwtAuthOptionalGroup, joinRequestRouter)
+  app.use(
+    '/api/join-requests',
+    joinRequestRateLimiter,
+    jwtAuthOptionalGroup,
+    joinRequestRouter,
+  )
 
   // 결제 웹훅 (인증 불필요)
   app.use('/api/payments', paymentWebhookRouter)

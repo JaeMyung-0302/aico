@@ -26,7 +26,12 @@ export class ParallaxSystem {
     this.scene = scene
   }
 
-  onMapLoad = (mapId: MapId, _worldWidth: number, _worldHeight: number, maxLayers: number): void => {
+  onMapLoad = (
+    mapId: MapId,
+    _worldWidth: number,
+    _worldHeight: number,
+    maxLayers: number,
+  ): void => {
     this.onMapUnload()
 
     if (maxLayers <= 0) return
@@ -36,7 +41,13 @@ export class ParallaxSystem {
 
     // far layer (항상 생성, maxLayers >= 1)
     // 뷰포트 크기 + setScrollFactor(0)으로 카메라 고정 (GPU 메모리 절약)
-    const farSprite = this.scene.add.tileSprite(cam.width / 2, cam.height / 2, cam.width, cam.height, texKeys.far)
+    const farSprite = this.scene.add.tileSprite(
+      cam.width / 2,
+      cam.height / 2,
+      cam.width,
+      cam.height,
+      texKeys.far,
+    )
     farSprite.setScrollFactor(0)
     farSprite.setDepth(FAR_DEPTH)
     farSprite.setAlpha(0.6)
@@ -44,7 +55,13 @@ export class ParallaxSystem {
 
     // near layer (maxLayers >= 2)
     if (maxLayers >= 2) {
-      const nearSprite = this.scene.add.tileSprite(cam.width / 2, cam.height / 2, cam.width, cam.height, texKeys.near)
+      const nearSprite = this.scene.add.tileSprite(
+        cam.width / 2,
+        cam.height / 2,
+        cam.width,
+        cam.height,
+        texKeys.near,
+      )
       nearSprite.setScrollFactor(0)
       nearSprite.setDepth(NEAR_DEPTH)
       nearSprite.setAlpha(0.4)
@@ -59,7 +76,10 @@ export class ParallaxSystem {
     this.layers = []
   }
 
-  update = (camera: Phaser.Cameras.Scene2D.Camera, enableParallax: boolean): void => {
+  update = (
+    camera: Phaser.Cameras.Scene2D.Camera,
+    enableParallax: boolean,
+  ): void => {
     for (const layer of this.layers) {
       if (!enableParallax) {
         layer.sprite.setVisible(false)

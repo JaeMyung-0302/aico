@@ -14,7 +14,13 @@ import type { NpcConfig, NpcType } from '@soulblade/shared'
 import { useNpcTextures } from '../assets/sprite-loader'
 import { NPC_SPRITE_ASSETS } from '../assets/sprite-config'
 
-const NpcSprite = ({ npc, textures }: { npc: NpcConfig; textures: Partial<Record<NpcType, Texture>> }) => {
+const NpcSprite = ({
+  npc,
+  textures,
+}: {
+  npc: NpcConfig
+  textures: Partial<Record<NpcType, Texture>>
+}) => {
   const meshRef = useRef<Mesh>(null)
 
   const tex = textures[npc.type]

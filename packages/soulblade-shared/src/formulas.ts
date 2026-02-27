@@ -32,9 +32,15 @@ export const calcDamage = (
   const defReduction = DEF_FORMULA_BASE / (DEF_FORMULA_BASE + def)
   const levelFactor = Math.max(
     LEVEL_FACTOR_MIN,
-    Math.min(LEVEL_FACTOR_MAX, 1 + LEVEL_FACTOR_COEFF * (attackerLevel - defenderLevel)),
+    Math.min(
+      LEVEL_FACTOR_MAX,
+      1 + LEVEL_FACTOR_COEFF * (attackerLevel - defenderLevel),
+    ),
   )
-  return Math.max(1, Math.floor(baseDmg * defReduction * levelFactor * critMultiplier))
+  return Math.max(
+    1,
+    Math.floor(baseDmg * defReduction * levelFactor * critMultiplier),
+  )
 }
 
 /**
@@ -61,14 +67,22 @@ export const calcDropRate = (grade: EquipmentGrade, luck: number): number => {
  */
 export const calcSynergyBonus = (
   equippedTags: readonly EquipmentTag[],
-): ReadonlyArray<{ tag: EquipmentTag; bonus: Partial<CharacterStats>; setCount: number }> => {
+): ReadonlyArray<{
+  tag: EquipmentTag
+  bonus: Partial<CharacterStats>
+  setCount: number
+}> => {
   const tagCounts = new Map<EquipmentTag, number>()
 
   for (const tag of equippedTags) {
     tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1)
   }
 
-  const activeSynergies: Array<{ tag: EquipmentTag; bonus: Partial<CharacterStats>; setCount: number }> = []
+  const activeSynergies: Array<{
+    tag: EquipmentTag
+    bonus: Partial<CharacterStats>
+    setCount: number
+  }> = []
 
   for (const [tag, count] of tagCounts) {
     const config = TAG_SYNERGY_CONFIGS[tag]
@@ -103,5 +117,8 @@ export const calcMetaGoldReward = (
  * Cost = BASE × GROWTH^currentLevel
  */
 export const calcPermanentStatCost = (currentLevel: number): number => {
-  return Math.floor(PERMANENT_STAT_BASE_COST * Math.pow(PERMANENT_STAT_COST_GROWTH, currentLevel))
+  return Math.floor(
+    PERMANENT_STAT_BASE_COST *
+      Math.pow(PERMANENT_STAT_COST_GROWTH, currentLevel),
+  )
 }

@@ -26,9 +26,7 @@ const FeedbackButton = () => {
           <span className={cx('label')}>피드백</span>
         </button>
       )}
-      {isFormOpen && (
-        <FeedbackFormModal onClose={() => setIsFormOpen(false)} />
-      )}
+      {isFormOpen && <FeedbackFormModal onClose={() => setIsFormOpen(false)} />}
     </>
   )
 }

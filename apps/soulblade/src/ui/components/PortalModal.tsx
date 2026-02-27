@@ -12,7 +12,12 @@ interface PortalModalProps {
   readonly onClose: () => void
 }
 
-export const PortalModal = ({ targetMapId, label, recommendedLevel, onClose }: PortalModalProps) => {
+export const PortalModal = ({
+  targetMapId,
+  label,
+  recommendedLevel,
+  onClose,
+}: PortalModalProps) => {
   const handleConfirm = () => {
     eventBus.emit('portal:confirm', { targetMapId })
     onClose()
@@ -27,7 +32,9 @@ export const PortalModal = ({ targetMapId, label, recommendedLevel, onClose }: P
     <div className={cx('overlay')}>
       <div className={cx('modal')}>
         <h2 className={cx('title')}>{label}</h2>
-        <p className={cx('subtitle')}>이동하시겠습니까? (추천 Lv.{recommendedLevel})</p>
+        <p className={cx('subtitle')}>
+          이동하시겠습니까? (추천 Lv.{recommendedLevel})
+        </p>
         <div className={cx('buttons')}>
           <button className={cx('confirmBtn')} onClick={handleConfirm}>
             이동

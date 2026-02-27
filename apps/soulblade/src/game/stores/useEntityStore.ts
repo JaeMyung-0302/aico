@@ -12,7 +12,13 @@ import type {
   CharacterStats,
 } from '@soulblade/shared'
 import { CLASS_CONFIGS, calcExpForLevel } from '@soulblade/shared'
-import type { PlayerEntity, MonsterEntity, EliteEntity, ProjectileEntity, BossEntity } from '../types'
+import type {
+  PlayerEntity,
+  MonsterEntity,
+  EliteEntity,
+  ProjectileEntity,
+  BossEntity,
+} from '../types'
 
 interface EntityState {
   player: PlayerEntity | null
@@ -119,8 +125,7 @@ export const useEntityStore = create<EntityState>((set) => ({
   removeMonster: (id) =>
     set((state) => ({ monsters: state.monsters.filter((m) => m.id !== id) })),
 
-  addElite: (elite) =>
-    set((state) => ({ elites: [...state.elites, elite] })),
+  addElite: (elite) => set((state) => ({ elites: [...state.elites, elite] })),
 
   addElites: (elites) =>
     set((state) => ({ elites: [...state.elites, ...elites] })),
@@ -132,10 +137,18 @@ export const useEntityStore = create<EntityState>((set) => ({
     set((state) => ({ projectiles: [...state.projectiles, projectile] })),
 
   removeProjectile: (id) =>
-    set((state) => ({ projectiles: state.projectiles.filter((p) => p.id !== id) })),
+    set((state) => ({
+      projectiles: state.projectiles.filter((p) => p.id !== id),
+    })),
 
   setBoss: (boss) => set({ boss }),
 
   clearAll: () =>
-    set({ player: null, monsters: [], elites: [], projectiles: [], boss: null }),
+    set({
+      player: null,
+      monsters: [],
+      elites: [],
+      projectiles: [],
+      boss: null,
+    }),
 }))

@@ -50,4 +50,8 @@ export interface AttendanceRecord {
 }
 
 // 도전 모드 타입
-export type ChallengeMode = 'time_attack' | 'infinite' | 'boss_rush' | 'restricted'
+export type ChallengeMode =
+  | 'time_attack'
+  | 'infinite'
+  | 'boss_rush'
+  | 'restricted'

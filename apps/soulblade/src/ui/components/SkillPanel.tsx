@@ -6,7 +6,10 @@ import styles from './SkillPanel.module.scss'
 const cx = classnames.bind(styles)
 
 interface SkillPanelProps {
-  readonly skills: ReadonlyArray<{ readonly id: PassiveSkillId; readonly level: number }>
+  readonly skills: ReadonlyArray<{
+    readonly id: PassiveSkillId
+    readonly level: number
+  }>
 }
 
 export const SkillPanel = ({ skills }: SkillPanelProps) => {

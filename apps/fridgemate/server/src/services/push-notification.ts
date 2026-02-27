@@ -6,7 +6,9 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY ?? ''
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT ?? 'mailto:dev@fridgemate.local'
 
 if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-  console.warn('[Push] VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY 미설정 — Push 알림 비활성화')
+  console.warn(
+    '[Push] VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY 미설정 — Push 알림 비활성화',
+  )
 } else {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
 }
@@ -17,7 +19,10 @@ interface PushPayload {
   url?: string
 }
 
-export const sendPushToGroup = async (groupId: string, payload: PushPayload): Promise<void> => {
+export const sendPushToGroup = async (
+  groupId: string,
+  payload: PushPayload,
+): Promise<void> => {
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { groupId },
   })
@@ -34,7 +39,10 @@ export const sendPushToGroup = async (groupId: string, payload: PushPayload): Pr
         )
       } catch (err) {
         // 410 Gone 또는 404: 구독 만료 → 자동 삭제
-        if (err instanceof webpush.WebPushError && (err.statusCode === 410 || err.statusCode === 404)) {
+        if (
+          err instanceof webpush.WebPushError &&
+          (err.statusCode === 410 || err.statusCode === 404)
+        ) {
           await prisma.pushSubscription.delete({ where: { id: sub.id } })
           return // 만료된 구독 정리는 정상 처리
         }
@@ -45,11 +53,16 @@ export const sendPushToGroup = async (groupId: string, payload: PushPayload): Pr
 
   const failed = results.filter((r) => r.status === 'rejected').length
   if (failed > 0) {
-    console.warn(`[Push] ${failed}/${subscriptions.length} 발송 실패 (groupId: ${groupId})`)
+    console.warn(
+      `[Push] ${failed}/${subscriptions.length} 발송 실패 (groupId: ${groupId})`,
+    )
   }
 }
 
-export const sendPushToUser = async (userId: string, payload: PushPayload): Promise<void> => {
+export const sendPushToUser = async (
+  userId: string,
+  payload: PushPayload,
+): Promise<void> => {
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId },
   })
@@ -65,7 +78,10 @@ export const sendPushToUser = async (userId: string, payload: PushPayload): Prom
           JSON.stringify(payload),
         )
       } catch (err) {
-        if (err instanceof webpush.WebPushError && (err.statusCode === 410 || err.statusCode === 404)) {
+        if (
+          err instanceof webpush.WebPushError &&
+          (err.statusCode === 410 || err.statusCode === 404)
+        ) {
           await prisma.pushSubscription.delete({ where: { id: sub.id } })
           return
         }
@@ -76,7 +92,9 @@ export const sendPushToUser = async (userId: string, payload: PushPayload): Prom
 
   const failed = results.filter((r) => r.status === 'rejected').length
   if (failed > 0) {
-    console.warn(`[Push] ${failed}/${subscriptions.length} 발송 실패 (userId: ${userId})`)
+    console.warn(
+      `[Push] ${failed}/${subscriptions.length} 발송 실패 (userId: ${userId})`,
+    )
   }
 }
 

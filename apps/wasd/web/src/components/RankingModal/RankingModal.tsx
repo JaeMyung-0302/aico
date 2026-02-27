@@ -18,9 +18,12 @@ const formatTime = (ms: number): string => {
 }
 
 const RankingModal = ({ ranking, onClose }: RankingModalProps) => {
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }, [onClose])
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    },
+    [onClose],
+  )
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown)
@@ -55,8 +58,12 @@ const RankingModal = ({ ranking, onClose }: RankingModalProps) => {
             {ranking.map((entry, index) => (
               <div key={`${entry.clearedAt}-${index}`} className={cx('row')}>
                 <span className={cx('rankCol')}>{index + 1}</span>
-                <span className={cx('nameCol')}>{entry.nicknames.join(', ')}</span>
-                <span className={cx('timeCol')}>{formatTime(entry.elapsedTime)}</span>
+                <span className={cx('nameCol')}>
+                  {entry.nicknames.join(', ')}
+                </span>
+                <span className={cx('timeCol')}>
+                  {formatTime(entry.elapsedTime)}
+                </span>
                 <span className={cx('deathCol')}>{entry.deaths}</span>
                 <span className={cx('playerCol')}>{entry.playerCount}P</span>
               </div>

@@ -16,7 +16,8 @@ interface RunPayload {
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 }
 
 // 스테이지별 메타 골드 기본 보상
@@ -35,7 +36,7 @@ const STAGE_DURATION: Record<string, number> = {
 
 // 등급별 드롭 확률
 const GRADE_DROP_RATES = [
-  { grade: 'common', rate: 0.50 },
+  { grade: 'common', rate: 0.5 },
   { grade: 'uncommon', rate: 0.28 },
   { grade: 'rare', rate: 0.15 },
   { grade: 'epic', rate: 0.06 },
@@ -43,7 +44,14 @@ const GRADE_DROP_RATES = [
 ]
 
 const EQUIPMENT_TYPES = ['weapon', 'armor', 'accessory'] as const
-const EQUIPMENT_TAGS = ['fire', 'ice', 'vampire', 'thunder', 'holy', 'poison'] as const
+const EQUIPMENT_TAGS = [
+  'fire',
+  'ice',
+  'vampire',
+  'thunder',
+  'holy',
+  'poison',
+] as const
 
 const GRADE_STAT_RANGES: Record<string, { min: number; max: number }> = {
   common: { min: 1, max: 5 },
@@ -71,7 +79,9 @@ const rollGrade = (): string => {
   return 'common'
 }
 
-const generateEquipment = (userId: string): {
+const generateEquipment = (
+  userId: string,
+): {
   user_id: string
   type: string
   grade: string
@@ -121,16 +131,25 @@ const generateEquipment = (userId: string): {
 
 // 페이로드 검증
 const validatePayload = (payload: RunPayload): string | null => {
-  if (typeof payload.characterId !== 'string' || payload.characterId.length === 0) {
+  if (
+    typeof payload.characterId !== 'string' ||
+    payload.characterId.length === 0
+  ) {
     return 'Invalid characterId'
   }
   if (typeof payload.score !== 'number' || payload.score < 0) {
     return 'Invalid score'
   }
-  if (typeof payload.monstersKilled !== 'number' || payload.monstersKilled < 0) {
+  if (
+    typeof payload.monstersKilled !== 'number' ||
+    payload.monstersKilled < 0
+  ) {
     return 'Invalid monstersKilled'
   }
-  if (typeof payload.survivedSeconds !== 'number' || payload.survivedSeconds < 0) {
+  if (
+    typeof payload.survivedSeconds !== 'number' ||
+    payload.survivedSeconds < 0
+  ) {
     return 'Invalid survivedSeconds'
   }
   if (typeof payload.maxLevel !== 'number' || payload.maxLevel < 1) {
@@ -164,10 +183,17 @@ serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
     // 유저 인증 확인
-    const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } },
-    })
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    const userClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      {
+        global: { headers: { Authorization: authHeader } },
+      },
+    )
+    const {
+      data: { user },
+      error: authError,
+    } = await userClient.auth.getUser()
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -197,10 +223,13 @@ serve(async (req: Request) => {
       .single()
 
     if (charError || !character) {
-      return new Response(JSON.stringify({ error: 'Character not found or not owned' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return new Response(
+        JSON.stringify({ error: 'Character not found or not owned' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
     // 서버 사이드 검증
@@ -227,20 +256,27 @@ serve(async (req: Request) => {
     // 장비 드롭 생성 (1-3개)
     const dropCount = randomBetween(1, payload.bossKilled ? 3 : 2)
 
-    const equipmentInserts = Array.from({ length: dropCount }, () => generateEquipment(user.id))
+    const equipmentInserts = Array.from({ length: dropCount }, () =>
+      generateEquipment(user.id),
+    )
     const { data: droppedEquipment, error: equipError } = await adminClient
       .from('sb_equipment')
       .insert(equipmentInserts)
       .select('id')
 
     if (equipError) {
-      return new Response(JSON.stringify({ error: 'Equipment insert failed' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return new Response(
+        JSON.stringify({ error: 'Equipment insert failed' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
     }
 
-    const equipmentIds = (droppedEquipment ?? []).map((e: { id: string }) => e.id)
+    const equipmentIds = (droppedEquipment ?? []).map(
+      (e: { id: string }) => e.id,
+    )
 
     // game_runs 기록 (service_role로 INSERT)
     const { error: runError } = await adminClient.from('sb_game_runs').insert({
@@ -266,10 +302,13 @@ serve(async (req: Request) => {
     }
 
     // 메타 골드 원자적 증가 (RPC)
-    const { error: goldError } = await adminClient.rpc('sb_increment_meta_gold', {
-      p_user_id: user.id,
-      p_amount: metaGoldEarned,
-    })
+    const { error: goldError } = await adminClient.rpc(
+      'sb_increment_meta_gold',
+      {
+        p_user_id: user.id,
+        p_amount: metaGoldEarned,
+      },
+    )
 
     if (goldError) {
       return new Response(JSON.stringify({ error: 'Gold increment failed' }), {
@@ -278,14 +317,17 @@ serve(async (req: Request) => {
       })
     }
 
-    return new Response(JSON.stringify({
-      metaGoldEarned,
-      droppedEquipment: equipmentInserts,
-      equipmentIds,
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({
+        metaGoldEarned,
+        droppedEquipment: equipmentInserts,
+        equipmentIds,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
+    )
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,

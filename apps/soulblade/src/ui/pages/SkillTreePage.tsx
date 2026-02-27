@@ -28,8 +28,12 @@ export const SkillTreePage = () => {
             <span className={cx('evoName')}>{evo.name}</span>
             <p className={cx('evoDesc')}>{evo.description}</p>
             <div className={cx('evoReqs')}>
-              <span className={cx('req')}>액티브: {evo.requiredActiveSkillId}</span>
-              <span className={cx('req')}>패시브: {evo.requiredPassiveSkillId}</span>
+              <span className={cx('req')}>
+                액티브: {evo.requiredActiveSkillId}
+              </span>
+              <span className={cx('req')}>
+                패시브: {evo.requiredPassiveSkillId}
+              </span>
             </div>
             <div className={cx('evoEffects')}>
               {Object.entries(evo.evolvedSkillEffect).map(([key, val]) => (

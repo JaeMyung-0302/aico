@@ -3,7 +3,12 @@ import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
-import { FridgeType, FRIDGE_TYPE_LABELS, FRIDGE_TYPE_DESCRIPTIONS, COMPARTMENT_PRESETS } from '@/types'
+import {
+  FridgeType,
+  FRIDGE_TYPE_LABELS,
+  FRIDGE_TYPE_DESCRIPTIONS,
+  COMPARTMENT_PRESETS,
+} from '@/types'
 import type { CompartmentPreset } from '@/types'
 import { FridgeTypeIcon } from '@/components/FridgeTypeIcon'
 import { CompartmentEditor } from '@/components/CompartmentEditor'
@@ -64,7 +69,16 @@ export const SetupPage = () => {
         navigate('/select', { replace: true })
       }
     },
-    [isValid, selectedType, name, loading, createFridge, navigate, isPresetUnchanged, compartments],
+    [
+      isValid,
+      selectedType,
+      name,
+      loading,
+      createFridge,
+      navigate,
+      isPresetUnchanged,
+      compartments,
+    ],
   )
 
   return (
@@ -78,13 +92,21 @@ export const SetupPage = () => {
             {FRIDGE_TYPES.map((type) => (
               <button
                 key={type}
-                className={cx('typeCard', { typeCardSelected: selectedType === type })}
+                className={cx('typeCard', {
+                  typeCardSelected: selectedType === type,
+                })}
                 onClick={() => handleSelectType(type)}
                 type="button"
               >
-                <span className={cx('typeIcon')}><FridgeTypeIcon type={type} size={40} /></span>
-                <span className={cx('typeName')}>{FRIDGE_TYPE_LABELS[type]}</span>
-                <span className={cx('typeDesc')}>{FRIDGE_TYPE_DESCRIPTIONS[type]}</span>
+                <span className={cx('typeIcon')}>
+                  <FridgeTypeIcon type={type} size={40} />
+                </span>
+                <span className={cx('typeName')}>
+                  {FRIDGE_TYPE_LABELS[type]}
+                </span>
+                <span className={cx('typeDesc')}>
+                  {FRIDGE_TYPE_DESCRIPTIONS[type]}
+                </span>
               </button>
             ))}
           </div>
@@ -97,7 +119,11 @@ export const SetupPage = () => {
             칸 구성을 확인하고 필요하면 수정해주세요
           </p>
 
-          <CompartmentEditor compartments={compartments} onChange={setCompartments} fridgeType={selectedType} />
+          <CompartmentEditor
+            compartments={compartments}
+            onChange={setCompartments}
+            fridgeType={selectedType}
+          />
 
           <div className={cx('stepActions')}>
             <button

@@ -22,14 +22,55 @@ interface EliteMutation {
 }
 
 export const MUTATIONS: Record<EliteMutationType, EliteMutation> = {
-  speedy:    { type: 'speedy',    hpMultiplier: 0.8, atkMultiplier: 1.0, spdMultiplier: 2.0, tint: 0xffff00, scale: 1.2 },
-  armored:   { type: 'armored',   hpMultiplier: 3.0, atkMultiplier: 0.8, spdMultiplier: 0.6, tint: 0x888888, scale: 1.5 },
-  splitting: { type: 'splitting', hpMultiplier: 1.5, atkMultiplier: 0.7, spdMultiplier: 1.0, tint: 0x00ff00, scale: 1.3 },
-  ranged:    { type: 'ranged',    hpMultiplier: 1.0, atkMultiplier: 1.5, spdMultiplier: 0.8, tint: 0xff00ff, scale: 1.2 },
-  explosive: { type: 'explosive', hpMultiplier: 1.2, atkMultiplier: 2.0, spdMultiplier: 1.0, tint: 0xff6600, scale: 1.4 },
+  speedy: {
+    type: 'speedy',
+    hpMultiplier: 0.8,
+    atkMultiplier: 1.0,
+    spdMultiplier: 2.0,
+    tint: 0xffff00,
+    scale: 1.2,
+  },
+  armored: {
+    type: 'armored',
+    hpMultiplier: 3.0,
+    atkMultiplier: 0.8,
+    spdMultiplier: 0.6,
+    tint: 0x888888,
+    scale: 1.5,
+  },
+  splitting: {
+    type: 'splitting',
+    hpMultiplier: 1.5,
+    atkMultiplier: 0.7,
+    spdMultiplier: 1.0,
+    tint: 0x00ff00,
+    scale: 1.3,
+  },
+  ranged: {
+    type: 'ranged',
+    hpMultiplier: 1.0,
+    atkMultiplier: 1.5,
+    spdMultiplier: 0.8,
+    tint: 0xff00ff,
+    scale: 1.2,
+  },
+  explosive: {
+    type: 'explosive',
+    hpMultiplier: 1.2,
+    atkMultiplier: 2.0,
+    spdMultiplier: 1.0,
+    tint: 0xff6600,
+    scale: 1.4,
+  },
 }
 
-export const ELITE_MUTATION_TYPES: readonly EliteMutationType[] = ['speedy', 'armored', 'splitting', 'ranged', 'explosive']
+export const ELITE_MUTATION_TYPES: readonly EliteMutationType[] = [
+  'speedy',
+  'armored',
+  'splitting',
+  'ranged',
+  'explosive',
+]
 
 // ── 팩토리 ──
 
@@ -60,7 +101,10 @@ export const createElite = (
     hp: Math.floor(baseConfig.hp * mutation.hpMultiplier),
     maxHp: Math.floor(baseConfig.hp * mutation.hpMultiplier),
     atk: Math.floor(baseConfig.atk * mutation.atkMultiplier),
-    def: mutationType === 'armored' ? Math.floor(baseConfig.def * 1.5) : baseConfig.def,
+    def:
+      mutationType === 'armored'
+        ? Math.floor(baseConfig.def * 1.5)
+        : baseConfig.def,
     spd: Math.floor(baseConfig.spd * mutation.spdMultiplier),
     level: baseConfig.level,
     expReward: Math.floor(baseConfig.expReward * 2.5),
@@ -80,7 +124,11 @@ export const createElite = (
 // ── AI: 변이 타입별 행동 ──
 
 /** @mutates elite.body.vx, elite.body.vy */
-export const eliteChasePlayer = (elite: EliteEntity, playerX: number, playerY: number): void => {
+export const eliteChasePlayer = (
+  elite: EliteEntity,
+  playerX: number,
+  playerY: number,
+): void => {
   if (!elite.active) return
 
   const angle = angleBetween(elite.body.x, elite.body.y, playerX, playerY)
@@ -108,11 +156,13 @@ export const eliteChasePlayer = (elite: EliteEntity, playerX: number, playerY: n
 // ── 데미지 처리 ──
 
 /** @mutates elite.hp, elite.active */
-export const eliteTakeDamage = (elite: EliteEntity, amount: number): boolean => {
+export const eliteTakeDamage = (
+  elite: EliteEntity,
+  amount: number,
+): boolean => {
   // armored: 데미지 25% 감소
-  const finalDamage = elite.mutationType === 'armored'
-    ? Math.floor(amount * 0.75)
-    : amount
+  const finalDamage =
+    elite.mutationType === 'armored' ? Math.floor(amount * 0.75) : amount
 
   elite.hp -= finalDamage
 
@@ -128,7 +178,11 @@ export const eliteTakeDamage = (elite: EliteEntity, amount: number): boolean => 
 // ── 상태 효과 ──
 
 /** @mutates elite.dotDamage, elite.dotTimer, elite.dotTickTimer */
-export const eliteApplyDot = (elite: EliteEntity, damage: number, durationMs: number): void => {
+export const eliteApplyDot = (
+  elite: EliteEntity,
+  damage: number,
+  durationMs: number,
+): void => {
   elite.dotDamage = damage
   elite.dotTimer = durationMs
   elite.dotTickTimer = 0
@@ -140,7 +194,10 @@ export const eliteApplySlow = (elite: EliteEntity, percent: number): void => {
 }
 
 /** @mutates elite.dotTimer, elite.dotTickTimer, elite.dotDamage, elite.hp, elite.active */
-export const eliteUpdateEffects = (elite: EliteEntity, deltaMs: number): boolean => {
+export const eliteUpdateEffects = (
+  elite: EliteEntity,
+  deltaMs: number,
+): boolean => {
   if (!elite.active) return false
 
   let killed = false
@@ -163,7 +220,8 @@ export const eliteUpdateEffects = (elite: EliteEntity, deltaMs: number): boolean
 
 // ── splitting 분열 ──
 
-export const eliteCanSplit = (elite: EliteEntity): boolean => elite.splitCount > 0
+export const eliteCanSplit = (elite: EliteEntity): boolean =>
+  elite.splitCount > 0
 
 // ── 오브젝트 풀 재활용 ──
 
@@ -187,7 +245,10 @@ export const eliteReset = (
   elite.hp = Math.floor(baseConfig.hp * mutation.hpMultiplier)
   elite.maxHp = elite.hp
   elite.atk = Math.floor(baseConfig.atk * mutation.atkMultiplier)
-  elite.def = mutationType === 'armored' ? Math.floor(baseConfig.def * 1.5) : baseConfig.def
+  elite.def =
+    mutationType === 'armored'
+      ? Math.floor(baseConfig.def * 1.5)
+      : baseConfig.def
   elite.spd = Math.floor(baseConfig.spd * mutation.spdMultiplier)
   elite.level = baseConfig.level
   elite.expReward = Math.floor(baseConfig.expReward * 2.5)

@@ -18,7 +18,10 @@ const BREATH_DURATION = 1200
 
 export class EntityEffectsSystem {
   private scene: Phaser.Scene
-  private glowMap = new Map<Phaser.Physics.Arcade.Sprite, Phaser.GameObjects.Ellipse>()
+  private glowMap = new Map<
+    Phaser.Physics.Arcade.Sprite,
+    Phaser.GameObjects.Ellipse
+  >()
   private breathTween: Phaser.Tweens.Tween | null = null
   private breathTarget: Player | null = null
 
@@ -30,7 +33,14 @@ export class EntityEffectsSystem {
   attachGlow = (entity: Phaser.Physics.Arcade.Sprite, color: number): void => {
     if (this.glowMap.has(entity)) return
 
-    const glow = this.scene.add.ellipse(entity.x, entity.y, GLOW_RADIUS_X * 2, GLOW_RADIUS_Y * 2, color, GLOW_ALPHA)
+    const glow = this.scene.add.ellipse(
+      entity.x,
+      entity.y,
+      GLOW_RADIUS_X * 2,
+      GLOW_RADIUS_Y * 2,
+      color,
+      GLOW_ALPHA,
+    )
     glow.setDepth(GLOW_DEPTH)
     this.glowMap.set(entity, glow)
   }
@@ -73,7 +83,11 @@ export class EntityEffectsSystem {
   }
 
   // 매 프레임 업데이트
-  update = (enableEntityGlow: boolean, enableBreathTween: boolean, elites: Phaser.Physics.Arcade.Group): void => {
+  update = (
+    enableEntityGlow: boolean,
+    enableBreathTween: boolean,
+    elites: Phaser.Physics.Arcade.Group,
+  ): void => {
     // 글로우 업데이트: 위치 동기화 + 비활성 엔티티 숨기기
     for (const [entity, glow] of this.glowMap) {
       if (!enableEntityGlow || !entity.active) {

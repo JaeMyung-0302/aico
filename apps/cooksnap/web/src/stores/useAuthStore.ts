@@ -10,8 +10,14 @@ interface AuthState {
   _unsubscribe: (() => void) | null
   initialize: () => Promise<void>
   fetchQuota: () => Promise<void>
-  signUpWithEmail: (email: string, password: string) => Promise<{ needsConfirmation: boolean; error?: string }>
-  signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>
+  signUpWithEmail: (
+    email: string,
+    password: string,
+  ) => Promise<{ needsConfirmation: boolean; error?: string }>
+  signInWithEmail: (
+    email: string,
+    password: string,
+  ) => Promise<{ error?: string }>
   signInWithKakao: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
@@ -34,7 +40,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (prev) prev()
 
     // 토큰 갱신·세션 종료 시 localStorage + 상태 동기화
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         localStorage.setItem('access_token', session.access_token)
       } else {
@@ -45,7 +53,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ _unsubscribe: () => subscription.unsubscribe() })
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (session) {
         localStorage.setItem('access_token', session.access_token)
         const { data } = await api.get<User>('/auth/me')
@@ -71,23 +81,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signUpWithEmail: async (email, password) => {
-    if (!supabase) return { needsConfirmation: false, error: '인증 서비스가 설정되지 않았습니다.' }
+    if (!supabase)
+      return {
+        needsConfirmation: false,
+        error: '인증 서비스가 설정되지 않았습니다.',
+      }
     try {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) return { needsConfirmation: false, error: error.message }
       return { needsConfirmation: true }
     } catch {
-      return { needsConfirmation: false, error: '회원가입 중 오류가 발생했습니다.' }
+      return {
+        needsConfirmation: false,
+        error: '회원가입 중 오류가 발생했습니다.',
+      }
     }
   },
 
   signInWithEmail: async (email, password) => {
     if (!supabase) return { error: '인증 서비스가 설정되지 않았습니다.' }
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
       if (error) {
         if (error.message.includes('Email not confirmed')) {
-          return { error: '이메일 인증을 완료해주세요. 받은편지함을 확인해주세요.' }
+          return {
+            error: '이메일 인증을 완료해주세요. 받은편지함을 확인해주세요.',
+          }
         }
         return { error: '이메일 또는 비밀번호가 올바르지 않습니다.' }
       }

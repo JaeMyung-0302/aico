@@ -9,7 +9,7 @@ import { ShaderMaterial, BackSide, Color } from 'three'
 
 export interface OutlineMaterialOptions {
   readonly thickness?: number // 아웃라인 두께 (default: 0.03)
-  readonly color?: number    // 아웃라인 색상 hex (default: 0x111111)
+  readonly color?: number // 아웃라인 색상 hex (default: 0x111111)
 }
 
 const vertexShader = /* glsl */ `
@@ -38,7 +38,9 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-export const createOutlineMaterial = (options?: OutlineMaterialOptions): ShaderMaterial =>
+export const createOutlineMaterial = (
+  options?: OutlineMaterialOptions,
+): ShaderMaterial =>
   new ShaderMaterial({
     uniforms: {
       uThickness: { value: options?.thickness ?? 0.03 },

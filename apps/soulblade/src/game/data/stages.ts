@@ -10,7 +10,10 @@ export const STAGE_CONFIGS: Record<StageId, StageConfig> = {
 }
 
 // 스테이지별 배경색 (타일맵 대체)
-export const STAGE_BACKGROUNDS: Record<StageId, { color: string; name: string }> = {
+export const STAGE_BACKGROUNDS: Record<
+  StageId,
+  { color: string; name: string }
+> = {
   serpent_forest: { color: '#1a2e1a', name: '뱀저숲' },
   ice_cave: { color: '#1a2e3e', name: '얼음동굴' },
   flame_castle: { color: '#3e1a1a', name: '화염성' },

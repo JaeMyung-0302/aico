@@ -67,11 +67,7 @@ const PortalItem = ({ portal }: { portal: PortalConfig }) => {
       {/* 중심 글로우 (포인트 라이트 대체) */}
       <mesh>
         <circleGeometry args={[radius * 0.4, 16]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.3}
-        />
+        <meshBasicMaterial color={color} transparent opacity={0.3} />
       </mesh>
     </group>
   )

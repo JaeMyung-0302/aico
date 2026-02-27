@@ -17,7 +17,9 @@ export const AuthCallbackPage = () => {
           if (error) throw error
         }
 
-        const { data: { session } } = await supabase.auth.getSession()
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
         if (session) {
           navigate('/', { replace: true })
         } else {
@@ -32,7 +34,16 @@ export const AuthCallbackPage = () => {
   }, [navigate])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: '#1a1a2e', color: '#e8d44d' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100dvh',
+        background: '#1a1a2e',
+        color: '#e8d44d',
+      }}
+    >
       로그인 처리 중...
     </div>
   )

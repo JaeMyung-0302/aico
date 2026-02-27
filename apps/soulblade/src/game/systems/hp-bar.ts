@@ -19,7 +19,8 @@ const YELLOW = [255, 255, 0] as const
 const RED = [200, 0, 0] as const
 
 // HP 비율에 따른 색상 보간: green(100%) → yellow(50%) → red(0%)
-const lerp = (a: number, b: number, t: number): number => Math.floor(a + (b - a) * t)
+const lerp = (a: number, b: number, t: number): number =>
+  Math.floor(a + (b - a) * t)
 
 const getHpColor = (percent: number): number => {
   if (percent > 0.5) {
@@ -38,7 +39,10 @@ const getHpColor = (percent: number): number => {
   )
 }
 
-export const createHpBar = (scene: Phaser.Scene, config: HpBarConfig): Phaser.GameObjects.Graphics => {
+export const createHpBar = (
+  scene: Phaser.Scene,
+  config: HpBarConfig,
+): Phaser.GameObjects.Graphics => {
   const bar = scene.add.graphics()
   bar.setDepth(18)
   bar.setAlpha(0) // 기본 숨김 (피격 시 표시)

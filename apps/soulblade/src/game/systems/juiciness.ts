@@ -5,7 +5,11 @@ import Phaser from 'phaser'
  */
 
 // 화면 흔들림
-export const screenShake = (scene: Phaser.Scene, intensity = 0.005, duration = 100): void => {
+export const screenShake = (
+  scene: Phaser.Scene,
+  intensity = 0.005,
+  duration = 100,
+): void => {
   scene.cameras.main.shake(duration, intensity)
 }
 
@@ -77,14 +81,19 @@ export const showDamageNumber = (
   const isPlayerHit = overrideColor === '#ff4444'
   const color = overrideColor ?? (isCrit ? '#ffcc00' : '#ffffff')
   const fontSize = isPlayerHit ? '20px' : isCrit ? '18px' : '14px'
-  const text = scene.add.text(x, y - 10, isPlayerHit ? `-${damage}` : String(damage), {
-    fontSize,
-    color: isPlayerHit ? '#ff6666' : color,
-    fontFamily: 'monospace',
-    fontStyle: isPlayerHit || isCrit ? 'bold' : 'normal',
-    stroke: '#000000',
-    strokeThickness: isPlayerHit ? 4 : 2,
-  })
+  const text = scene.add.text(
+    x,
+    y - 10,
+    isPlayerHit ? `-${damage}` : String(damage),
+    {
+      fontSize,
+      color: isPlayerHit ? '#ff6666' : color,
+      fontFamily: 'monospace',
+      fontStyle: isPlayerHit || isCrit ? 'bold' : 'normal',
+      stroke: '#000000',
+      strokeThickness: isPlayerHit ? 4 : 2,
+    },
+  )
   text.setOrigin(0.5)
   text.setDepth(20)
 

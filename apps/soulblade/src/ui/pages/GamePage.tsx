@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
-import type { MapId, NpcType, PassiveSkillId, StageId, StatAllocationData } from '@soulblade/shared'
+import type {
+  MapId,
+  NpcType,
+  PassiveSkillId,
+  StageId,
+  StatAllocationData,
+} from '@soulblade/shared'
 import { GameCanvas } from '@/game/core/GameCanvas'
 import { VirtualJoystick } from '@/ui/components/VirtualJoystick'
 import { HUD } from '@/ui/components/HUD'
@@ -77,13 +83,16 @@ export const GamePage = () => {
     eventBus.emit('game:resume')
   }, [])
 
-  const handleTabPress = useCallback((panel: 'inventory' | 'skill' | 'stat') => {
-    setOpenPanel((prev) => {
-      if (prev === panel) return null
-      eventBus.emit('ui:requestStats')
-      return panel
-    })
-  }, [])
+  const handleTabPress = useCallback(
+    (panel: 'inventory' | 'skill' | 'stat') => {
+      setOpenPanel((prev) => {
+        if (prev === panel) return null
+        eventBus.emit('ui:requestStats')
+        return panel
+      })
+    },
+    [],
+  )
 
   // 페이지 종료/새로고침 시 자동 저장
   useEffect(() => {
@@ -98,7 +107,12 @@ export const GamePage = () => {
 
   // 화살표키 이동 + A키 공격 + I/K/S 패널 토글
   useEffect(() => {
-    const MOVE_CODES = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
+    const MOVE_CODES = new Set([
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+    ])
     const pressed = new Set<string>()
 
     const emitJoystick = () => {
@@ -255,7 +269,11 @@ export const GamePage = () => {
     }
 
     // NPC 인터랙션 → 모달 표시 + 게임 일시정지
-    const onNpcInteract = (data: { npcId: string; npcType: NpcType; label: string }) => {
+    const onNpcInteract = (data: {
+      npcId: string
+      npcType: NpcType
+      label: string
+    }) => {
       setNpcType(data.npcType)
       setOpenPanel(null)
       eventBus.emit('game:pause')
@@ -328,9 +346,7 @@ export const GamePage = () => {
       {npcType === 'blacksmith' && (
         <NpcForgeModal gold={gold} onClose={handleNpcClose} />
       )}
-      {isDead && (
-        <DeathModal onReturnToTown={handleDeathReturn} />
-      )}
+      {isDead && <DeathModal onReturnToTown={handleDeathReturn} />}
       <BottomTabBar
         openPanel={openPanel}
         onTabPress={handleTabPress}

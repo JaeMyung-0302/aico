@@ -1,7 +1,11 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
 import { FOOD_CATEGORY_ICONS } from '@/types'
-import type { FoodItemResponse, CreateFoodItemInput, UpdateFoodItemInput } from '@/types'
+import type {
+  FoodItemResponse,
+  CreateFoodItemInput,
+  UpdateFoodItemInput,
+} from '@/types'
 
 interface FoodItemState {
   // compartmentId -> items 매핑
@@ -12,10 +16,21 @@ interface FoodItemState {
 
 interface FoodItemActions {
   fetchItems: (compartmentId: string) => Promise<void>
-  createItem: (compartmentId: string, input: CreateFoodItemInput) => Promise<FoodItemResponse | null>
-  updateItem: (itemId: string, compartmentId: string, input: UpdateFoodItemInput) => Promise<void>
+  createItem: (
+    compartmentId: string,
+    input: CreateFoodItemInput,
+  ) => Promise<FoodItemResponse | null>
+  updateItem: (
+    itemId: string,
+    compartmentId: string,
+    input: UpdateFoodItemInput,
+  ) => Promise<void>
   deleteItem: (itemId: string, compartmentId: string) => Promise<void>
-  moveItem: (itemId: string, fromCompartmentId: string, toCompartmentId: string) => Promise<void>
+  moveItem: (
+    itemId: string,
+    fromCompartmentId: string,
+    toCompartmentId: string,
+  ) => Promise<void>
   clearItems: () => void
 }
 
@@ -29,13 +44,16 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
   fetchItems: async (compartmentId: string) => {
     set({ loading: true, error: null })
     try {
-      const items = await api.get<FoodItemResponse[]>(`/compartments/${compartmentId}/food-items`)
+      const items = await api.get<FoodItemResponse[]>(
+        `/compartments/${compartmentId}/food-items`,
+      )
       set((state) => ({
         items: { ...state.items, [compartmentId]: items },
         loading: false,
       }))
     } catch (err) {
-      const message = err instanceof Error ? err.message : '식재료를 불러오지 못했습니다'
+      const message =
+        err instanceof Error ? err.message : '식재료를 불러오지 못했습니다'
       set({ loading: false, error: message })
     }
   },
@@ -43,7 +61,10 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
   createItem: async (compartmentId: string, input: CreateFoodItemInput) => {
     set({ loading: true, error: null })
     try {
-      const item = await api.post<FoodItemResponse>(`/compartments/${compartmentId}/food-items`, input)
+      const item = await api.post<FoodItemResponse>(
+        `/compartments/${compartmentId}/food-items`,
+        input,
+      )
       set((state) => ({
         items: {
           ...state.items,
@@ -53,13 +74,18 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
       }))
       return item
     } catch (err) {
-      const message = err instanceof Error ? err.message : '식재료를 추가하지 못했습니다'
+      const message =
+        err instanceof Error ? err.message : '식재료를 추가하지 못했습니다'
       set({ loading: false, error: message })
       return null
     }
   },
 
-  updateItem: async (itemId: string, compartmentId: string, input: UpdateFoodItemInput) => {
+  updateItem: async (
+    itemId: string,
+    compartmentId: string,
+    input: UpdateFoodItemInput,
+  ) => {
     set({ error: null })
     try {
       const updated = await api.put<FoodItemResponse>(
@@ -75,7 +101,8 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
         },
       }))
     } catch (err) {
-      const message = err instanceof Error ? err.message : '식재료를 수정하지 못했습니다'
+      const message =
+        err instanceof Error ? err.message : '식재료를 수정하지 못했습니다'
       set({ error: message })
     }
   },
@@ -87,21 +114,30 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
       set((state) => ({
         items: {
           ...state.items,
-          [compartmentId]: (state.items[compartmentId] ?? []).filter((item) => item.id !== itemId),
+          [compartmentId]: (state.items[compartmentId] ?? []).filter(
+            (item) => item.id !== itemId,
+          ),
         },
       }))
     } catch (err) {
-      const message = err instanceof Error ? err.message : '식재료를 삭제하지 못했습니다'
+      const message =
+        err instanceof Error ? err.message : '식재료를 삭제하지 못했습니다'
       set({ error: message })
     }
   },
 
-  moveItem: async (itemId: string, fromCompartmentId: string, toCompartmentId: string) => {
+  moveItem: async (
+    itemId: string,
+    fromCompartmentId: string,
+    toCompartmentId: string,
+  ) => {
     set({ error: null })
     try {
       const moved = await api.patch<FoodItemResponse>(
         `/food-items/${itemId}/move`,
-        { compartmentId: toCompartmentId },
+        {
+          compartmentId: toCompartmentId,
+        },
       )
       set((state) => ({
         items: {
@@ -113,7 +149,8 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
         },
       }))
     } catch (err) {
-      const message = err instanceof Error ? err.message : '식재료를 이동하지 못했습니다'
+      const message =
+        err instanceof Error ? err.message : '식재료를 이동하지 못했습니다'
       set({ error: message })
     }
   },
@@ -124,7 +161,9 @@ export const useFoodItemStore = create<FoodItemStore>((set) => ({
 }))
 
 // 카테고리 이모지 미리보기 (최대 3개 + 나머지 수)
-export const getCategoryPreview = (items: FoodItemResponse[]): { icons: string[]; extraCount: number } => {
+export const getCategoryPreview = (
+  items: FoodItemResponse[],
+): { icons: string[]; extraCount: number } => {
   const allCategories = new Set(items.map((i) => i.category))
   const seen = new Set<string>()
   const icons: string[] = []

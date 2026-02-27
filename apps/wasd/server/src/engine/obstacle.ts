@@ -27,11 +27,15 @@ export class ObstacleManager {
     for (const obs of this.obstacles) {
       if (obs.config.waypoints.length < 2) continue
 
-      let targetIndex = obs.forward ? obs.waypointIndex + 1 : obs.waypointIndex - 1
+      let targetIndex = obs.forward
+        ? obs.waypointIndex + 1
+        : obs.waypointIndex - 1
       let target = obs.config.waypoints[targetIndex]
       if (!target) {
         obs.forward = !obs.forward
-        targetIndex = obs.forward ? obs.waypointIndex + 1 : obs.waypointIndex - 1
+        targetIndex = obs.forward
+          ? obs.waypointIndex + 1
+          : obs.waypointIndex - 1
         target = obs.config.waypoints[targetIndex]
         if (!target) continue
       }
@@ -43,7 +47,10 @@ export class ObstacleManager {
       if (dist <= obs.config.speed) {
         obs.position = { ...target }
         obs.waypointIndex = targetIndex
-        if (targetIndex === 0 || targetIndex === obs.config.waypoints.length - 1) {
+        if (
+          targetIndex === 0 ||
+          targetIndex === obs.config.waypoints.length - 1
+        ) {
           obs.forward = !obs.forward
         }
       } else {

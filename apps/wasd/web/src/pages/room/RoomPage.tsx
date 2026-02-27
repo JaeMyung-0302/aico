@@ -40,7 +40,9 @@ const RoomPage = () => {
     }) => {
       const state = useGameStore.getState()
       state.updateRoom(room)
-      const myAssignment = assignments.find((a) => a.playerId === state.myPlayerId)
+      const myAssignment = assignments.find(
+        (a) => a.playerId === state.myPlayerId,
+      )
       if (myAssignment) {
         state.setMyKeys(myAssignment.keys)
       }
@@ -112,7 +114,9 @@ const RoomPage = () => {
 
       {countdown !== null && (
         <div className={cx('countdownOverlay')}>
-          <span key={countdown} className={cx('countdownNumber')}>{countdown}</span>
+          <span key={countdown} className={cx('countdownNumber')}>
+            {countdown}
+          </span>
         </div>
       )}
     </div>

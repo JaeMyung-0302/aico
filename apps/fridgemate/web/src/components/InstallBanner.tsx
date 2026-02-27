@@ -13,11 +13,18 @@ export const InstallBanner = () => {
     <div className={cx('banner')}>
       <div className={cx('content')}>
         <div className={cx('icon')}>
-          <img src="/icons/icon-192x192.png" alt="FridgeMate" width={40} height={40} />
+          <img
+            src="/icons/icon-192x192.png"
+            alt="FridgeMate"
+            width={40}
+            height={40}
+          />
         </div>
         <div className={cx('text')}>
           <span className={cx('title')}>FridgeMate 앱 설치</span>
-          <span className={cx('desc')}>홈 화면에 추가하면 더 빠르게 사용할 수 있어요</span>
+          <span className={cx('desc')}>
+            홈 화면에 추가하면 더 빠르게 사용할 수 있어요
+          </span>
         </div>
       </div>
       <div className={cx('actions')}>

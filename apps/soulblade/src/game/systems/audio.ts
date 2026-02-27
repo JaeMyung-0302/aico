@@ -59,7 +59,10 @@ export const playBgm = (key: string): void => {
 
   const startPlayback = (): void => {
     if (!currentScene || currentBgmKey !== key || currentBgm) return
-    currentBgm = currentScene.sound.add(key, { loop: true, volume: audioState.bgmVolume })
+    currentBgm = currentScene.sound.add(key, {
+      loop: true,
+      volume: audioState.bgmVolume,
+    })
     currentBgm.play()
   }
 

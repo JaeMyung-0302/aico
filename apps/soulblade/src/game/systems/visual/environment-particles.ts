@@ -19,10 +19,42 @@ interface ParticleConfig {
 }
 
 const MAP_PARTICLES: Record<MapId, ParticleConfig> = {
-  town: { color: 0xccbb99, minSize: 1, maxSize: 2, alpha: 0.3, driftX: 0.2, driftY: 0.15, wobble: 0.3 },
-  serpent_forest: { color: 0x44aa44, minSize: 2, maxSize: 3, alpha: 0.4, driftX: 0.3, driftY: 0.4, wobble: 0.5 },
-  ice_cave: { color: 0xccddff, minSize: 1, maxSize: 2.5, alpha: 0.5, driftX: 0.1, driftY: 0.3, wobble: 0.4 },
-  flame_castle: { color: 0xff6633, minSize: 1, maxSize: 2, alpha: 0.5, driftX: 0.15, driftY: -0.3, wobble: 0.2 },
+  town: {
+    color: 0xccbb99,
+    minSize: 1,
+    maxSize: 2,
+    alpha: 0.3,
+    driftX: 0.2,
+    driftY: 0.15,
+    wobble: 0.3,
+  },
+  serpent_forest: {
+    color: 0x44aa44,
+    minSize: 2,
+    maxSize: 3,
+    alpha: 0.4,
+    driftX: 0.3,
+    driftY: 0.4,
+    wobble: 0.5,
+  },
+  ice_cave: {
+    color: 0xccddff,
+    minSize: 1,
+    maxSize: 2.5,
+    alpha: 0.5,
+    driftX: 0.1,
+    driftY: 0.3,
+    wobble: 0.4,
+  },
+  flame_castle: {
+    color: 0xff6633,
+    minSize: 1,
+    maxSize: 2,
+    alpha: 0.5,
+    driftX: 0.15,
+    driftY: -0.3,
+    wobble: 0.2,
+  },
 }
 
 const PARTICLE_DEPTH = 12
@@ -59,7 +91,11 @@ export class EnvironmentParticlesSystem {
     this.config = null
   }
 
-  update = (camera: Phaser.Cameras.Scene2D.Camera, enableEnvironmentParticles: boolean, delta: number): void => {
+  update = (
+    camera: Phaser.Cameras.Scene2D.Camera,
+    enableEnvironmentParticles: boolean,
+    delta: number,
+  ): void => {
     if (!enableEnvironmentParticles || !this.config) {
       // 비활성 시 숨기기
       for (const p of this.pool) {
@@ -81,7 +117,8 @@ export class EnvironmentParticlesSystem {
       p.circle.setVisible(true)
 
       // 이동: drift + wobble
-      const wobble = Math.sin(p.elapsed * 0.003 + p.wobbleOffset) * this.config.wobble
+      const wobble =
+        Math.sin(p.elapsed * 0.003 + p.wobbleOffset) * this.config.wobble
       p.circle.x += (p.vx + wobble) * dt * 60
       p.circle.y += p.vy * dt * 60
 
@@ -101,11 +138,19 @@ export class EnvironmentParticlesSystem {
   private spawnParticle = (camera: Phaser.Cameras.Scene2D.Camera): void => {
     if (!this.config) return
 
-    const size = this.config.minSize + Math.random() * (this.config.maxSize - this.config.minSize)
+    const size =
+      this.config.minSize +
+      Math.random() * (this.config.maxSize - this.config.minSize)
     const x = camera.scrollX + Math.random() * camera.width
     const y = camera.scrollY + Math.random() * camera.height
 
-    const circle = this.scene.add.circle(x, y, size, this.config.color, this.config.alpha)
+    const circle = this.scene.add.circle(
+      x,
+      y,
+      size,
+      this.config.color,
+      this.config.alpha,
+    )
     circle.setDepth(PARTICLE_DEPTH)
 
     this.pool.push({
@@ -118,7 +163,10 @@ export class EnvironmentParticlesSystem {
     })
   }
 
-  private recycleParticle = (p: PoolParticle, camera: Phaser.Cameras.Scene2D.Camera): void => {
+  private recycleParticle = (
+    p: PoolParticle,
+    camera: Phaser.Cameras.Scene2D.Camera,
+  ): void => {
     if (!this.config) return
 
     // 카메라 가장자리에서 새로 시작
@@ -132,7 +180,10 @@ export class EnvironmentParticlesSystem {
     p.elapsed = 0
   }
 
-  private isOutOfBounds = (circle: Phaser.GameObjects.Arc, camera: Phaser.Cameras.Scene2D.Camera): boolean => {
+  private isOutOfBounds = (
+    circle: Phaser.GameObjects.Arc,
+    camera: Phaser.Cameras.Scene2D.Camera,
+  ): boolean => {
     const margin = 50
     return (
       circle.x < camera.scrollX - margin ||

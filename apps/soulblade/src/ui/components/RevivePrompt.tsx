@@ -47,7 +47,9 @@ export const RevivePrompt = ({ onClose, onGiveUp }: RevivePromptProps) => {
               onClick={handleRevive}
               disabled={loading}
             >
-              {loading ? '로딩 중...' : `부활 (HP ${Math.floor(REVIVE_HP_PERCENT * 100)}%)`}
+              {loading
+                ? '로딩 중...'
+                : `부활 (HP ${Math.floor(REVIVE_HP_PERCENT * 100)}%)`}
             </button>
           )}
 

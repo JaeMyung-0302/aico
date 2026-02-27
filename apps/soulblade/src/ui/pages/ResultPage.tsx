@@ -63,7 +63,10 @@ export const ResultPage = () => {
         <button className={cx('button', 'primary')} onClick={handleRetry}>
           다시 도전
         </button>
-        <button className={cx('button', 'secondary')} onClick={handleReturnToTown}>
+        <button
+          className={cx('button', 'secondary')}
+          onClick={handleReturnToTown}
+        >
           마을로
         </button>
       </div>

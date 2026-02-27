@@ -1,5 +1,12 @@
 import Phaser from 'phaser'
-import type { MapId, WorldMapConfig, ZoneConfig, PortalConfig, NpcConfig, ObstacleConfig } from '@soulblade/shared'
+import type {
+  MapId,
+  WorldMapConfig,
+  ZoneConfig,
+  PortalConfig,
+  NpcConfig,
+  ObstacleConfig,
+} from '@soulblade/shared'
 import { MAP_CONFIGS } from '../data/maps'
 import { BG_TEXTURES } from '../texture-keys'
 import { eventBus } from '@/lib/event-bus'
@@ -44,16 +51,30 @@ export class MapManager {
     this.currentMapId = mapId
 
     // 월드 바운드 설정
-    this.scene.physics.world.setBounds(0, 0, config.worldSize.width, config.worldSize.height)
+    this.scene.physics.world.setBounds(
+      0,
+      0,
+      config.worldSize.width,
+      config.worldSize.height,
+    )
 
     // 배경색
     this.scene.cameras.main.setBackgroundColor(config.backgroundColor)
 
     // 카메라 바운드
-    this.scene.cameras.main.setBounds(0, 0, config.worldSize.width, config.worldSize.height)
+    this.scene.cameras.main.setBounds(
+      0,
+      0,
+      config.worldSize.width,
+      config.worldSize.height,
+    )
 
     // 타일 배경
-    this.createBackground(mapId, config.worldSize.width, config.worldSize.height)
+    this.createBackground(
+      mapId,
+      config.worldSize.width,
+      config.worldSize.height,
+    )
 
     // 장애물 + 장식 생성 (테마별)
     this.obstacles = this.scene.physics.add.staticGroup()
@@ -149,7 +170,11 @@ export class MapManager {
 
   // --- Private: 배경 ---
 
-  private createBackground = (mapId: MapId, width: number, height: number): void => {
+  private createBackground = (
+    mapId: MapId,
+    width: number,
+    height: number,
+  ): void => {
     this.backgroundTile = this.scene.add.tileSprite(
       width / 2,
       height / 2,
@@ -181,11 +206,16 @@ export class MapManager {
         }
         case 'triangle': {
           const tri = this.scene.add.triangle(
-            obs.x, obs.y,
-            0, obs.height,
-            obs.width / 2, 0,
-            obs.width, obs.height,
-            0x000000, 0,
+            obs.x,
+            obs.y,
+            0,
+            obs.height,
+            obs.width / 2,
+            0,
+            obs.width,
+            obs.height,
+            0x000000,
+            0,
           )
           tri.setDepth(1)
           gameObj = tri
@@ -193,7 +223,12 @@ export class MapManager {
         }
         case 'ellipse': {
           const ellipse = this.scene.add.ellipse(
-            obs.x, obs.y, obs.width, obs.height, 0x000000, 0,
+            obs.x,
+            obs.y,
+            obs.width,
+            obs.height,
+            0x000000,
+            0,
           )
           ellipse.setDepth(1)
           gameObj = ellipse
@@ -201,7 +236,12 @@ export class MapManager {
         }
         default: {
           const rect = this.scene.add.rectangle(
-            obs.x, obs.y, obs.width, obs.height, 0x000000, 0,
+            obs.x,
+            obs.y,
+            obs.width,
+            obs.height,
+            0x000000,
+            0,
           )
           rect.setDepth(1)
           gameObj = rect
@@ -212,7 +252,8 @@ export class MapManager {
       if (obs.collidable !== false) {
         this.obstacles!.add(gameObj)
         if (shapeType === 'circle') {
-          const body = (gameObj as Phaser.GameObjects.Shape).body as Phaser.Physics.Arcade.StaticBody
+          const body = (gameObj as Phaser.GameObjects.Shape)
+            .body as Phaser.Physics.Arcade.StaticBody
           const r = obs.radius ?? obs.width / 2
           body.setCircle(r)
         }
@@ -250,7 +291,10 @@ export class MapManager {
   }
 
   // 마을: 돌벽, 우물
-  private drawTownObstacle = (g: Phaser.GameObjects.Graphics, obs: ObstacleConfig): void => {
+  private drawTownObstacle = (
+    g: Phaser.GameObjects.Graphics,
+    obs: ObstacleConfig,
+  ): void => {
     const { x, y, width: w, height: h } = obs
     const hw = w / 2
     const hh = h / 2
@@ -289,7 +333,10 @@ export class MapManager {
   }
 
   // 뱀의 숲: 고목, 덤불
-  private drawForestObstacle = (g: Phaser.GameObjects.Graphics, obs: ObstacleConfig): void => {
+  private drawForestObstacle = (
+    g: Phaser.GameObjects.Graphics,
+    obs: ObstacleConfig,
+  ): void => {
     const { x, y, width: w, height: h } = obs
     const hw = w / 2
     const hh = h / 2
@@ -338,7 +385,10 @@ export class MapManager {
   }
 
   // 얼음 동굴: 빙벽, 결정
-  private drawIceObstacle = (g: Phaser.GameObjects.Graphics, obs: ObstacleConfig): void => {
+  private drawIceObstacle = (
+    g: Phaser.GameObjects.Graphics,
+    obs: ObstacleConfig,
+  ): void => {
     const { x, y, width: w, height: h } = obs
     const hw = w / 2
     const hh = h / 2
@@ -381,7 +431,10 @@ export class MapManager {
   }
 
   // 화염의 성: 용암석, 흑요석
-  private drawFlameObstacle = (g: Phaser.GameObjects.Graphics, obs: ObstacleConfig): void => {
+  private drawFlameObstacle = (
+    g: Phaser.GameObjects.Graphics,
+    obs: ObstacleConfig,
+  ): void => {
     const { x, y, width: w, height: h } = obs
     const hw = w / 2
     const hh = h / 2
@@ -404,7 +457,14 @@ export class MapManager {
       g.fillStyle(0x331111, 1)
       g.fillTriangle(x, y - hh, x - hw, y + hh, x + hw, y + hh)
       g.fillStyle(0xff4400, 0.3)
-      g.fillTriangle(x, y - hh - 4, x - hw * 0.5, y - hh + 8, x + hw * 0.5, y - hh + 8)
+      g.fillTriangle(
+        x,
+        y - hh - 4,
+        x - hw * 0.5,
+        y - hh + 8,
+        x + hw * 0.5,
+        y - hh + 8,
+      )
       g.fillStyle(0xffaa00, 0.4)
       g.fillCircle(x, y - hh, 3)
     } else {
@@ -524,12 +584,12 @@ export class MapManager {
       }
 
       // 이름 표시
-      const label = this.scene.add.text(
-        nx,
-        ny - 40,
-        npc.label,
-        { fontSize: '11px', color: '#ffddaa', align: 'center', fontStyle: 'bold' },
-      )
+      const label = this.scene.add.text(nx, ny - 40, npc.label, {
+        fontSize: '11px',
+        color: '#ffddaa',
+        align: 'center',
+        fontStyle: 'bold',
+      })
       label.setOrigin(0.5)
       label.setDepth(6)
 
@@ -550,7 +610,11 @@ export class MapManager {
   }
 
   // 상점 건물
-  private drawShopBuilding = (g: Phaser.GameObjects.Graphics, x: number, y: number): void => {
+  private drawShopBuilding = (
+    g: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+  ): void => {
     // 건물 본체
     g.fillStyle(0x665533, 1)
     g.fillRoundedRect(x - 18, y - 20, 36, 32, 2)
@@ -579,7 +643,11 @@ export class MapManager {
   }
 
   // 대장간
-  private drawBlacksmithBuilding = (g: Phaser.GameObjects.Graphics, x: number, y: number): void => {
+  private drawBlacksmithBuilding = (
+    g: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+  ): void => {
     // 건물 본체 (돌)
     g.fillStyle(0x555544, 1)
     g.fillRoundedRect(x - 18, y - 18, 36, 30, 2)
@@ -608,7 +676,11 @@ export class MapManager {
   }
 
   // 일반 NPC (portal_guide 등)
-  private drawGenericNpc = (g: Phaser.GameObjects.Graphics, x: number, y: number): void => {
+  private drawGenericNpc = (
+    g: Phaser.GameObjects.Graphics,
+    x: number,
+    y: number,
+  ): void => {
     // 석상 기둥
     g.fillStyle(0x667766, 1)
     g.fillRoundedRect(x - 10, y - 24, 20, 40, 3)

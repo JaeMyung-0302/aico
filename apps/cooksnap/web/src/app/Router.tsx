@@ -18,7 +18,14 @@ export const router = createBrowserRouter([
       { path: '/result/:id', element: <ResultPage /> },
       { path: '/auth', element: <AuthPage /> },
       { path: '/mypage', element: <MyPage /> },
-      { path: '/admin/feedback', element: <AuthGuard><AdminFeedbackPage /></AuthGuard> },
+      {
+        path: '/admin/feedback',
+        element: (
+          <AuthGuard>
+            <AdminFeedbackPage />
+          </AuthGuard>
+        ),
+      },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -1,9 +1,24 @@
 import Phaser from 'phaser'
-import type { CharacterClass, CharacterStats, BasicAttackPattern, StatAllocationData } from '@soulblade/shared'
+import type {
+  CharacterClass,
+  CharacterStats,
+  BasicAttackPattern,
+  StatAllocationData,
+} from '@soulblade/shared'
 import type { PassiveSkillId } from '@soulblade/shared'
-import { CLASS_CONFIGS, calcExpForLevel, STAT_POINTS_PER_LEVEL, STAT_POINT_VALUES } from '@soulblade/shared'
+import {
+  CLASS_CONFIGS,
+  calcExpForLevel,
+  STAT_POINTS_PER_LEVEL,
+  STAT_POINT_VALUES,
+} from '@soulblade/shared'
 import { PLAYER_SPRITESHEET_KEYS, PLAYER_ANIM_KEYS } from '../texture-keys'
-import { createPlayerLabel, updatePlayerLabel, syncPlayerLabel, destroyEntityLabel } from '../systems/entity-label'
+import {
+  createPlayerLabel,
+  updatePlayerLabel,
+  syncPlayerLabel,
+  destroyEntityLabel,
+} from '../systems/entity-label'
 import { eventBus } from '@/lib/event-bus'
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -121,7 +136,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       // 이동 중이면 walk, 아니면 idle
       const body = this.body as Phaser.Physics.Arcade.Body
       const isMoving = body.velocity.x !== 0 || body.velocity.y !== 0
-      this.play(isMoving ? PLAYER_ANIM_KEYS[this.classType].walk : PLAYER_ANIM_KEYS[this.classType].idle)
+      this.play(
+        isMoving
+          ? PLAYER_ANIM_KEYS[this.classType].walk
+          : PLAYER_ANIM_KEYS[this.classType].idle,
+      )
     })
   }
 
@@ -203,7 +222,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.emitStatsUpdate()
   }
 
-  private applyPassiveEffect(skillId: PassiveSkillId, deltaLevel: number): void {
+  private applyPassiveEffect(
+    skillId: PassiveSkillId,
+    deltaLevel: number,
+  ): void {
     switch (skillId) {
       case 'atk_boost':
         this.atk += deltaLevel * 3
@@ -228,9 +250,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         break
       case 'holy_shield':
         // 쉴드 간격 업데이트: 레벨업 시 타이머 리셋
-        this.holyShieldInterval = (this.passiveSkills.get('holy_shield') ?? 0) > 0
-          ? 30000 / (this.passiveSkills.get('holy_shield') ?? 1)
-          : 0
+        this.holyShieldInterval =
+          (this.passiveSkills.get('holy_shield') ?? 0) > 0
+            ? 30000 / (this.passiveSkills.get('holy_shield') ?? 1)
+            : 0
         this.holyShieldTimer = 0
         this.holyShieldActive = true
         break

@@ -33,14 +33,17 @@ const buildPrompt = (items: FoodItemInput[]): string => {
   const ingredientList = items.map((item) => {
     const urgent = item.daysUntilExpiry !== null && item.daysUntilExpiry <= 3
     const tag = urgent ? ' [긴급]' : ''
-    const expiry = item.daysUntilExpiry !== null ? ` (D-${item.daysUntilExpiry})` : ''
+    const expiry =
+      item.daysUntilExpiry !== null ? ` (D-${item.daysUntilExpiry})` : ''
     return `- ${item.name} (${item.category})${expiry}${tag}`
   })
 
   return `냉장고 재료:\n${ingredientList.join('\n')}\n\n이 재료들로 만들 수 있는 레시피 2~3개를 추천해주세요.`
 }
 
-export const suggestRecipes = async (items: FoodItemInput[]): Promise<GeminiRecipe[]> => {
+export const suggestRecipes = async (
+  items: FoodItemInput[],
+): Promise<GeminiRecipe[]> => {
   if (!ai) {
     throw new Error('GEMINI_API_KEY is not configured')
   }
@@ -64,7 +67,10 @@ export const suggestRecipes = async (items: FoodItemInput[]): Promise<GeminiReci
                 properties: {
                   name: { type: 'string' as const },
                   description: { type: 'string' as const },
-                  difficulty: { type: 'string' as const, enum: ['easy', 'medium', 'hard'] },
+                  difficulty: {
+                    type: 'string' as const,
+                    enum: ['easy', 'medium', 'hard'],
+                  },
                   cookTime: { type: 'number' as const },
                   ingredients: {
                     type: 'array' as const,
@@ -78,9 +84,19 @@ export const suggestRecipes = async (items: FoodItemInput[]): Promise<GeminiReci
                       required: ['name', 'amount', 'unit'],
                     },
                   },
-                  steps: { type: 'array' as const, items: { type: 'string' as const } },
+                  steps: {
+                    type: 'array' as const,
+                    items: { type: 'string' as const },
+                  },
                 },
-                required: ['name', 'description', 'difficulty', 'cookTime', 'ingredients', 'steps'],
+                required: [
+                  'name',
+                  'description',
+                  'difficulty',
+                  'cookTime',
+                  'ingredients',
+                  'steps',
+                ],
               },
             },
           },
@@ -100,8 +116,16 @@ export const suggestRecipes = async (items: FoodItemInput[]): Promise<GeminiReci
     }
 
     for (const r of parsed.recipes) {
-      if (!r.name || !r.difficulty || !r.cookTime || !Array.isArray(r.ingredients) || !Array.isArray(r.steps)) {
-        throw new Error(`Invalid recipe: missing required fields in "${r.name ?? 'unknown'}"`)
+      if (
+        !r.name ||
+        !r.difficulty ||
+        !r.cookTime ||
+        !Array.isArray(r.ingredients) ||
+        !Array.isArray(r.steps)
+      ) {
+        throw new Error(
+          `Invalid recipe: missing required fields in "${r.name ?? 'unknown'}"`,
+        )
       }
     }
 
@@ -115,7 +139,10 @@ export const suggestRecipes = async (items: FoodItemInput[]): Promise<GeminiReci
     try {
       return await tryGenerate()
     } catch (secondError) {
-      console.error('Gemini retry also failed:', secondError instanceof Error ? secondError.message : secondError)
+      console.error(
+        'Gemini retry also failed:',
+        secondError instanceof Error ? secondError.message : secondError,
+      )
       throw firstError
     }
   }

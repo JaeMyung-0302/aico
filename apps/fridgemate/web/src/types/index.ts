@@ -16,7 +16,8 @@ export const CompartmentType = {
   DRAWER: 'DRAWER',
   VEGGIE: 'VEGGIE',
 } as const
-export type CompartmentType = (typeof CompartmentType)[keyof typeof CompartmentType]
+export type CompartmentType =
+  (typeof CompartmentType)[keyof typeof CompartmentType]
 
 export const FoodCategory = {
   MEAT: 'MEAT',
@@ -47,7 +48,8 @@ export const SubscriptionStatus = {
   EXPIRED: 'EXPIRED',
   PAST_DUE: 'PAST_DUE',
 } as const
-export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+export type SubscriptionStatus =
+  (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
 
 export interface SubscriptionStatusResponse {
   hasSubscription: boolean
@@ -63,7 +65,8 @@ export const JoinRequestStatus = {
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
 } as const
-export type JoinRequestStatus = (typeof JoinRequestStatus)[keyof typeof JoinRequestStatus]
+export type JoinRequestStatus =
+  (typeof JoinRequestStatus)[keyof typeof JoinRequestStatus]
 
 export interface JoinRequestResponse {
   id: string
@@ -204,14 +207,19 @@ export interface UpdateCompartmentsInput {
 
 // === 유통기한 상태 계산 ===
 
-export const getExpiryStatus = (expiryDate: Date | string | null): ExpiryStatus => {
+export const getExpiryStatus = (
+  expiryDate: Date | string | null,
+): ExpiryStatus => {
   if (!expiryDate) return ExpiryStatus.SAFE
 
-  const date = typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate
+  const date =
+    typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const expiry = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const diffDays = Math.floor((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor(
+    (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  )
 
   if (diffDays <= 0) return ExpiryStatus.EXPIRED
   if (diffDays <= 1) return ExpiryStatus.DANGER
@@ -220,7 +228,9 @@ export const getExpiryStatus = (expiryDate: Date | string | null): ExpiryStatus 
 }
 
 // 유통기한까지 남은 일수 계산
-export const getDaysUntilExpiry = (expiryDate: string | null): number | null => {
+export const getDaysUntilExpiry = (
+  expiryDate: string | null,
+): number | null => {
   if (!expiryDate) return null
 
   const date = new Date(expiryDate)
@@ -228,7 +238,9 @@ export const getDaysUntilExpiry = (expiryDate: string | null): number | null => 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const expiry = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
-  return Math.floor((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.floor(
+    (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  )
 }
 
 // === Zone 그룹핑 (영역별 칸 분류) ===

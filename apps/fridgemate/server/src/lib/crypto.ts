@@ -7,7 +7,9 @@ const TAG_LENGTH = 16
 const getEncryptKey = (): Buffer => {
   const key = process.env.BILLING_ENCRYPT_KEY
   if (!key || key.length !== 64) {
-    throw new Error('BILLING_ENCRYPT_KEY must be a 64-char hex string (32 bytes)')
+    throw new Error(
+      'BILLING_ENCRYPT_KEY must be a 64-char hex string (32 bytes)',
+    )
   }
   return Buffer.from(key, 'hex')
 }
@@ -16,7 +18,10 @@ export const encrypt = (plaintext: string): string => {
   const key = getEncryptKey()
   const iv = randomBytes(IV_LENGTH)
   const cipher = createCipheriv(ALGORITHM, key, iv)
-  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()])
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, 'utf8'),
+    cipher.final(),
+  ])
   const tag = cipher.getAuthTag()
   return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted.toString('hex')}`
 }
@@ -38,6 +43,9 @@ export const decrypt = (ciphertext: string): string => {
 
   const decipher = createDecipheriv(ALGORITHM, key, iv)
   decipher.setAuthTag(tag)
-  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()])
+  const decrypted = Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final(),
+  ])
   return decrypted.toString('utf8')
 }

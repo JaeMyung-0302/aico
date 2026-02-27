@@ -33,31 +33,34 @@ export const DamageNumbers = () => {
   const entriesRef = useRef<DamageEntry[]>([])
   const [, forceUpdate] = useState(0)
 
-  const handleDamageNumber = useCallback((data: {
-    x: number
-    y: number
-    damage: number
-    isCrit: boolean
-    color?: string
-  }) => {
-    entryIdCounter += 1
-    const entry: DamageEntry = {
-      id: entryIdCounter,
-      x: data.x,
-      z: data.y, // 게임 Y → 월드 Z
-      height: 0,
-      damage: data.damage,
-      isCrit: data.isCrit,
-      color: data.color ?? (data.isCrit ? '#ffff00' : '#ffffff'),
-      age: 0,
-    }
+  const handleDamageNumber = useCallback(
+    (data: {
+      x: number
+      y: number
+      damage: number
+      isCrit: boolean
+      color?: string
+    }) => {
+      entryIdCounter += 1
+      const entry: DamageEntry = {
+        id: entryIdCounter,
+        x: data.x,
+        z: data.y, // 게임 Y → 월드 Z
+        height: 0,
+        damage: data.damage,
+        isCrit: data.isCrit,
+        color: data.color ?? (data.isCrit ? '#ffff00' : '#ffffff'),
+        age: 0,
+      }
 
-    const entries = entriesRef.current
-    if (entries.length >= MAX_ENTRIES) {
-      entries.shift()
-    }
-    entries.push(entry)
-  }, [])
+      const entries = entriesRef.current
+      if (entries.length >= MAX_ENTRIES) {
+        entries.shift()
+      }
+      entries.push(entry)
+    },
+    [],
+  )
 
   useEffect(() => {
     eventBus.on('combat:damageNumber', handleDamageNumber)

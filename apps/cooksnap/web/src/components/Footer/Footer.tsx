@@ -27,7 +27,11 @@ const Footer = () => {
         </button>
 
         {isOpen && (
-          <div id="business-info" role="region" className={cx('businessDetail')}>
+          <div
+            id="business-info"
+            role="region"
+            className={cx('businessDetail')}
+          >
             <span>대표자: 이재명</span>
             <span className={cx('sep')}>·</span>
             <span>사업자등록번호: 220-17-02629</span>
@@ -40,7 +44,9 @@ const Footer = () => {
           </div>
         )}
 
-        <p className={cx('copyright')}>&copy; {new Date().getFullYear()} AICO. All rights reserved.</p>
+        <p className={cx('copyright')}>
+          &copy; {new Date().getFullYear()} AICO. All rights reserved.
+        </p>
       </div>
     </footer>
   )

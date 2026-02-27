@@ -65,7 +65,13 @@ export const ARCHER_COLORS = {
   boot: 0x664422,
 } as const
 
-export const PLAYER_COLORS: Record<CharacterClass, typeof WARRIOR_COLORS | typeof MAGE_COLORS | typeof PALADIN_COLORS | typeof ARCHER_COLORS> = {
+export const PLAYER_COLORS: Record<
+  CharacterClass,
+  | typeof WARRIOR_COLORS
+  | typeof MAGE_COLORS
+  | typeof PALADIN_COLORS
+  | typeof ARCHER_COLORS
+> = {
   Warrior: WARRIOR_COLORS,
   Mage: MAGE_COLORS,
   Paladin: PALADIN_COLORS,

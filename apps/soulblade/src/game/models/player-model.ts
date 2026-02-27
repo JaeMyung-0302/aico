@@ -24,21 +24,35 @@ import { createCelMaterial } from '../shaders/cel-shader'
 
 // ── 치수 (feet at y=0 기준, 총 높이 ~32) ──
 
-const HEAD_R = 5, HEAD_H = 8, HEAD_SEG = 8
-const BODY_W = 12, BODY_H = 12, BODY_D = 7
-const ARM_W = 4, ARM_H = 10, ARM_D = 4
-const LEG_W = 4, LEG_H = 12, LEG_D = 4
+const HEAD_R = 5,
+  HEAD_H = 8,
+  HEAD_SEG = 8
+const BODY_W = 12,
+  BODY_H = 12,
+  BODY_D = 7
+const ARM_W = 4,
+  ARM_H = 10,
+  ARM_D = 4
+const LEG_W = 4,
+  LEG_H = 12,
+  LEG_D = 4
 
 // Y 앵커
-const LEG_TOP = LEG_H                        // 12
-const BODY_MID = LEG_TOP + BODY_H / 2        // 18
-const SHOULDER = LEG_TOP + BODY_H - 2        // 22
+const LEG_TOP = LEG_H // 12
+const BODY_MID = LEG_TOP + BODY_H / 2 // 18
+const SHOULDER = LEG_TOP + BODY_H - 2 // 22
 const HEAD_MID = LEG_TOP + BODY_H + HEAD_H / 2 // 28
 
 const buildMat = (color: number) => createCelMaterial(color)
 
 /** 상단 pivot 사지 생성 (geometry를 아래로 오프셋) */
-const buildLimb = (w: number, h: number, d: number, color: number, name: string): Mesh => {
+const buildLimb = (
+  w: number,
+  h: number,
+  d: number,
+  color: number,
+  name: string,
+): Mesh => {
   const geo = new BoxGeometry(w, h, d)
   geo.translate(0, -h / 2, 0)
   const mesh = new Mesh(geo, buildMat(color))
@@ -51,10 +65,30 @@ const buildLimb = (w: number, h: number, d: number, color: number, name: string)
 type BodyPalette = { head: number; body: number; arm: number; leg: number }
 
 const BODY_PALETTE: Record<CharacterClass, BodyPalette> = {
-  Warrior: { head: WARRIOR_COLORS.helmet, body: WARRIOR_COLORS.body, arm: WARRIOR_COLORS.arm, leg: WARRIOR_COLORS.leg },
-  Mage: { head: MAGE_COLORS.hat, body: MAGE_COLORS.robe, arm: MAGE_COLORS.arm, leg: MAGE_COLORS.robe },
-  Paladin: { head: PALADIN_COLORS.head, body: PALADIN_COLORS.body, arm: PALADIN_COLORS.arm, leg: PALADIN_COLORS.leg },
-  Archer: { head: ARCHER_COLORS.hood, body: ARCHER_COLORS.body, arm: ARCHER_COLORS.arm, leg: ARCHER_COLORS.leg },
+  Warrior: {
+    head: WARRIOR_COLORS.helmet,
+    body: WARRIOR_COLORS.body,
+    arm: WARRIOR_COLORS.arm,
+    leg: WARRIOR_COLORS.leg,
+  },
+  Mage: {
+    head: MAGE_COLORS.hat,
+    body: MAGE_COLORS.robe,
+    arm: MAGE_COLORS.arm,
+    leg: MAGE_COLORS.robe,
+  },
+  Paladin: {
+    head: PALADIN_COLORS.head,
+    body: PALADIN_COLORS.body,
+    arm: PALADIN_COLORS.arm,
+    leg: PALADIN_COLORS.leg,
+  },
+  Archer: {
+    head: ARCHER_COLORS.hood,
+    body: ARCHER_COLORS.body,
+    arm: ARCHER_COLORS.arm,
+    leg: ARCHER_COLORS.leg,
+  },
 }
 
 // ── 클래스별 무기 팩토리 ──
@@ -62,14 +96,20 @@ const BODY_PALETTE: Record<CharacterClass, BodyPalette> = {
 const WEAPON_BUILDERS: Record<CharacterClass, () => Group> = {
   Warrior: () => {
     const g = new Group()
-    const blade = new Mesh(new BoxGeometry(1.5, 14, 1), buildMat(WARRIOR_COLORS.sword))
+    const blade = new Mesh(
+      new BoxGeometry(1.5, 14, 1),
+      buildMat(WARRIOR_COLORS.sword),
+    )
     blade.position.y = 7
     g.add(blade)
     return g
   },
   Mage: () => {
     const g = new Group()
-    const staff = new Mesh(new CylinderGeometry(0.8, 0.8, 20, 6), buildMat(MAGE_COLORS.staff))
+    const staff = new Mesh(
+      new CylinderGeometry(0.8, 0.8, 20, 6),
+      buildMat(MAGE_COLORS.staff),
+    )
     g.add(staff)
     const orb = new Mesh(new SphereGeometry(2, 8, 6), buildMat(MAGE_COLORS.orb))
     orb.position.y = 11
@@ -78,9 +118,15 @@ const WEAPON_BUILDERS: Record<CharacterClass, () => Group> = {
   },
   Paladin: () => {
     const g = new Group()
-    const handle = new Mesh(new CylinderGeometry(0.8, 0.8, 14, 6), buildMat(PALADIN_COLORS.hammerHandle))
+    const handle = new Mesh(
+      new CylinderGeometry(0.8, 0.8, 14, 6),
+      buildMat(PALADIN_COLORS.hammerHandle),
+    )
     g.add(handle)
-    const head = new Mesh(new BoxGeometry(5, 4, 4), buildMat(PALADIN_COLORS.hammerHead))
+    const head = new Mesh(
+      new BoxGeometry(5, 4, 4),
+      buildMat(PALADIN_COLORS.hammerHead),
+    )
     head.position.y = -9
     g.add(head)
     return g
@@ -100,13 +146,19 @@ export const createPlayerModel = (classType: CharacterClass): Group => {
   const c = BODY_PALETTE[classType]
 
   // Head
-  const head = new Mesh(new CylinderGeometry(HEAD_R, HEAD_R, HEAD_H, HEAD_SEG), buildMat(c.head))
+  const head = new Mesh(
+    new CylinderGeometry(HEAD_R, HEAD_R, HEAD_H, HEAD_SEG),
+    buildMat(c.head),
+  )
   head.name = 'head'
   head.position.y = HEAD_MID
   group.add(head)
 
   // Body
-  const body = new Mesh(new BoxGeometry(BODY_W, BODY_H, BODY_D), buildMat(c.body))
+  const body = new Mesh(
+    new BoxGeometry(BODY_W, BODY_H, BODY_D),
+    buildMat(c.body),
+  )
   body.name = 'body'
   body.position.y = BODY_MID
   group.add(body)

@@ -29,7 +29,10 @@ export const AuthLayout = () => {
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false)
       }
     }
@@ -53,7 +56,16 @@ export const AuthLayout = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: '#1a1a2e', color: '#e8d44d' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100dvh',
+          background: '#1a1a2e',
+          color: '#e8d44d',
+        }}
+      >
         로딩 중...
       </div>
     )
@@ -66,7 +78,10 @@ export const AuthLayout = () => {
   return (
     <div className={cx('layout')}>
       <div className={cx('profileArea')} ref={profileRef}>
-        <button className={cx('profileButton')} onClick={() => setDropdownOpen((prev) => !prev)}>
+        <button
+          className={cx('profileButton')}
+          onClick={() => setDropdownOpen((prev) => !prev)}
+        >
           {avatarUrl ? (
             <img
               className={cx('avatar')}
@@ -86,7 +101,11 @@ export const AuthLayout = () => {
         {dropdownOpen && (
           <div className={cx('dropdown')}>
             <p className={cx('dropdownEmail')}>{user.email}</p>
-            <button className={cx('dropdownSignOut')} onClick={handleSignOut} disabled={signingOut}>
+            <button
+              className={cx('dropdownSignOut')}
+              onClick={handleSignOut}
+              disabled={signingOut}
+            >
               {signingOut ? '로그아웃 중...' : '로그아웃'}
             </button>
           </div>

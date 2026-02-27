@@ -1,10 +1,18 @@
-import { Controller, Post, Get, Param, Body, UseGuards, Req } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
-import { RecipesService } from './recipes.service';
-import { KamisService } from '../kamis/kamis.service';
-import { CoupangService } from '../coupang/coupang.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
-import { AnalyzeRecipeDto } from './dto/analyze-recipe.dto';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+} from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
+import { RecipesService } from './recipes.service'
+import { KamisService } from '../kamis/kamis.service'
+import { CoupangService } from '../coupang/coupang.service'
+import { AuthGuard } from '../auth/guards/auth.guard'
+import { AnalyzeRecipeDto } from './dto/analyze-recipe.dto'
 
 @Controller('recipes')
 export class RecipesController {
@@ -18,26 +26,26 @@ export class RecipesController {
   @UseGuards(AuthGuard)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   analyze(@Body() dto: AnalyzeRecipeDto, @Req() req: any) {
-    return this.recipesService.analyze(dto.url, req.user.id);
+    return this.recipesService.analyze(dto.url, req.user.id)
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
   findById(@Param('id') id: string, @Req() req: any) {
-    return this.recipesService.findById(id, req.user.id);
+    return this.recipesService.findById(id, req.user.id)
   }
 
   @Get(':id/prices')
   @UseGuards(AuthGuard)
   async getPrices(@Param('id') id: string, @Req() req: any) {
-    await this.recipesService.checkOwnership(id, req.user.id);
-    return this.kamisService.getRecipePrices(id);
+    await this.recipesService.checkOwnership(id, req.user.id)
+    return this.kamisService.getRecipePrices(id)
   }
 
   @Get(':id/purchase-links')
   @UseGuards(AuthGuard)
   async getPurchaseLinks(@Param('id') id: string, @Req() req: any) {
-    await this.recipesService.checkOwnership(id, req.user.id);
-    return this.coupangService.getPurchaseLinks(id);
+    await this.recipesService.checkOwnership(id, req.user.id)
+    return this.coupangService.getPurchaseLinks(id)
   }
 }

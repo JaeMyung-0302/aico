@@ -40,7 +40,11 @@ export const MapScene = ({ mapId }: MapSceneProps) => {
       <PortalMesh portals={config.portals} />
 
       {/* NPC: 스프라이트 로드 시 빌보드, 아니면 3D 프로시저럴 */}
-      {npcSpritesLoaded ? <NpcBillboard npcs={config.npcs} /> : <NpcMesh npcs={config.npcs} />}
+      {npcSpritesLoaded ? (
+        <NpcBillboard npcs={config.npcs} />
+      ) : (
+        <NpcMesh npcs={config.npcs} />
+      )}
     </group>
   )
 }

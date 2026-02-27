@@ -21,9 +21,12 @@ const HomePage = () => {
   const handleShowRanking = () => {
     socket.off(SocketEvents.RANKING_DATA)
     socket.emit(SocketEvents.RANKING_FETCH)
-    socket.once(SocketEvents.RANKING_DATA, ({ ranking }: { ranking: RankingEntry[] }) => {
-      setRankingData(ranking)
-    })
+    socket.once(
+      SocketEvents.RANKING_DATA,
+      ({ ranking }: { ranking: RankingEntry[] }) => {
+        setRankingData(ranking)
+      },
+    )
   }
 
   const handleSoloStart = () => {
@@ -37,17 +40,22 @@ const HomePage = () => {
     socket.off(SocketEvents.ERROR)
     socket.emit(SocketEvents.SOLO_START, { nickname: nickname.trim() })
 
-    socket.once(SocketEvents.GAME_STARTED, ({ room, assignments }: { room: Room; assignments: KeyAssignment[] }) => {
-      socket.off(SocketEvents.ERROR)
-      const state = useGameStore.getState()
-      state.updateRoom(room)
-      const myAssignment = assignments.find((a) => a.playerId === state.myPlayerId)
-      if (myAssignment) {
-        state.setMyKeys(myAssignment.keys)
-      }
-      sound.countdownGo()
-      navigate(`/game/${room.code}`)
-    })
+    socket.once(
+      SocketEvents.GAME_STARTED,
+      ({ room, assignments }: { room: Room; assignments: KeyAssignment[] }) => {
+        socket.off(SocketEvents.ERROR)
+        const state = useGameStore.getState()
+        state.updateRoom(room)
+        const myAssignment = assignments.find(
+          (a) => a.playerId === state.myPlayerId,
+        )
+        if (myAssignment) {
+          state.setMyKeys(myAssignment.keys)
+        }
+        sound.countdownGo()
+        navigate(`/game/${room.code}`)
+      },
+    )
 
     socket.once(SocketEvents.ERROR, ({ message }: { message: string }) => {
       socket.off(SocketEvents.GAME_STARTED)
@@ -107,7 +115,9 @@ const HomePage = () => {
     <div className={cx('container')}>
       <h1 className={cx('title')}>WASD</h1>
       <p className={cx('subtitle')}>협동 파티 게임</p>
-      <p className={cx('description')}>1~4명이 키를 나눠 하나의 캐릭터를 조종하는 협동 게임</p>
+      <p className={cx('description')}>
+        1~4명이 키를 나눠 하나의 캐릭터를 조종하는 협동 게임
+      </p>
       <button className={cx('rankingButton')} onClick={handleShowRanking}>
         랭킹 보기
       </button>
@@ -157,7 +167,10 @@ const HomePage = () => {
       </div>
 
       {rankingData !== null && (
-        <RankingModal ranking={rankingData} onClose={() => setRankingData(null)} />
+        <RankingModal
+          ranking={rankingData}
+          onClose={() => setRankingData(null)}
+        />
       )}
     </div>
   )

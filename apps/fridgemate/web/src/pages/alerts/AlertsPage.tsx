@@ -38,9 +38,24 @@ export const AlertsPage = () => {
 
   const alertGroups = useMemo((): AlertGroup[] => {
     const groups: AlertGroup[] = [
-      { status: ExpiryStatus.EXPIRED, label: '기한 만료', dotClass: 'dotExpired', items: [] },
-      { status: ExpiryStatus.DANGER, label: 'D-1 이하', dotClass: 'dotDanger', items: [] },
-      { status: ExpiryStatus.WARNING, label: 'D-3 이하', dotClass: 'dotWarning', items: [] },
+      {
+        status: ExpiryStatus.EXPIRED,
+        label: '기한 만료',
+        dotClass: 'dotExpired',
+        items: [],
+      },
+      {
+        status: ExpiryStatus.DANGER,
+        label: 'D-1 이하',
+        dotClass: 'dotDanger',
+        items: [],
+      },
+      {
+        status: ExpiryStatus.WARNING,
+        label: 'D-3 이하',
+        dotClass: 'dotWarning',
+        items: [],
+      },
     ]
 
     for (const item of allItems) {
@@ -72,18 +87,20 @@ export const AlertsPage = () => {
           <span className={cx('emptyIcon')}>✅</span>
           <p className={cx('emptyText')}>
             유통기한이 임박한 식재료가 없어요.
-            <br />
-            잘 관리하고 계시네요!
+            <br />잘 관리하고 계시네요!
           </p>
         </div>
       )}
 
       {alertGroups.map((group) => (
-        <div key={group.status} className={cx('group', {
+        <div
+          key={group.status}
+          className={cx('group', {
             groupExpired: group.status === ExpiryStatus.EXPIRED,
             groupDanger: group.status === ExpiryStatus.DANGER,
             groupWarning: group.status === ExpiryStatus.WARNING,
-          })}>
+          })}
+        >
           <div className={cx('groupHeader')}>
             <span className={cx('groupDot', group.dotClass)} />
             <span className={cx('groupLabel')}>{group.label}</span>

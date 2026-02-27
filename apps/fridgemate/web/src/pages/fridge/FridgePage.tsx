@@ -15,13 +15,20 @@ import styles from './FridgePage.module.scss'
 const cx = classNames.bind(styles)
 
 export const FridgePage = () => {
-  const { fridges, activeFridgeId, fetchFridges, loading, error } = useFridgeStore()
+  const { fridges, activeFridgeId, fetchFridges, loading, error } =
+    useFridgeStore()
   const { isAdmin, fetchMe } = useAuthStore()
-  const [activeCompartment, setActiveCompartment] = useState<CompartmentResponse | null>(null)
-  const [highlightedCompartmentId, setHighlightedCompartmentId] = useState<string | null>(null)
+  const [activeCompartment, setActiveCompartment] =
+    useState<CompartmentResponse | null>(null)
+  const [highlightedCompartmentId, setHighlightedCompartmentId] = useState<
+    string | null
+  >(null)
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [subscription, setSubscription] = useState<SubscriptionStatusResponse | null>(null)
-  const [quickAddCompartmentId, setQuickAddCompartmentId] = useState<string | null>(null)
+  const [subscription, setSubscription] =
+    useState<SubscriptionStatusResponse | null>(null)
+  const [quickAddCompartmentId, setQuickAddCompartmentId] = useState<
+    string | null
+  >(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
 
@@ -52,25 +59,31 @@ export const FridgePage = () => {
     }
   }, [])
 
-  const handleCompartmentClick = useCallback((compartment: CompartmentResponse) => {
-    setQuickAddCompartmentId(null)
-    setActiveCompartment(compartment)
-  }, [])
+  const handleCompartmentClick = useCallback(
+    (compartment: CompartmentResponse) => {
+      setQuickAddCompartmentId(null)
+      setActiveCompartment(compartment)
+    },
+    [],
+  )
 
   const handleQuickAdd = useCallback((compartmentId: string) => {
     setActiveCompartment(null)
     setQuickAddCompartmentId(compartmentId)
   }, [])
 
-  const handleDeleteItem = useCallback(async (itemId: string, compartmentId: string, itemName: string) => {
-    if (!window.confirm(`"${itemName}" 을(를) 삭제하시겠습니까?`)) return
-    try {
-      await useFoodItemStore.getState().deleteItem(itemId, compartmentId)
-      await fetchFridges()
-    } catch {
-      // 에러는 store에서 처리됨
-    }
-  }, [fetchFridges])
+  const handleDeleteItem = useCallback(
+    async (itemId: string, compartmentId: string, itemName: string) => {
+      if (!window.confirm(`"${itemName}" 을(를) 삭제하시겠습니까?`)) return
+      try {
+        await useFoodItemStore.getState().deleteItem(itemId, compartmentId)
+        await fetchFridges()
+      } catch {
+        // 에러는 store에서 처리됨
+      }
+    },
+    [fetchFridges],
+  )
 
   const handleEditCompartments = useCallback(() => {
     if (!activeFridgeId) return
@@ -160,7 +173,10 @@ export const FridgePage = () => {
       )}
 
       {showEditModal && activeFridge && (
-        <CompartmentEditModal fridge={activeFridge} onClose={handleEditModalClose} />
+        <CompartmentEditModal
+          fridge={activeFridge}
+          onClose={handleEditModalClose}
+        />
       )}
 
       {showPremiumModal && (

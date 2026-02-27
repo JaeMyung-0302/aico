@@ -6,7 +6,12 @@
  * Phaser.Math → aabb.ts 유틸 사용
  */
 
-import type { PlayerEntity, MonsterEntity, EliteEntity, ProjectileEntity } from '../types'
+import type {
+  PlayerEntity,
+  MonsterEntity,
+  EliteEntity,
+  ProjectileEntity,
+} from '../types'
 import { calcDamage, CLASS_CONFIGS } from '@soulblade/shared'
 import { distanceBetween, angleBetween, angleWrap } from '../physics/aabb'
 import { playerHealOnKill, playerGainExp } from '../data/player-data'
@@ -99,10 +104,19 @@ const applyDamageToTarget = (
 ): { damage: number; isCrit: boolean } => {
   const passive = CLASS_CONFIGS[player.classType].classPassive
   const isCrit = Math.random() < player.crit
-  const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
+  const critBonus =
+    isCrit && passive.type === 'crit_damage_bonus' ? passive.value : 1.0
   const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
   const skillMul = passive.type === 'skill_multiplier' ? passive.value : 1.0
-  const damage = calcDamage(player.atk, player.weaponPower, targetDef, skillMul, player.level, targetLevel, critMultiplier)
+  const damage = calcDamage(
+    player.atk,
+    player.weaponPower,
+    targetDef,
+    skillMul,
+    player.level,
+    targetLevel,
+    critMultiplier,
+  )
   return { damage, isCrit }
 }
 
@@ -114,7 +128,11 @@ const attackMonster = (
   monsters: readonly MonsterEntity[],
   elites: readonly EliteEntity[],
 ): void => {
-  const { damage, isCrit } = applyDamageToTarget(player, monster.def, monster.level)
+  const { damage, isCrit } = applyDamageToTarget(
+    player,
+    monster.def,
+    monster.level,
+  )
 
   eventBus.emit('combat:damageNumber', {
     x: monster.body.x,
@@ -126,8 +144,21 @@ const attackMonster = (
   const killed = monsterTakeDamage(monster, damage)
 
   if (killed) {
-    handleKill(player, monster.expReward, monster.goldReward, state, monster.body.x, monster.body.y)
-    processChainLightning(player, monster.body.x, monster.body.y, monsters, elites)
+    handleKill(
+      player,
+      monster.expReward,
+      monster.goldReward,
+      state,
+      monster.body.x,
+      monster.body.y,
+    )
+    processChainLightning(
+      player,
+      monster.body.x,
+      monster.body.y,
+      monsters,
+      elites,
+    )
   } else {
     // burn_dot 패시브
     const burnLevel = player.passiveSkills.get('burn_dot') ?? 0
@@ -157,7 +188,14 @@ const attackElite = (
   const killed = eliteTakeDamage(elite, damage)
 
   if (killed) {
-    handleKill(player, elite.expReward, elite.goldReward, state, elite.body.x, elite.body.y)
+    handleKill(
+      player,
+      elite.expReward,
+      elite.goldReward,
+      state,
+      elite.body.x,
+      elite.body.y,
+    )
     processChainLightning(player, elite.body.x, elite.body.y, monsters, elites)
   }
 }
@@ -177,7 +215,12 @@ const attackMeleeFan = (
 
   for (const m of monsters) {
     if (!m.active) continue
-    const dist = distanceBetween(player.body.x, player.body.y, m.body.x, m.body.y)
+    const dist = distanceBetween(
+      player.body.x,
+      player.body.y,
+      m.body.x,
+      m.body.y,
+    )
     if (dist > range) continue
     const angle = angleBetween(player.body.x, player.body.y, m.body.x, m.body.y)
     if (Math.abs(angleWrap(angle - playerAngle)) <= fanAngle / 2) {
@@ -187,7 +230,12 @@ const attackMeleeFan = (
 
   for (const e of elites) {
     if (!e.active) continue
-    const dist = distanceBetween(player.body.x, player.body.y, e.body.x, e.body.y)
+    const dist = distanceBetween(
+      player.body.x,
+      player.body.y,
+      e.body.x,
+      e.body.y,
+    )
     if (dist > range) continue
     const angle = angleBetween(player.body.x, player.body.y, e.body.x, e.body.y)
     if (Math.abs(angleWrap(angle - playerAngle)) <= fanAngle / 2) {
@@ -208,14 +256,18 @@ const attackAoeCircle = (
 
   for (const m of monsters) {
     if (!m.active) continue
-    if (distanceBetween(player.body.x, player.body.y, m.body.x, m.body.y) <= range) {
+    if (
+      distanceBetween(player.body.x, player.body.y, m.body.x, m.body.y) <= range
+    ) {
       attackMonster(player, m, state, monsters, elites)
     }
   }
 
   for (const e of elites) {
     if (!e.active) continue
-    if (distanceBetween(player.body.x, player.body.y, e.body.x, e.body.y) <= range) {
+    if (
+      distanceBetween(player.body.x, player.body.y, e.body.x, e.body.y) <= range
+    ) {
       attackElite(player, e, state, monsters, elites)
     }
   }
@@ -279,19 +331,34 @@ export const processAttackR3F = (
       // 투사체 발사 정보 반환 (호출자가 투사체 생성)
       const isCrit = Math.random() < player.crit
       const passive = CLASS_CONFIGS[player.classType].classPassive
-      const critBonus = (isCrit && passive.type === 'crit_damage_bonus') ? passive.value : 1.0
+      const critBonus =
+        isCrit && passive.type === 'crit_damage_bonus' ? passive.value : 1.0
       const critMultiplier = isCrit ? player.critDmg * critBonus : 1.0
-      const damage = calcDamage(player.atk, player.weaponPower, 0, 1.0, player.level, 1, critMultiplier)
+      const damage = calcDamage(
+        player.atk,
+        player.weaponPower,
+        0,
+        1.0,
+        player.level,
+        1,
+        critMultiplier,
+      )
 
       const extraCount = player.passiveSkills.get('extra_projectile') ?? 0
       const totalProjectiles = 1 + extraCount
       const spreadAngle = totalProjectiles > 1 ? 0.15 : 0
 
-      const projectiles: { angle: number; damage: number; piercing: boolean }[] = []
+      const projectiles: {
+        angle: number
+        damage: number
+        piercing: boolean
+      }[] = []
       for (let i = 0; i < totalProjectiles; i++) {
-        const offsetAngle = totalProjectiles > 1
-          ? player.facingAngle + (i - (totalProjectiles - 1) / 2) * spreadAngle
-          : player.facingAngle
+        const offsetAngle =
+          totalProjectiles > 1
+            ? player.facingAngle +
+              (i - (totalProjectiles - 1) / 2) * spreadAngle
+            : player.facingAngle
         projectiles.push({
           angle: offsetAngle,
           damage,
@@ -339,7 +406,20 @@ export const processProjectileHitR3F = (
   onProjectileHit(projectile)
 
   if (killed) {
-    handleKill(player, target.expReward, target.goldReward, state, target.body.x, target.body.y)
-    processChainLightning(player, target.body.x, target.body.y, monsters, elites)
+    handleKill(
+      player,
+      target.expReward,
+      target.goldReward,
+      state,
+      target.body.x,
+      target.body.y,
+    )
+    processChainLightning(
+      player,
+      target.body.x,
+      target.body.y,
+      monsters,
+      elites,
+    )
   }
 }

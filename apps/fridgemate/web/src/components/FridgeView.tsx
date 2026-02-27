@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
-import { FridgeType, CompartmentType, getFillLevel, getDaysUntilExpiry } from '@/types'
+import {
+  FridgeType,
+  CompartmentType,
+  getFillLevel,
+  getDaysUntilExpiry,
+} from '@/types'
 import type { CompartmentResponse, FridgeResponse } from '@/types'
 import {
   DOOR_SECTIONS,
@@ -22,7 +27,11 @@ const cx = classNames.bind(styles)
 
 interface FridgeViewProps {
   onCompartmentClick: (compartment: CompartmentResponse) => void
-  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onDeleteItem: (
+    itemId: string,
+    compartmentId: string,
+    itemName: string,
+  ) => void
   onQuickAdd?: (compartmentId: string) => void
   highlightedCompartmentId?: string | null
   onEditCompartments?: () => void
@@ -48,7 +57,11 @@ const CompartmentCell = ({
   compartment: CompartmentResponse
   fridgeType: FridgeType
   onClick: () => void
-  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onDeleteItem: (
+    itemId: string,
+    compartmentId: string,
+    itemName: string,
+  ) => void
   onQuickAdd?: () => void
   className?: string
   isHighlighted?: boolean
@@ -73,10 +86,18 @@ const CompartmentCell = ({
   return (
     <div
       className={cx('compartment', className, FILL_LEVEL_CLASS[fillLevel], {
-        compartmentFreezer: isFreezerZone(fridgeType, compartment.position, compartment.type),
+        compartmentFreezer: isFreezerZone(
+          fridgeType,
+          compartment.position,
+          compartment.type,
+        ),
         compartmentDrawer: isDrawerPosition(fridgeType, compartment.position),
-        compartmentShowcase: isShowcasePosition(fridgeType, compartment.position),
-        compartmentExpiring: compartment.hasExpiringItems && compartment.itemCount > 0,
+        compartmentShowcase: isShowcasePosition(
+          fridgeType,
+          compartment.position,
+        ),
+        compartmentExpiring:
+          compartment.hasExpiringItems && compartment.itemCount > 0,
         compartmentHighlighted: isHighlighted,
       })}
       onClick={fillLevel === 0 && onQuickAdd ? onQuickAdd : onClick}
@@ -106,10 +127,15 @@ const CompartmentCell = ({
                 <span key={item.id} className={cx('chip')}>
                   <span className={cx('chipName')}>{item.name}</span>
                   {expiry && (
-                    <span className={cx('chipExpiry', {
-                      chipExpiryDanger: days !== null && days <= 1,
-                      chipExpiryWarning: days !== null && days > 1 && days <= 3,
-                    })}>{expiry}</span>
+                    <span
+                      className={cx('chipExpiry', {
+                        chipExpiryDanger: days !== null && days <= 1,
+                        chipExpiryWarning:
+                          days !== null && days > 1 && days <= 3,
+                      })}
+                    >
+                      {expiry}
+                    </span>
                   )}
                   <button
                     className={cx('chipDelete')}
@@ -128,7 +154,9 @@ const CompartmentCell = ({
           </div>
           <div className={cx('compartmentInfo')}>
             <span className={cx('itemCount')}>{compartment.itemCount}개</span>
-            {compartment.hasExpiringItems && <span className={cx('warningDot')} />}
+            {compartment.hasExpiringItems && (
+              <span className={cx('warningDot')} />
+            )}
             {onQuickAdd && (
               <button
                 className={cx('quickAddBtn')}
@@ -161,15 +189,24 @@ const DoorSectionGrid = ({
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
-  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onDeleteItem: (
+    itemId: string,
+    compartmentId: string,
+    itemName: string,
+  ) => void
   onQuickAdd?: (compartmentId: string) => void
   highlightedCompartmentId?: string | null
   onEditCompartments?: () => void
 }) => {
   const [selectedDoor, setSelectedDoor] = useState<number | null>(null)
   const doorSections = DOOR_SECTIONS[fridge.type]!
-  const compartmentMap = new Map(fridge.compartments.map((c) => [c.position, c]))
-  const extraCompartments = getExtraCompartments(fridge.type, fridge.compartments)
+  const compartmentMap = new Map(
+    fridge.compartments.map((c) => [c.position, c]),
+  )
+  const extraCompartments = getExtraCompartments(
+    fridge.type,
+    fridge.compartments,
+  )
 
   // === 열린 상태: 세부 칸 표시 ===
   if (selectedDoor !== null) {
@@ -179,18 +216,20 @@ const DoorSectionGrid = ({
       .filter((c): c is CompartmentResponse => c !== undefined)
 
     // TWO_DOOR/SBS: 추가 칸을 해당 섹션에 배치
-    const sectionExtras = (fridge.type === FridgeType.TWO_DOOR || fridge.type === FridgeType.SIDE_BY_SIDE)
-      ? extraCompartments.filter((comp) => {
-          if (fridge.type === FridgeType.TWO_DOOR) {
+    const sectionExtras =
+      fridge.type === FridgeType.TWO_DOOR ||
+      fridge.type === FridgeType.SIDE_BY_SIDE
+        ? extraCompartments.filter((comp) => {
+            if (fridge.type === FridgeType.TWO_DOOR) {
+              return activeSection.isFreezer
+                ? comp.type === CompartmentType.FREEZER
+                : comp.type !== CompartmentType.FREEZER
+            }
             return activeSection.isFreezer
-              ? comp.type === CompartmentType.FREEZER
-              : comp.type !== CompartmentType.FREEZER
-          }
-          return activeSection.isFreezer
-            ? decodeExtraColumn(comp.position) === 2
-            : decodeExtraColumn(comp.position) === 1
-        })
-      : extraCompartments
+              ? decodeExtraColumn(comp.position) === 2
+              : decodeExtraColumn(comp.position) === 1
+          })
+        : extraCompartments
 
     const renderExtraCell = (comp: CompartmentResponse) => (
       <CompartmentCell
@@ -238,7 +277,10 @@ const DoorSectionGrid = ({
         )
       }
       if (activeSection.layout === 'twoColumn') {
-        const leftItems = sectionCompartments.slice(0, activeSection.columnSplit!)
+        const leftItems = sectionCompartments.slice(
+          0,
+          activeSection.columnSplit!,
+        )
         const rightItems = sectionCompartments.slice(activeSection.columnSplit!)
         const leftExtras = activeSection.reverseColumns
           ? sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
@@ -247,7 +289,11 @@ const DoorSectionGrid = ({
           ? sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
           : sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
         return (
-          <div className={cx('twoColumnLayout', { twoColumnWideLeft: fridge.type === FridgeType.TWO_DOOR })}>
+          <div
+            className={cx('twoColumnLayout', {
+              twoColumnWideLeft: fridge.type === FridgeType.TWO_DOOR,
+            })}
+          >
             <div className={cx('fridgeColumn')}>
               {leftItems.map((comp) => (
                 <CompartmentCell
@@ -256,7 +302,9 @@ const DoorSectionGrid = ({
                   fridgeType={fridge.type}
                   onClick={() => onCompartmentClick(comp)}
                   onDeleteItem={onDeleteItem}
-                  onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
+                  onQuickAdd={
+                    onQuickAdd ? () => onQuickAdd(comp.id) : undefined
+                  }
                   isHighlighted={comp.id === highlightedCompartmentId}
                 />
               ))}
@@ -270,7 +318,9 @@ const DoorSectionGrid = ({
                   fridgeType={fridge.type}
                   onClick={() => onCompartmentClick(comp)}
                   onDeleteItem={onDeleteItem}
-                  onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
+                  onQuickAdd={
+                    onQuickAdd ? () => onQuickAdd(comp.id) : undefined
+                  }
                   isHighlighted={comp.id === highlightedCompartmentId}
                 />
               ))}
@@ -280,7 +330,13 @@ const DoorSectionGrid = ({
         )
       }
       return (
-        <div className={cx(activeSection.layout === 'grid3x2' ? 'gridLayout3x2' : 'gridLayout2x1')}>
+        <div
+          className={cx(
+            activeSection.layout === 'grid3x2'
+              ? 'gridLayout3x2'
+              : 'gridLayout2x1',
+          )}
+        >
           {sectionCompartments.map((comp) => (
             <CompartmentCell
               key={comp.id}
@@ -313,16 +369,22 @@ const DoorSectionGrid = ({
 
   // === 닫힌 상태: 문 버튼 표시 ===
   const closedClass =
-    fridge.type === FridgeType.SIDE_BY_SIDE ? 'closedSideBySide'
-    : fridge.type === FridgeType.TWO_DOOR ? 'closedTwoDoor'
-    : 'closedFourDoor'
+    fridge.type === FridgeType.SIDE_BY_SIDE
+      ? 'closedSideBySide'
+      : fridge.type === FridgeType.TWO_DOOR
+        ? 'closedTwoDoor'
+        : 'closedFourDoor'
 
   return (
     <div className={cx('fridge')}>
       <div className={cx('fridgeHeader')}>
         {fridge.name}
         {onEditCompartments && (
-          <button className={cx('editCompartmentsBtn')} onClick={onEditCompartments} type="button">
+          <button
+            className={cx('editCompartmentsBtn')}
+            onClick={onEditCompartments}
+            type="button"
+          >
             칸 편집
           </button>
         )}
@@ -333,23 +395,28 @@ const DoorSectionGrid = ({
             .map((pos) => compartmentMap.get(pos))
             .filter((c): c is CompartmentResponse => c !== undefined)
           // TWO_DOOR/SBS: 추가 칸을 해당 섹션에 포함
-          const sectionExtras = (fridge.type === FridgeType.TWO_DOOR || fridge.type === FridgeType.SIDE_BY_SIDE)
-            ? extraCompartments.filter((comp) => {
-                if (fridge.type === FridgeType.TWO_DOOR) {
+          const sectionExtras =
+            fridge.type === FridgeType.TWO_DOOR ||
+            fridge.type === FridgeType.SIDE_BY_SIDE
+              ? extraCompartments.filter((comp) => {
+                  if (fridge.type === FridgeType.TWO_DOOR) {
+                    return section.isFreezer
+                      ? comp.type === CompartmentType.FREEZER
+                      : comp.type !== CompartmentType.FREEZER
+                  }
                   return section.isFreezer
-                    ? comp.type === CompartmentType.FREEZER
-                    : comp.type !== CompartmentType.FREEZER
-                }
-                return section.isFreezer
-                  ? decodeExtraColumn(comp.position) === 2
-                  : decodeExtraColumn(comp.position) === 1
-              })
-            : []
+                    ? decodeExtraColumn(comp.position) === 2
+                    : decodeExtraColumn(comp.position) === 1
+                })
+              : []
           const allComps = [...comps, ...sectionExtras]
           const totalItems = allComps.reduce((sum, c) => sum + c.itemCount, 0)
           const hasExpiring = allComps.some((c) => c.hasExpiringItems)
           const doorFillLevel = getFillLevel(totalItems)
-          const doorFillClass = doorFillLevel > 0 ? `closedDoorFillLevel${doorFillLevel}` : undefined
+          const doorFillClass =
+            doorFillLevel > 0
+              ? `closedDoorFillLevel${doorFillLevel}`
+              : undefined
 
           return (
             <button
@@ -373,21 +440,23 @@ const DoorSectionGrid = ({
           )
         })}
       </div>
-      {fridge.type !== FridgeType.TWO_DOOR && fridge.type !== FridgeType.SIDE_BY_SIDE && extraCompartments.length > 0 && (
-        <div className={cx('extraDoorCompartments')}>
-          {extraCompartments.map((comp) => (
-            <CompartmentCell
-              key={comp.id}
-              compartment={comp}
-              fridgeType={fridge.type}
-              onClick={() => onCompartmentClick(comp)}
-              onDeleteItem={onDeleteItem}
-              onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
-              isHighlighted={comp.id === highlightedCompartmentId}
-            />
-          ))}
-        </div>
-      )}
+      {fridge.type !== FridgeType.TWO_DOOR &&
+        fridge.type !== FridgeType.SIDE_BY_SIDE &&
+        extraCompartments.length > 0 && (
+          <div className={cx('extraDoorCompartments')}>
+            {extraCompartments.map((comp) => (
+              <CompartmentCell
+                key={comp.id}
+                compartment={comp}
+                fridgeType={fridge.type}
+                onClick={() => onCompartmentClick(comp)}
+                onDeleteItem={onDeleteItem}
+                onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
+                isHighlighted={comp.id === highlightedCompartmentId}
+              />
+            ))}
+          </div>
+        )}
     </div>
   )
 }
@@ -404,20 +473,31 @@ const SimpleFridgeGrid = ({
 }: {
   fridge: FridgeResponse
   onCompartmentClick: (compartment: CompartmentResponse) => void
-  onDeleteItem: (itemId: string, compartmentId: string, itemName: string) => void
+  onDeleteItem: (
+    itemId: string,
+    compartmentId: string,
+    itemName: string,
+  ) => void
   onQuickAdd?: (compartmentId: string) => void
   highlightedCompartmentId?: string | null
   onEditCompartments?: () => void
 }) => {
   const gridClass = SIMPLE_GRID_CLASS[fridge.type]
   const presetPositions = getPresetPositions(fridge.type)
-  const extraCompartments = getExtraCompartments(fridge.type, fridge.compartments)
+  const extraCompartments = getExtraCompartments(
+    fridge.type,
+    fridge.compartments,
+  )
 
   const renderHeader = () => (
     <div className={cx('fridgeHeader')}>
       {fridge.name}
       {onEditCompartments && (
-        <button className={cx('editCompartmentsBtn')} onClick={onEditCompartments} type="button">
+        <button
+          className={cx('editCompartmentsBtn')}
+          onClick={onEditCompartments}
+          type="button"
+        >
           칸 편집
         </button>
       )}
@@ -438,7 +518,9 @@ const SimpleFridgeGrid = ({
 
   // ONE_DOOR: flex 2열 레이아웃 (도어 추가 시 높이 자동 맞춤)
   if (fridge.type === FridgeType.ONE_DOOR) {
-    const allSorted = fridge.compartments.slice().sort((a, b) => a.position - b.position)
+    const allSorted = fridge.compartments
+      .slice()
+      .sort((a, b) => a.position - b.position)
     const bodyComps = allSorted.filter((c) => c.type !== CompartmentType.DOOR)
     const doorComps = allSorted.filter((c) => c.type === CompartmentType.DOOR)
 
@@ -476,8 +558,13 @@ const SimpleFridgeGrid = ({
                 fridgeType={fridge.type}
                 onClick={() => onCompartmentClick(compartment)}
                 onDeleteItem={onDeleteItem}
-                onQuickAdd={onQuickAdd ? () => onQuickAdd(compartment.id) : undefined}
-                className={getCompartmentPositionClass(fridge.type, compartment.position)}
+                onQuickAdd={
+                  onQuickAdd ? () => onQuickAdd(compartment.id) : undefined
+                }
+                className={getCompartmentPositionClass(
+                  fridge.type,
+                  compartment.position,
+                )}
                 isHighlighted={compartment.id === highlightedCompartmentId}
               />
             ))}
@@ -489,7 +576,9 @@ const SimpleFridgeGrid = ({
               onClick={() => onCompartmentClick(comp)}
               onDeleteItem={onDeleteItem}
               onQuickAdd={onQuickAdd ? () => onQuickAdd(comp.id) : undefined}
-              className={cx(getExtraColumnClass(comp.position) ?? 'extraInGrid')}
+              className={cx(
+                getExtraColumnClass(comp.position) ?? 'extraInGrid',
+              )}
               isHighlighted={comp.id === highlightedCompartmentId}
             />
           ))}
@@ -501,7 +590,13 @@ const SimpleFridgeGrid = ({
 
 // === 메인 컴포넌트 ===
 
-export const FridgeView = ({ onCompartmentClick, onDeleteItem, onQuickAdd, highlightedCompartmentId, onEditCompartments }: FridgeViewProps) => {
+export const FridgeView = ({
+  onCompartmentClick,
+  onDeleteItem,
+  onQuickAdd,
+  highlightedCompartmentId,
+  onEditCompartments,
+}: FridgeViewProps) => {
   const navigate = useNavigate()
   const { fridges, activeFridgeId, setActiveFridge } = useFridgeStore()
 
@@ -535,7 +630,9 @@ export const FridgeView = ({ onCompartmentClick, onDeleteItem, onQuickAdd, highl
           {fridges.map((fridge) => (
             <button
               key={fridge.id}
-              className={cx('fridgeTab', { fridgeTabActive: fridge.id === activeFridgeId })}
+              className={cx('fridgeTab', {
+                fridgeTabActive: fridge.id === activeFridgeId,
+              })}
               onClick={() => setActiveFridge(fridge.id)}
               type="button"
             >
@@ -548,9 +645,25 @@ export const FridgeView = ({ onCompartmentClick, onDeleteItem, onQuickAdd, highl
       {/* 냉장고 그리드 */}
       {activeFridge &&
         (DOOR_SECTIONS[activeFridge.type] ? (
-          <DoorSectionGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} onQuickAdd={onQuickAdd} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
+          <DoorSectionGrid
+            key={activeFridge.id}
+            fridge={activeFridge}
+            onCompartmentClick={onCompartmentClick}
+            onDeleteItem={onDeleteItem}
+            onQuickAdd={onQuickAdd}
+            highlightedCompartmentId={highlightedCompartmentId}
+            onEditCompartments={onEditCompartments}
+          />
         ) : (
-          <SimpleFridgeGrid key={activeFridge.id} fridge={activeFridge} onCompartmentClick={onCompartmentClick} onDeleteItem={onDeleteItem} onQuickAdd={onQuickAdd} highlightedCompartmentId={highlightedCompartmentId} onEditCompartments={onEditCompartments} />
+          <SimpleFridgeGrid
+            key={activeFridge.id}
+            fridge={activeFridge}
+            onCompartmentClick={onCompartmentClick}
+            onDeleteItem={onDeleteItem}
+            onQuickAdd={onQuickAdd}
+            highlightedCompartmentId={highlightedCompartmentId}
+            onEditCompartments={onEditCompartments}
+          />
         ))}
     </div>
   )

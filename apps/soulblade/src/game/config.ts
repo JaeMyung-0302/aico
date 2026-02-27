@@ -1,5 +1,10 @@
 import Phaser from 'phaser'
-import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT } from '@soulblade/shared'
+import {
+  VIEWPORT_WIDTH,
+  VIEWPORT_HEIGHT,
+  WORLD_WIDTH,
+  WORLD_HEIGHT,
+} from '@soulblade/shared'
 import { BootScene } from './scenes/BootScene'
 import { StageLoadScene } from './scenes/StageLoadScene'
 import { GameScene } from './scenes/GameScene'
@@ -8,7 +13,9 @@ import { GameScene } from './scenes/GameScene'
 const GAME_WIDTH = VIEWPORT_WIDTH
 const GAME_HEIGHT = VIEWPORT_HEIGHT
 
-export const createGameConfig = (parent: string): Phaser.Types.Core.GameConfig => ({
+export const createGameConfig = (
+  parent: string,
+): Phaser.Types.Core.GameConfig => ({
   type: Phaser.AUTO,
   width: GAME_WIDTH,
   height: GAME_HEIGHT,

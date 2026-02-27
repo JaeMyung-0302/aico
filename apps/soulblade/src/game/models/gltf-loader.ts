@@ -24,7 +24,9 @@ export const applyCelShading = (scene: Group): void => {
       const materials = Array.isArray(child.material)
         ? child.material
         : [child.material]
-      const firstMat = materials[0] as Material & { color?: { getHex: () => number } }
+      const firstMat = materials[0] as Material & {
+        color?: { getHex: () => number }
+      }
       const hex = firstMat.color?.getHex?.() ?? 0x888888
       child.material = createCelMaterial(hex)
       for (const mat of materials) mat.dispose()
@@ -44,7 +46,10 @@ interface GLTFFallbackState {
   hasError: boolean
 }
 
-export class GLTFFallback extends Component<GLTFFallbackProps, GLTFFallbackState> {
+export class GLTFFallback extends Component<
+  GLTFFallbackProps,
+  GLTFFallbackState
+> {
   state: GLTFFallbackState = { hasError: false }
 
   static getDerivedStateFromError(): GLTFFallbackState {

@@ -31,7 +31,12 @@ export class VisualFxManager {
   }
 
   // MapManager.loadMap 직후 호출
-  onMapLoad = (mapId: MapId, worldWidth: number, worldHeight: number, parallaxLayers: number): void => {
+  onMapLoad = (
+    mapId: MapId,
+    worldWidth: number,
+    worldHeight: number,
+    parallaxLayers: number,
+  ): void => {
     this.parallax.onMapLoad(mapId, worldWidth, worldHeight, parallaxLayers)
     this.atmosphere.onMapLoad(mapId)
     this.envParticles.onMapLoad(mapId)
@@ -52,7 +57,10 @@ export class VisualFxManager {
   }
 
   // 몬스터/엘리트 섀도우 부착
-  attachShadow = (entity: Phaser.Physics.Arcade.Sprite, size: 'small' | 'medium' | 'large'): void => {
+  attachShadow = (
+    entity: Phaser.Physics.Arcade.Sprite,
+    size: 'small' | 'medium' | 'large',
+  ): void => {
     this.shadow.attach(entity, size)
   }
 
@@ -78,7 +86,11 @@ export class VisualFxManager {
     this.parallax.update(camera, config.enableParallax)
     this.atmosphere.update(config.enableAtmosphere)
     this.envParticles.update(camera, config.enableEnvironmentParticles, delta)
-    this.entityEffects.update(config.enableEntityGlow, config.enableBreathTween, elites)
+    this.entityEffects.update(
+      config.enableEntityGlow,
+      config.enableBreathTween,
+      elites,
+    )
   }
 
   // 그룹 내 활성 엔티티에 섀도우 자동 부착
@@ -95,12 +107,22 @@ export class VisualFxManager {
   }
 
   // combat.ts에서 호출: 적 히트 시 스파크/크리티컬 플래시
-  onEntityHit = (x: number, y: number, isCrit: boolean, level: CombatEffectLevel): void => {
+  onEntityHit = (
+    x: number,
+    y: number,
+    isCrit: boolean,
+    level: CombatEffectLevel,
+  ): void => {
     this.combatEffects.onEntityHit(x, y, isCrit, level)
   }
 
   // combat.ts에서 호출: 적 사망 시 충격파/잔류 글로우
-  onEntityDeath = (x: number, y: number, entityType: 'normal' | 'elite', level: CombatEffectLevel): void => {
+  onEntityDeath = (
+    x: number,
+    y: number,
+    entityType: 'normal' | 'elite',
+    level: CombatEffectLevel,
+  ): void => {
     this.combatEffects.onEntityDeath(x, y, entityType, level)
   }
 

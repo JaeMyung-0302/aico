@@ -23,7 +23,10 @@ interface RemainingResponse {
 
 interface RecipeActions {
   fetchRemainingCount: () => Promise<void>
-  suggestRecipes: (fridgeId: string, selectedItemIds?: string[]) => Promise<void>
+  suggestRecipes: (
+    fridgeId: string,
+    selectedItemIds?: string[],
+  ) => Promise<void>
   cookComplete: (fridgeId: string, usedIngredients: string[]) => Promise<void>
   clearRecipes: () => void
 }
@@ -51,7 +54,10 @@ export const useRecipeStore = create<RecipeStore>((set) => ({
     set({ loading: true, error: null })
     try {
       const body = selectedItemIds ? { selectedItemIds } : undefined
-      const data = await api.post<RecipeSuggestResponse>(`/fridges/${fridgeId}/recipe-suggest`, body)
+      const data = await api.post<RecipeSuggestResponse>(
+        `/fridges/${fridgeId}/recipe-suggest`,
+        body,
+      )
       set({
         recipes: data.recipes,
         cached: data.cached,
@@ -59,17 +65,24 @@ export const useRecipeStore = create<RecipeStore>((set) => ({
         loading: false,
       })
     } catch (err) {
-      const message = err instanceof Error ? err.message : '레시피 추천에 실패했습니다'
+      const message =
+        err instanceof Error ? err.message : '레시피 추천에 실패했습니다'
       set({ loading: false, error: message })
     }
   },
 
   cookComplete: async (fridgeId: string, usedIngredients: string[]) => {
     try {
-      await api.post<CookCompleteResponse>(`/fridges/${fridgeId}/cook-complete`, { usedIngredients })
+      await api.post<CookCompleteResponse>(
+        `/fridges/${fridgeId}/cook-complete`,
+        {
+          usedIngredients,
+        },
+      )
       set({ recipes: [], cached: false })
     } catch (err) {
-      const message = err instanceof Error ? err.message : '요리 완료 처리에 실패했습니다'
+      const message =
+        err instanceof Error ? err.message : '요리 완료 처리에 실패했습니다'
       set({ error: message })
       throw err
     }

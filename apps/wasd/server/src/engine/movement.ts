@@ -10,7 +10,10 @@ const KEY_DIRECTION_MAP: Record<Key, Direction> = {
 
 export const keyToDirection = (key: Key): Direction => KEY_DIRECTION_MAP[key]
 
-export const applyMovement = (position: Position, direction: Direction): Position => {
+export const applyMovement = (
+  position: Position,
+  direction: Direction,
+): Position => {
   const speed = PLAYER_SPEED_PER_TICK
   switch (direction) {
     case 'up':

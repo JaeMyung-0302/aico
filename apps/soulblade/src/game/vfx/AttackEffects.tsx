@@ -21,7 +21,10 @@ const MAX_EFFECTS = 8
 const EFFECT_Y = 8 // 지면 위 높이
 
 // 클래스별 색상
-const ATTACK_COLORS: Record<BasicAttackPattern, { main: string; glow: string }> = {
+const ATTACK_COLORS: Record<
+  BasicAttackPattern,
+  { main: string; glow: string }
+> = {
   melee_fan: { main: '#4488ff', glow: '#88ccff' },
   aoe_circle: { main: '#9966ff', glow: '#bb88ff' },
   mid_range_holy: { main: '#ffdd44', glow: '#ffee88' },
@@ -49,32 +52,43 @@ export const AttackEffects = ({ enabled }: AttackEffectsProps) => {
   useEffect(() => {
     const pool: AttackEffect[] = []
     for (let i = 0; i < MAX_EFFECTS; i++) {
-      pool.push({ x: 0, y: 0, angle: 0, pattern: 'melee_fan', age: 0, maxAge: 200, active: false })
+      pool.push({
+        x: 0,
+        y: 0,
+        angle: 0,
+        pattern: 'melee_fan',
+        age: 0,
+        maxAge: 200,
+        active: false,
+      })
     }
     effects.current = pool
   }, [])
 
-  const spawnEffect = useCallback((data: {
-    attackPattern: BasicAttackPattern
-    x: number
-    y: number
-    facingAngle: number
-  }) => {
-    if (!enabled) return
-    // Archer는 투사체 자체가 이펙트
-    if (data.attackPattern === 'ranged_projectile') return
+  const spawnEffect = useCallback(
+    (data: {
+      attackPattern: BasicAttackPattern
+      x: number
+      y: number
+      facingAngle: number
+    }) => {
+      if (!enabled) return
+      // Archer는 투사체 자체가 이펙트
+      if (data.attackPattern === 'ranged_projectile') return
 
-    const effect = effects.current.find((e) => !e.active)
-    if (!effect) return
+      const effect = effects.current.find((e) => !e.active)
+      if (!effect) return
 
-    effect.x = data.x
-    effect.y = data.y
-    effect.angle = data.facingAngle
-    effect.pattern = data.attackPattern
-    effect.age = 0
-    effect.maxAge = data.attackPattern === 'aoe_circle' ? 350 : 200
-    effect.active = true
-  }, [enabled])
+      effect.x = data.x
+      effect.y = data.y
+      effect.angle = data.facingAngle
+      effect.pattern = data.attackPattern
+      effect.age = 0
+      effect.maxAge = data.attackPattern === 'aoe_circle' ? 350 : 200
+      effect.active = true
+    },
+    [enabled],
+  )
 
   useEffect(() => {
     if (!enabled) return
@@ -109,11 +123,32 @@ export const AttackEffects = ({ enabled }: AttackEffectsProps) => {
 
         switch (effect.pattern) {
           case 'melee_fan':
-            return <SlashEffect key={i} effect={effect} progress={progress} alpha={alpha} />
+            return (
+              <SlashEffect
+                key={i}
+                effect={effect}
+                progress={progress}
+                alpha={alpha}
+              />
+            )
           case 'aoe_circle':
-            return <AoeCircleEffect key={i} effect={effect} progress={progress} alpha={alpha} />
+            return (
+              <AoeCircleEffect
+                key={i}
+                effect={effect}
+                progress={progress}
+                alpha={alpha}
+              />
+            )
           case 'mid_range_holy':
-            return <HolyBeamEffect key={i} effect={effect} progress={progress} alpha={alpha} />
+            return (
+              <HolyBeamEffect
+                key={i}
+                effect={effect}
+                progress={progress}
+                alpha={alpha}
+              />
+            )
           default:
             return null
         }
@@ -123,7 +158,11 @@ export const AttackEffects = ({ enabled }: AttackEffectsProps) => {
 }
 
 // ── Slash Effect (Warrior: melee_fan) ──
-const SlashEffect = ({ effect, progress, alpha }: {
+const SlashEffect = ({
+  effect,
+  progress,
+  alpha,
+}: {
   effect: AttackEffect
   progress: number
   alpha: number
@@ -138,8 +177,20 @@ const SlashEffect = ({ effect, progress, alpha }: {
   return (
     <group>
       {/* 글로우 호 */}
-      <mesh position={[effect.x, EFFECT_Y, effect.y]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[radius - 8, radius + 8, 16, 1, startAngle, arcAngle * sweepProgress]} />
+      <mesh
+        position={[effect.x, EFFECT_Y, effect.y]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry
+          args={[
+            radius - 8,
+            radius + 8,
+            16,
+            1,
+            startAngle,
+            arcAngle * sweepProgress,
+          ]}
+        />
         <meshBasicMaterial
           color={colors.glow}
           transparent
@@ -149,8 +200,20 @@ const SlashEffect = ({ effect, progress, alpha }: {
       </mesh>
 
       {/* 메인 호 */}
-      <mesh position={[effect.x, EFFECT_Y + 0.1, effect.y]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[radius - 3, radius + 3, 16, 1, startAngle, arcAngle * sweepProgress]} />
+      <mesh
+        position={[effect.x, EFFECT_Y + 0.1, effect.y]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry
+          args={[
+            radius - 3,
+            radius + 3,
+            16,
+            1,
+            startAngle,
+            arcAngle * sweepProgress,
+          ]}
+        />
         <meshBasicMaterial
           color={colors.main}
           transparent
@@ -163,7 +226,11 @@ const SlashEffect = ({ effect, progress, alpha }: {
 }
 
 // ── AoE Circle Effect (Mage) ──
-const AoeCircleEffect = ({ effect, progress, alpha }: {
+const AoeCircleEffect = ({
+  effect,
+  progress,
+  alpha,
+}: {
   effect: AttackEffect
   progress: number
   alpha: number
@@ -173,7 +240,10 @@ const AoeCircleEffect = ({ effect, progress, alpha }: {
   const expandScale = 0.3 + progress * 0.7 // 0.3 → 1.0으로 확장
 
   return (
-    <group position={[effect.x, EFFECT_Y, effect.y]} rotation={[-Math.PI / 2, 0, 0]}>
+    <group
+      position={[effect.x, EFFECT_Y, effect.y]}
+      rotation={[-Math.PI / 2, 0, 0]}
+    >
       {/* 글로우 필 */}
       <mesh scale={[expandScale, expandScale, 1]}>
         <circleGeometry args={[radius * 0.6, 16]} />
@@ -224,7 +294,11 @@ const AoeCircleEffect = ({ effect, progress, alpha }: {
 }
 
 // ── Holy Beam Effect (Paladin: mid_range_holy) ──
-const HolyBeamEffect = ({ effect, progress, alpha }: {
+const HolyBeamEffect = ({
+  effect,
+  progress,
+  alpha,
+}: {
   effect: AttackEffect
   progress: number
   alpha: number
@@ -247,7 +321,9 @@ const HolyBeamEffect = ({ effect, progress, alpha }: {
     >
       {/* 외부 글로우 */}
       <mesh>
-        <planeGeometry args={[length * expandProgress + 12, width * expandProgress + 12]} />
+        <planeGeometry
+          args={[length * expandProgress + 12, width * expandProgress + 12]}
+        />
         <meshBasicMaterial
           color={colors.glow}
           transparent
@@ -258,7 +334,9 @@ const HolyBeamEffect = ({ effect, progress, alpha }: {
 
       {/* 메인 빔 */}
       <mesh position={[0, 0, 0.1]}>
-        <planeGeometry args={[length * expandProgress, width * expandProgress * 0.6]} />
+        <planeGeometry
+          args={[length * expandProgress, width * expandProgress * 0.6]}
+        />
         <meshBasicMaterial
           color={colors.main}
           transparent

@@ -43,38 +43,46 @@ const Header = () => {
 
   return (
     <>
-    <Loading overlay loading={isLoggingOut} message="로그아웃 중..." />
-    <header className={cx('header')}>
-      <div className={cx('inner')}>
-        <div className={cx('logo')} onClick={handleLogoClick}>
-          <img src="/logo.png" alt="CookSnap" className={cx('logoImage')} />
-          Cook<span>Snap</span>
-        </div>
-        <nav className={cx('nav')}>
-          {user ? (
-            <div className={cx('profileWrapper')} ref={menuRef}>
-              <button className={cx('profileButton', { premium: user.isPremium })} onClick={() => setMenuOpen(!menuOpen)}>
-                {user.nickname?.[0] || user.email[0]}
+      <Loading overlay loading={isLoggingOut} message="로그아웃 중..." />
+      <header className={cx('header')}>
+        <div className={cx('inner')}>
+          <div className={cx('logo')} onClick={handleLogoClick}>
+            <img src="/logo.png" alt="CookSnap" className={cx('logoImage')} />
+            Cook<span>Snap</span>
+          </div>
+          <nav className={cx('nav')}>
+            {user ? (
+              <div className={cx('profileWrapper')} ref={menuRef}>
+                <button
+                  className={cx('profileButton', { premium: user.isPremium })}
+                  onClick={() => setMenuOpen(!menuOpen)}
+                >
+                  {user.nickname?.[0] || user.email[0]}
+                </button>
+                {menuOpen && (
+                  <div className={cx('dropdown')}>
+                    <button
+                      onClick={() => {
+                        navigate('/mypage')
+                        setMenuOpen(false)
+                      }}
+                    >
+                      마이페이지
+                    </button>
+                    <button onClick={handleLogout} disabled={isLoggingOut}>
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className={cx('loginButton')} onClick={handleLoginClick}>
+                로그인
               </button>
-              {menuOpen && (
-                <div className={cx('dropdown')}>
-                  <button onClick={() => { navigate('/mypage'); setMenuOpen(false) }}>
-                    마이페이지
-                  </button>
-                  <button onClick={handleLogout} disabled={isLoggingOut}>
-                    로그아웃
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button className={cx('loginButton')} onClick={handleLoginClick}>
-              로그인
-            </button>
-          )}
-        </nav>
-      </div>
-    </header>
+            )}
+          </nav>
+        </div>
+      </header>
     </>
   )
 }

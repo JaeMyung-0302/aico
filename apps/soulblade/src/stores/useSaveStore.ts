@@ -1,7 +1,18 @@
 import { create } from 'zustand'
-import type { SaveData, CharacterClass, CharacterStats, MapId } from '@soulblade/shared'
+import type {
+  SaveData,
+  CharacterClass,
+  CharacterStats,
+  MapId,
+} from '@soulblade/shared'
 import { SAVE_VERSION } from '@soulblade/shared'
-import { saveLocal, loadLocal, saveRemote, loadRemote, mergeSaveData } from '@/lib/save-manager'
+import {
+  saveLocal,
+  loadLocal,
+  saveRemote,
+  loadRemote,
+  mergeSaveData,
+} from '@/lib/save-manager'
 import { supabase } from '@/lib/supabase'
 
 interface SaveState {
@@ -54,7 +65,9 @@ export const useSaveStore = create<SaveState>((set, get) => ({
 
   load: async () => {
     const local = loadLocal()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     const userId = user?.id ?? ''
     const remote = userId ? await loadRemote() : null
     const merged = mergeSaveData(local, remote)

@@ -5,7 +5,11 @@ import type { AuthRequest } from './auth.js'
 
 export const FREE_WEEKLY_LIMIT = 1
 
-export const usageCheck = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const usageCheck = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   const { groupId } = req as AuthRequest
 
   const weekStart = getKSTWeekStart()
@@ -17,7 +21,11 @@ export const usageCheck = async (req: Request, res: Response, next: NextFunction
       select: { isPremium: true, premiumExpiresAt: true },
     })
 
-    if (group?.isPremium && group.premiumExpiresAt && group.premiumExpiresAt > new Date()) {
+    if (
+      group?.isPremium &&
+      group.premiumExpiresAt &&
+      group.premiumExpiresAt > new Date()
+    ) {
       next()
       return
     }

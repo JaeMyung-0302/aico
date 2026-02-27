@@ -23,7 +23,7 @@ export const getDb = (): Database.Database => {
       source TEXT NOT NULL CHECK(source IN ('naver', 'google', 'news')),
       score REAL NOT NULL DEFAULT 0,
       used INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+      created_at TEXT NOT NULL DEFAULT (datetime('now', '+9 hours'))
     );
 
     CREATE TABLE IF NOT EXISTS posts (
@@ -35,7 +35,7 @@ export const getDb = (): Database.Database => {
       url TEXT,
       status TEXT NOT NULL DEFAULT 'generated' CHECK(status IN ('generated', 'published', 'failed')),
       token_cost REAL NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+      created_at TEXT NOT NULL DEFAULT (datetime('now', '+9 hours')),
       FOREIGN KEY (keyword_id) REFERENCES keywords(id)
     );
 
@@ -67,7 +67,7 @@ export const getDb = (): Database.Database => {
           source TEXT NOT NULL CHECK(source IN ('naver', 'google', 'news')),
           score REAL NOT NULL DEFAULT 0,
           used INTEGER NOT NULL DEFAULT 0,
-          created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+          created_at TEXT NOT NULL DEFAULT (datetime('now', '+9 hours'))
         )
       `);
       currentDb.exec(`INSERT INTO keywords SELECT * FROM keywords_old`);
@@ -124,14 +124,14 @@ export const updatePostStatus = (db: Database.Database, postId: number, status: 
 
 export const getTodayPostCount = (db: Database.Database): number => {
   const row = db.prepare(
-    "SELECT COUNT(*) as count FROM posts WHERE date(created_at) = date('now', 'localtime')"
+    "SELECT COUNT(*) as count FROM posts WHERE date(created_at) = date('now', '+9 hours')"
   ).get() as { count: number };
   return row.count;
 };
 
 export const getTodayTokenCost = (db: Database.Database): number => {
   const row = db.prepare(
-    "SELECT COALESCE(SUM(token_cost), 0) as total FROM posts WHERE date(created_at) = date('now', 'localtime')"
+    "SELECT COALESCE(SUM(token_cost), 0) as total FROM posts WHERE date(created_at) = date('now', '+9 hours')"
   ).get() as { total: number };
   return row.total;
 };
@@ -144,7 +144,7 @@ export const getDailyStats = (db: Database.Database): { postCount: number; succe
       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as fail_count,
       COALESCE(SUM(token_cost), 0) as total_token_cost
     FROM posts
-    WHERE date(created_at) = date('now', 'localtime')
+    WHERE date(created_at) = date('now', '+9 hours')
   `).get() as { post_count: number; success_count: number; fail_count: number; total_token_cost: number };
 
   return {

@@ -40,7 +40,7 @@ export const loadConfig = (): ContentBotConfig => {
       dailyBudgetKrw: Number(optionalEnv("DAILY_BUDGET_KRW", "2000")),
       maxPostsPerDay: Number(optionalEnv("MAX_POSTS_PER_DAY", "3")),
       maxPostsPerRun: Number(optionalEnv("MAX_POSTS_PER_RUN", "2")),
-      cronSchedule: optionalEnv("CRON_SCHEDULE", "0 9,18 * * *"),
+      cronSchedule: optionalEnv("CRON_SCHEDULE", "0 0,9 * * *"),
     },
   };
 };

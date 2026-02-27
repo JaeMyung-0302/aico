@@ -175,6 +175,12 @@
   grid-template-rows: 1fr;
 }
 
+// 2도어 — 상하 (냉장실 + 냉동실)
+.closedTwoDoor {
+  grid-template-columns: 1fr;
+  grid-template-rows: 3fr 2fr;
+}
+
 // LG 4도어 — 좌우(2) + 하단좌(1) + 하단우(1)
 .closedFourDoor {
   grid-template-columns: 1fr 1fr;
@@ -322,6 +328,28 @@
   }
 }
 
+// 2도어: 가로 손잡이 (상하)
+.closedTwoDoor {
+  .closedDoor .closedDoorHandle {
+    width: 60px;
+    height: 4px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  // 냉장실: 손잡이 하단
+  .closedDoor:nth-child(1) .closedDoorHandle {
+    top: auto;
+    bottom: 14px;
+  }
+
+  // 냉동실: 손잡이 상단
+  .closedDoor:nth-child(2) .closedDoorHandle {
+    top: 14px;
+  }
+}
+
 .closedDoorLabel {
   font-size: 1.1rem;
   font-weight: $font-weight-semibold;
@@ -354,6 +382,12 @@
   flex: 1;
   display: flex;
   gap: $space-6;
+}
+
+// 2도어: 냉장(좌) > 도어(우) 너비 비율
+.twoColumnWideLeft {
+  .fridgeColumn:first-child { flex: 3; }
+  .fridgeColumn:last-child { flex: 2; }
 }
 
 .fridgeColumn {
@@ -689,50 +723,42 @@
   }
 }
 
-// === 기존 그리드 (ONE_DOOR, TWO_DOOR, MINI) ===
+// === 기존 그리드 (ONE_DOOR) ===
 
 .gridOneDoor {
   display: grid;
-  grid-template-columns: 3fr 1fr;
-  grid-template-rows: repeat(3, 1fr);
-  gap: $space-6;
-  flex: 1;
-}
-
-.gridTwoDoor {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  grid-template-rows: repeat(4, 1fr);
-  gap: $space-6;
-  flex: 1;
-}
-
-.gridMini {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 3fr 2fr;
   grid-template-rows: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
   gap: $space-6;
   flex: 1;
+}
+
+.extraInGrid {
+  grid-column: 1;
+}
+
+.extraInBody {
+  grid-column: 1;
+}
+
+.extraInDoor {
+  grid-column: 2;
+}
+
+// 추가 칸 (도어 타입 닫힌 상태 하단)
+.extraDoorCompartments {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+  padding: 0 $space-12 $space-12;
 }
 
 // ONE_DOOR 포지셔닝
-.oneDoorFridgeUpper { grid-row: 1; grid-column: 1; }
-.oneDoorFridgeLower { grid-row: 2; grid-column: 1; }
-.oneDoorFreezer { grid-row: 3; grid-column: 1; }
-.oneDoorDoor { grid-row: 1 / 4; grid-column: 2; }
-
-// TWO_DOOR 포지셔닝
-.twoDoorFridgeUpper { grid-row: 1; grid-column: 1; }
-.twoDoorFridgeLower { grid-row: 2; grid-column: 1; }
-.twoDoorVeggie { grid-row: 3; grid-column: 1; }
-.twoDoorFreezer { grid-row: 4; grid-column: 1; }
-.twoDoorDoor { grid-row: 1 / 3; grid-column: 2; }
-.twoDoorDrawer { grid-row: 3 / 5; grid-column: 2; }
-
-// MINI 포지셔닝
-.miniFridgeUpper { grid-row: 1; grid-column: 1; }
-.miniFreezer { grid-row: 2; grid-column: 1; }
-.miniDoor { grid-row: 1 / 3; grid-column: 2; }
+.oneDoorFridge1 { grid-row: 1; grid-column: 1; }
+.oneDoorFridge2 { grid-row: 2; grid-column: 1; }
+.oneDoorDoor1 { grid-row: 1; grid-column: 2; }
+.oneDoorDoor2 { grid-row: 2; grid-column: 2; }
 
 // === 비어있는 상태 ===
 

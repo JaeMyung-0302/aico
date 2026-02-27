@@ -179,3 +179,48 @@
   color: rgba(0, 0, 0, 0.2);
   line-height: 1;
 }
+
+// 그룹 선택 백드롭
+.groupSelectorBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+// 그룹 선택 팝오버
+.groupSelector {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  padding: $space-8;
+  background: $color-bg-primary;
+  border-radius: $radius-md;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 120px;
+}
+
+// 그룹 옵션 버튼
+.groupOption {
+  display: flex;
+  align-items: center;
+  padding: $space-6 $space-8;
+  border: none;
+  border-left: 3px solid transparent;
+  border-radius: $radius-sm;
+  background: $color-gray-50;
+  font-size: 0.7rem;
+  font-weight: $font-weight-medium;
+  color: $color-gray-800;
+  cursor: pointer;
+  transition: background $transition-fast;
+  white-space: nowrap;
+
+  &:active {
+    background: $color-gray-100;
+  }
+}

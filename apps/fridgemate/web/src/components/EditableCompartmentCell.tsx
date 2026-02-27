@@ -1,18 +1,27 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import classNames from 'classnames/bind'
-import { COMPARTMENT_TYPE_COLORS, COMPARTMENT_TYPE_LABELS } from '@/types'
+import { CompartmentType, COMPARTMENT_TYPE_COLORS, COMPARTMENT_TYPE_LABELS } from '@/types'
 import type { CompartmentPreset, FridgeType } from '@/types'
 import { isFreezerZone, isDrawerPosition, isShowcasePosition } from '@/utils/fridgeLayout'
 import styles from './EditableCompartmentCell.module.scss'
 
 const cx = classNames.bind(styles)
 
+export const GROUP_OPTIONS: CompartmentType[] = [
+  CompartmentType.FRIDGE_UPPER,
+  CompartmentType.FRIDGE_LOWER,
+  CompartmentType.FREEZER,
+  CompartmentType.DOOR,
+  CompartmentType.DRAWER,
+  CompartmentType.VEGGIE,
+]
+
 interface EditableCompartmentCellProps {
   preset: CompartmentPreset
   fridgeType: FridgeType
   isEmpty?: boolean
   onDelete?: () => void
-  onAdd?: () => void
+  onAdd?: (type: CompartmentType) => void
   onLabelChange?: (label: string) => void
   canDelete?: boolean
   className?: string
@@ -30,6 +39,7 @@ export const EditableCompartmentCell = ({
 }: EditableCompartmentCellProps) => {
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState('')
+  const [showGroupSelector, setShowGroupSelector] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -38,6 +48,15 @@ export const EditableCompartmentCell = ({
       inputRef.current.select()
     }
   }, [editing])
+
+  useEffect(() => {
+    if (!showGroupSelector) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowGroupSelector(false)
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [showGroupSelector])
 
   const handleStartEdit = useCallback(() => {
     if (isEmpty || !onLabelChange) return
@@ -59,6 +78,14 @@ export const EditableCompartmentCell = ({
 
   const color = COMPARTMENT_TYPE_COLORS[preset.type]
 
+  const handleGroupSelect = useCallback(
+    (type: CompartmentType) => {
+      onAdd?.(type)
+      setShowGroupSelector(false)
+    },
+    [onAdd],
+  )
+
   // 빈 슬롯 모드
   if (isEmpty) {
     return (
@@ -68,18 +95,46 @@ export const EditableCompartmentCell = ({
           cellDrawer: isDrawerPosition(fridgeType, preset.position),
           cellShowcase: isShowcasePosition(fridgeType, preset.position),
         })}
-        onClick={onAdd}
+        onClick={() => setShowGroupSelector(true)}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
-            onAdd?.()
+            setShowGroupSelector(true)
           }
         }}
       >
         <span className={cx('emptyLabel')}>{preset.label}</span>
         <span className={cx('emptyPlus')}>+</span>
+
+        {showGroupSelector && (
+          <>
+            <div
+              className={cx('groupSelectorBackdrop')}
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowGroupSelector(false)
+              }}
+            />
+            <div className={cx('groupSelector')} onClick={(e) => e.stopPropagation()}>
+              {GROUP_OPTIONS.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={cx('groupOption')}
+                  style={{ borderLeftColor: COMPARTMENT_TYPE_COLORS[type] }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleGroupSelect(type)
+                  }}
+                >
+                  {COMPARTMENT_TYPE_LABELS[type]}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     )
   }
@@ -93,11 +148,10 @@ export const EditableCompartmentCell = ({
         cellShowcase: isShowcasePosition(fridgeType, preset.position),
       })}
     >
-      {onDelete && (
+      {onDelete && canDelete && (
         <button
           className={cx('deleteBtn')}
           onClick={onDelete}
-          disabled={!canDelete}
           type="button"
           aria-label={`${preset.label} 삭제`}
         >

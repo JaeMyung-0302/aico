@@ -85,8 +85,8 @@ const main = (): void => {
     });
   });
 
-  // 일일 리포트 (매일 23:50)
-  cron.schedule("50 23 * * *", () => {
+  // 일일 리포트 (매일 KST 23:50 = UTC 14:50)
+  cron.schedule("50 14 * * *", () => {
     sendDailyReport(config, db).catch((error) => {
       const msg = error instanceof Error ? error.message : String(error);
       console.error(`[DailyReport] 전송 실패: ${msg}`);

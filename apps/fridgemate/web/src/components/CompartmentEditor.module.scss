@@ -39,7 +39,7 @@
   overflow: hidden;
 }
 
-// === Simple Grid (ONE_DOOR, TWO_DOOR, MINI) ===
+// === Simple Grid (ONE_DOOR) ===
 
 .fridgeBody {
   display: flex;
@@ -48,46 +48,30 @@
 
 .gridOneDoor {
   display: grid;
-  grid-template-columns: 3fr 1fr;
-  grid-template-rows: repeat(3, 1fr);
-  gap: $space-6;
-  flex: 1;
-}
-
-.gridTwoDoor {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  grid-template-rows: repeat(4, 1fr);
-  gap: $space-6;
-  flex: 1;
-}
-
-.gridMini {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 3fr 2fr;
   grid-template-rows: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
   gap: $space-6;
   flex: 1;
+}
+
+.extraInGrid {
+  grid-column: 1;
+}
+
+.extraInBody {
+  grid-column: 1;
+}
+
+.extraInDoor {
+  grid-column: 2;
 }
 
 // ONE_DOOR 포지셔닝
-.oneDoorFridgeUpper { grid-row: 1; grid-column: 1; }
-.oneDoorFridgeLower { grid-row: 2; grid-column: 1; }
-.oneDoorFreezer { grid-row: 3; grid-column: 1; }
-.oneDoorDoor { grid-row: 1 / 4; grid-column: 2; }
-
-// TWO_DOOR 포지셔닝
-.twoDoorFridgeUpper { grid-row: 1; grid-column: 1; }
-.twoDoorFridgeLower { grid-row: 2; grid-column: 1; }
-.twoDoorVeggie { grid-row: 3; grid-column: 1; }
-.twoDoorFreezer { grid-row: 4; grid-column: 1; }
-.twoDoorDoor { grid-row: 1 / 3; grid-column: 2; }
-.twoDoorDrawer { grid-row: 3 / 5; grid-column: 2; }
-
-// MINI 포지셔닝
-.miniFridgeUpper { grid-row: 1; grid-column: 1; }
-.miniFreezer { grid-row: 2; grid-column: 1; }
-.miniDoor { grid-row: 1 / 3; grid-column: 2; }
+.oneDoorFridge1 { grid-row: 1; grid-column: 1; }
+.oneDoorFridge2 { grid-row: 2; grid-column: 1; }
+.oneDoorDoor1 { grid-row: 1; grid-column: 2; }
+.oneDoorDoor2 { grid-row: 2; grid-column: 2; }
 
 // === Door Sections (SIDE_BY_SIDE, FOUR_DOOR) ===
 
@@ -129,6 +113,12 @@
   gap: $space-6;
 }
 
+// 2도어: 냉장(좌) > 도어(우) 너비 비율
+.twoColumnWideLeft {
+  .fridgeColumn:first-child { flex: 3; }
+  .fridgeColumn:last-child { flex: 2; }
+}
+
 .fridgeColumn {
   flex: 1;
   display: flex;
@@ -151,4 +141,83 @@
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr;
   gap: $space-6;
+}
+
+// === 추가 칸 버튼 ===
+
+.addExtraSection {
+  margin-top: $space-8;
+  padding-top: $space-8;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.addExtraWrapper {
+  position: relative;
+}
+
+.addExtraBtn {
+  width: 100%;
+  padding: $space-8 $space-12;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: $radius-md;
+  color: $color-gray-600;
+  font-size: $font-size-body-sm;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.addExtraBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.addExtraPopover {
+  position: absolute;
+  bottom: calc(100% + $space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  background: white;
+  border-radius: $radius-lg;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: $space-4;
+  min-width: 160px;
+}
+
+.addExtraSectionHeader {
+  font-size: 0.7rem;
+  font-weight: $font-weight-semibold;
+  color: $color-gray-500;
+  padding: $space-8 $space-12 $space-4;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+
+  &:not(:first-child) {
+    border-top: 1px solid $color-gray-100;
+    margin-top: $space-4;
+  }
+}
+
+.addExtraOption {
+  display: block;
+  width: 100%;
+  padding: $space-8 $space-12;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  font-size: $font-size-body-sm;
+  color: $color-gray-700;
+  cursor: pointer;
+  border-radius: $radius-sm;
+
+  &:hover {
+    background: $color-gray-50;
+  }
 }

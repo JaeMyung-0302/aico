@@ -3,6 +3,7 @@ import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
 import { COMPARTMENT_PRESETS } from '@/types'
 import type { FridgeResponse, CompartmentPreset } from '@/types'
+import { isEncodedExtraPosition, decodeExtraColumn } from '@/utils/fridgeLayout'
 import { CompartmentEditor } from './CompartmentEditor'
 import styles from './CompartmentEditModal.module.scss'
 
@@ -23,6 +24,7 @@ export const CompartmentEditModal = ({ fridge, onClose }: CompartmentEditModalPr
     type: c.type,
     label: c.label,
     position: c.position,
+    column: isEncodedExtraPosition(c.position) ? decodeExtraColumn(c.position) : undefined,
   }))
 
   const [compartments, setCompartments] = useState<CompartmentPreset[]>(initialCompartments)

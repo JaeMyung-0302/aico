@@ -5,7 +5,6 @@ export const FridgeType = {
   TWO_DOOR: 'TWO_DOOR',
   SIDE_BY_SIDE: 'SIDE_BY_SIDE',
   FOUR_DOOR: 'FOUR_DOOR',
-  MINI: 'MINI',
 } as const
 export type FridgeType = (typeof FridgeType)[keyof typeof FridgeType]
 
@@ -242,10 +241,10 @@ export interface ZoneDefinition {
 
 export const ZONE_MAPPINGS: Partial<Record<FridgeType, ZoneDefinition[]>> = {
   [FridgeType.SIDE_BY_SIDE]: [
-    { name: '냉동 도어', positionStart: 0, positionEnd: 4 },
-    { name: '냉동 본체', positionStart: 5, positionEnd: 10 },
-    { name: '냉장 본체', positionStart: 11, positionEnd: 16 },
-    { name: '쇼케이스 도어', positionStart: 17, positionEnd: 22 },
+    { name: '냉장 본체', positionStart: 0, positionEnd: 4 },
+    { name: '냉장 문 수납', positionStart: 5, positionEnd: 9 },
+    { name: '냉동 본체', positionStart: 10, positionEnd: 14 },
+    { name: '냉동 문 수납', positionStart: 15, positionEnd: 19 },
   ],
   [FridgeType.FOUR_DOOR]: [
     { name: '좌측 상단', positionStart: 0, positionEnd: 2 },
@@ -271,51 +270,54 @@ export interface CompartmentPreset {
   type: CompartmentType
   label: string
   position: number
+  column?: 1 | 2
 }
 
 export const COMPARTMENT_PRESETS: Record<FridgeType, CompartmentPreset[]> = {
   [FridgeType.ONE_DOOR]: [
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장실 상단', position: 0 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '냉장실 하단', position: 1 },
-    { type: CompartmentType.FREEZER, label: '냉동실', position: 2 },
-    { type: CompartmentType.DOOR, label: '문 수납', position: 3 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 1', position: 0 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 2', position: 1 },
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 2 },
   ],
   [FridgeType.TWO_DOOR]: [
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장실 상단', position: 0 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '냉장실 하단', position: 1 },
-    { type: CompartmentType.FREEZER, label: '냉동실', position: 2 },
-    { type: CompartmentType.DOOR, label: '문 수납', position: 3 },
-    { type: CompartmentType.DRAWER, label: '서랍', position: 4 },
-    { type: CompartmentType.VEGGIE, label: '채소칸', position: 5 },
+    // 냉장실 본체 (3칸)
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 1', position: 0 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 2', position: 1 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 3', position: 2 },
+    // 냉장실 도어 (3칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 3 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 4 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 5 },
+    // 냉동실 (3칸)
+    { type: CompartmentType.FREEZER, label: '냉동 1', position: 6 },
+    { type: CompartmentType.FREEZER, label: '냉동 2', position: 7 },
+    { type: CompartmentType.FREEZER, label: '냉동 3', position: 8 },
   ],
   [FridgeType.SIDE_BY_SIDE]: [
-    // 냉동실 도어 (5칸)
-    { type: CompartmentType.DOOR, label: '냉동도어 1', position: 0 },
-    { type: CompartmentType.DOOR, label: '냉동도어 2', position: 1 },
-    { type: CompartmentType.DOOR, label: '냉동도어 3', position: 2 },
-    { type: CompartmentType.DOOR, label: '냉동도어 4', position: 3 },
-    { type: CompartmentType.DOOR, label: '냉동도어 5', position: 4 },
-    // 냉동실 본체 (4칸 + 서랍 2칸)
-    { type: CompartmentType.FREEZER, label: '냉동 1', position: 5 },
-    { type: CompartmentType.FREEZER, label: '냉동 2', position: 6 },
-    { type: CompartmentType.FREEZER, label: '냉동 3', position: 7 },
-    { type: CompartmentType.FREEZER, label: '냉동 4', position: 8 },
-    { type: CompartmentType.DRAWER, label: '냉동서랍 1', position: 9 },
-    { type: CompartmentType.DRAWER, label: '냉동서랍 2', position: 10 },
-    // 냉장실 본체 (4칸 + 서랍 2칸)
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 1', position: 11 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 2', position: 12 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 3', position: 13 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 4', position: 14 },
-    { type: CompartmentType.DRAWER, label: '냉장서랍 1', position: 15 },
-    { type: CompartmentType.DRAWER, label: '냉장서랍 2', position: 16 },
-    // 쇼케이스 도어 (6칸)
-    { type: CompartmentType.DOOR, label: '쇼케이스 1', position: 17 },
-    { type: CompartmentType.DOOR, label: '쇼케이스 2', position: 18 },
-    { type: CompartmentType.DOOR, label: '쇼케이스 3', position: 19 },
-    { type: CompartmentType.DOOR, label: '쇼케이스 4', position: 20 },
-    { type: CompartmentType.DOOR, label: '쇼케이스 5', position: 21 },
-    { type: CompartmentType.DOOR, label: '쇼케이스 6', position: 22 },
+    // 냉장실 본체 (5칸)
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 1', position: 0 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 2', position: 1 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 3', position: 2 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 4', position: 3 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 5', position: 4 },
+    // 냉장실 문 수납 (5칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 5 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 6 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 7 },
+    { type: CompartmentType.DOOR, label: '문 수납 4', position: 8 },
+    { type: CompartmentType.DOOR, label: '문 수납 5', position: 9 },
+    // 냉동실 본체 (5칸)
+    { type: CompartmentType.FREEZER, label: '냉동 1', position: 10 },
+    { type: CompartmentType.FREEZER, label: '냉동 2', position: 11 },
+    { type: CompartmentType.FREEZER, label: '냉동 3', position: 12 },
+    { type: CompartmentType.FREEZER, label: '냉동 4', position: 13 },
+    { type: CompartmentType.FREEZER, label: '냉동 5', position: 14 },
+    // 냉동실 문 수납 (5칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 15 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 16 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 17 },
+    { type: CompartmentType.DOOR, label: '문 수납 4', position: 18 },
+    { type: CompartmentType.DOOR, label: '문 수납 5', position: 19 },
   ],
   [FridgeType.FOUR_DOOR]: [
     // 좌측 상단 (3칸)
@@ -337,11 +339,6 @@ export const COMPARTMENT_PRESETS: Record<FridgeType, CompartmentPreset[]> = {
     // 하단 서랍 (2칸)
     { type: CompartmentType.DRAWER, label: '하칸 좌', position: 12 },
     { type: CompartmentType.DRAWER, label: '하칸 우', position: 13 },
-  ],
-  [FridgeType.MINI]: [
-    { type: CompartmentType.FRIDGE_UPPER, label: '냉장실', position: 0 },
-    { type: CompartmentType.FREEZER, label: '냉동실', position: 1 },
-    { type: CompartmentType.DOOR, label: '문 수납', position: 2 },
   ],
 }
 
@@ -389,19 +386,17 @@ export const FRIDGE_TYPE_LABELS: Record<FridgeType, string> = {
   [FridgeType.TWO_DOOR]: '2도어',
   [FridgeType.SIDE_BY_SIDE]: '양문형',
   [FridgeType.FOUR_DOOR]: '4도어',
-  [FridgeType.MINI]: '미니',
 }
 
 export const FRIDGE_TYPE_DESCRIPTIONS: Record<FridgeType, string> = {
-  [FridgeType.ONE_DOOR]: '냉장 + 냉동 + 문 수납 (4칸)',
-  [FridgeType.TWO_DOOR]: '냉장 + 냉동 + 서랍 + 채소칸 (6칸)',
-  [FridgeType.SIDE_BY_SIDE]: '냉동 도어·본체 + 냉장 본체·쇼케이스 (23칸)',
+  [FridgeType.ONE_DOOR]: '냉장 2칸 + 문 수납 1칸 (3칸)',
+  [FridgeType.TWO_DOOR]: '냉장 3칸 + 문 수납 3칸 + 냉동 3칸 (9칸)',
+  [FridgeType.SIDE_BY_SIDE]: '냉장 10칸 + 냉동 10칸 (20칸)',
   [FridgeType.FOUR_DOOR]: '좌우 6칸 + 하단 2칸 (14칸)',
-  [FridgeType.MINI]: '소형 냉장고 (3칸)',
 }
 
 export const COMPARTMENT_TYPE_LABELS: Record<CompartmentType, string> = {
-  [CompartmentType.FRIDGE_UPPER]: '냉장실 상단',
+  [CompartmentType.FRIDGE_UPPER]: '냉장실',
   [CompartmentType.FRIDGE_LOWER]: '냉장실 하단',
   [CompartmentType.FREEZER]: '냉동실',
   [CompartmentType.DOOR]: '문 수납',

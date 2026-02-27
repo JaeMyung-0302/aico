@@ -14,7 +14,6 @@ enum FridgeType {
   TWO_DOOR
   SIDE_BY_SIDE
   FOUR_DOOR
-  MINI
 }
 
 enum CompartmentType {

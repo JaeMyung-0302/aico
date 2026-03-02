@@ -215,15 +215,24 @@ const DoorSectionGrid = ({
       .map((pos) => compartmentMap.get(pos))
       .filter((c): c is CompartmentResponse => c !== undefined)
 
-    // TWO_DOOR/SBS: 추가 칸을 해당 섹션에 배치
+    // 추가 칸을 해당 섹션에 배치
     const sectionExtras =
       fridge.type === FridgeType.TWO_DOOR ||
-      fridge.type === FridgeType.SIDE_BY_SIDE
+      fridge.type === FridgeType.SIDE_BY_SIDE ||
+      fridge.type === FridgeType.FOUR_DOOR
         ? extraCompartments.filter((comp) => {
             if (fridge.type === FridgeType.TWO_DOOR) {
               return activeSection.isFreezer
                 ? comp.type === CompartmentType.FREEZER
                 : comp.type !== CompartmentType.FREEZER
+            }
+            if (fridge.type === FridgeType.FOUR_DOOR) {
+              if (comp.type === CompartmentType.VEGGIE) {
+                return activeSection.positions.includes(12)
+              }
+              if (activeSection.isFreezer) return decodeExtraColumn(comp.position) === 2
+              if (activeSection.positions.includes(6)) return decodeExtraColumn(comp.position) === 1
+              return false
             }
             return activeSection.isFreezer
               ? decodeExtraColumn(comp.position) === 2
@@ -282,12 +291,15 @@ const DoorSectionGrid = ({
           activeSection.columnSplit!,
         )
         const rightItems = sectionCompartments.slice(activeSection.columnSplit!)
-        const leftExtras = activeSection.reverseColumns
-          ? sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
-          : sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
-        const rightExtras = activeSection.reverseColumns
-          ? sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
-          : sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
+        let leftExtras: CompartmentResponse[]
+        let rightExtras: CompartmentResponse[]
+        if (activeSection.reverseColumns) {
+          leftExtras = sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
+          rightExtras = sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
+        } else {
+          leftExtras = sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
+          rightExtras = sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
+        }
         return (
           <div
             className={cx('twoColumnLayout', {
@@ -394,15 +406,24 @@ const DoorSectionGrid = ({
           const comps = section.positions
             .map((pos) => compartmentMap.get(pos))
             .filter((c): c is CompartmentResponse => c !== undefined)
-          // TWO_DOOR/SBS: 추가 칸을 해당 섹션에 포함
+          // 추가 칸을 해당 섹션에 포함
           const sectionExtras =
             fridge.type === FridgeType.TWO_DOOR ||
-            fridge.type === FridgeType.SIDE_BY_SIDE
+            fridge.type === FridgeType.SIDE_BY_SIDE ||
+            fridge.type === FridgeType.FOUR_DOOR
               ? extraCompartments.filter((comp) => {
                   if (fridge.type === FridgeType.TWO_DOOR) {
                     return section.isFreezer
                       ? comp.type === CompartmentType.FREEZER
                       : comp.type !== CompartmentType.FREEZER
+                  }
+                  if (fridge.type === FridgeType.FOUR_DOOR) {
+                    if (comp.type === CompartmentType.VEGGIE) {
+                      return section.positions.includes(12)
+                    }
+                    if (section.isFreezer) return decodeExtraColumn(comp.position) === 2
+                    if (section.positions.includes(6)) return decodeExtraColumn(comp.position) === 1
+                    return false
                   }
                   return section.isFreezer
                     ? decodeExtraColumn(comp.position) === 2
@@ -442,6 +463,7 @@ const DoorSectionGrid = ({
       </div>
       {fridge.type !== FridgeType.TWO_DOOR &&
         fridge.type !== FridgeType.SIDE_BY_SIDE &&
+        fridge.type !== FridgeType.FOUR_DOOR &&
         extraCompartments.length > 0 && (
           <div className={cx('extraDoorCompartments')}>
             {extraCompartments.map((comp) => (

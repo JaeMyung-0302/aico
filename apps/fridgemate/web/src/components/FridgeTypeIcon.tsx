@@ -125,62 +125,21 @@ const SideBySide = ({ size }: { size: number }) => (
   </svg>
 )
 
-// 4도어 (LG): 상단 2문 + 하단 2문
+// 4도어: 상단 좌측 냉동 + 우측 냉장 + 하단 김치칸 2단
 const FourDoor = ({ size }: { size: number }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-    <rect
-      x="8"
-      y="4"
-      width="32"
-      height="40"
-      rx="4"
-      fill="#c8d0dc"
-      stroke="#a0a8b8"
-      strokeWidth="1.5"
-    />
+    <rect x="8" y="4" width="32" height="40" rx="4" fill="#c8d0dc" stroke="#a0a8b8" strokeWidth="1.5" />
     <line x1="24" y1="6" x2="24" y2="24" stroke="#a0a8b8" strokeWidth="1" />
     <line x1="8" y1="25" x2="40" y2="25" stroke="#a0a8b8" strokeWidth="1.2" />
-    <line x1="24" y1="27" x2="24" y2="42" stroke="#a0a8b8" strokeWidth="1" />
-    <rect
-      x="10"
-      y="6"
-      width="12"
-      height="17"
-      rx="2"
-      fill="#e8edf5"
-      opacity="0.5"
-    />
-    <rect
-      x="26"
-      y="6"
-      width="12"
-      height="17"
-      rx="2"
-      fill="#e8edf5"
-      opacity="0.5"
-    />
-    <rect
-      x="10"
-      y="27"
-      width="12"
-      height="15"
-      rx="2"
-      fill="#e8f0e0"
-      opacity="0.5"
-    />
-    <rect
-      x="26"
-      y="27"
-      width="12"
-      height="15"
-      rx="2"
-      fill="#d4eaf8"
-      opacity="0.5"
-    />
+    <line x1="10" y1="34" x2="38" y2="34" stroke="#a0a8b8" strokeWidth="0.8" />
+    <rect x="10" y="6" width="12" height="17" rx="2" fill="#d4eaf8" opacity="0.5" />
+    <rect x="26" y="6" width="12" height="17" rx="2" fill="#e8edf5" opacity="0.5" />
+    <rect x="10" y="27" width="28" height="5.5" rx="2" fill="#e8f0e0" opacity="0.5" />
+    <rect x="10" y="36" width="28" height="6" rx="2" fill="#e8f0e0" opacity="0.5" />
     <rect x="21" y="11" width="2" height="6" rx="1" fill="#8890a0" />
     <rect x="25" y="11" width="2" height="6" rx="1" fill="#8890a0" />
-    <rect x="16" y="26" width="8" height="1.5" rx="0.75" fill="#8890a0" />
-    <rect x="26" y="26" width="8" height="1.5" rx="0.75" fill="#8890a0" />
+    <rect x="20" y="28.5" width="8" height="1.5" rx="0.75" fill="#8890a0" />
+    <rect x="20" y="37.5" width="8" height="1.5" rx="0.75" fill="#8890a0" />
   </svg>
 )
 

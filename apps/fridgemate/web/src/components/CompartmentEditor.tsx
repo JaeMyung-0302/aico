@@ -331,11 +331,13 @@ export const CompartmentEditor = ({
     const sections = DOOR_SECTIONS[effectiveFridgeType]
     if (!sections) return null
     const presets = COMPARTMENT_PRESETS[effectiveFridgeType]
-    // SBS: 에디터에서는 냉장실을 위에 표시 (DOOR_SECTIONS는 닫힌뷰 좌우 배치용으로 냉동실이 먼저)
+    // SBS/4도어: 에디터에서는 냉장실을 위에 표시 (DOOR_SECTIONS는 닫힌뷰 좌우 배치용으로 냉동실이 먼저)
     const orderedSections =
       effectiveFridgeType === FridgeType.SIDE_BY_SIDE
         ? [...sections].reverse()
-        : sections
+        : effectiveFridgeType === FridgeType.FOUR_DOOR
+          ? [sections[1]!, sections[0]!, ...sections.slice(2)]
+          : sections
 
     return (
       <div className={cx('doorSectionsContainer')}>
@@ -345,15 +347,24 @@ export const CompartmentEditor = ({
             presets.some((p) => p.position === pos),
           )
 
-          // TWO_DOOR/SBS: 추가 칸을 해당 섹션에 배치
+          // 추가 칸을 해당 섹션에 배치
           const sectionExtras =
             effectiveFridgeType === FridgeType.TWO_DOOR ||
-            effectiveFridgeType === FridgeType.SIDE_BY_SIDE
+            effectiveFridgeType === FridgeType.SIDE_BY_SIDE ||
+            effectiveFridgeType === FridgeType.FOUR_DOOR
               ? extraCompartments.filter((comp) => {
                   if (effectiveFridgeType === FridgeType.TWO_DOOR) {
                     return section.isFreezer
                       ? comp.type === CompartmentType.FREEZER
                       : comp.type !== CompartmentType.FREEZER
+                  }
+                  if (effectiveFridgeType === FridgeType.FOUR_DOOR) {
+                    if (comp.type === CompartmentType.VEGGIE) {
+                      return section.positions.includes(12)
+                    }
+                    if (section.isFreezer) return decodeExtraColumn(comp.position) === 2
+                    if (section.positions.includes(6)) return decodeExtraColumn(comp.position) === 1
+                    return false
                   }
                   // SBS: column 기반 섹션 배분
                   return section.isFreezer
@@ -395,12 +406,15 @@ export const CompartmentEditor = ({
               const rightPositions = sectionPositions.slice(
                 section.columnSplit!,
               )
-              const leftExtras = section.reverseColumns
-                ? sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
-                : sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
-              const rightExtras = section.reverseColumns
-                ? sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
-                : sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
+              let leftExtras: CompartmentPreset[]
+              let rightExtras: CompartmentPreset[]
+              if (section.reverseColumns) {
+                leftExtras = sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
+                rightExtras = sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
+              } else {
+                leftExtras = sectionExtras.filter((c) => c.type !== CompartmentType.DOOR)
+                rightExtras = sectionExtras.filter((c) => c.type === CompartmentType.DOOR)
+              }
               return (
                 <div
                   className={cx('twoColumnLayout', {
@@ -450,6 +464,7 @@ export const CompartmentEditor = ({
         })}
         {effectiveFridgeType !== FridgeType.TWO_DOOR &&
           effectiveFridgeType !== FridgeType.SIDE_BY_SIDE &&
+          effectiveFridgeType !== FridgeType.FOUR_DOOR &&
           extraCompartments.length > 0 && (
             <div className={cx('doorSection')}>
               <div className={cx('doorSectionLabel')}>추가 칸</div>
@@ -504,7 +519,8 @@ export const CompartmentEditor = ({
                 className={cx('addExtraPopover')}
                 onClick={(e) => e.stopPropagation()}
               >
-                {effectiveFridgeType === FridgeType.SIDE_BY_SIDE ? (
+                {effectiveFridgeType === FridgeType.SIDE_BY_SIDE ||
+                effectiveFridgeType === FridgeType.FOUR_DOOR ? (
                   <>
                     <div className={cx('addExtraSectionHeader')}>냉장실</div>
                     <button
@@ -558,8 +574,8 @@ export const CompartmentEditor = ({
                 ) : isDoorType ? (
                   (effectiveFridgeType === FridgeType.TWO_DOOR
                     ? [
-                        CompartmentType.FRIDGE_UPPER,
                         CompartmentType.DOOR,
+                        CompartmentType.FRIDGE_UPPER,
                         CompartmentType.FREEZER,
                       ]
                     : GROUP_OPTIONS

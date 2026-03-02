@@ -259,11 +259,11 @@ export const ZONE_MAPPINGS: Partial<Record<FridgeType, ZoneDefinition[]>> = {
     { name: '냉동 문 수납', positionStart: 15, positionEnd: 19 },
   ],
   [FridgeType.FOUR_DOOR]: [
-    { name: '좌측 상단', positionStart: 0, positionEnd: 2 },
-    { name: '좌측 하단', positionStart: 3, positionEnd: 5 },
-    { name: '우측 상단', positionStart: 6, positionEnd: 8 },
-    { name: '우측 하단', positionStart: 9, positionEnd: 11 },
-    { name: '하단 서랍', positionStart: 12, positionEnd: 13 },
+    { name: '냉동 본체', positionStart: 0, positionEnd: 2 },
+    { name: '냉동 문 수납', positionStart: 3, positionEnd: 5 },
+    { name: '냉장 본체', positionStart: 6, positionEnd: 8 },
+    { name: '냉장 문 수납', positionStart: 9, positionEnd: 11 },
+    { name: '김치칸', positionStart: 12, positionEnd: 13 },
   ],
 }
 
@@ -332,25 +332,25 @@ export const COMPARTMENT_PRESETS: Record<FridgeType, CompartmentPreset[]> = {
     { type: CompartmentType.DOOR, label: '문 수납 5', position: 19 },
   ],
   [FridgeType.FOUR_DOOR]: [
-    // 좌측 상단 (3칸)
-    { type: CompartmentType.FRIDGE_UPPER, label: '좌상 1', position: 0 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '좌상 2', position: 1 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '좌상 3', position: 2 },
-    // 좌측 하단 (3칸)
-    { type: CompartmentType.FRIDGE_LOWER, label: '좌하 1', position: 3 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '좌하 2', position: 4 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '좌하 3', position: 5 },
-    // 우측 상단 (3칸)
-    { type: CompartmentType.FRIDGE_UPPER, label: '우상 1', position: 6 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '우상 2', position: 7 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '우상 3', position: 8 },
-    // 우측 하단 (3칸)
-    { type: CompartmentType.FRIDGE_LOWER, label: '우하 1', position: 9 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '우하 2', position: 10 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '우하 3', position: 11 },
-    // 하단 서랍 (2칸)
-    { type: CompartmentType.DRAWER, label: '하칸 좌', position: 12 },
-    { type: CompartmentType.DRAWER, label: '하칸 우', position: 13 },
+    // 냉동실 본체 (3칸)
+    { type: CompartmentType.FREEZER, label: '냉동 1', position: 0 },
+    { type: CompartmentType.FREEZER, label: '냉동 2', position: 1 },
+    { type: CompartmentType.FREEZER, label: '냉동 3', position: 2 },
+    // 냉동실 문 수납 (3칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 3 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 4 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 5 },
+    // 냉장실 본체 (3칸)
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 1', position: 6 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 2', position: 7 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 3', position: 8 },
+    // 냉장실 문 수납 (3칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 9 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 10 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 11 },
+    // 하단 김치칸 (2칸)
+    { type: CompartmentType.VEGGIE, label: '김치칸 1', position: 12 },
+    { type: CompartmentType.VEGGIE, label: '김치칸 2', position: 13 },
   ],
 }
 
@@ -404,7 +404,7 @@ export const FRIDGE_TYPE_DESCRIPTIONS: Record<FridgeType, string> = {
   [FridgeType.ONE_DOOR]: '냉장 2칸 + 문 수납 1칸 (3칸)',
   [FridgeType.TWO_DOOR]: '냉장 3칸 + 문 수납 3칸 + 냉동 3칸 (9칸)',
   [FridgeType.SIDE_BY_SIDE]: '냉장 10칸 + 냉동 10칸 (20칸)',
-  [FridgeType.FOUR_DOOR]: '좌우 6칸 + 하단 2칸 (14칸)',
+  [FridgeType.FOUR_DOOR]: '냉동 6칸 + 냉장 6칸 + 김치칸 2칸 (14칸)',
 }
 
 export const COMPARTMENT_TYPE_LABELS: Record<CompartmentType, string> = {

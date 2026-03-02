@@ -1,15 +1,17 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { api } from '@/lib/api'
 import {
   FridgeType,
   FRIDGE_TYPE_LABELS,
   FRIDGE_TYPE_DESCRIPTIONS,
   COMPARTMENT_PRESETS,
 } from '@/types'
-import type { CompartmentPreset } from '@/types'
+import type { CompartmentPreset, SubscriptionStatusResponse } from '@/types'
 import { FridgeTypeIcon } from '@/components/FridgeTypeIcon'
 import { CompartmentEditor } from '@/components/CompartmentEditor'
 import styles from './SetupPage.module.scss'
@@ -23,17 +25,39 @@ type Step = 'type' | 'compartments' | 'name'
 export const SetupPage = () => {
   const navigate = useNavigate()
   const { createFridge, loading, error } = useFridgeStore()
+  const { isAdmin } = useAuthStore()
+  const [subscription, setSubscription] =
+    useState<SubscriptionStatusResponse | null>(null)
+
+  useEffect(() => {
+    if (!isAdmin) return
+    const fetchSubscription = async () => {
+      try {
+        const data =
+          await api.get<SubscriptionStatusResponse>('/payments/status')
+        setSubscription(data)
+      } catch {
+        // 결제 API 미설정 시 비프리미엄으로 간주
+      }
+    }
+    fetchSubscription()
+  }, [isAdmin])
+
+  const isPremium = subscription?.isPremium ?? false
 
   const [step, setStep] = useState<Step>('type')
   const [selectedType, setSelectedType] = useState<FridgeType | null>(null)
   const [compartments, setCompartments] = useState<CompartmentPreset[]>([])
   const [name, setName] = useState('')
 
-  const handleSelectType = useCallback((type: FridgeType) => {
-    setSelectedType(type)
-    setCompartments([...COMPARTMENT_PRESETS[type]])
-    setStep('compartments')
-  }, [])
+  const handleSelectType = useCallback(
+    (type: FridgeType) => {
+      setSelectedType(type)
+      setCompartments([...COMPARTMENT_PRESETS[type]])
+      setStep(isPremium ? 'compartments' : 'name')
+    },
+    [isPremium],
+  )
 
   const handleSkipCompartments = useCallback(() => {
     setStep('name')
@@ -171,7 +195,9 @@ export const SetupPage = () => {
           <div className={cx('stepActions')}>
             <button
               className={cx('backBtn')}
-              onClick={() => setStep('compartments')}
+              onClick={() =>
+                setStep(isPremium ? 'compartments' : 'type')
+              }
               type="button"
             >
               이전

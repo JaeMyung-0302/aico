@@ -263,24 +263,24 @@ export const COMPARTMENT_PRESETS: Record<FridgeType, CompartmentPreset[]> = {
     { type: CompartmentType.DOOR, label: '문 수납 5', position: 19 },
   ],
   [FridgeType.FOUR_DOOR]: [
-    // 좌측 상단 (3칸)
-    { type: CompartmentType.FRIDGE_UPPER, label: '좌상 1', position: 0 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '좌상 2', position: 1 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '좌상 3', position: 2 },
-    // 좌측 하단 (3칸)
-    { type: CompartmentType.FRIDGE_LOWER, label: '좌하 1', position: 3 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '좌하 2', position: 4 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '좌하 3', position: 5 },
-    // 우측 상단 (3칸)
-    { type: CompartmentType.FRIDGE_UPPER, label: '우상 1', position: 6 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '우상 2', position: 7 },
-    { type: CompartmentType.FRIDGE_UPPER, label: '우상 3', position: 8 },
-    // 우측 하단 (3칸)
-    { type: CompartmentType.FRIDGE_LOWER, label: '우하 1', position: 9 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '우하 2', position: 10 },
-    { type: CompartmentType.FRIDGE_LOWER, label: '우하 3', position: 11 },
-    // 하단 서랍 (2칸)
-    { type: CompartmentType.DRAWER, label: '하단 1', position: 12 },
-    { type: CompartmentType.DRAWER, label: '하단 2', position: 13 },
+    // 냉동실 본체 (3칸)
+    { type: CompartmentType.FREEZER, label: '냉동 1', position: 0 },
+    { type: CompartmentType.FREEZER, label: '냉동 2', position: 1 },
+    { type: CompartmentType.FREEZER, label: '냉동 3', position: 2 },
+    // 냉동실 문 수납 (3칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 3 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 4 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 5 },
+    // 냉장실 본체 (3칸)
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 1', position: 6 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 2', position: 7 },
+    { type: CompartmentType.FRIDGE_UPPER, label: '냉장 3', position: 8 },
+    // 냉장실 문 수납 (3칸)
+    { type: CompartmentType.DOOR, label: '문 수납 1', position: 9 },
+    { type: CompartmentType.DOOR, label: '문 수납 2', position: 10 },
+    { type: CompartmentType.DOOR, label: '문 수납 3', position: 11 },
+    // 하단 김치칸 (2칸)
+    { type: CompartmentType.VEGGIE, label: '김치칸 1', position: 12 },
+    { type: CompartmentType.VEGGIE, label: '김치칸 2', position: 13 },
   ],
 }

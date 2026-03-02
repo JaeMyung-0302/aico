@@ -45,20 +45,10 @@ export const DOOR_SECTIONS: Partial<Record<FridgeType, DoorSection[]>> = {
     },
   ],
   [FridgeType.FOUR_DOOR]: [
-    {
-      label: '좌측',
-      positions: [0, 1, 2, 3, 4, 5],
-      layout: 'twoColumn',
-      columnSplit: 3,
-    },
-    {
-      label: '우측',
-      positions: [6, 7, 8, 9, 10, 11],
-      layout: 'twoColumn',
-      columnSplit: 3,
-    },
-    { label: '하단 1', positions: [12], layout: 'grid2x1', spanFull: true },
-    { label: '하단 2', positions: [13], layout: 'grid2x1', spanFull: true },
+    { label: '냉동실', positions: [3, 4, 5, 0, 1, 2], layout: 'twoColumn', columnSplit: 3, isFreezer: true, reverseColumns: true },
+    { label: '냉장실', positions: [6, 7, 8, 9, 10, 11], layout: 'twoColumn', columnSplit: 3 },
+    { label: '김치칸 1', positions: [12], layout: 'column', spanFull: true },
+    { label: '김치칸 2', positions: [13], layout: 'column', spanFull: true },
   ],
 }
 
@@ -92,7 +82,14 @@ export const isFreezerZone = (
     if (position >= EXTRA_BASE_OFFSET) return position % 2 !== 0
     return false
   }
-  if (fridgeType === FridgeType.FOUR_DOOR) return false
+  if (fridgeType === FridgeType.FOUR_DOOR) {
+    if (compartmentType === CompartmentType.FREEZER) return true
+    // 냉동실 본체(0-2) + 문 수납(3-5)
+    if (position >= 0 && position <= 5) return true
+    // extra 냉동실 (column 2 = odd position)
+    if (position >= EXTRA_BASE_OFFSET) return position % 2 !== 0
+    return false
+  }
   return compartmentType === CompartmentType.FREEZER
 }
 

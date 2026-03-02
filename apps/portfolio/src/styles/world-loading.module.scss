@@ -1,0 +1,45 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: #0a0a0a;
+  color: #e0e0e0;
+  gap: 1.5rem;
+}
+
+.text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.progressBar {
+  width: 200px;
+  height: 3px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  width: 40%;
+  height: 100%;
+  background: #646cff;
+  border-radius: 2px;
+  animation: slide 1.5s ease-in-out infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(150%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

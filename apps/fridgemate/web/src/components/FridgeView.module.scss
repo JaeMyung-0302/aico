@@ -181,10 +181,10 @@
   grid-template-rows: 3fr 2fr;
 }
 
-// LG 4도어 — 좌우(2) + 하단좌(1) + 하단우(1)
+// 4도어 — 상단 좌우(2) + 하단 세로(2)
 .closedFourDoor {
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 2fr 1fr 1fr;
+  grid-template-rows: 3fr 1fr 1fr;
 }
 
 .closedDoor {

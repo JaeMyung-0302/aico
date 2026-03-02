@@ -11,6 +11,7 @@
 | SoulBlade  | 5175     | 4003    | 5434        |
 | FridgeMate | 5176     | 4001    | 5435        |
 | ContentBot | -        | -       | -           |
+| Portfolio  | 5178     | -       | -           |
 
 ### 규칙
 
@@ -18,4 +19,4 @@
 - Frontend: 5173부터 순차 할당
 - Backend: 4000부터 순차 할당
 - DB (Docker): 5434부터 순차 할당 (5433은 외부 프로젝트와 충돌하여 skip)
-- 새 앱 추가 시 다음 번호 사용 (Frontend: 5178, Backend: 4004, DB: 5437)
+- 새 앱 추가 시 다음 번호 사용 (Frontend: 5179, Backend: 4004, DB: 5437)

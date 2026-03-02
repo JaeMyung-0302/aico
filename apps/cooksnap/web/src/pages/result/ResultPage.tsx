@@ -292,7 +292,7 @@ const Result = () => {
       {/* 쿠팡 파트너스 배너 (모든 유저) */}
       <div className={cx('coupangBanner')}>
         <a
-          href="https://link.coupang.com/a/dO2WLp"
+          href="https://link.coupang.com/a/dV0oMd"
           target="_blank"
           rel="noopener"
           className={cx('coupangBannerLink')}
@@ -309,7 +309,7 @@ const Result = () => {
       {recipe.ingredients.length > 0 && user?.isPremium && (
         <div className={cx('stickyBottom')}>
           <a
-            href={`https://www.coupang.com/np/search?component=&q=${encodeURIComponent(recipe.ingredients.map((i) => i.name).join(' '))}`}
+            href="https://link.coupang.com/a/dV0oMd"
             target="_blank"
             rel="noopener"
             className={cx('cartButton')}

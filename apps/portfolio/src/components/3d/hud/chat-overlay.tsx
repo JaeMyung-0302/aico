@@ -70,23 +70,39 @@ export const ChatOverlay = () => {
 
       const decoder = new TextDecoder();
       let accumulated = "";
+      let rafPending = false;
+
+      const flushToState = () => {
+        rafPending = false;
+        const text = accumulated;
+        setMessages((prev) => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          const last = updated[lastIdx];
+          if (last && last.role === "assistant") {
+            updated[lastIdx] = { ...last, content: text };
+          }
+          return updated;
+        });
+        scrollToBottom();
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         accumulated += decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const updated = [...prev];
-          const lastIdx = updated.length - 1;
-          const last = updated[lastIdx];
-          if (last && last.role === "assistant") {
-            updated[lastIdx] = { ...last, content: accumulated };
-          }
-          return updated;
-        });
-        scrollToBottom();
+        if (!rafPending) {
+          rafPending = true;
+          requestAnimationFrame(flushToState);
+        }
       }
+
+      // Flush any remaining text after stream ends
+      if (rafPending) {
+        cancelAnimationFrame(0);
+      }
+      flushToState();
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => prev.filter((m) => m.id !== assistantMsg.id));

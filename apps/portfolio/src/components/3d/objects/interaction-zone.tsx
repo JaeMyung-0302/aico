@@ -23,18 +23,21 @@ export const InteractionZone = ({
 }: InteractionZoneProps) => {
   const isInsideRef = useRef(false);
 
+  const radiusSq = radius * radius;
+  const exitRadiusSq = (radius + HYSTERESIS) * (radius + HYSTERESIS);
+
   useFrame(() => {
     const [px, py, pz] = useWorldStore.getState().playerPosition;
     const [tx, ty, tz] = targetPosition;
     const dx = px - tx;
     const dy = py - ty;
     const dz = pz - tz;
-    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    const distSq = dx * dx + dy * dy + dz * dz;
 
-    if (!isInsideRef.current && distance < radius) {
+    if (!isInsideRef.current && distSq < radiusSq) {
       isInsideRef.current = true;
       onEnter();
-    } else if (isInsideRef.current && distance > radius + HYSTERESIS) {
+    } else if (isInsideRef.current && distSq > exitRadiusSq) {
       isInsideRef.current = false;
       onExit();
     }

@@ -6,9 +6,9 @@
   max-height: 450px;
   display: flex;
   flex-direction: column;
-  background: rgba(10, 10, 10, 0.85);
+  background: var(--hud-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--hud-border);
   border-radius: 0.75rem;
   pointer-events: auto;
   z-index: 130;
@@ -44,19 +44,19 @@
 .headerTitle {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--hud-text);
 }
 
 .closeBtn {
   background: none;
   border: none;
-  color: #888;
+  color: var(--hud-text-dim);
   cursor: pointer;
   font-size: 1rem;
   padding: 0.25rem;
 
   &:hover {
-    color: #e0e0e0;
+    color: var(--hud-text);
   }
 }
 
@@ -103,7 +103,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
-  color: #e0e0e0;
+  color: var(--hud-text);
   font-size: 0.8125rem;
   outline: none;
 

@@ -24,11 +24,19 @@ export default defineConfig({
     },
   },
   build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        passes: 2,
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks: {
           phaser: ['phaser'],
           react: ['react', 'react-dom'],
+          vendor: ['zustand', 'classnames'],
         },
       },
     },

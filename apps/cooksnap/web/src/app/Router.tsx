@@ -1,13 +1,17 @@
+import { lazy } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import Layout from '@/components/Layout/Layout'
 import AuthGuard from '@/components/AuthGuard'
-import HomePage from '@/pages/home/HomePage'
-import ResultPage from '@/pages/result/ResultPage'
-import AuthPage from '@/pages/auth/AuthPage'
-import MyPage from '@/pages/mypage/MyPage'
 import ErrorPage from '@/pages/error/ErrorPage'
-import NotFoundPage from '@/pages/error/NotFoundPage'
-import AdminFeedbackPage from '@/pages/admin/feedback/AdminFeedbackPage'
+
+const HomePage = lazy(() => import('@/pages/home/HomePage'))
+const ResultPage = lazy(() => import('@/pages/result/ResultPage'))
+const AuthPage = lazy(() => import('@/pages/auth/AuthPage'))
+const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
+const NotFoundPage = lazy(() => import('@/pages/error/NotFoundPage'))
+const AdminFeedbackPage = lazy(
+  () => import('@/pages/admin/feedback/AdminFeedbackPage'),
+)
 
 export const router = createBrowserRouter([
   {

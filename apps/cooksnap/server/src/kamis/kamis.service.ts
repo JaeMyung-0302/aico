@@ -65,6 +65,11 @@ export class KamisService implements OnModuleInit {
     await this.ensureCache()
 
     const results: PriceResult[] = []
+    const priceUpdates: {
+      id: string
+      estimatedPrice: number
+      kamisItemCode: string
+    }[] = []
 
     for (const ingredient of recipe.ingredients) {
       const match = this.findMatch(ingredient.name)
@@ -86,24 +91,31 @@ export class KamisService implements OnModuleInit {
         unit: match.unit,
       })
 
-      // DB에 가격 업데이트
       if (match.price !== null) {
-        await this.prisma.ingredient.update({
-          where: { id: ingredient.id },
-          data: {
-            estimatedPrice: match.price,
-            kamisItemCode: match.itemCode,
-          },
+        priceUpdates.push({
+          id: ingredient.id,
+          estimatedPrice: match.price,
+          kamisItemCode: match.itemCode,
         })
       }
     }
 
-    // 총 재료비 업데이트
+    // 배치 UPDATE (N+1 → 1 트랜잭션)
     const totalPrice = results.reduce((sum, r) => sum + (r.price || 0), 0)
-    if (totalPrice > 0) {
-      await this.prisma.recipe.update({
-        where: { id: recipeId },
-        data: { totalPrice },
+    if (priceUpdates.length > 0 || totalPrice > 0) {
+      await this.prisma.$transaction(async (tx) => {
+        for (const { id, estimatedPrice, kamisItemCode } of priceUpdates) {
+          await tx.ingredient.update({
+            where: { id },
+            data: { estimatedPrice, kamisItemCode },
+          })
+        }
+        if (totalPrice > 0) {
+          await tx.recipe.update({
+            where: { id: recipeId },
+            data: { totalPrice },
+          })
+        }
       })
     }
 

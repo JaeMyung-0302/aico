@@ -1,6 +1,6 @@
 "use client";
 
-import { Text } from "@react-three/drei";
+import { SpriteText } from "../objects/sprite-text";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 
 import { getCollectiblesByWorld } from "@/content/collectibles";
@@ -42,15 +42,13 @@ export const LabWorld = () => (
     </RigidBody>
 
     {/* Title */}
-    <Text
+    <SpriteText
       position={[0, 3, -8]}
       fontSize={0.6}
       color="#c4b5fd"
-      anchorX="center"
-      anchorY="middle"
     >
       AI 연구소
-    </Text>
+    </SpriteText>
 
     {/* Holographic display pillars */}
     {([[-5, 5], [5, 5], [-5, -5], [5, -5]] as const).map(([x, z], i) => (

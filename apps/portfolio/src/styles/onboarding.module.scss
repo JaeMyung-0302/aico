@@ -23,14 +23,14 @@
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--hud-text);
   text-align: center;
   letter-spacing: 0.02em;
 }
 
 .subtitle {
   font-size: 0.9375rem;
-  color: #999;
+  color: var(--hud-text-dim);
   text-align: center;
   margin-top: -1rem;
 }
@@ -72,12 +72,12 @@
 .cardTitle {
   font-size: 1rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--hud-text);
 }
 
 .cardDesc {
   font-size: 0.8125rem;
-  color: #999;
+  color: var(--hud-text-dim);
   text-align: center;
   line-height: 1.5;
 }

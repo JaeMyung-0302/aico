@@ -46,6 +46,7 @@ export class CoupangService {
     if (!recipe) return []
 
     const results: PurchaseLinkResult[] = []
+    const dbUpdates: { id: string; coupangProductUrl: string }[] = []
 
     for (const ingredient of recipe.ingredients) {
       // 캐시 확인
@@ -82,17 +83,25 @@ export class CoupangService {
         expiry: Date.now() + CACHE_TTL,
       })
 
-      // DB에 구매 링크 저장
-      await this.prisma.ingredient.update({
-        where: { id: ingredient.id },
-        data: { coupangProductUrl: purchaseUrl },
-      })
+      dbUpdates.push({ id: ingredient.id, coupangProductUrl: purchaseUrl })
 
       results.push({
         ingredientId: ingredient.id,
         ingredientName: ingredient.name,
         purchaseUrl,
       })
+    }
+
+    // 배치 UPDATE (N+1 → 1 트랜잭션)
+    if (dbUpdates.length > 0) {
+      await this.prisma.$transaction(
+        dbUpdates.map(({ id, coupangProductUrl }) =>
+          this.prisma.ingredient.update({
+            where: { id },
+            data: { coupangProductUrl },
+          }),
+        ),
+      )
     }
 
     return results

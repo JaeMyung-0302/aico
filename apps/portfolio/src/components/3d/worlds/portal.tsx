@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from "react";
 
-import { Text } from "@react-three/drei";
+import { SpriteText } from "../objects/sprite-text";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -60,15 +60,13 @@ export const Portal = ({ position, destination }: PortalProps) => {
         />
       </mesh>
 
-      <Text
+      <SpriteText
         position={[0, 4, 0]}
         fontSize={0.4}
         color="#c4b5fd"
-        anchorX="center"
-        anchorY="middle"
       >
         {label}
-      </Text>
+      </SpriteText>
 
       <InteractionZone
         targetPosition={[x, 0, z]}

@@ -6,7 +6,15 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "include": "generated/prisma/**/*",
+        "include": "generated/prisma/**/*.js",
+        "watchAssets": true
+      },
+      {
+        "include": "generated/prisma/**/*.mjs",
+        "watchAssets": true
+      },
+      {
+        "include": "generated/prisma/schema.prisma",
         "watchAssets": true
       }
     ]

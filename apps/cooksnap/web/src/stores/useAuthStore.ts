@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { supabase } from '@/lib/supabase'
+import { supabaseAuth, type AuthChangeEvent, type Session } from '@/lib/supabase'
 import api from '@/lib/api'
 import type { User, QuotaStatus } from '@/types/user'
 
@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   _unsubscribe: null,
 
   initialize: async () => {
-    if (!supabase) {
+    if (!supabaseAuth) {
       set({ user: null, isLoading: false })
       return
     }
@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // 토큰 갱신·세션 종료 시 localStorage + 상태 동기화
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabaseAuth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       if (session) {
         localStorage.setItem('access_token', session.access_token)
       } else {
@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession()
+      } = await supabaseAuth.getSession()
       if (session) {
         localStorage.setItem('access_token', session.access_token)
         const { data } = await api.get<User>('/auth/me')
@@ -81,13 +81,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signUpWithEmail: async (email, password) => {
-    if (!supabase)
+    if (!supabaseAuth)
       return {
         needsConfirmation: false,
         error: '인증 서비스가 설정되지 않았습니다.',
       }
     try {
-      const { error } = await supabase.auth.signUp({ email, password })
+      const { error } = await supabaseAuth.signUp({ email, password })
       if (error) return { needsConfirmation: false, error: error.message }
       return { needsConfirmation: true }
     } catch {
@@ -99,9 +99,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signInWithEmail: async (email, password) => {
-    if (!supabase) return { error: '인증 서비스가 설정되지 않았습니다.' }
+    if (!supabaseAuth) return { error: '인증 서비스가 설정되지 않았습니다.' }
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabaseAuth.signInWithPassword({
         email,
         password,
       })
@@ -126,24 +126,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signInWithKakao: async () => {
-    if (!supabase) return
-    await supabase.auth.signInWithOAuth({
+    if (!supabaseAuth) return
+    await supabaseAuth.signInWithOAuth({
       provider: 'kakao',
       options: { redirectTo: window.location.origin },
     })
   },
 
   signInWithGoogle: async () => {
-    if (!supabase) return
-    await supabase.auth.signInWithOAuth({
+    if (!supabaseAuth) return
+    await supabaseAuth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
     })
   },
 
   signOut: async () => {
-    if (!supabase) return
-    await supabase.auth.signOut()
+    if (!supabaseAuth) return
+    await supabaseAuth.signOut()
     localStorage.removeItem('access_token')
     set({ user: null, quotaStatus: null })
   },

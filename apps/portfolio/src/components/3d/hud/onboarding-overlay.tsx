@@ -22,7 +22,9 @@ export const OnboardingOverlay = () => {
     <div className={styles.overlay}>
       <div className={styles.container}>
         <h2 className={styles.title}>3D 포트폴리오에 오신 것을 환영합니다</h2>
-        <p className={styles.subtitle}>탐색 방식을 선택해주세요</p>
+        <p className={styles.subtitle}>
+          3개 월드 · 6개 프로젝트 · 13개 스킬 수집품
+        </p>
 
         <div className={styles.cards}>
           <button type="button" className={styles.card} onClick={handleFreeroam}>

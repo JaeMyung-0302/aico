@@ -1,16 +1,52 @@
+import { lazy } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Layout } from '@/components/Layout'
-import { LoginPage } from '@/pages/login/LoginPage'
-import { RegisterPage } from '@/pages/register/RegisterPage'
-import { GroupSetupPage } from '@/pages/group-setup/GroupSetupPage'
-import { FridgeSelectPage } from '@/pages/select/FridgeSelectPage'
-import { SetupPage } from '@/pages/setup/SetupPage'
-import { FridgePage } from '@/pages/fridge/FridgePage'
-import { AlertsPage } from '@/pages/alerts/AlertsPage'
-import { SettingsPage } from '@/pages/settings/SettingsPage'
-import { RecipeSuggestPage } from '@/pages/recipes/RecipeSuggestPage'
-import { RecipeDetailPage } from '@/pages/recipes/RecipeDetailPage'
+
+const LoginPage = lazy(() =>
+  import('@/pages/login/LoginPage').then((m) => ({ default: m.LoginPage })),
+)
+const RegisterPage = lazy(() =>
+  import('@/pages/register/RegisterPage').then((m) => ({
+    default: m.RegisterPage,
+  })),
+)
+const GroupSetupPage = lazy(() =>
+  import('@/pages/group-setup/GroupSetupPage').then((m) => ({
+    default: m.GroupSetupPage,
+  })),
+)
+const FridgeSelectPage = lazy(() =>
+  import('@/pages/select/FridgeSelectPage').then((m) => ({
+    default: m.FridgeSelectPage,
+  })),
+)
+const SetupPage = lazy(() =>
+  import('@/pages/setup/SetupPage').then((m) => ({ default: m.SetupPage })),
+)
+const FridgePage = lazy(() =>
+  import('@/pages/fridge/FridgePage').then((m) => ({ default: m.FridgePage })),
+)
+const AlertsPage = lazy(() =>
+  import('@/pages/alerts/AlertsPage').then((m) => ({
+    default: m.AlertsPage,
+  })),
+)
+const SettingsPage = lazy(() =>
+  import('@/pages/settings/SettingsPage').then((m) => ({
+    default: m.SettingsPage,
+  })),
+)
+const RecipeSuggestPage = lazy(() =>
+  import('@/pages/recipes/RecipeSuggestPage').then((m) => ({
+    default: m.RecipeSuggestPage,
+  })),
+)
+const RecipeDetailPage = lazy(() =>
+  import('@/pages/recipes/RecipeDetailPage').then((m) => ({
+    default: m.RecipeDetailPage,
+  })),
+)
 
 export const router = createBrowserRouter([
   {

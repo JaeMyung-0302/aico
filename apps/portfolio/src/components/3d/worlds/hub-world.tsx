@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { Text } from "@react-three/drei";
+import { SpriteText } from "../objects/sprite-text";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { Color, DoubleSide } from "three";
 
@@ -102,7 +102,7 @@ export const HubWorld = () => (
       />
     </mesh>
 
-    <Text
+    <SpriteText
       position={[0, 2.5, -3]}
       fontSize={0.5}
       color="#e0e0e0"
@@ -110,10 +110,10 @@ export const HubWorld = () => (
       anchorY="middle"
     >
       기술의 섬
-    </Text>
+    </SpriteText>
 
     {/* Welcome text near spawn */}
-    <Text
+    <SpriteText
       position={[0, 1.5, 2]}
       fontSize={0.2}
       color="#a0a0a0"
@@ -121,7 +121,7 @@ export const HubWorld = () => (
       anchorY="middle"
     >
       환영합니다! WASD로 이동하세요
-    </Text>
+    </SpriteText>
 
     <TreeGroup />
     <RockGroup />

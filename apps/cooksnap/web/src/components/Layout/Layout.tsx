@@ -1,8 +1,10 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import classnames from 'classnames/bind'
 import Header from '@/components/Header/Header'
 import FeedbackButton from '@/components/FeedbackButton/FeedbackButton'
 import Footer from '@/components/Footer/Footer'
+import { Loading } from '@repo/ui'
 import styles from './Layout.module.scss'
 
 const cx = classnames.bind(styles)
@@ -12,7 +14,9 @@ const Layout = () => {
     <div className={cx('layout')}>
       <Header />
       <main className={cx('main')}>
-        <Outlet />
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
       <FeedbackButton />

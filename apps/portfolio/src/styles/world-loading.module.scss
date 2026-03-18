@@ -7,13 +7,28 @@
   height: 100vh;
   background: #0a0a0a;
   color: #e0e0e0;
-  gap: 1.5rem;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  letter-spacing: 0.02em;
 }
 
 .text {
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #888;
   letter-spacing: 0.05em;
+}
+
+.tip {
+  font-size: 0.8125rem;
+  color: #646cff;
+  margin-top: 1rem;
+  opacity: 0.8;
 }
 
 .progressBar {

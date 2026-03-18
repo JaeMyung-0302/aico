@@ -23,6 +23,9 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="ko">
+      <head>
+        <link rel="dns-prefetch" href="https://api.anthropic.com" />
+      </head>
       <body>{children}</body>
     </html>
   );

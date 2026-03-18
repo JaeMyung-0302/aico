@@ -5,9 +5,9 @@
   bottom: 0;
   width: 400px;
   max-width: 90vw;
-  background: rgba(10, 10, 10, 0.85);
+  background: var(--hud-bg);
   backdrop-filter: blur(12px);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid var(--hud-border);
   padding: 2rem 1.5rem;
   overflow-y: auto;
   pointer-events: auto;
@@ -20,7 +20,7 @@
     top: auto;
     height: 60vh;
     border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--hud-border);
     border-radius: 1rem 1rem 0 0;
     animation: slideUp 0.3s ease-out;
   }

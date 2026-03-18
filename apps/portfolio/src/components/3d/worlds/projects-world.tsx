@@ -1,6 +1,6 @@
 "use client";
 
-import { Text } from "@react-three/drei";
+import { SpriteText } from "../objects/sprite-text";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 
 import { getCollectiblesByWorld } from "@/content/collectibles";
@@ -42,15 +42,13 @@ export const ProjectsWorld = () => (
     </RigidBody>
 
     {/* Title */}
-    <Text
+    <SpriteText
       position={[0, 3, -8]}
       fontSize={0.6}
       color="#e0e0e0"
-      anchorX="center"
-      anchorY="middle"
     >
       개발자의 워크샵
-    </Text>
+    </SpriteText>
 
     {/* Project Buildings */}
     {placements.map((placement) => {

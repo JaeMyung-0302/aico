@@ -10,6 +10,13 @@
   --color-text: #1a1a2e;
   --color-text-secondary: #6b7280;
   --color-border: #e5e7eb;
+
+  // Dark theme (3D HUD)
+  --hud-bg: rgba(10, 10, 10, 0.85);
+  --hud-border: rgba(255, 255, 255, 0.08);
+  --hud-text: #e0e0e0;
+  --hud-text-dim: #888;
+  --hud-accent: #646cff;
 }
 
 *,

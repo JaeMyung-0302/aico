@@ -1,13 +1,18 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 
 import { useWorldStore } from "@/stores/world-store";
 import { worldConfigs } from "@/content/worlds";
 
 import { HubWorld } from "./hub-world";
-import { LabWorld } from "./lab-world";
-import { ProjectsWorld } from "./projects-world";
+
+const ProjectsWorld = lazy(() =>
+  import("./projects-world").then((m) => ({ default: m.ProjectsWorld })),
+);
+const LabWorld = lazy(() =>
+  import("./lab-world").then((m) => ({ default: m.LabWorld })),
+);
 
 const useResetPositionOnWorldChange = () => {
   const currentWorld = useWorldStore((s) => s.currentWorld);

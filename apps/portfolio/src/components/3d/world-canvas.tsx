@@ -114,13 +114,22 @@ const WorldCanvas = () => {
       <div style={{ width: "100vw", height: "100vh", background: "#0a0a0a" }}>
         <Canvas
           camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 1, 0] }}
+          dpr={[1, 1.5]}
+          performance={{ min: 0.5 }}
           style={{ width: "100%", height: "100%" }}
         >
-          <Suspense fallback={null}>
-            <ambientLight intensity={0.4} />
-            <directionalLight position={[10, 20, 10]} intensity={0.8} castShadow />
-            <fog attach="fog" args={["#0a0a0a", 30, 80]} />
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[10, 20, 10]} intensity={0.8} castShadow />
+          <fog attach="fog" args={["#0a0a0a", 30, 80]} />
 
+          <Suspense
+            fallback={
+              <mesh position={[0, 1, -3]}>
+                <boxGeometry args={[0.3, 0.3, 0.3]} />
+                <meshStandardMaterial color="#646cff" emissive="#646cff" emissiveIntensity={0.5} />
+              </mesh>
+            }
+          >
             <CameraController />
             <Physics gravity={[0, -9.81, 0]}>
               <AdaptiveQuality />

@@ -46,7 +46,7 @@
 .worldLabel {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #888;
+  color: var(--hud-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
@@ -62,7 +62,7 @@
   border-radius: 0.5rem;
   cursor: pointer;
   text-align: left;
-  color: #e0e0e0;
+  color: var(--hud-text);
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
@@ -82,7 +82,7 @@
 
 .projectDesc {
   font-size: 0.75rem;
-  color: #888;
+  color: var(--hud-text-dim);
   margin-top: 0.25rem;
 }
 

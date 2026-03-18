@@ -41,14 +41,12 @@ export const CollectibleItem = ({ item }: CollectibleItemProps) => {
       return;
     }
 
-    meshRef.current.position.y =
-      item.position[1] + Math.sin(clock.getElapsedTime() * 2) * 0.2;
+    const sinVal = Math.sin(clock.getElapsedTime() * 2);
+    meshRef.current.position.y = item.position[1] + sinVal * 0.2;
     meshRef.current.rotation.y += delta * 0.5;
 
     const mat = meshRef.current.material as THREE.MeshStandardMaterial;
-    mat.emissiveIntensity = isNearby
-      ? 0.6 + Math.sin(clock.getElapsedTime() * 4) * 0.2
-      : 0.3;
+    mat.emissiveIntensity = isNearby ? 0.6 + sinVal * 0.2 : 0.3;
   });
 
   if (isCollected) return null;

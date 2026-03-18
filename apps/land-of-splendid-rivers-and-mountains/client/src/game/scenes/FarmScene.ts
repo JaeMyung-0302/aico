@@ -665,6 +665,10 @@ export class FarmScene extends Phaser.Scene {
     const endX = Math.ceil((cam.scrollX + cam.width) / size) + 1
     const endY = Math.ceil((cam.scrollY + cam.height) / size) + 1
 
+    const inner = size - 2
+
+    // Batch fills first, then strokes — reduces style switches from 2*N to 2
+    this.plantOverlay.fillStyle(0xffffff, 0.15)
     for (const zone of FARM_ZONES) {
       const zx1 = Math.max(zone.x1, startX)
       const zy1 = Math.max(zone.y1, startY)
@@ -674,13 +678,22 @@ export class FarmScene extends Phaser.Scene {
       for (let ty = zy1; ty <= zy2; ty++) {
         for (let tx = zx1; tx <= zx2; tx++) {
           if (this.farmSystem.getCropAt(tx, ty) !== undefined) continue
+          this.plantOverlay.fillRect(tx * size + 1, ty * size + 1, inner, inner)
+        }
+      }
+    }
 
-          const px = tx * size
-          const py = ty * size
-          this.plantOverlay.fillStyle(0xffffff, 0.15)
-          this.plantOverlay.fillRect(px + 1, py + 1, size - 2, size - 2)
-          this.plantOverlay.lineStyle(1.5, 0x4ade80, 0.5)
-          this.plantOverlay.strokeRect(px + 1, py + 1, size - 2, size - 2)
+    this.plantOverlay.lineStyle(1.5, 0x4ade80, 0.5)
+    for (const zone of FARM_ZONES) {
+      const zx1 = Math.max(zone.x1, startX)
+      const zy1 = Math.max(zone.y1, startY)
+      const zx2 = Math.min(zone.x2, endX)
+      const zy2 = Math.min(zone.y2, endY)
+
+      for (let ty = zy1; ty <= zy2; ty++) {
+        for (let tx = zx1; tx <= zx2; tx++) {
+          if (this.farmSystem.getCropAt(tx, ty) !== undefined) continue
+          this.plantOverlay.strokeRect(tx * size + 1, ty * size + 1, inner, inner)
         }
       }
     }

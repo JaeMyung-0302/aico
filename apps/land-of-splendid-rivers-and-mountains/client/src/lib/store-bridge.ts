@@ -21,27 +21,31 @@ const onSeasonChange = ({ season, year }: { season: Season; year: number }) => {
 }
 
 const onEnergyChanged = ({ current, max }: { current: number; max: number }) => {
-  const store = useGameStore.getState()
-  store.setEnergy(current)
-  if (store.maxEnergy !== max) {
-    useGameStore.setState({ maxEnergy: max })
-  }
+  const state = useGameStore.getState()
+  if (state.energy !== current) state.setEnergy(current)
+  if (state.maxEnergy !== max) useGameStore.setState({ maxEnergy: max })
 }
 
 const onGoldChanged = ({ total }: { total: number }) => {
-  useGameStore.getState().setGold(total)
+  const state = useGameStore.getState()
+  if (state.gold !== total) state.setGold(total)
 }
 
 const onWeatherChanged = ({ weather }: { weather: Weather }) => {
-  useGameStore.getState().setWeather(weather)
+  const state = useGameStore.getState()
+  if (state.weather !== weather) state.setWeather(weather)
 }
 
 const onNpcRelationChanged = ({ npcId, newValue }: { npcId: string; newValue: number }) => {
-  useGameStore.getState().setNpcRelation(npcId, newValue)
+  const state = useGameStore.getState()
+  if (state.npcRelations[npcId] !== newValue) state.setNpcRelation(npcId, newValue)
 }
 
 const onPlayerMoved = ({ scene, tileX, tileY }: { scene: string; tileX: number; tileY: number }) => {
-  useGameStore.getState().setPlayerPosition(scene, tileX, tileY)
+  const state = useGameStore.getState()
+  if (state.currentScene !== scene || state.playerTileX !== tileX || state.playerTileY !== tileY) {
+    state.setPlayerPosition(scene, tileX, tileY)
+  }
 }
 
 const onUiToggle = ({ panel }: { panel: 'inventory' | 'journal' | 'menu' }) => {

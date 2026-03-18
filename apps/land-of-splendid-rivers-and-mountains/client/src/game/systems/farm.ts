@@ -21,8 +21,17 @@ export const FARM_ZONES: ReadonlyArray<{ x1: number; y1: number; x2: number; y2:
   { x1: 18, y1: 19, x2: 26, y2: 24 },
 ]
 
+const farmTileSet = new Set<string>()
+for (const z of FARM_ZONES) {
+  for (let y = z.y1; y <= z.y2; y++) {
+    for (let x = z.x1; x <= z.x2; x++) {
+      farmTileSet.add(`${x},${y}`)
+    }
+  }
+}
+
 export const isFarmTile = (tx: number, ty: number): boolean =>
-  FARM_ZONES.some((z) => tx >= z.x1 && tx <= z.x2 && ty >= z.y1 && ty <= z.y2)
+  farmTileSet.has(`${tx},${ty}`)
 
 export class FarmSystem implements IGameSystem {
   readonly id = 'farm'

@@ -41,7 +41,15 @@ const getMonth = (season: string, day: number): { month: number; dayOfMonth: num
 }
 
 const HUD = () => {
-  const { timeOfDay, day, season, year, weather, energy, maxEnergy, playerHp, playerMaxHp } = useGameStore()
+  const timeOfDay = useGameStore((s) => s.timeOfDay)
+  const day = useGameStore((s) => s.day)
+  const season = useGameStore((s) => s.season)
+  const year = useGameStore((s) => s.year)
+  const weather = useGameStore((s) => s.weather)
+  const energy = useGameStore((s) => s.energy)
+  const maxEnergy = useGameStore((s) => s.maxEnergy)
+  const playerHp = useGameStore((s) => s.playerHp)
+  const playerMaxHp = useGameStore((s) => s.playerMaxHp)
   const energyPercent = Math.round((energy / maxEnergy) * 100)
   const { month, dayOfMonth } = getMonth(season, day)
   const seasonColor = SEASON_COLORS[season] ?? '#fff'

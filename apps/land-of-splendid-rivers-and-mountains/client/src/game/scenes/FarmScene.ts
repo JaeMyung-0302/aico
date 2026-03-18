@@ -69,6 +69,10 @@ export class FarmScene extends Phaser.Scene {
   private overlayScrollY = -1
   private overlayEquipped: string | null = null
   private overlayDirty = true
+  private cursorTileX = -1
+  private cursorTileY = -1
+  private cursorColor = -1
+  private cursorAlpha = -1
 
   constructor() {
     super({ key: 'FarmScene' })
@@ -560,11 +564,15 @@ export class FarmScene extends Phaser.Scene {
   }
 
   private updateTileCursor(): void {
-    this.tileCursor.clear()
-
     const equipped = useGameStore.getState().equippedTools.current
 
     if (!equipped) {
+      if (this.cursorColor !== -1) {
+        this.tileCursor.clear()
+        this.cursorColor = -1
+        this.cursorTileX = -1
+        this.cursorTileY = -1
+      }
       if (this.overlayEquipped !== null) {
         this.plantOverlay.clear()
         this.overlayEquipped = null
@@ -573,46 +581,48 @@ export class FarmScene extends Phaser.Scene {
     }
 
     const { tileX, tileY } = this.getFacingTile()
-    const size = GAME_CONSTANTS.TILE_SIZE
-    const px = tileX * size
-    const py = tileY * size
 
     const crop = this.farmSystem.getCropAt(tileX, tileY)
     const isFarm = isFarmTile(tileX, tileY)
 
-    let color = 0xffffff
-    let alpha = 0.4
-    let showCursor = false
+    let color = -1
+    let alpha = 0
 
     if (crop) {
       if (crop.isFullyGrown()) {
         color = 0xfbbf24
         alpha = 0.6
-        showCursor = true
       } else if (equipped === 'tool-wateringCan' && !crop.isWatered()) {
         color = 0x60a5fa
         alpha = 0.6
-        showCursor = true
       } else if (equipped === 'fertilizer' && !crop.isFertilized()) {
         color = 0xa78bfa
         alpha = 0.6
-        showCursor = true
       } else {
         color = 0x9ca3af
         alpha = 0.3
-        showCursor = true
       }
     } else if (equipped?.startsWith('seed-') && isFarm) {
       color = 0x4ade80
       alpha = 0.6
-      showCursor = true
     }
 
-    if (showCursor) {
-      this.tileCursor.lineStyle(2, color, alpha)
-      this.tileCursor.strokeRect(px + 1, py + 1, size - 2, size - 2)
-      this.tileCursor.fillStyle(color, alpha * 0.25)
-      this.tileCursor.fillRect(px + 1, py + 1, size - 2, size - 2)
+    if (tileX !== this.cursorTileX || tileY !== this.cursorTileY || color !== this.cursorColor || alpha !== this.cursorAlpha) {
+      this.tileCursor.clear()
+      this.cursorTileX = tileX
+      this.cursorTileY = tileY
+      this.cursorColor = color
+      this.cursorAlpha = alpha
+
+      if (color !== -1) {
+        const size = GAME_CONSTANTS.TILE_SIZE
+        const px = tileX * size
+        const py = tileY * size
+        this.tileCursor.lineStyle(2, color, alpha)
+        this.tileCursor.strokeRect(px + 1, py + 1, size - 2, size - 2)
+        this.tileCursor.fillStyle(color, alpha * 0.25)
+        this.tileCursor.fillRect(px + 1, py + 1, size - 2, size - 2)
+      }
     }
 
     const isSeed = equipped?.startsWith('seed-') ?? false

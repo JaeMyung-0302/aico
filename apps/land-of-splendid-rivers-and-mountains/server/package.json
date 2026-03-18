@@ -22,6 +22,7 @@
     "@prisma/client": "^6.19.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "compression": "^1.8.1",
     "helmet": "^8.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
@@ -31,6 +32,7 @@
     "@nestjs/schematics": "^11.0.5",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/compression": "^1.8.1",
     "@types/express": "^5.0.3",
     "@types/node": "^22.15.3",
     "eslint": "^9.39.1",

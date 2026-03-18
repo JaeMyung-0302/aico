@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import compression from 'compression'
 import helmet from 'helmet'
 import { AppModule } from './app.module'
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter'
@@ -9,6 +10,7 @@ const bootstrap = async () => {
   const app = await NestFactory.create(AppModule)
   const configService = app.get(ConfigService)
 
+  app.use(compression())
   app.use(helmet())
   app.setGlobalPrefix('api/v1')
 

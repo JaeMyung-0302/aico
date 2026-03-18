@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 
-import { PointerLockControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -90,5 +89,46 @@ export const CameraController = () => {
     return <ThirdPersonCamera />;
   }
 
-  return <PointerLockControls />;
+  return <NativePointerLock />;
+};
+
+const NativePointerLock = () => {
+  const { camera, gl } = useThree();
+  const euler = useRef(new THREE.Euler(0, 0, 0, "YXZ"));
+  const locked = useRef(false);
+
+  useRef<boolean>((() => {
+    if (typeof window === "undefined") return false;
+    const canvas = gl.domElement;
+
+    const onClick = () => {
+      if (!locked.current) {
+        canvas.requestPointerLock();
+      }
+    };
+
+    const onLockChange = () => {
+      locked.current = document.pointerLockElement === canvas;
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!locked.current) return;
+      euler.current.setFromQuaternion(camera.quaternion);
+      euler.current.y -= e.movementX * 0.002;
+      euler.current.x -= e.movementY * 0.002;
+      euler.current.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, euler.current.x),
+      );
+      camera.quaternion.setFromEuler(euler.current);
+    };
+
+    canvas.addEventListener("click", onClick);
+    document.addEventListener("pointerlockchange", onLockChange);
+    document.addEventListener("mousemove", onMouseMove);
+
+    return true;
+  })());
+
+  return null;
 };

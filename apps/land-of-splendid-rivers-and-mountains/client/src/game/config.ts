@@ -16,7 +16,12 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
   width: GAME_CONSTANTS.GAME_WIDTH,
   height: GAME_CONSTANTS.GAME_HEIGHT,
   pixelArt: true,
+  antialias: false,
+  roundPixels: true,
   backgroundColor: '#228b22',
+  render: {
+    powerPreference: 'high-performance',
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -27,6 +32,9 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
       gravity: { x: 0, y: 0 },
       debug: false,
     },
+  },
+  audio: {
+    disableWebAudio: true,
   },
   scene: [BootScene, PocScene, FarmScene, VillageScene, DungeonScene, RiverScene, MarketScene, TempleScene, BeachScene],
 }

@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   experimental: {
     optimizePackageImports: [
-      "@react-three/drei",
       "@react-three/fiber",
+      "@react-three/rapier",
       "three",
     ],
   },

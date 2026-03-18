@@ -87,8 +87,9 @@ export class SaveManager {
         version: SAVE_VERSION,
         lastSavedAt: new Date().toISOString(),
       }
-      localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
-      this.scheduleSyncToServer(saveData)
+      const serialized = JSON.stringify(saveData)
+      localStorage.setItem(SAVE_KEY, serialized)
+      this.scheduleSyncToServer(serialized)
       eventBus.emit('save:completed', { success: true })
       return true
     } catch {
@@ -135,20 +136,18 @@ export class SaveManager {
     } catch { /* ignore */ }
   }
 
-  private scheduleSyncToServer(saveData: SaveData): void {
+  private scheduleSyncToServer(serialized: string): void {
     if (!getUserId()) return
     if (this.syncTimer) clearTimeout(this.syncTimer)
     const slot = this.activeSlot
     this.syncTimer = setTimeout(() => {
-      this.syncToServer(saveData, slot).catch(() => { /* server sync is best-effort */ })
+      this.syncToServer(slot, serialized).catch(() => { /* server sync is best-effort */ })
     }, SYNC_DEBOUNCE_MS)
   }
 
-  private async syncToServer(saveData: SaveData, slot: number): Promise<void> {
-    await api.put(`/saves/${slot}`, {
-      data: saveData,
-      version: saveData.version,
-    })
+  private async syncToServer(slot: number, serialized: string): Promise<void> {
+    const body = `{"data":${serialized},"version":${SAVE_VERSION}}`
+    await api.putRaw(`/saves/${slot}`, body)
   }
 
   async loadFromServer(slot: number): Promise<boolean> {

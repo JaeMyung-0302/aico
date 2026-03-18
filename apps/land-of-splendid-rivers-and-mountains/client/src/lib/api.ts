@@ -32,6 +32,9 @@ export const api = {
   put: <T>(path: string, data: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(data) }),
 
+  putRaw: <T>(path: string, body: string) =>
+    request<T>(path, { method: 'PUT', body }),
+
   post: <T>(path: string, data: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(data) }),
 

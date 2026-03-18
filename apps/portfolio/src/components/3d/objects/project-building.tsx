@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from "react";
 
-import { Text } from "@react-three/drei";
+import { SpriteText } from "./sprite-text";
 import { useFrame } from "@react-three/fiber";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import * as THREE from "three";
@@ -56,7 +56,12 @@ export const ProjectBuilding = ({ placement, title }: ProjectBuildingProps) => {
     if (!glowRef.current) return;
     const mat = glowRef.current.material as THREE.MeshStandardMaterial;
     const target = isNearby.current ? 0.6 : 0.15;
-    mat.emissiveIntensity += (target - mat.emissiveIntensity) * delta * 4;
+    const diff = target - mat.emissiveIntensity;
+    if (Math.abs(diff) < 0.005) {
+      mat.emissiveIntensity = target;
+      return;
+    }
+    mat.emissiveIntensity += diff * delta * 4;
   });
 
   return (
@@ -82,15 +87,13 @@ export const ProjectBuilding = ({ placement, title }: ProjectBuildingProps) => {
       </mesh>
 
       {/* Title */}
-      <Text
+      <SpriteText
         position={[0, 4, 0]}
         fontSize={0.35}
         color="#e0e0e0"
-        anchorX="center"
-        anchorY="middle"
       >
         {title}
-      </Text>
+      </SpriteText>
 
       <InteractionZone
         targetPosition={[x, 0, z]}

@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react'
 import { useGameStore } from '@/stores/useGameStore'
 import { getItemName } from '@/ui/item-names'
 import { t } from '@/i18n'
@@ -51,8 +52,18 @@ interface Props {
   readonly open: boolean
 }
 
-const InventoryPanel = ({ open }: Props) => {
-  const { inventory, equippedTools, gold } = useGameStore()
+const InventoryPanel = memo(({ open }: Props) => {
+  const inventory = useGameStore((s) => s.inventory)
+  const equippedTools = useGameStore((s) => s.equippedTools)
+  const gold = useGameStore((s) => s.gold)
+
+  const handleSlotClick = useCallback((itemId: string, isEquipped: boolean, def: ItemDefinition | undefined) => {
+    if (!def) return
+    if (def.type !== 'tool' && def.type !== 'seed' && itemId !== 'fertilizer') return
+    const newToolId = isEquipped ? null : itemId
+    useGameStore.getState().setEquippedTools({ current: newToolId })
+    eventBus.emit('inventory:equipRequest', { toolId: newToolId })
+  }, [])
 
   if (!open) return null
 
@@ -79,13 +90,7 @@ const InventoryPanel = ({ open }: Props) => {
                 cursor: slot && (def?.type === 'tool' || def?.type === 'seed' || slot.itemId === 'fertilizer') ? 'pointer' : 'default',
               }}
               title={slot ? getItemName(slot.itemId) : ''}
-              onClick={() => {
-                if (!slot || !def) return
-                if (def.type !== 'tool' && def.type !== 'seed' && slot.itemId !== 'fertilizer') return
-                const newToolId = isEquipped ? null : slot.itemId
-                useGameStore.getState().setEquippedTools({ current: newToolId })
-                eventBus.emit('inventory:equipRequest', { toolId: newToolId })
-              }}
+              onClick={() => handleSlotClick(slot?.itemId ?? '', isEquipped, def ?? undefined)}
             >
               {slot && (
                 <>
@@ -113,7 +118,7 @@ const InventoryPanel = ({ open }: Props) => {
       </div>
     </div>
   )
-}
+})
 
 const styles: Record<string, React.CSSProperties> = {
   panel: {

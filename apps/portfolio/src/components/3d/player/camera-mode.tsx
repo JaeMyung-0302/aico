@@ -9,6 +9,7 @@ import { useWorldStore } from "@/stores/world-store";
 import { tourStops } from "@/content/tour-stops";
 
 const THIRD_PERSON_OFFSET = new THREE.Vector3(0, 3, -5);
+const THIRD_PERSON_MAX_DIST = THIRD_PERSON_OFFSET.length();
 const LERP_FACTOR = 0.08;
 const TOUR_LERP_FACTOR = 0.03;
 
@@ -30,10 +31,9 @@ const ThirdPersonCamera = () => {
       .copy(_desired.current)
       .sub(target)
       .normalize();
-    const maxDist = THIRD_PERSON_OFFSET.length();
 
     raycaster.current.set(target, dir);
-    raycaster.current.far = maxDist;
+    raycaster.current.far = THIRD_PERSON_MAX_DIST;
     const hits = raycaster.current.intersectObjects(scene.children, true);
 
     // Filter out player character mesh
@@ -41,7 +41,7 @@ const ThirdPersonCamera = () => {
       (h) => !h.object.userData.isPlayer && !h.object.parent?.userData.isPlayer,
     );
     const safeDist =
-      firstHit ? Math.max(firstHit.distance - 0.3, 0.5) : maxDist;
+      firstHit ? Math.max(firstHit.distance - 0.3, 0.5) : THIRD_PERSON_MAX_DIST;
 
     const safePos = _safePos.current
       .copy(target)

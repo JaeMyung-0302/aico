@@ -7,21 +7,23 @@ export class SavesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async upsert(userId: string, slot: number, data: Record<string, unknown>, version: number) {
-    const existing = await this.prisma.save.findUnique({
-      where: { userId_slot: { userId, slot } },
-      select: { version: true },
-    })
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.save.findUnique({
+        where: { userId_slot: { userId, slot } },
+        select: { version: true },
+      })
 
-    if (existing && existing.version > version) {
-      throw new ConflictException(
-        `Version conflict: server=${existing.version}, client=${version}`,
-      )
-    }
+      if (existing && existing.version > version) {
+        throw new ConflictException(
+          `Version conflict: server=${existing.version}, client=${version}`,
+        )
+      }
 
-    return this.prisma.save.upsert({
-      where: { userId_slot: { userId, slot } },
-      create: { userId, slot, data: data as Prisma.InputJsonValue, version },
-      update: { data: data as Prisma.InputJsonValue, version },
+      return tx.save.upsert({
+        where: { userId_slot: { userId, slot } },
+        create: { userId, slot, data: data as Prisma.InputJsonValue, version },
+        update: { data: data as Prisma.InputJsonValue, version },
+      })
     })
   }
 

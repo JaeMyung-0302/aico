@@ -1,0 +1,102 @@
+[
+  {
+    "id": "kim-sundeok",
+    "nameKey": "npc.kimSundeok",
+    "location": "farm",
+    "spawnTileX": 18,
+    "spawnTileY": 5,
+    "lovedGifts": ["crop-rice", "crop-cabbage"],
+    "likedGifts": ["crop-radish", "crop-greenOnion"],
+    "dislikedGifts": ["stone"]
+  },
+  {
+    "id": "park-jeongsu",
+    "nameKey": "npc.parkJeongsu",
+    "location": "village",
+    "spawnTileX": 10,
+    "spawnTileY": 12,
+    "lovedGifts": ["crop-ginseng"],
+    "likedGifts": ["crop-perilla", "crop-sesame"],
+    "dislikedGifts": ["iron"]
+  },
+  {
+    "id": "choi-cheolsu",
+    "nameKey": "npc.choiCheolsu",
+    "location": "village",
+    "spawnTileX": 14,
+    "spawnTileY": 8,
+    "lovedGifts": ["iron"],
+    "likedGifts": ["stone", "wood"],
+    "dislikedGifts": ["crop-cabbage"]
+  },
+  {
+    "id": "han-seoyoung",
+    "nameKey": "npc.hanSeoyoung",
+    "location": "village",
+    "spawnTileX": 8,
+    "spawnTileY": 15,
+    "lovedGifts": ["crop-ginseng", "crop-perilla"],
+    "likedGifts": ["crop-garlic", "crop-pepper"],
+    "dislikedGifts": ["stone"]
+  },
+  {
+    "id": "kang-taepung",
+    "nameKey": "npc.kangTaepung",
+    "location": "farm",
+    "spawnTileX": 28,
+    "spawnTileY": 15,
+    "lovedGifts": [],
+    "likedGifts": ["wood"],
+    "dislikedGifts": ["crop-rice"]
+  },
+  {
+    "id": "lee-dohyun",
+    "nameKey": "npc.leeDohyun",
+    "location": "village",
+    "spawnTileX": 16,
+    "spawnTileY": 10,
+    "lovedGifts": ["wood"],
+    "likedGifts": ["stone", "iron"],
+    "dislikedGifts": ["crop-pepper"]
+  },
+  {
+    "id": "song-narae",
+    "nameKey": "npc.songNarae",
+    "location": "farm",
+    "spawnTileX": 25,
+    "spawnTileY": 3,
+    "lovedGifts": ["crop-sesame"],
+    "likedGifts": ["crop-sweetPotato", "crop-perilla"],
+    "dislikedGifts": ["iron"]
+  },
+  {
+    "id": "jung-misuk",
+    "nameKey": "npc.jungMisuk",
+    "location": "village",
+    "spawnTileX": 12,
+    "spawnTileY": 14,
+    "lovedGifts": ["crop-pepper", "crop-garlic"],
+    "likedGifts": ["crop-cabbage", "crop-radish"],
+    "dislikedGifts": ["stone"]
+  },
+  {
+    "id": "oh-kyungho",
+    "nameKey": "npc.ohKyungho",
+    "location": "village",
+    "spawnTileX": 20,
+    "spawnTileY": 6,
+    "lovedGifts": [],
+    "likedGifts": ["wood", "iron"],
+    "dislikedGifts": ["crop-sweetPotato"]
+  },
+  {
+    "id": "yoon-haneul",
+    "nameKey": "npc.yoonHaneul",
+    "location": "farm",
+    "spawnTileX": 15,
+    "spawnTileY": 12,
+    "lovedGifts": ["crop-sweetPotato", "crop-radish"],
+    "likedGifts": ["crop-rice", "crop-greenOnion"],
+    "dislikedGifts": ["iron"]
+  }
+]

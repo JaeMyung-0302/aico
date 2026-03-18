@@ -19,6 +19,24 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           </span>
         ))}
       </div>
+      {project.highlights.length > 0 && (
+        <ul className={styles.highlights}>
+          {project.highlights.map((h) => (
+            <li key={h} className={styles.highlightItem}>
+              {h}
+            </li>
+          ))}
+        </ul>
+      )}
+      {project.metrics && project.metrics.length > 0 && (
+        <div className={styles.metrics}>
+          {project.metrics.map((m) => (
+            <span key={m} className={styles.metricBadge}>
+              {m}
+            </span>
+          ))}
+        </div>
+      )}
     </article>
   );
 };

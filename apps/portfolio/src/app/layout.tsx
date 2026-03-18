@@ -1,5 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.scss";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   title: "Portfolio | Jaemyeong Lee",
@@ -10,6 +16,8 @@ export const metadata: Metadata = {
     description: "AI와 대화하며 탐색하는 인터랙티브 포트폴리오",
     type: "website",
   },
+  robots: { index: true, follow: true },
+  metadataBase: new URL("https://portfolio.ijaemyeong.dev"),
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {

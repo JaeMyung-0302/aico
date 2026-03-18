@@ -1,0 +1,167 @@
+[
+  {
+    "id": "house",
+    "nameKey": "building.house",
+    "descKey": "building.house.desc",
+    "location": "farm",
+    "levels": [
+      {
+        "level": 1,
+        "goldCost": 0,
+        "materials": [],
+        "buildDays": 0
+      },
+      {
+        "level": 2,
+        "goldCost": 5000,
+        "materials": [
+          { "itemId": "wood", "quantity": 30 },
+          { "itemId": "stone", "quantity": 20 }
+        ],
+        "buildDays": 3
+      },
+      {
+        "level": 3,
+        "goldCost": 15000,
+        "materials": [
+          { "itemId": "wood", "quantity": 50 },
+          { "itemId": "stone", "quantity": 30 },
+          { "itemId": "iron", "quantity": 10 }
+        ],
+        "buildDays": 5
+      }
+    ]
+  },
+  {
+    "id": "barn",
+    "nameKey": "building.barn",
+    "descKey": "building.barn.desc",
+    "location": "farm",
+    "levels": [
+      {
+        "level": 1,
+        "goldCost": 3000,
+        "materials": [
+          { "itemId": "wood", "quantity": 20 },
+          { "itemId": "stone", "quantity": 10 }
+        ],
+        "buildDays": 2
+      },
+      {
+        "level": 2,
+        "goldCost": 8000,
+        "materials": [
+          { "itemId": "wood", "quantity": 40 },
+          { "itemId": "stone", "quantity": 20 },
+          { "itemId": "iron", "quantity": 5 }
+        ],
+        "buildDays": 3
+      }
+    ]
+  },
+  {
+    "id": "brewery",
+    "nameKey": "building.brewery",
+    "descKey": "building.brewery.desc",
+    "location": "farm",
+    "levels": [
+      {
+        "level": 1,
+        "goldCost": 4000,
+        "materials": [
+          { "itemId": "wood", "quantity": 25 },
+          { "itemId": "stone", "quantity": 15 }
+        ],
+        "buildDays": 2
+      },
+      {
+        "level": 2,
+        "goldCost": 10000,
+        "materials": [
+          { "itemId": "wood", "quantity": 40 },
+          { "itemId": "iron", "quantity": 10 }
+        ],
+        "buildDays": 4
+      }
+    ]
+  },
+  {
+    "id": "smithy",
+    "nameKey": "building.smithy",
+    "descKey": "building.smithy.desc",
+    "location": "farm",
+    "levels": [
+      {
+        "level": 1,
+        "goldCost": 5000,
+        "materials": [
+          { "itemId": "stone", "quantity": 30 },
+          { "itemId": "iron", "quantity": 10 }
+        ],
+        "buildDays": 3
+      },
+      {
+        "level": 2,
+        "goldCost": 12000,
+        "materials": [
+          { "itemId": "stone", "quantity": 50 },
+          { "itemId": "iron", "quantity": 25 }
+        ],
+        "buildDays": 5
+      }
+    ]
+  },
+  {
+    "id": "greenhouse",
+    "nameKey": "building.greenhouse",
+    "descKey": "building.greenhouse.desc",
+    "location": "farm",
+    "levels": [
+      {
+        "level": 1,
+        "goldCost": 10000,
+        "materials": [
+          { "itemId": "wood", "quantity": 30 },
+          { "itemId": "stone", "quantity": 20 },
+          { "itemId": "iron", "quantity": 10 }
+        ],
+        "buildDays": 5
+      }
+    ]
+  },
+  {
+    "id": "storage",
+    "nameKey": "building.storage",
+    "descKey": "building.storage.desc",
+    "location": "farm",
+    "levels": [
+      {
+        "level": 1,
+        "goldCost": 2000,
+        "materials": [
+          { "itemId": "wood", "quantity": 20 }
+        ],
+        "buildDays": 1
+      },
+      {
+        "level": 2,
+        "goldCost": 6000,
+        "materials": [
+          { "itemId": "wood", "quantity": 30 },
+          { "itemId": "stone", "quantity": 15 }
+        ],
+        "buildDays": 2
+      },
+      {
+        "level": 3,
+        "goldCost": 12000,
+        "materials": [
+          { "itemId": "wood", "quantity": 40 },
+          { "itemId": "stone", "quantity": 25 },
+          { "itemId": "iron", "quantity": 10 }
+        ],
+        "buildDays": 3
+      }
+    ]
+  }
+]

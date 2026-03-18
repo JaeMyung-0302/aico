@@ -1,0 +1,82 @@
+[
+  {
+    "id": "crucianCarp",
+    "nameKey": "fish.crucianCarp",
+    "seasons": ["spring", "summer", "autumn"],
+    "difficulty": 20,
+    "basePrice": 40,
+    "rarity": "common"
+  },
+  {
+    "id": "sweetfish",
+    "nameKey": "fish.sweetfish",
+    "seasons": ["spring", "summer"],
+    "difficulty": 30,
+    "basePrice": 80,
+    "rarity": "common"
+  },
+  {
+    "id": "catfish",
+    "nameKey": "fish.catfish",
+    "seasons": ["summer", "autumn"],
+    "difficulty": 40,
+    "basePrice": 100,
+    "rarity": "common"
+  },
+  {
+    "id": "carp",
+    "nameKey": "fish.carp",
+    "seasons": ["spring", "summer", "autumn", "winter"],
+    "difficulty": 25,
+    "basePrice": 60,
+    "rarity": "common"
+  },
+  {
+    "id": "eel",
+    "nameKey": "fish.eel",
+    "seasons": ["summer"],
+    "difficulty": 55,
+    "basePrice": 200,
+    "rarity": "uncommon"
+  },
+  {
+    "id": "mandarin",
+    "nameKey": "fish.mandarin",
+    "seasons": ["spring", "autumn"],
+    "difficulty": 50,
+    "basePrice": 180,
+    "rarity": "uncommon"
+  },
+  {
+    "id": "snakehead",
+    "nameKey": "fish.snakehead",
+    "seasons": ["summer", "autumn"],
+    "difficulty": 60,
+    "basePrice": 220,
+    "rarity": "uncommon"
+  },
+  {
+    "id": "salmon",
+    "nameKey": "fish.salmon",
+    "seasons": ["autumn"],
+    "difficulty": 65,
+    "basePrice": 300,
+    "rarity": "rare"
+  },
+  {
+    "id": "cherryTrout",
+    "nameKey": "fish.cherryTrout",
+    "seasons": ["spring"],
+    "difficulty": 70,
+    "basePrice": 350,
+    "rarity": "rare"
+  },
+  {
+    "id": "goldenMandarin",
+    "nameKey": "fish.goldenMandarin",
+    "seasons": ["spring", "summer", "autumn", "winter"],
+    "difficulty": 85,
+    "basePrice": 800,
+    "rarity": "legendary"
+  }
+]

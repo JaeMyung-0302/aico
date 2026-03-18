@@ -50,7 +50,7 @@ const projectPlacements: readonly ProjectPlacement[] = [
     worldId: "projects",
   },
   {
-    slug: "soulblade",
+    slug: "geumsugangsan",
     position: [0, 0, 8],
     rotation: 0,
     worldId: "projects",
@@ -72,6 +72,12 @@ const projectPlacements: readonly ProjectPlacement[] = [
     position: [4, 0, -4],
     rotation: -0.5,
     worldId: "lab",
+  },
+  {
+    slug: "portfolio",
+    position: [0, 0, -4],
+    rotation: 0,
+    worldId: "projects",
   },
 ];
 

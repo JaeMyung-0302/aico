@@ -1,0 +1,26 @@
+[
+  {
+    "id": "chicken",
+    "nameKey": "animal.chicken",
+    "buyPrice": 1500,
+    "feedItemId": "crop-rice",
+    "produceItemId": "animal-egg",
+    "produceBaseChance": 0.7
+  },
+  {
+    "id": "cow",
+    "nameKey": "animal.cow",
+    "buyPrice": 5000,
+    "feedItemId": "crop-greenOnion",
+    "produceItemId": "animal-milk",
+    "produceBaseChance": 0.5
+  },
+  {
+    "id": "sheep",
+    "nameKey": "animal.sheep",
+    "buyPrice": 3000,
+    "feedItemId": "crop-cabbage",
+    "produceItemId": "animal-wool",
+    "produceBaseChance": 0.4
+  }
+]

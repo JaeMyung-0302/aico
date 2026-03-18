@@ -1,5 +1,6 @@
 packages:
   - apps/*
+  - apps/*/client
   - apps/*/server
   - apps/*/web
   - packages/*

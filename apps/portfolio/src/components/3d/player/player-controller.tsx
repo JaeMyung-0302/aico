@@ -27,6 +27,7 @@ export const PlayerController = () => {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (useWorldStore.getState().tourActive) return;
       keysPressed.add(e.code);
     };
     const onKeyUp = (e: KeyboardEvent) => {
@@ -51,6 +52,12 @@ export const PlayerController = () => {
   useFrame(() => {
     const body = rigidBodyRef.current;
     if (!body) return;
+
+    if (useWorldStore.getState().tourActive) {
+      keysPressed.clear();
+      body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      return;
+    }
 
     const sprint = keysPressed.has("ShiftLeft") || keysPressed.has("ShiftRight");
     const speed = sprint ? SPRINT_SPEED : MOVE_SPEED;

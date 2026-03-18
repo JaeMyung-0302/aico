@@ -1,0 +1,115 @@
+[
+  {
+    "id": "main-first-harvest",
+    "nameKey": "quest.main.firstHarvest",
+    "descKey": "quest.main.firstHarvest.desc",
+    "type": "main",
+    "npcId": "kimSundeok",
+    "requirements": [{ "type": "harvest", "target": "rice", "quantity": 3 }],
+    "rewards": [{ "itemId": "seed-cabbage", "quantity": 5 }],
+    "goldReward": 300,
+    "prerequisite": null
+  },
+  {
+    "id": "main-village-visit",
+    "nameKey": "quest.main.villageVisit",
+    "descKey": "quest.main.villageVisit.desc",
+    "type": "main",
+    "npcId": "parkJeongsu",
+    "requirements": [{ "type": "explore", "target": "village", "quantity": 1 }],
+    "rewards": [{ "itemId": "tool-fishingRod", "quantity": 1 }],
+    "goldReward": 200,
+    "prerequisite": "main-first-harvest"
+  },
+  {
+    "id": "main-first-recipe",
+    "nameKey": "quest.main.firstRecipe",
+    "descKey": "quest.main.firstRecipe.desc",
+    "type": "main",
+    "npcId": "jungMisuk",
+    "requirements": [{ "type": "cook", "target": "bibimbap", "quantity": 1 }],
+    "rewards": [{ "itemId": "food-kimchi", "quantity": 3 }],
+    "goldReward": 400,
+    "prerequisite": "main-village-visit"
+  },
+  {
+    "id": "main-dungeon-clear",
+    "nameKey": "quest.main.dungeonClear",
+    "descKey": "quest.main.dungeonClear.desc",
+    "type": "main",
+    "npcId": "kangTaepung",
+    "requirements": [{ "type": "combat", "target": "dungeon-floor-3", "quantity": 1 }],
+    "rewards": [{ "itemId": "iron", "quantity": 10 }],
+    "goldReward": 1000,
+    "prerequisite": "main-first-recipe"
+  },
+  {
+    "id": "main-master-farmer",
+    "nameKey": "quest.main.masterFarmer",
+    "descKey": "quest.main.masterFarmer.desc",
+    "type": "main",
+    "npcId": "kimSundeok",
+    "requirements": [
+      { "type": "harvest", "target": "ginseng", "quantity": 1 },
+      { "type": "cook", "target": "ginsengWine", "quantity": 1 }
+    ],
+    "rewards": [{ "itemId": "seed-ginseng", "quantity": 3 }],
+    "goldReward": 2000,
+    "prerequisite": "main-dungeon-clear"
+  },
+  {
+    "id": "side-fresh-catch",
+    "nameKey": "quest.side.freshCatch",
+    "descKey": "quest.side.freshCatch.desc",
+    "type": "side",
+    "npcId": "ohKyungho",
+    "requirements": [{ "type": "fish", "target": "crucianCarp", "quantity": 3 }],
+    "rewards": [{ "itemId": "food-pajeon", "quantity": 2 }],
+    "goldReward": 150,
+    "prerequisite": null
+  },
+  {
+    "id": "side-kimchi-master",
+    "nameKey": "quest.side.kimchiMaster",
+    "descKey": "quest.side.kimchiMaster.desc",
+    "type": "side",
+    "npcId": "jungMisuk",
+    "requirements": [{ "type": "cook", "target": "kimchi", "quantity": 3 }],
+    "rewards": [{ "itemId": "food-kimchiJjigae", "quantity": 2 }],
+    "goldReward": 300,
+    "prerequisite": null
+  },
+  {
+    "id": "side-friendly-neighbor",
+    "nameKey": "quest.side.friendlyNeighbor",
+    "descKey": "quest.side.friendlyNeighbor.desc",
+    "type": "side",
+    "npcId": "hanSeoyoung",
+    "requirements": [{ "type": "gift", "target": "hanSeoyoung", "quantity": 3 }],
+    "rewards": [{ "itemId": "seed-perilla", "quantity": 5 }],
+    "goldReward": 200,
+    "prerequisite": null
+  },
+  {
+    "id": "side-monster-hunter",
+    "nameKey": "quest.side.monsterHunter",
+    "descKey": "quest.side.monsterHunter.desc",
+    "type": "side",
+    "npcId": "kangTaepung",
+    "requirements": [{ "type": "combat", "target": "dokkaebi", "quantity": 5 }],
+    "rewards": [{ "itemId": "iron", "quantity": 5 }],
+    "goldReward": 500,
+    "prerequisite": null
+  },
+  {
+    "id": "side-rare-fish",
+    "nameKey": "quest.side.rareFish",
+    "descKey": "quest.side.rareFish.desc",
+    "type": "side",
+    "npcId": "ohKyungho",
+    "requirements": [{ "type": "fish", "target": "goldenMandarin", "quantity": 1 }],
+    "rewards": [{ "itemId": "food-samgyetang", "quantity": 3 }],
+    "goldReward": 1000,
+    "prerequisite": "side-fresh-catch"
+  }
+]

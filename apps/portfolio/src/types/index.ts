@@ -13,6 +13,7 @@ export interface ProjectMeta {
   readonly techStack: readonly string[];
   readonly role: string;
   readonly highlights: readonly string[];
+  readonly metrics?: readonly string[];
 }
 
 export interface SkillCategory {
@@ -44,7 +45,7 @@ export type WorldId = "hub" | "projects" | "lab";
 
 export type QualityTier = "high" | "medium" | "low";
 
-export type CameraMode = "first-person" | "third-person";
+export type CameraMode = "first-person" | "third-person" | "tour";
 
 export type Vec3 = readonly [number, number, number];
 
@@ -71,4 +72,11 @@ export interface ProjectPlacement {
   readonly position: Vec3;
   readonly rotation: number;
   readonly worldId: WorldId;
+}
+
+export interface TourStop {
+  readonly slug: string;
+  readonly position: Vec3;
+  readonly lookAt: Vec3;
+  readonly title: string;
 }

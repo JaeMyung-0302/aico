@@ -2,9 +2,9 @@
 
 import { useMemo } from "react";
 
-import { Sky, Text } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
-import * as THREE from "three";
+import { Color, DoubleSide } from "three";
 
 import { getCollectiblesByWorld } from "@/content/collectibles";
 
@@ -72,7 +72,8 @@ const RockGroup = () => {
 
 export const HubWorld = () => (
   <>
-    <Sky sunPosition={[50, 30, 50]} />
+    {/* Sky gradient via hemisphere light + fog (lighter alternative to drei Sky shader) */}
+    <hemisphereLight args={["#87ceeb", "#4a6741", 0.6]} />
 
     {/* Ground */}
     <RigidBody type="fixed" friction={1}>
@@ -95,9 +96,9 @@ export const HubWorld = () => (
       <ringGeometry args={[0.8, 1, 32]} />
       <meshStandardMaterial
         color="#646cff"
-        emissive={new THREE.Color("#646cff")}
+        emissive={new Color("#646cff")}
         emissiveIntensity={0.5}
-        side={THREE.DoubleSide}
+        side={DoubleSide}
       />
     </mesh>
 

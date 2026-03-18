@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: geumsugangsan-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: geumsugangsan
+      POSTGRES_PASSWORD: geumsugangsan_dev
+      POSTGRES_DB: geumsugangsan_dev
+    ports:
+      - "5434:5432"
+    volumes:
+      - geumsugangsan-data:/var/lib/postgresql/data
+
+volumes:
+  geumsugangsan-data:

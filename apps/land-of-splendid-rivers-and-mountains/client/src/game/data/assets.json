@@ -1,0 +1,51 @@
+{
+  "images": [
+    { "key": "tile-dirt", "path": "assets/tiles/dirt.png" },
+    { "key": "tile-grass", "path": "assets/tiles/grass.png" },
+    { "key": "npc-default", "path": "assets/sprites/npc/default.png" },
+    { "key": "npc-kim-sundeok", "path": "assets/sprites/npc/kim-sundeok.png" },
+    { "key": "npc-park-jeongsu", "path": "assets/sprites/npc/park-jeongsu.png" },
+    { "key": "npc-choi-cheolsu", "path": "assets/sprites/npc/choi-cheolsu.png" },
+    { "key": "npc-han-seoyoung", "path": "assets/sprites/npc/han-seoyoung.png" },
+    { "key": "npc-kang-taepung", "path": "assets/sprites/npc/kang-taepung.png" },
+    { "key": "npc-lee-dohyun", "path": "assets/sprites/npc/lee-dohyun.png" },
+    { "key": "npc-song-narae", "path": "assets/sprites/npc/song-narae.png" },
+    { "key": "npc-jung-misuk", "path": "assets/sprites/npc/jung-misuk.png" },
+    { "key": "npc-oh-kyungho", "path": "assets/sprites/npc/oh-kyungho.png" },
+    { "key": "npc-yoon-haneul", "path": "assets/sprites/npc/yoon-haneul.png" },
+    { "key": "monster-default", "path": "assets/sprites/monster/default.png" },
+    { "key": "building-house", "path": "assets/sprites/building/house.png" },
+    { "key": "building-barn", "path": "assets/sprites/building/barn.png" },
+    { "key": "building-brewery", "path": "assets/sprites/building/brewery.png" },
+    { "key": "building-smithy", "path": "assets/sprites/building/smithy.png" },
+    { "key": "building-greenhouse", "path": "assets/sprites/building/greenhouse.png" },
+    { "key": "building-storage", "path": "assets/sprites/building/storage.png" },
+    { "key": "tileset-farm", "path": "assets/tilemaps/farm.png" },
+    { "key": "tileset-village", "path": "assets/tilemaps/village-tiles.png" },
+    { "key": "tileset-river", "path": "assets/tilemaps/river-tiles.png" },
+    { "key": "tileset-beach", "path": "assets/tilemaps/beach-tiles.png" },
+    { "key": "tileset-market", "path": "assets/tilemaps/market-tiles.png" },
+    { "key": "tileset-temple", "path": "assets/tilemaps/temple-tiles.png" },
+    { "key": "tileset-mountain", "path": "assets/tilemaps/mountain-tiles.png" }
+  ],
+  "audio": {
+    "bgm": [
+      { "key": "bgm-farm", "path": "assets/audio/bgm-farm" },
+      { "key": "bgm-village", "path": "assets/audio/bgm-village" },
+      { "key": "bgm-dungeon", "path": "assets/audio/bgm-dungeon" },
+      { "key": "bgm-river", "path": "assets/audio/bgm-river" },
+      { "key": "bgm-title", "path": "assets/audio/bgm-title" }
+    ],
+    "sfx": [
+      { "key": "sfx-plant", "path": "assets/audio/sfx-plant" },
+      { "key": "sfx-harvest", "path": "assets/audio/sfx-harvest" },
+      { "key": "sfx-water", "path": "assets/audio/sfx-water" },
+      { "key": "sfx-hit", "path": "assets/audio/sfx-hit" },
+      { "key": "sfx-coin", "path": "assets/audio/sfx-coin" },
+      { "key": "sfx-fish-bite", "path": "assets/audio/sfx-fish-bite" },
+      { "key": "sfx-fish-catch", "path": "assets/audio/sfx-fish-catch" },
+      { "key": "sfx-quest", "path": "assets/audio/sfx-quest" },
+      { "key": "sfx-ui-click", "path": "assets/audio/sfx-ui-click" }
+    ]
+  }
+}

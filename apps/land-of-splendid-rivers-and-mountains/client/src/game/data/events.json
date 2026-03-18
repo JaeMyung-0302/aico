@@ -1,0 +1,90 @@
+[
+  {
+    "id": "ricePlanting",
+    "nameKey": "event.ricePlanting",
+    "descKey": "event.ricePlanting.desc",
+    "season": "spring",
+    "triggerDay": 5,
+    "durationDays": 3,
+    "type": "harvest",
+    "rewards": [{ "itemId": "seed-rice", "quantity": 5 }],
+    "goldReward": 200
+  },
+  {
+    "id": "dano",
+    "nameKey": "event.dano",
+    "descKey": "event.dano.desc",
+    "season": "spring",
+    "triggerDay": 20,
+    "durationDays": 2,
+    "type": "festival",
+    "rewards": [{ "itemId": "food-sikhye", "quantity": 3 }],
+    "goldReward": 300
+  },
+  {
+    "id": "chilseok",
+    "nameKey": "event.chilseok",
+    "descKey": "event.chilseok.desc",
+    "season": "summer",
+    "triggerDay": 7,
+    "durationDays": 1,
+    "type": "festival",
+    "rewards": [{ "itemId": "food-pajeon", "quantity": 2 }],
+    "goldReward": 150
+  },
+  {
+    "id": "baekjung",
+    "nameKey": "event.baekjung",
+    "descKey": "event.baekjung.desc",
+    "season": "summer",
+    "triggerDay": 15,
+    "durationDays": 2,
+    "type": "seasonal",
+    "rewards": [{ "itemId": "food-samgyetang", "quantity": 2 }],
+    "goldReward": 250
+  },
+  {
+    "id": "chuseok",
+    "nameKey": "event.chuseok",
+    "descKey": "event.chuseok.desc",
+    "season": "autumn",
+    "triggerDay": 15,
+    "durationDays": 3,
+    "type": "festival",
+    "rewards": [{ "itemId": "food-japchae", "quantity": 3 }, { "itemId": "food-gimbap", "quantity": 3 }],
+    "goldReward": 500
+  },
+  {
+    "id": "gimjang",
+    "nameKey": "event.gimjang",
+    "descKey": "event.gimjang.desc",
+    "season": "autumn",
+    "triggerDay": 25,
+    "durationDays": 2,
+    "type": "harvest",
+    "rewards": [{ "itemId": "food-kimchi", "quantity": 5 }, { "itemId": "food-kkakdugi", "quantity": 3 }],
+    "goldReward": 400
+  },
+  {
+    "id": "seollal",
+    "nameKey": "event.seollal",
+    "descKey": "event.seollal.desc",
+    "season": "winter",
+    "triggerDay": 1,
+    "durationDays": 3,
+    "type": "festival",
+    "rewards": [{ "itemId": "food-tteokbokki", "quantity": 3 }],
+    "goldReward": 500
+  },
+  {
+    "id": "daeboreum",
+    "nameKey": "event.daeboreum",
+    "descKey": "event.daeboreum.desc",
+    "season": "winter",
+    "triggerDay": 15,
+    "durationDays": 1,
+    "type": "seasonal",
+    "rewards": [{ "itemId": "food-bibimbap", "quantity": 2 }],
+    "goldReward": 200
+  }
+]

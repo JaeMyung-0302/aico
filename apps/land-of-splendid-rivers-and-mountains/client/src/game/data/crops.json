@@ -1,0 +1,92 @@
+[
+  {
+    "id": "rice",
+    "nameKey": "crop.rice",
+    "seasons": ["spring", "summer"],
+    "growthDays": 8,
+    "sellPrice": 120,
+    "seedPrice": 40,
+    "energyRestore": 5
+  },
+  {
+    "id": "cabbage",
+    "nameKey": "crop.cabbage",
+    "seasons": ["spring", "autumn"],
+    "growthDays": 6,
+    "sellPrice": 80,
+    "seedPrice": 30,
+    "energyRestore": 8
+  },
+  {
+    "id": "garlic",
+    "nameKey": "crop.garlic",
+    "seasons": ["spring"],
+    "growthDays": 5,
+    "sellPrice": 60,
+    "seedPrice": 20,
+    "energyRestore": 3
+  },
+  {
+    "id": "pepper",
+    "nameKey": "crop.pepper",
+    "seasons": ["summer"],
+    "growthDays": 7,
+    "sellPrice": 100,
+    "seedPrice": 35,
+    "energyRestore": 4
+  },
+  {
+    "id": "sesame",
+    "nameKey": "crop.sesame",
+    "seasons": ["summer"],
+    "growthDays": 6,
+    "sellPrice": 90,
+    "seedPrice": 25,
+    "energyRestore": 3
+  },
+  {
+    "id": "sweetPotato",
+    "nameKey": "crop.sweetPotato",
+    "seasons": ["summer", "autumn"],
+    "growthDays": 10,
+    "sellPrice": 150,
+    "seedPrice": 50,
+    "energyRestore": 12
+  },
+  {
+    "id": "radish",
+    "nameKey": "crop.radish",
+    "seasons": ["autumn"],
+    "growthDays": 5,
+    "sellPrice": 70,
+    "seedPrice": 25,
+    "energyRestore": 6
+  },
+  {
+    "id": "greenOnion",
+    "nameKey": "crop.greenOnion",
+    "seasons": ["spring", "autumn"],
+    "growthDays": 4,
+    "sellPrice": 50,
+    "seedPrice": 15,
+    "energyRestore": 2
+  },
+  {
+    "id": "perilla",
+    "nameKey": "crop.perilla",
+    "seasons": ["summer"],
+    "growthDays": 5,
+    "sellPrice": 55,
+    "seedPrice": 20,
+    "energyRestore": 3
+  },
+  {
+    "id": "ginseng",
+    "nameKey": "crop.ginseng",
+    "seasons": ["spring", "summer", "autumn"],
+    "growthDays": 14,
+    "sellPrice": 300,
+    "seedPrice": 100,
+    "energyRestore": 20
+  }
+]

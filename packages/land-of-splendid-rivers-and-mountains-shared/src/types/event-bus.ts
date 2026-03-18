@@ -1,0 +1,60 @@
+import type { Season, Weather } from './save.js'
+
+export interface GameEvents {
+  'time:tick': { timeOfDay: number }
+  'time:dayEnd': { day: number; season: Season; year: number }
+  'time:seasonChange': { season: Season; year: number }
+  'farm:planted': { x: number; y: number; cropId: string }
+  'farm:watered': { x: number; y: number }
+  'farm:harvested': { x: number; y: number; cropId: string; quantity: number }
+  'inventory:changed': { itemId: string; quantity: number }
+  'inventory:equipped': { toolId: string | null }
+  'inventory:equipRequest': { toolId: string | null }
+  'npc:talked': { npcId: string }
+  'npc:giftRequested': { npcId: string; itemId: string }
+  'npc:gifted': { npcId: string; itemId: string; reaction: string }
+  'npc:relationChanged': { npcId: string; newValue: number }
+  'combat:hit': { targetId: string; damage: number }
+  'combat:playerHit': { damage: number; currentHp: number }
+  'combat:defeated': { monsterId: string; drops: ReadonlyArray<{ itemId: string; quantity: number }> }
+  'combat:playerDied': undefined
+  'energy:changed': { current: number; max: number }
+  'energy:depleted': undefined
+  'energy:fainted': { goldPenaltyRate: number }
+  'gold:changed': { amount: number; total: number }
+  'shop:buy': { itemId: string }
+  'shop:sell': { itemId: string; quantity: number }
+  'crafting:cook': { recipeId: string }
+  'crafting:ferment': { recipeId: string }
+  'crafting:collect': { slotIndex: number }
+  'building:build': { buildingId: string }
+  'building:upgrade': { buildingId: string }
+  'building:completed': { buildingId: string }
+  'animal:buy': { animalType: string; name: string }
+  'animal:feed': { animalId: string }
+  'animal:collect': { animalId: string }
+  'weather:changed': { weather: Weather }
+  'save:started': undefined
+  'save:completed': { success: boolean }
+  'locale:changed': { locale: string }
+  'scene:transition': { from: string; to: string }
+  'dungeon:entered': { floor: number }
+  'dungeon:cleared': { floor: number }
+  'fishing:started': undefined
+  'fishing:bite': undefined
+  'fishing:reeling': { difficulty: number }
+  'fishing:caught': { fishId: string }
+  'fishing:escaped': undefined
+  'fishing:cancelled': undefined
+  'quest:accepted': { questId: string }
+  'quest:progress': { questId: string; requirementIndex: number; current: number; target: number }
+  'quest:completed': { questId: string }
+  'event:started': { eventId: string }
+  'event:completed': { eventId: string }
+  'event:reward': { eventId: string; goldReward: number; items: ReadonlyArray<{ itemId: string; quantity: number }> }
+  'ui:toggle': { panel: 'inventory' | 'journal' | 'menu' }
+  'player:moved': { scene: string; tileX: number; tileY: number }
+  'quality:changed': { level: 'high' | 'medium' | 'low' }
+  'title:ready': undefined
+  'title:start': undefined
+}

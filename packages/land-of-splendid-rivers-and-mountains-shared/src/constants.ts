@@ -1,0 +1,32 @@
+export const GAME_CONSTANTS = {
+  TILE_SIZE: 32,
+  GAME_WIDTH: 480,
+  GAME_HEIGHT: 854,
+  MINUTES_PER_REAL_SECOND: 0.72,
+  DAY_START_MINUTE: 360,
+  DAY_END_MINUTE: 1440,
+  DAYS_PER_SEASON: 28,
+  SEASONS: ['spring', 'summer', 'autumn', 'winter'] as const,
+  MAX_ENERGY_BASE: 100,
+  ENERGY_COST: {
+    TILL: 8,
+    WATER: 4,
+    HARVEST: 4,
+    CHOP: 6,
+    MINE: 8,
+    FISH: 6,
+    COMBAT: 2,
+  },
+  SAVE_AUTOSAVE_INTERVAL_MS: 300_000,
+  SAVE_VERSION: 8,
+  MAX_SAVE_SLOTS: 3,
+  INVENTORY_SIZE: 36,
+  NPC_RELATION_MAX: 10,
+  NPC_RELATION_MIN: -2,
+} as const
+
+export const PORT = {
+  CLIENT: 5175,
+  SERVER: 4003,
+  DB: 5434,
+} as const

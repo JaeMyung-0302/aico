@@ -1,0 +1,12 @@
+[
+  { "id": "dokkaebi", "nameKey": "monster.dokkaebi", "hp": 30, "attack": 8, "defense": 2, "speed": 60, "drops": [{ "itemId": "iron", "chance": 0.3 }, { "itemId": "stone", "chance": 0.5 }], "expReward": 15 },
+  { "id": "gumiho", "nameKey": "monster.gumiho", "hp": 50, "attack": 14, "defense": 3, "speed": 90, "drops": [{ "itemId": "drop-foxTail", "chance": 0.2 }, { "itemId": "crop-ginseng", "chance": 0.15 }], "expReward": 35 },
+  { "id": "bulgasari", "nameKey": "monster.bulgasari", "hp": 80, "attack": 18, "defense": 8, "speed": 40, "drops": [{ "itemId": "iron", "chance": 0.6 }, { "itemId": "drop-monsterHide", "chance": 0.3 }], "expReward": 50 },
+  { "id": "imugi", "nameKey": "monster.imugi", "hp": 120, "attack": 22, "defense": 6, "speed": 70, "drops": [{ "itemId": "drop-dragonScale", "chance": 0.15 }, { "itemId": "drop-monsterHide", "chance": 0.4 }], "expReward": 80 },
+  { "id": "haetae", "nameKey": "monster.haetae", "hp": 60, "attack": 12, "defense": 5, "speed": 50, "drops": [{ "itemId": "stone", "chance": 0.5 }, { "itemId": "drop-spiritOrb", "chance": 0.1 }], "expReward": 25 },
+  { "id": "cheuksin", "nameKey": "monster.cheuksin", "hp": 25, "attack": 6, "defense": 1, "speed": 45, "drops": [{ "itemId": "wood", "chance": 0.4 }, { "itemId": "fertilizer", "chance": 0.3 }], "expReward": 10 },
+  { "id": "samjokgu", "nameKey": "monster.samjokgu", "hp": 40, "attack": 10, "defense": 3, "speed": 80, "drops": [{ "itemId": "drop-foxTail", "chance": 0.15 }, { "itemId": "wood", "chance": 0.4 }], "expReward": 20 },
+  { "id": "jangsan", "nameKey": "monster.jangsan", "hp": 45, "attack": 16, "defense": 2, "speed": 75, "drops": [{ "itemId": "drop-monsterHide", "chance": 0.25 }, { "itemId": "drop-spiritOrb", "chance": 0.1 }], "expReward": 30 },
+  { "id": "gwishin", "nameKey": "monster.gwishin", "hp": 35, "attack": 11, "defense": 0, "speed": 65, "drops": [{ "itemId": "drop-spiritOrb", "chance": 0.25 }], "expReward": 20 },
+  { "id": "dalgyal", "nameKey": "monster.dalgyal", "hp": 20, "attack": 5, "defense": 1, "speed": 55, "drops": [{ "itemId": "animal-egg", "chance": 0.3 }, { "itemId": "stone", "chance": 0.4 }], "expReward": 8 }
+]

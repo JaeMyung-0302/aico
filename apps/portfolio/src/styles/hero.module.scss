@@ -36,6 +36,24 @@
   font-style: italic;
 }
 
+.contactLinks {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+
+  a {
+    font-size: 0.9rem;
+    color: var(--color-brand-600);
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: var(--color-brand-700, #4a52cc);
+    }
+  }
+}
+
 .exploreLink {
   display: inline-block;
   margin-top: 1.5rem;

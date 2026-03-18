@@ -1,0 +1,214 @@
+[
+  {
+    "id": "cooking-bibimbap",
+    "nameKey": "recipe.bibimbap",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 1 },
+      { "itemId": "crop-pepper", "quantity": 1 },
+      { "itemId": "crop-sesame", "quantity": 1 }
+    ],
+    "resultItemId": "food-bibimbap"
+  },
+  {
+    "id": "cooking-kimchiJjigae",
+    "nameKey": "recipe.kimchiJjigae",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "food-kimchi", "quantity": 1 },
+      { "itemId": "crop-greenOnion", "quantity": 1 }
+    ],
+    "resultItemId": "food-kimchiJjigae"
+  },
+  {
+    "id": "cooking-doenjangJjigae",
+    "nameKey": "recipe.doenjangJjigae",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "food-doenjang", "quantity": 1 },
+      { "itemId": "crop-radish", "quantity": 1 },
+      { "itemId": "crop-greenOnion", "quantity": 1 }
+    ],
+    "resultItemId": "food-doenjangJjigae"
+  },
+  {
+    "id": "cooking-japchae",
+    "nameKey": "recipe.japchae",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-sweetPotato", "quantity": 1 },
+      { "itemId": "crop-sesame", "quantity": 1 }
+    ],
+    "resultItemId": "food-japchae"
+  },
+  {
+    "id": "cooking-gimbap",
+    "nameKey": "recipe.gimbap",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 2 },
+      { "itemId": "crop-sesame", "quantity": 1 }
+    ],
+    "resultItemId": "food-gimbap"
+  },
+  {
+    "id": "cooking-tteokbokki",
+    "nameKey": "recipe.tteokbokki",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 2 },
+      { "itemId": "crop-pepper", "quantity": 2 }
+    ],
+    "resultItemId": "food-tteokbokki"
+  },
+  {
+    "id": "cooking-pajeon",
+    "nameKey": "recipe.pajeon",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-greenOnion", "quantity": 2 },
+      { "itemId": "crop-rice", "quantity": 1 }
+    ],
+    "resultItemId": "food-pajeon"
+  },
+  {
+    "id": "cooking-samgyetang",
+    "nameKey": "recipe.samgyetang",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 1 },
+      { "itemId": "crop-ginseng", "quantity": 1 },
+      { "itemId": "crop-garlic", "quantity": 1 }
+    ],
+    "resultItemId": "food-samgyetang"
+  },
+  {
+    "id": "cooking-bossam",
+    "nameKey": "recipe.bossam",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-cabbage", "quantity": 2 },
+      { "itemId": "crop-garlic", "quantity": 1 }
+    ],
+    "resultItemId": "food-bossam"
+  },
+  {
+    "id": "cooking-perillaSalad",
+    "nameKey": "recipe.perillaSalad",
+    "type": "cooking",
+    "ingredients": [
+      { "itemId": "crop-perilla", "quantity": 2 },
+      { "itemId": "crop-sesame", "quantity": 1 }
+    ],
+    "resultItemId": "food-perillaSalad"
+  },
+  {
+    "id": "ferment-kimchi",
+    "nameKey": "recipe.kimchi",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-cabbage", "quantity": 2 },
+      { "itemId": "crop-pepper", "quantity": 1 },
+      { "itemId": "crop-garlic", "quantity": 1 }
+    ],
+    "resultItemId": "food-kimchi",
+    "fermentationDays": 3
+  },
+  {
+    "id": "ferment-doenjang",
+    "nameKey": "recipe.doenjang",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 2 },
+      { "itemId": "crop-garlic", "quantity": 1 }
+    ],
+    "resultItemId": "food-doenjang",
+    "fermentationDays": 7
+  },
+  {
+    "id": "ferment-gochujang",
+    "nameKey": "recipe.gochujang",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-pepper", "quantity": 3 },
+      { "itemId": "crop-rice", "quantity": 1 }
+    ],
+    "resultItemId": "food-gochujang",
+    "fermentationDays": 5
+  },
+  {
+    "id": "ferment-makgeolli",
+    "nameKey": "recipe.makgeolli",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 3 }
+    ],
+    "resultItemId": "food-makgeolli",
+    "fermentationDays": 4
+  },
+  {
+    "id": "ferment-sikhye",
+    "nameKey": "recipe.sikhye",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-rice", "quantity": 2 },
+      { "itemId": "crop-sweetPotato", "quantity": 1 }
+    ],
+    "resultItemId": "food-sikhye",
+    "fermentationDays": 2
+  },
+  {
+    "id": "ferment-jangajji",
+    "nameKey": "recipe.jangajji",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-radish", "quantity": 2 },
+      { "itemId": "crop-garlic", "quantity": 1 }
+    ],
+    "resultItemId": "food-jangajji",
+    "fermentationDays": 5
+  },
+  {
+    "id": "ferment-kkakdugi",
+    "nameKey": "recipe.kkakdugi",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-radish", "quantity": 2 },
+      { "itemId": "crop-pepper", "quantity": 1 }
+    ],
+    "resultItemId": "food-kkakdugi",
+    "fermentationDays": 3
+  },
+  {
+    "id": "ferment-greenOnionKimchi",
+    "nameKey": "recipe.greenOnionKimchi",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-greenOnion", "quantity": 3 },
+      { "itemId": "crop-pepper", "quantity": 1 }
+    ],
+    "resultItemId": "food-greenOnionKimchi",
+    "fermentationDays": 3
+  },
+  {
+    "id": "ferment-perillaPickle",
+    "nameKey": "recipe.perillaPickle",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-perilla", "quantity": 3 }
+    ],
+    "resultItemId": "food-perillaPickle",
+    "fermentationDays": 4
+  },
+  {
+    "id": "ferment-ginsengWine",
+    "nameKey": "recipe.ginsengWine",
+    "type": "fermentation",
+    "ingredients": [
+      { "itemId": "crop-ginseng", "quantity": 1 },
+      { "itemId": "crop-rice", "quantity": 2 }
+    ],
+    "resultItemId": "food-ginsengWine",
+    "fermentationDays": 10
+  }
+]

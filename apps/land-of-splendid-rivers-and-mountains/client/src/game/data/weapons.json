@@ -1,0 +1,7 @@
+[
+  { "id": "weapon-fist", "nameKey": "weapon.fist", "damage": 3, "range": 24, "cooldownMs": 600, "knockback": 80, "energyCost": 1 },
+  { "id": "weapon-hoe", "nameKey": "item.tool.hoe", "damage": 5, "range": 28, "cooldownMs": 700, "knockback": 100, "energyCost": 2 },
+  { "id": "weapon-axe", "nameKey": "item.tool.axe", "damage": 8, "range": 28, "cooldownMs": 800, "knockback": 120, "energyCost": 2 },
+  { "id": "weapon-pickaxe", "nameKey": "item.tool.pickaxe", "damage": 7, "range": 26, "cooldownMs": 750, "knockback": 110, "energyCost": 2 },
+  { "id": "weapon-sword", "nameKey": "item.tool.sword", "damage": 12, "range": 32, "cooldownMs": 500, "knockback": 140, "energyCost": 2 }
+]

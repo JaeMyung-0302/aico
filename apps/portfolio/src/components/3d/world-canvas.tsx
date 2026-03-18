@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 
+import { profile } from "@/content/profile";
 import { useWorldStore } from "@/stores/world-store";
 
 import { AdaptiveQuality } from "./adaptive-quality";
@@ -17,7 +18,10 @@ import { CollectNotification } from "./hud/collect-notification";
 import { ControlsGuide } from "./hud/controls-guide";
 import { Inventory } from "./hud/inventory";
 import { MobileControls } from "./hud/mobile-controls";
+import { OnboardingOverlay } from "./hud/onboarding-overlay";
 import { ProjectDetail } from "./hud/project-detail";
+import { QuickNav } from "./hud/quick-nav";
+import { TourControls } from "./hud/tour-controls";
 import { CameraController } from "./player/camera-mode";
 import { CharacterModel } from "./player/character-model";
 import { PlayerController } from "./player/player-controller";
@@ -102,39 +106,68 @@ const FallbackBanner = () => {
   );
 };
 
-const WorldCanvas = () => (
-  <CanvasErrorBoundary>
-    <div style={{ width: "100vw", height: "100vh", background: "#0a0a0a" }}>
-      <Canvas
-        camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 1, 0] }}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <Suspense fallback={null}>
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[10, 20, 10]} intensity={0.8} castShadow />
-          <fog attach="fog" args={["#0a0a0a", 30, 80]} />
+const WorldCanvas = () => {
+  const tourActive = useWorldStore((s) => s.tourActive);
 
-          <CameraController />
-          <Physics gravity={[0, -9.81, 0]}>
-            <AdaptiveQuality />
-            <PlayerController />
-            <CharacterModel />
-            <WorldRenderer />
-          </Physics>
-        </Suspense>
-      </Canvas>
+  return (
+    <CanvasErrorBoundary>
+      <div style={{ width: "100vw", height: "100vh", background: "#0a0a0a" }}>
+        <Canvas
+          camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 1, 0] }}
+          style={{ width: "100%", height: "100%" }}
+        >
+          <Suspense fallback={null}>
+            <ambientLight intensity={0.4} />
+            <directionalLight position={[10, 20, 10]} intensity={0.8} castShadow />
+            <fog attach="fog" args={["#0a0a0a", 30, 80]} />
 
-      <TransitionOverlay />
-      <ProjectDetail />
-      <ChatOverlay />
-      <Inventory />
-      <CollectNotification />
-      <CameraToggle />
-      <FallbackBanner />
-      <ControlsGuide />
-      <MobileControls />
-    </div>
-  </CanvasErrorBoundary>
-);
+            <CameraController />
+            <Physics gravity={[0, -9.81, 0]}>
+              <AdaptiveQuality />
+              <PlayerController />
+              <CharacterModel />
+              <WorldRenderer />
+            </Physics>
+          </Suspense>
+        </Canvas>
+
+        <TransitionOverlay />
+        <ProjectDetail />
+        <ChatOverlay />
+        <Inventory />
+        <CollectNotification />
+        {!tourActive && <CameraToggle />}
+        <OnboardingOverlay />
+        <TourControls />
+        <QuickNav />
+        {!tourActive && (
+          <a
+            href={profile.contact.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              position: "fixed",
+              bottom: "1rem",
+              right: "1rem",
+              zIndex: 100,
+              padding: "0.5rem 1rem",
+              background: "rgba(0, 0, 0, 0.7)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "0.5rem",
+              color: "#a0a8ff",
+              fontSize: "0.8125rem",
+              textDecoration: "none",
+            }}
+          >
+            GitHub
+          </a>
+        )}
+        <FallbackBanner />
+        {!tourActive && <ControlsGuide />}
+        {!tourActive && <MobileControls />}
+      </div>
+    </CanvasErrorBoundary>
+  );
+};
 
 export default WorldCanvas;

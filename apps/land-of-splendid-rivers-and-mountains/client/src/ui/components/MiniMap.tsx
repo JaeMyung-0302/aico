@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useGameStore } from '@/stores/useGameStore'
 import { t } from '@/i18n'
 
@@ -44,7 +45,7 @@ const getCenter = (row: number, col: number) => ({
 
 const sceneMap = new Map(SCENES.map((s) => [s.key, s]))
 
-const MiniMap = () => {
+const MiniMap = memo(() => {
   const currentScene = useGameStore((s) => s.currentScene)
 
   const fallbackLabel = (key: string) => key.replace('Scene', '')
@@ -135,7 +136,7 @@ const MiniMap = () => {
       </svg>
     </div>
   )
-}
+})
 
 const styles: Record<string, React.CSSProperties> = {
   container: {

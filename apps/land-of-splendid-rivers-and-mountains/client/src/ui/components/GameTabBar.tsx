@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { t } from '@/i18n'
 
 export type TabId = 'inventory' | 'shop' | 'crafting' | 'building' | 'animal' | 'npc' | null
@@ -16,7 +17,7 @@ const TABS: ReadonlyArray<{ id: TabId & string; labelKey: string; icon: string }
   { id: 'npc', labelKey: 'ui.npc.title', icon: '\uD83D\uDDE3' },
 ]
 
-const GameTabBar = ({ activeTab, onTabChange }: Props) => {
+const GameTabBar = memo(({ activeTab, onTabChange }: Props) => {
   return (
     <div style={styles.bar}>
       {TABS.map((tab) => {
@@ -39,7 +40,7 @@ const GameTabBar = ({ activeTab, onTabChange }: Props) => {
       })}
     </div>
   )
-}
+})
 
 const styles: Record<string, React.CSSProperties> = {
   bar: {

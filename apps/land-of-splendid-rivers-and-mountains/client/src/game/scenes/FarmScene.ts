@@ -65,6 +65,10 @@ export class FarmScene extends Phaser.Scene {
   private readonly buildingSprites: Map<string, Phaser.GameObjects.Image> = new Map()
   private tileCursor!: Phaser.GameObjects.Graphics
   private plantOverlay!: Phaser.GameObjects.Graphics
+  private overlayScrollX = -1
+  private overlayScrollY = -1
+  private overlayEquipped: string | null = null
+  private overlayDirty = true
 
   constructor() {
     super({ key: 'FarmScene' })
@@ -557,11 +561,16 @@ export class FarmScene extends Phaser.Scene {
 
   private updateTileCursor(): void {
     this.tileCursor.clear()
-    this.plantOverlay.clear()
 
     const equipped = useGameStore.getState().equippedTools.current
 
-    if (!equipped) return
+    if (!equipped) {
+      if (this.overlayEquipped !== null) {
+        this.plantOverlay.clear()
+        this.overlayEquipped = null
+      }
+      return
+    }
 
     const { tileX, tileY } = this.getFacingTile()
     const size = GAME_CONSTANTS.TILE_SIZE
@@ -606,8 +615,35 @@ export class FarmScene extends Phaser.Scene {
       this.tileCursor.fillRect(px + 1, py + 1, size - 2, size - 2)
     }
 
-    if (equipped?.startsWith('seed-')) {
-      this.drawPlantableOverlay()
+    const isSeed = equipped?.startsWith('seed-') ?? false
+    if (isSeed) {
+      this.invalidateOverlayIfNeeded(equipped)
+      if (this.overlayDirty) {
+        this.plantOverlay.clear()
+        this.drawPlantableOverlay()
+        this.overlayDirty = false
+      }
+    } else if (this.overlayEquipped !== null) {
+      this.plantOverlay.clear()
+      this.overlayEquipped = null
+      this.overlayDirty = true
+    }
+  }
+
+  private invalidateOverlayIfNeeded(equipped: string | null): void {
+    const cam = this.cameras.main
+    const scrollTileX = Math.floor(cam.scrollX / GAME_CONSTANTS.TILE_SIZE)
+    const scrollTileY = Math.floor(cam.scrollY / GAME_CONSTANTS.TILE_SIZE)
+
+    if (
+      equipped !== this.overlayEquipped ||
+      scrollTileX !== this.overlayScrollX ||
+      scrollTileY !== this.overlayScrollY
+    ) {
+      this.overlayScrollX = scrollTileX
+      this.overlayScrollY = scrollTileY
+      this.overlayEquipped = equipped
+      this.overlayDirty = true
     }
   }
 
@@ -667,6 +703,7 @@ export class FarmScene extends Phaser.Scene {
 
     if (crop && crop.isFullyGrown()) {
       if (this.farmSystem.harvest(tileX, tileY)) {
+        this.overlayDirty = true
         this.syncInventoryFn?.()
         return
       }
@@ -681,6 +718,7 @@ export class FarmScene extends Phaser.Scene {
 
     if (equipped?.startsWith('seed-')) {
       if (this.farmSystem.plant(tileX, tileY, equipped)) {
+        this.overlayDirty = true
         this.syncInventoryFn?.()
         return
       }

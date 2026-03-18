@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, memo } from 'react'
 import { useGameStore } from '@/stores/useGameStore'
 import { eventBus } from '@/lib/event-bus'
 import { t } from '@/i18n'
@@ -77,23 +77,23 @@ const styles = {
   },
 } as const
 
-const FishingMiniGame = () => {
+const FishingMiniGame = memo(() => {
   const fishingState = useGameStore((s) => s.fishingState)
   const difficulty = useGameStore((s) => s.fishingDifficulty)
 
-  const [cursorPos, setCursorPos] = useState(0)
   const cursorPosRef = useRef(0)
   const [targetTop, setTargetTop] = useState(0)
   const dirRef = useRef(1)
   const rafRef = useRef<number>(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cursorElRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (fishingState !== 'reeling') return
 
     const zoneH = Math.max(30, TARGET_ZONE_HEIGHT - difficulty * 0.3)
     setTargetTop(Math.random() * (GAUGE_HEIGHT - zoneH))
-    setCursorPos(0)
+    cursorPosRef.current = 0
     dirRef.current = 1
 
     const speed = CURSOR_SPEED + difficulty * 0.02
@@ -102,18 +102,18 @@ const FishingMiniGame = () => {
     const animate = (now: number) => {
       const dt = now - prev
       prev = now
-      setCursorPos((p) => {
-        let next = p + dirRef.current * speed * (dt / 16)
-        if (next >= GAUGE_HEIGHT - 4) {
-          next = GAUGE_HEIGHT - 4
-          dirRef.current = -1
-        } else if (next <= 0) {
-          next = 0
-          dirRef.current = 1
-        }
-        cursorPosRef.current = next
-        return next
-      })
+      let next = cursorPosRef.current + dirRef.current * speed * (dt / 16)
+      if (next >= GAUGE_HEIGHT - 4) {
+        next = GAUGE_HEIGHT - 4
+        dirRef.current = -1
+      } else if (next <= 0) {
+        next = 0
+        dirRef.current = 1
+      }
+      cursorPosRef.current = next
+      if (cursorElRef.current) {
+        cursorElRef.current.style.top = `${next}px`
+      }
       rafRef.current = requestAnimationFrame(animate)
     }
     rafRef.current = requestAnimationFrame(animate)
@@ -171,12 +171,12 @@ const FishingMiniGame = () => {
         <span style={styles.title}>{t('ui.fishing.reel')}</span>
         <div style={styles.gaugeOuter}>
           <div style={{ ...styles.targetZone, top: targetTop, height: zoneH }} />
-          <div style={{ ...styles.cursor, top: cursorPos }} />
+          <div ref={cursorElRef} style={{ ...styles.cursor, top: 0 }} />
         </div>
         <span style={styles.hint}>{t('ui.fishing.reelHint')}</span>
       </div>
     </div>
   )
-}
+})
 
 export default FishingMiniGame

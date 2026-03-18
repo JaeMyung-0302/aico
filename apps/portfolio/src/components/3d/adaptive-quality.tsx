@@ -17,26 +17,32 @@ export const AdaptiveQuality = () => {
   const { gl } = useThree();
   const setQualityTier = useWorldStore((s) => s.setQualityTier);
 
-  const fpsHistory = useRef<number[]>([]);
+  const ring = useRef(new Float32Array(FPS_WINDOW));
+  const ringIndex = useRef(0);
+  const ringSum = useRef(0);
+  const sampleCount = useRef(0);
   const lastTierChange = useRef(0);
   const criticalStart = useRef<number | null>(null);
   const suggestedFallback = useRef(false);
 
   useFrame((_, delta) => {
     const fps = delta > 0 ? 1 / delta : 60;
-    const history = fpsHistory.current;
-    history.push(fps);
+    const buf = ring.current;
+    const idx = ringIndex.current;
 
-    if (history.length > FPS_WINDOW) {
-      history.shift();
+    ringSum.current -= buf[idx]!;
+    buf[idx] = fps;
+    ringSum.current += fps;
+    ringIndex.current = (idx + 1) % FPS_WINDOW;
+    if (sampleCount.current < FPS_WINDOW) {
+      sampleCount.current++;
+      return;
     }
-
-    if (history.length < FPS_WINDOW) return;
 
     const now = performance.now() / 1000;
     if (now - lastTierChange.current < DEBOUNCE_SECONDS) return;
 
-    const avg = history.reduce((sum, f) => sum + f, 0) / history.length;
+    const avg = ringSum.current / FPS_WINDOW;
 
     if (avg >= HIGH_FPS) {
       gl.shadowMap.enabled = true;

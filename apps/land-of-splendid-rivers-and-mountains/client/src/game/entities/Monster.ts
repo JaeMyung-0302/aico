@@ -6,8 +6,11 @@ type MonsterAIState = 'idle' | 'patrol' | 'chase' | 'attack' | 'knockback'
 type Direction = 'down' | 'up' | 'left' | 'right'
 
 const DETECTION_RANGE = 128
+const DETECTION_RANGE_SQ = DETECTION_RANGE * DETECTION_RANGE
 const ATTACK_RANGE = 28
+const ATTACK_RANGE_SQ = ATTACK_RANGE * ATTACK_RANGE
 const LOSE_RANGE = 192
+const LOSE_RANGE_SQ = LOSE_RANGE * LOSE_RANGE
 const PATROL_PAUSE_MIN = 1500
 const PATROL_PAUSE_MAX = 3500
 const ATTACK_COOLDOWN = 1000
@@ -83,26 +86,28 @@ export class Monster {
 
     const dx = playerX - this.sprite.x
     const dy = playerY - this.sprite.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
+    const distSq = dx * dx + dy * dy
 
-    if (dist <= ATTACK_RANGE && this.attackCooldown <= 0) {
+    if (distSq <= ATTACK_RANGE_SQ && this.attackCooldown <= 0) {
       this.aiState = 'attack'
       this.sprite.setVelocity(0, 0)
       return
     }
 
-    if (dist <= DETECTION_RANGE) {
+    if (distSq <= DETECTION_RANGE_SQ) {
       this.aiState = 'chase'
+      const dist = Math.sqrt(distSq)
       this.chase(dx, dy, dist)
       this.updateAnimation()
       return
     }
 
-    if (this.aiState === 'chase' && dist > LOSE_RANGE) {
+    if (this.aiState === 'chase' && distSq > LOSE_RANGE_SQ) {
       this.aiState = 'patrol'
     }
 
     if (this.aiState === 'chase') {
+      const dist = Math.sqrt(distSq)
       this.chase(dx, dy, dist)
       this.updateAnimation()
       return

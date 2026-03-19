@@ -182,6 +182,7 @@ model Subscription {
   payments         Payment[]
 
   @@index([groupId, status])
+  @@index([status, currentPeriodEnd])
 }
 
 model Payment {

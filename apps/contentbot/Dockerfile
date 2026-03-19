@@ -7,14 +7,17 @@ WORKDIR /app
 # 모노레포 루트 설정
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# workspace 의존 패키지
-COPY packages/typescript-config/ packages/typescript-config/
-COPY packages/eslint-config/ packages/eslint-config/
+# workspace 의존 패키지 (package.json만 먼저 — install 캐시 레이어 분리)
+COPY packages/typescript-config/package.json packages/typescript-config/
+COPY packages/eslint-config/package.json packages/eslint-config/
 
 # contentbot 소스
 COPY apps/contentbot/package.json apps/contentbot/
 RUN pnpm install --filter @repo/contentbot...
 
+# 전체 소스 복사 (install 캐시 보존 후)
+COPY packages/typescript-config/ packages/typescript-config/
+COPY packages/eslint-config/ packages/eslint-config/
 COPY apps/contentbot/ apps/contentbot/
 RUN pnpm --filter @repo/contentbot build
 

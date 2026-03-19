@@ -1,5 +1,61 @@
 [
   {
+    "id": "prologue-arrival",
+    "nameKey": "quest.prologue.arrival",
+    "descKey": "quest.prologue.arrival.desc",
+    "type": "prologue",
+    "npcId": "village-headman",
+    "requirements": [
+      { "type": "talk", "target": "village-headman", "quantity": 1 },
+      { "type": "explore", "target": "village", "quantity": 1 }
+    ],
+    "rewards": [],
+    "goldReward": 50,
+    "prerequisite": null
+  },
+  {
+    "id": "prologue-first-till",
+    "nameKey": "quest.prologue.firstTill",
+    "descKey": "quest.prologue.firstTill.desc",
+    "type": "prologue",
+    "npcId": "village-headman",
+    "requirements": [{ "type": "plant", "target": "any", "quantity": 3 }],
+    "rewards": [{ "itemId": "tool-hoe", "quantity": 1 }],
+    "goldReward": 0,
+    "prerequisite": "prologue-arrival"
+  },
+  {
+    "id": "prologue-first-seed",
+    "nameKey": "quest.prologue.firstSeed",
+    "descKey": "quest.prologue.firstSeed.desc",
+    "type": "prologue",
+    "npcId": "village-headman",
+    "requirements": [
+      { "type": "plant", "target": "radish", "quantity": 1 },
+      { "type": "water", "target": "any", "quantity": 1 }
+    ],
+    "rewards": [
+      { "itemId": "tool-wateringCan", "quantity": 1 },
+      { "itemId": "seed-radish", "quantity": 3 }
+    ],
+    "goldReward": 0,
+    "prerequisite": "prologue-first-till"
+  },
+  {
+    "id": "prologue-first-harvest",
+    "nameKey": "quest.prologue.firstHarvest",
+    "descKey": "quest.prologue.firstHarvest.desc",
+    "type": "prologue",
+    "npcId": "village-headman",
+    "requirements": [
+      { "type": "harvest", "target": "any", "quantity": 1 },
+      { "type": "sell", "target": "any", "quantity": 1 }
+    ],
+    "rewards": [],
+    "goldReward": 100,
+    "prerequisite": "prologue-first-seed"
+  },
+  {
     "id": "main-first-harvest",
     "nameKey": "quest.main.firstHarvest",
     "descKey": "quest.main.firstHarvest.desc",
@@ -8,7 +64,7 @@
     "requirements": [{ "type": "harvest", "target": "rice", "quantity": 3 }],
     "rewards": [{ "itemId": "seed-cabbage", "quantity": 5 }],
     "goldReward": 300,
-    "prerequisite": null
+    "prerequisite": "prologue-first-harvest"
   },
   {
     "id": "main-village-visit",

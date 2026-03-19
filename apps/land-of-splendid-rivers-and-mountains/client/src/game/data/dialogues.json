@@ -1,0 +1,46 @@
+[
+  {
+    "questId": "prologue-arrival",
+    "trigger": "start",
+    "lines": [
+      "허허... 이 먼 곳까지 왔구먼.",
+      "고향을 등지고 새 삶을 찾아 왔다 하였지?",
+      "이 땅은 오래 비어있었다네. 네 손으로 가꾸어 보지 않겠나?",
+      "우선 마을을 한 바퀴 둘러보게나. 필요한 것이 무엇인지 알게 될 것이야."
+    ]
+  },
+  {
+    "questId": "prologue-arrival",
+    "trigger": "complete",
+    "lines": [
+      "마을을 둘러보았으니 이제 밭일을 해볼 차례로구나.",
+      "이 괭이를 받게. 땅을 갈아야 씨앗을 심을 수 있다네."
+    ]
+  },
+  {
+    "questId": "prologue-first-till",
+    "trigger": "complete",
+    "lines": [
+      "땅을 잘 갈았구먼.",
+      "무 씨앗을 주겠네. 심고 나서 물도 잊지 말게나."
+    ]
+  },
+  {
+    "questId": "prologue-first-seed",
+    "trigger": "complete",
+    "lines": [
+      "허허, 솜씨가 제법이로구먼.",
+      "작물이 자라면 수확해서 시장에 팔아보게나.",
+      "그것이 이 땅에서 살아가는 기본이라네."
+    ]
+  },
+  {
+    "questId": "prologue-first-harvest",
+    "trigger": "complete",
+    "lines": [
+      "잘 해냈구먼!",
+      "이제 이 땅은 네 것이야.",
+      "마음껏 가꾸어 보게나. 언제든 도움이 필요하면 찾아오게."
+    ]
+  }
+]

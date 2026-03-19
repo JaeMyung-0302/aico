@@ -1,5 +1,15 @@
 [
   {
+    "id": "village-headman",
+    "nameKey": "npc.villageHeadman",
+    "location": "village",
+    "spawnTileX": 6,
+    "spawnTileY": 10,
+    "lovedGifts": [],
+    "likedGifts": ["crop-rice", "crop-ginseng"],
+    "dislikedGifts": []
+  },
+  {
     "id": "kim-sundeok",
     "nameKey": "npc.kimSundeok",
     "location": "farm",

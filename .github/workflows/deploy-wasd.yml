@@ -1,6 +1,7 @@
 name: Deploy WASD Server
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main

@@ -69,23 +69,35 @@ export const useChat = (): UseChatReturn => {
 
         const decoder = new TextDecoder();
         let accumulated = "";
+        let rafPending = false;
+
+        const flushToState = () => {
+          rafPending = false;
+          const text = accumulated;
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            const last = updated[lastIdx];
+            if (last && last.role === "assistant") {
+              updated[lastIdx] = { ...last, content: text };
+            }
+            return updated;
+          });
+        };
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           accumulated += decoder.decode(value, { stream: true });
-
-          setMessages((prev) => {
-            const updated = [...prev];
-            const lastIdx = updated.length - 1;
-            const last = updated[lastIdx];
-            if (last && last.role === "assistant") {
-              updated[lastIdx] = { ...last, content: accumulated };
-            }
-            return updated;
-          });
+          if (!rafPending) {
+            rafPending = true;
+            requestAnimationFrame(flushToState);
+          }
         }
+
+        // 스트림 종료 후 잔여 텍스트 flush
+        flushToState();
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
 

@@ -119,6 +119,7 @@ model SavedRecipe {
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, recipeId])
+  @@index([userId, createdAt])
   @@map("saved_recipes")
 }
 

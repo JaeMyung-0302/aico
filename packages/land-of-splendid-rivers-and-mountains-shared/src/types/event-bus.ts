@@ -49,6 +49,10 @@ export interface GameEvents {
   'quest:accepted': { questId: string }
   'quest:progress': { questId: string; requirementIndex: number; current: number; target: number }
   'quest:completed': { questId: string }
+  'quest:reward': { questId: string; goldReward: number; items: ReadonlyArray<{ itemId: string; quantity: number }> }
+  'prologue:started': undefined
+  'prologue:completed': undefined
+  'prologue:dialogue': { questId: string; trigger: 'start' | 'complete'; onDone?: () => void }
   'event:started': { eventId: string }
   'event:completed': { eventId: string }
   'event:reward': { eventId: string; goldReward: number; items: ReadonlyArray<{ itemId: string; quantity: number }> }

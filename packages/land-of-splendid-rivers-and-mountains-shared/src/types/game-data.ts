@@ -95,9 +95,9 @@ export interface QuestDefinition {
   readonly id: string
   readonly nameKey: string
   readonly descKey: string
-  readonly type: 'main' | 'side'
+  readonly type: 'main' | 'side' | 'prologue'
   readonly npcId: string | null
-  readonly requirements: ReadonlyArray<Readonly<{ type: 'harvest' | 'fish' | 'cook' | 'gift' | 'explore' | 'combat'; target: string; quantity: number }>>
+  readonly requirements: ReadonlyArray<Readonly<{ type: 'harvest' | 'fish' | 'cook' | 'gift' | 'explore' | 'combat' | 'talk' | 'plant' | 'water' | 'sell'; target: string; quantity: number }>>
   readonly rewards: ReadonlyArray<Readonly<{ itemId: string; quantity: number }>>
   readonly goldReward: number
   readonly prerequisite: string | null

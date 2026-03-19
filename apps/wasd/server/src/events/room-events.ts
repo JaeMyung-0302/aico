@@ -5,6 +5,7 @@ import { roomManager } from '../rooms/room-manager.js'
 import { assignKeys } from '../rooms/key-assigner.js'
 import { GameLoop, gameLoops } from '../engine/game-loop.js'
 import { sanitizeNickname } from '../guards/rate-limiter.js'
+import { logger } from '../lib/logger.js'
 
 const cleanupExistingRoom = (socket: Socket, io: Server): void => {
   const existingRoom = roomManager.getRoomByPlayerId(socket.id)
@@ -24,7 +25,7 @@ const cleanupExistingRoom = (socket: Socket, io: Server): void => {
 
 export const registerRoomEvents = (io: Server) => {
   io.on('connection', (socket: Socket) => {
-    console.log(`Connected: ${socket.id}`)
+    logger.info(`Connected: ${socket.id}`)
 
     socket.on(
       SocketEvents.CREATE_ROOM,
@@ -193,7 +194,7 @@ export const registerRoomEvents = (io: Server) => {
     })
 
     socket.on('disconnect', () => {
-      console.log(`Disconnected: ${socket.id}`)
+      logger.info(`Disconnected: ${socket.id}`)
       const room = roomManager.getRoomByPlayerId(socket.id)
       if (!room) return
 

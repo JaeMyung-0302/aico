@@ -5,6 +5,7 @@ import cors from 'cors'
 import { registerRoomEvents } from './events/room-events.js'
 import { registerGameEvents } from './events/game-events.js'
 import { ConnectionTracker, RateLimiter } from './guards/rate-limiter.js'
+import { logger } from './lib/logger.js'
 
 const CLIENT_ORIGIN = process.env['CLIENT_ORIGIN'] ?? 'http://localhost:5174'
 const corsOrigins = CLIENT_ORIGIN.split(',').map((o) => o.trim())
@@ -41,7 +42,7 @@ const rateLimiter = new RateLimiter()
 io.on('connection', (socket) => {
   socket.use((_event, next) => {
     if (!rateLimiter.isAllowed(socket.id)) {
-      console.warn(`Rate limit exceeded: ${socket.id}`)
+      logger.warn(`Rate limit exceeded: ${socket.id}`)
       socket.disconnect(true)
       return
     }
@@ -70,18 +71,18 @@ registerGameEvents(io)
 const PORT = process.env['PORT'] ?? 4002
 
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err)
+  logger.error('Uncaught Exception:', err)
 })
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason)
+  logger.error('Unhandled Rejection:', reason)
 })
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully')
+  logger.info('SIGTERM received, shutting down gracefully')
   httpServer.close(() => process.exit(0))
 })
 
 httpServer.listen(PORT, () => {
-  console.log(`WASD server running on port ${PORT}`)
+  logger.info(`WASD server running on port ${PORT}`)
 })

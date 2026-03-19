@@ -30,7 +30,7 @@ jobs:
           context: .
           file: apps/wasd/server/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/wasd-server:latest
+          tags: ghcr.io/${{ github.repository_owner }}/wasd-server:latest
 
       - name: Deploy to Lightsail
         uses: appleboy/ssh-action@v1

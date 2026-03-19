@@ -1,6 +1,6 @@
 services:
   wasd-server:
-    image: ghcr.io/${GITHUB_REPOSITORY}/wasd-server:latest
+    image: ghcr.io/jaemyung-0302/wasd-server:latest
     container_name: wasd-server
     restart: unless-stopped
     ports:

@@ -196,5 +196,6 @@ model Feedback {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([status, createdAt])
   @@map("feedbacks")
 }

@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
+import { logger } from './logger.js'
 
 const apiKey = process.env['GEMINI_API_KEY']
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null
@@ -139,7 +140,7 @@ export const suggestRecipes = async (
     try {
       return await tryGenerate()
     } catch (secondError) {
-      console.error(
+      logger.error(
         'Gemini retry also failed:',
         secondError instanceof Error ? secondError.message : secondError,
       )

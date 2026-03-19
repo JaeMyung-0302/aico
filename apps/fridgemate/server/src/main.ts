@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { registerRoutes } from './routes/index.js'
 import { startExpiryCron } from './services/expiry-cron.js'
+import { logger } from './lib/logger.js'
 
 const CLIENT_ORIGIN = process.env['CLIENT_ORIGIN'] ?? 'http://localhost:5176'
 const corsOrigins = CLIENT_ORIGIN.split(',').map((o) =>
@@ -10,7 +11,7 @@ const corsOrigins = CLIENT_ORIGIN.split(',').map((o) =>
 
 const app = express()
 
-console.log('CORS allowed origins:', corsOrigins)
+logger.info(`CORS allowed origins: ${corsOrigins.join(', ')}`)
 app.use(cors({ origin: corsOrigins }))
 app.use(
   express.json({
@@ -36,11 +37,11 @@ registerRoutes(app)
 const PORT = process.env['PORT'] ?? 4001
 
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err)
+  logger.error('Uncaught Exception:', err)
 })
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason)
+  logger.error('Unhandled Rejection:', reason)
 })
 
 process.on('SIGTERM', () => {
@@ -48,6 +49,6 @@ process.on('SIGTERM', () => {
 })
 
 app.listen(PORT, () => {
-  console.log(`FridgeMate server running on port ${PORT}`)
+  logger.info(`FridgeMate server running on port ${PORT}`)
   startExpiryCron()
 })

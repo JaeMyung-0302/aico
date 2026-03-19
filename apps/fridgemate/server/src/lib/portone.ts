@@ -1,4 +1,5 @@
 import * as PortOne from '@portone/server-sdk'
+import { logger } from './logger.js'
 
 interface ChargeBillingKeyParams {
   billingKey: string
@@ -59,7 +60,7 @@ export const chargeBillingKey = async (
   )
 
   if (!response.ok) {
-    console.error(`포트원 결제 실패: status=${response.status}`)
+    logger.error(`포트원 결제 실패: status=${response.status}`)
     throw new Error(`포트원 결제 실패: ${response.status}`)
   }
 
@@ -80,7 +81,7 @@ export const getPayment = async (
   )
 
   if (!response.ok) {
-    console.error(`포트원 결제 조회 실패: status=${response.status}`)
+    logger.error(`포트원 결제 조회 실패: status=${response.status}`)
     throw new Error(`포트원 결제 조회 실패: ${response.status}`)
   }
 
@@ -94,7 +95,7 @@ export const verifyWebhook = async (
   try {
     return await PortOne.Webhook.verify(getWebhookSecret(), body, headers)
   } catch (error) {
-    console.error('Webhook 서명 검증 실패', error)
+    logger.error('Webhook 서명 검증 실패', error)
     throw new Error('Webhook 서명 검증 실패')
   }
 }

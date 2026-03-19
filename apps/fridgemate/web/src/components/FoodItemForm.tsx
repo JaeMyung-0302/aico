@@ -16,7 +16,7 @@ interface FoodItemFormProps {
   compartmentId: string
   editItem?: FoodItemResponse | null
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (item?: FoodItemResponse) => void
 }
 
 const CATEGORY_OPTIONS = Object.values(FoodCategory).map((value) => ({
@@ -66,6 +66,7 @@ export const FoodItemForm = ({
             memo: memo || null,
           }
           await updateItem(editItem.id, compartmentId, input)
+          onSuccess()
         } else {
           const input: CreateFoodItemInput = {
             name: name.trim(),
@@ -75,9 +76,9 @@ export const FoodItemForm = ({
             expiryDate: expiryDate || null,
             memo: memo || null,
           }
-          await createItem(compartmentId, input)
+          const created = await createItem(compartmentId, input)
+          onSuccess(created ?? undefined)
         }
-        onSuccess()
       } finally {
         setSubmitting(false)
       }

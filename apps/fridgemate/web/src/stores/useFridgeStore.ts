@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
+import { ExpiryStatus, getExpiryStatus } from '@/types'
 import type {
   FridgeResponse,
+  FoodItemResponse,
   CreateFridgeInput,
   UpdateFridgeInput,
   UpdateCompartmentsInput,
@@ -17,6 +19,18 @@ interface FridgeState {
 
 interface FridgeActions {
   fetchFridges: () => Promise<void>
+  /** 식재료 mutation 후 로컬에서 칸 통계 갱신 (API 호출 없음) */
+  syncCompartmentStats: (
+    compartmentId: string,
+    foodItems: FoodItemResponse[],
+  ) => void
+  /** 칸에서 아이템 직접 삭제 후 로컬 preview 갱신 */
+  removeCompartmentFoodItem: (compartmentId: string, itemId: string) => void
+  /** 빠른 추가 후 로컬 preview 갱신 */
+  addCompartmentFoodItem: (
+    compartmentId: string,
+    item: { id: string; name: string; expiryDate: string | null },
+  ) => void
   createFridge: (input: CreateFridgeInput) => Promise<FridgeResponse | null>
   updateFridge: (id: string, input: UpdateFridgeInput) => Promise<void>
   updateCompartments: (
@@ -35,6 +49,69 @@ export const useFridgeStore = create<FridgeStore>((set, get) => ({
   loading: false,
   initialLoaded: false,
   error: null,
+
+  syncCompartmentStats: (compartmentId, foodItems) => {
+    set((state) => ({
+      fridges: state.fridges.map((fridge) => ({
+        ...fridge,
+        compartments: fridge.compartments.map((c) => {
+          if (c.id !== compartmentId) return c
+          return {
+            ...c,
+            itemCount: foodItems.length,
+            hasExpiringItems: foodItems.some(
+              (i) => i.expiryStatus !== ExpiryStatus.SAFE,
+            ),
+            foodItems: foodItems.map((i) => ({
+              id: i.id,
+              name: i.name,
+              expiryDate: i.expiryDate,
+            })),
+          }
+        }),
+      })),
+    }))
+  },
+
+  removeCompartmentFoodItem: (compartmentId, itemId) => {
+    set((state) => ({
+      fridges: state.fridges.map((fridge) => ({
+        ...fridge,
+        compartments: fridge.compartments.map((c) => {
+          if (c.id !== compartmentId) return c
+          const updatedItems = c.foodItems.filter((i) => i.id !== itemId)
+          return {
+            ...c,
+            itemCount: updatedItems.length,
+            hasExpiringItems: updatedItems.some(
+              (i) => getExpiryStatus(i.expiryDate) !== ExpiryStatus.SAFE,
+            ),
+            foodItems: updatedItems,
+          }
+        }),
+      })),
+    }))
+  },
+
+  addCompartmentFoodItem: (compartmentId, item) => {
+    set((state) => ({
+      fridges: state.fridges.map((fridge) => ({
+        ...fridge,
+        compartments: fridge.compartments.map((c) => {
+          if (c.id !== compartmentId) return c
+          const updatedItems = [...c.foodItems, item]
+          return {
+            ...c,
+            itemCount: updatedItems.length,
+            hasExpiringItems:
+              c.hasExpiringItems ||
+              getExpiryStatus(item.expiryDate) !== ExpiryStatus.SAFE,
+            foodItems: updatedItems,
+          }
+        }),
+      })),
+    }))
+  },
 
   fetchFridges: async () => {
     if (!get().initialLoaded) {

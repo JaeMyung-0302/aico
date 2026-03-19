@@ -15,8 +15,16 @@ import styles from './FridgePage.module.scss'
 const cx = classNames.bind(styles)
 
 export const FridgePage = () => {
-  const { fridges, activeFridgeId, fetchFridges, loading, error } =
-    useFridgeStore()
+  const {
+    fridges,
+    activeFridgeId,
+    fetchFridges,
+    syncCompartmentStats,
+    removeCompartmentFoodItem,
+    addCompartmentFoodItem,
+    loading,
+    error,
+  } = useFridgeStore()
   const { isAdmin, fetchMe } = useAuthStore()
   const [activeCompartment, setActiveCompartment] =
     useState<CompartmentResponse | null>(null)
@@ -77,12 +85,12 @@ export const FridgePage = () => {
       if (!window.confirm(`"${itemName}" 을(를) 삭제하시겠습니까?`)) return
       try {
         await useFoodItemStore.getState().deleteItem(itemId, compartmentId)
-        await fetchFridges()
+        removeCompartmentFoodItem(compartmentId, itemId)
       } catch {
         // 에러는 store에서 처리됨
       }
     },
-    [fetchFridges],
+    [removeCompartmentFoodItem],
   )
 
   const handleEditCompartments = useCallback(() => {
@@ -97,16 +105,20 @@ export const FridgePage = () => {
 
   const handleEditModalClose = useCallback(() => {
     setShowEditModal(false)
-    fetchFridges()
-  }, [fetchFridges])
+  }, [])
 
   const handlePanelClose = useCallback(() => {
     const closedId = activeCompartment?.id ?? null
     setActiveCompartment(null)
-    fetchFridges()
 
-    // 닫힌 칸에 하이라이트 적용
     if (closedId) {
+      // 패널에서 fetchItems가 호출됐으므로 food item store로 로컬 동기화
+      const items = useFoodItemStore.getState().items[closedId]
+      if (items !== undefined) {
+        syncCompartmentStats(closedId, items)
+      }
+
+      // 닫힌 칸에 하이라이트 적용
       setHighlightedCompartmentId(closedId)
       if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current)
       highlightTimerRef.current = setTimeout(() => {
@@ -114,7 +126,7 @@ export const FridgePage = () => {
         highlightTimerRef.current = null
       }, 2500)
     }
-  }, [activeCompartment, fetchFridges])
+  }, [activeCompartment, syncCompartmentStats])
 
   if (loading) {
     return (
@@ -157,9 +169,15 @@ export const FridgePage = () => {
         <FoodItemForm
           compartmentId={quickAddCompartmentId}
           onClose={() => setQuickAddCompartmentId(null)}
-          onSuccess={() => {
+          onSuccess={(item) => {
+            if (item) {
+              addCompartmentFoodItem(quickAddCompartmentId, {
+                id: item.id,
+                name: item.name,
+                expiryDate: item.expiryDate,
+              })
+            }
             setQuickAddCompartmentId(null)
-            fetchFridges()
           }}
         />
       )}

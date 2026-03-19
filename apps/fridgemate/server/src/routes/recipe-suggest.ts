@@ -3,6 +3,7 @@ import type { Router as RouterType } from 'express'
 import crypto from 'crypto'
 import { prisma } from '../lib/prisma.js'
 import { suggestRecipes } from '../lib/gemini.js'
+import { logger } from '../lib/logger.js'
 import { getKSTWeekStart } from '../lib/date.js'
 import { AuthRequest } from '../middleware/auth.js'
 import { FREE_WEEKLY_LIMIT } from '../middleware/usage-check.js'
@@ -217,7 +218,7 @@ recipeSuggestRouter.post(
 
       res.json(response)
     } catch (error) {
-      console.error('Recipe suggest error:', error)
+      logger.error('Recipe suggest error:', error)
       res.status(500).json({
         error: '레시피 추천에 실패했습니다. 잠시 후 다시 시도해주세요.',
       })

@@ -2,6 +2,7 @@ import { Router, Response } from 'express'
 import type { Router as RouterType } from 'express'
 import { prisma } from '../lib/prisma.js'
 import { AuthRequest } from '../middleware/auth.js'
+import { logger } from '../lib/logger.js'
 
 export const cookCompleteRouter: RouterType = Router()
 
@@ -79,10 +80,7 @@ cookCompleteRouter.post(
         requestedCount: usedIngredients.length,
       })
     } catch (error) {
-      console.error(
-        'Cook complete error:',
-        error instanceof Error ? error.message : error,
-      )
+      logger.error('Cook complete error:', error instanceof Error ? error.message : error)
       res.status(500).json({ error: '요리 완료 처리에 실패했습니다' })
     }
   },

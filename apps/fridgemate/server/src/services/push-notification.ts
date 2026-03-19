@@ -1,14 +1,13 @@
 import webpush from 'web-push'
 import { prisma } from '../lib/prisma.js'
+import { logger } from '../lib/logger.js'
 
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY ?? ''
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY ?? ''
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT ?? 'mailto:dev@fridgemate.local'
 
 if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-  console.warn(
-    '[Push] VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY 미설정 — Push 알림 비활성화',
-  )
+  logger.warn('[Push] VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY 미설정 — Push 알림 비활성화')
 } else {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
 }
@@ -53,9 +52,7 @@ export const sendPushToGroup = async (
 
   const failed = results.filter((r) => r.status === 'rejected').length
   if (failed > 0) {
-    console.warn(
-      `[Push] ${failed}/${subscriptions.length} 발송 실패 (groupId: ${groupId})`,
-    )
+    logger.warn(`[Push] ${failed}/${subscriptions.length} 발송 실패 (groupId: ${groupId})`)
   }
 }
 
@@ -92,9 +89,7 @@ export const sendPushToUser = async (
 
   const failed = results.filter((r) => r.status === 'rejected').length
   if (failed > 0) {
-    console.warn(
-      `[Push] ${failed}/${subscriptions.length} 발송 실패 (userId: ${userId})`,
-    )
+    logger.warn(`[Push] ${failed}/${subscriptions.length} 발송 실패 (userId: ${userId})`)
   }
 }
 

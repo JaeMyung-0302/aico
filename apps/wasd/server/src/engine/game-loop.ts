@@ -1,5 +1,6 @@
 import type { Server } from 'socket.io'
 import type { GamePhase } from '@wasd/shared'
+import { logger } from '../lib/logger.js'
 import {
   TICK_INTERVAL,
   STAGES,
@@ -51,7 +52,7 @@ export class GameLoop {
   start(): void {
     this.intervalId = setInterval(() => this.update(), TICK_INTERVAL)
     this.ttlTimeoutId = setTimeout(() => {
-      console.warn(`Game loop TTL expired: ${this.roomCode}`)
+      logger.warn(`Game loop TTL expired: ${this.roomCode}`)
       this.io.to(this.roomCode).emit(SocketEvents.GAME_COMPLETE, {
         deaths: this.state.deaths,
         elapsedTime: GAME_LOOP_TTL_MS,

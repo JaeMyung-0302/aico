@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { RankingEntry } from '@wasd/shared'
 import { MAX_RANKING_SIZE } from '@wasd/shared'
+import { logger } from '../lib/logger.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = resolve(__dirname, '../../data')
@@ -21,7 +22,7 @@ const loadRankings = (): RankingEntry[] => {
 
 const saveRankings = (data: RankingEntry[]): void => {
   writeFile(DATA_FILE, JSON.stringify(data, null, 2), (err) => {
-    if (err) console.error('Failed to save rankings:', err)
+    if (err) logger.error('Failed to save rankings:', err)
   })
 }
 

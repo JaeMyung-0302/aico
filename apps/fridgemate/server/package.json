@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/main.ts",
     "build": "prisma generate && tsc && cp -r src/generated dist/ && rm -f dist/generated/prisma/*.node dist/generated/prisma/*.wasm",
-    "start": "prisma generate && node dist/main.js",
+    "start": "node dist/main.js",
     "lint": "eslint --max-warnings 0",
     "check-types": "tsc --noEmit",
     "db:generate": "prisma generate",

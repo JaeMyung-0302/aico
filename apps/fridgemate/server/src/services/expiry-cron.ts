@@ -1,11 +1,12 @@
 import cron from 'node-cron'
 import { prisma } from '../lib/prisma.js'
+import { logger } from '../lib/logger.js'
 import { sendPushToGroup } from './push-notification.js'
 
 // 매일 09:00 실행 — 유통기한 임박 식품 Push 알림
 export const startExpiryCron = (): void => {
   cron.schedule('0 9 * * *', async () => {
-    console.log('[Cron] 유통기한 알림 체크 시작')
+    logger.info('[Cron] 유통기한 알림 체크 시작')
 
     try {
       const now = new Date()
@@ -69,13 +70,13 @@ export const startExpiryCron = (): void => {
         })
       }
 
-      console.log(`[Cron] ${groupItems.size}개 그룹에 알림 발송 완료`)
+      logger.info(`[Cron] ${groupItems.size}개 그룹에 알림 발송 완료`)
     } catch (err) {
-      console.error('[Cron] 유통기한 알림 실패:', err)
+      logger.error('[Cron] 유통기한 알림 실패', err)
     }
   })
 
-  console.log('[Cron] 유통기한 알림 스케줄러 등록 (매일 09:00)')
+  logger.info('[Cron] 유통기한 알림 스케줄러 등록 (매일 09:00)')
 
   // 매일 00:05 실행 — 프리미엄 만료 체크
   cron.schedule('5 0 * * *', async () => {
@@ -85,12 +86,12 @@ export const startExpiryCron = (): void => {
         data: { isPremium: false },
       })
       if (result.count > 0) {
-        console.log(`[Cron] ${result.count}개 그룹 프리미엄 만료 처리`)
+        logger.info(`[Cron] ${result.count}개 그룹 프리미엄 만료 처리`)
       }
     } catch (err) {
-      console.error('[Cron] 프리미엄 만료 체크 실패:', err)
+      logger.error('[Cron] 프리미엄 만료 체크 실패', err)
     }
   })
 
-  console.log('[Cron] 프리미엄 만료 스케줄러 등록 (매일 00:05)')
+  logger.info('[Cron] 프리미엄 만료 스케줄러 등록 (매일 00:05)')
 }

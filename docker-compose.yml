@@ -1,0 +1,17 @@
+services:
+  wasd-server:
+    image: ghcr.io/${GITHUB_REPOSITORY}/wasd-server:latest
+    container_name: wasd-server
+    restart: unless-stopped
+    ports:
+      - "4002:4002"
+    environment:
+      - NODE_ENV=production
+      - PORT=4002
+      - CLIENT_ORIGIN=${WASD_CLIENT_ORIGIN}
+    networks:
+      - aico-network
+
+networks:
+  aico-network:
+    driver: bridge

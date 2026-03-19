@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
@@ -76,12 +76,16 @@ const CompartmentCell = memo(({
   const fillLevel = getFillLevel(compartment.itemCount)
 
   // 유통기한 가까운 순 정렬 (null은 맨 뒤)
-  const sortedItems = compartment.foodItems.slice().sort((a, b) => {
-    if (!a.expiryDate && !b.expiryDate) return 0
-    if (!a.expiryDate) return 1
-    if (!b.expiryDate) return -1
-    return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
-  })
+  const sortedItems = useMemo(
+    () =>
+      compartment.foodItems.slice().sort((a, b) => {
+        if (!a.expiryDate && !b.expiryDate) return 0
+        if (!a.expiryDate) return 1
+        if (!b.expiryDate) return -1
+        return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+      }),
+    [compartment.foodItems],
+  )
 
   return (
     <div
@@ -538,13 +542,15 @@ const SimpleFridgeGrid = ({
     />
   )
 
+  const sortedCompartments = useMemo(
+    () => fridge.compartments.slice().sort((a, b) => a.position - b.position),
+    [fridge.compartments],
+  )
+
   // ONE_DOOR: flex 2열 레이아웃 (도어 추가 시 높이 자동 맞춤)
   if (fridge.type === FridgeType.ONE_DOOR) {
-    const allSorted = fridge.compartments
-      .slice()
-      .sort((a, b) => a.position - b.position)
-    const bodyComps = allSorted.filter((c) => c.type !== CompartmentType.DOOR)
-    const doorComps = allSorted.filter((c) => c.type === CompartmentType.DOOR)
+    const bodyComps = sortedCompartments.filter((c) => c.type !== CompartmentType.DOOR)
+    const doorComps = sortedCompartments.filter((c) => c.type === CompartmentType.DOOR)
 
     return (
       <div className={cx('fridge')}>
@@ -569,9 +575,7 @@ const SimpleFridgeGrid = ({
       {renderHeader()}
       <div className={cx('doorContent')}>
         <div className={cx(gridClass)}>
-          {fridge.compartments
-            .slice()
-            .sort((a, b) => a.position - b.position)
+          {sortedCompartments
             .filter((c) => presetPositions.has(c.position))
             .map((compartment) => (
               <CompartmentCell

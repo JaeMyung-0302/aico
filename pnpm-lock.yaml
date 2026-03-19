@@ -303,6 +303,9 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@22.15.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   apps/fridgemate/web:
     dependencies:
@@ -572,6 +575,9 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@22.15.3)(jiti@2.6.1)(sass@1.97.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   apps/wasd/web:
     dependencies:

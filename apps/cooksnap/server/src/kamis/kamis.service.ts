@@ -100,23 +100,21 @@ export class KamisService implements OnModuleInit {
       }
     }
 
-    // 배치 UPDATE (N+1 → 1 트랜잭션)
+    // 배치 UPDATE (병렬 $transaction 배열)
     const totalPrice = results.reduce((sum, r) => sum + (r.price || 0), 0)
-    if (priceUpdates.length > 0 || totalPrice > 0) {
-      await this.prisma.$transaction(async (tx) => {
-        for (const { id, estimatedPrice, kamisItemCode } of priceUpdates) {
-          await tx.ingredient.update({
-            where: { id },
-            data: { estimatedPrice, kamisItemCode },
-          })
-        }
-        if (totalPrice > 0) {
-          await tx.recipe.update({
-            where: { id: recipeId },
-            data: { totalPrice },
-          })
-        }
-      })
+    const ops = [
+      ...priceUpdates.map(({ id, estimatedPrice, kamisItemCode }) =>
+        this.prisma.ingredient.update({
+          where: { id },
+          data: { estimatedPrice, kamisItemCode },
+        }),
+      ),
+      ...(totalPrice > 0
+        ? [this.prisma.recipe.update({ where: { id: recipeId }, data: { totalPrice } })]
+        : []),
+    ]
+    if (ops.length > 0) {
+      await this.prisma.$transaction(ops)
     }
 
     return results

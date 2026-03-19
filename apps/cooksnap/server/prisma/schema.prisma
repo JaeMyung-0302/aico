@@ -95,6 +95,7 @@ model Ingredient {
 
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
+  @@index([recipeId, sortOrder])
   @@map("ingredients")
 }
 
@@ -106,6 +107,7 @@ model Step {
 
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
+  @@index([recipeId, stepOrder])
   @@map("steps")
 }
 

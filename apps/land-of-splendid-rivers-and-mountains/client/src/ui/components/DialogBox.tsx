@@ -3,15 +3,24 @@ import { useGameStore } from '@/stores/useGameStore'
 import { eventBus } from '@/lib/event-bus'
 import { t } from '@/i18n'
 import npcsData from '@/game/data/npcs.json'
+import dialoguesData from '@/game/data/dialogues.json'
 import type { NpcDefinition } from '@land-of-splendid-rivers-and-mountains/shared'
 
 const npcMap = new Map<string, NpcDefinition>(
   (npcsData as ReadonlyArray<NpcDefinition>).map((npc) => [npc.id, npc]),
 )
 
+interface DialogueEntry { questId: string; trigger: 'start' | 'complete'; lines: string[] }
+const dialogueMap = new Map<string, string[]>(
+  (dialoguesData as DialogueEntry[]).map((d) => [`${d.questId}:${d.trigger}`, d.lines]),
+)
+
 const DialogBox = () => {
   const [activeNpcId, setActiveNpcId] = useState<string | null>(null)
   const [giftReaction, setGiftReaction] = useState<string | null>(null)
+  const [prologueLines, setPrologueLines] = useState<string[]>([])
+  const [prologueIndex, setPrologueIndex] = useState(0)
+  const [prologueDone, setPrologueDone] = useState<(() => void) | undefined>(undefined)
   const { npcRelations, inventory } = useGameStore()
 
   const onNpcTalked = useCallback(({ npcId }: { npcId: string }) => {
@@ -24,14 +33,56 @@ const DialogBox = () => {
     setGiftReaction(reaction)
   }, [])
 
+  const onPrologueDialogue = useCallback(({ questId, trigger, onDone }: { questId: string; trigger: 'start' | 'complete'; onDone?: () => void }) => {
+    const lines = dialogueMap.get(`${questId}:${trigger}`)
+    if (!lines || lines.length === 0) { onDone?.(); return }
+    setPrologueLines(lines)
+    setPrologueIndex(0)
+    setPrologueDone(() => onDone)
+    useGameStore.getState().setDialogOpen(true)
+  }, [])
+
   useEffect(() => {
     eventBus.on('npc:talked', onNpcTalked)
     eventBus.on('npc:gifted', onNpcGifted)
+    eventBus.on('prologue:dialogue', onPrologueDialogue)
     return () => {
       eventBus.off('npc:talked', onNpcTalked)
       eventBus.off('npc:gifted', onNpcGifted)
+      eventBus.off('prologue:dialogue', onPrologueDialogue)
     }
-  }, [onNpcTalked, onNpcGifted])
+  }, [onNpcTalked, onNpcGifted, onPrologueDialogue])
+
+  // Prologue dialogue takes priority
+  if (prologueLines.length > 0) {
+    const isLast = prologueIndex >= prologueLines.length - 1
+    const handleNext = () => {
+      if (isLast) {
+        setPrologueLines([])
+        setPrologueIndex(0)
+        useGameStore.getState().setDialogOpen(false)
+        prologueDone?.()
+      } else {
+        setPrologueIndex((i) => i + 1)
+      }
+    }
+    return (
+      <div style={styles.overlay}>
+        <div style={styles.box} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.header}>
+            <img src="assets/portraits/village-headman.png" alt="이장" style={styles.portrait} />
+            <div style={styles.headerInfo}>
+              <span style={styles.name}>마을 이장</span>
+            </div>
+          </div>
+          <div style={styles.textArea}>{prologueLines[prologueIndex]}</div>
+          <button style={styles.talkBtn} onClick={handleNext}>
+            {isLast ? '닫기' : '다음 ▶'}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (!activeNpcId) return null
 

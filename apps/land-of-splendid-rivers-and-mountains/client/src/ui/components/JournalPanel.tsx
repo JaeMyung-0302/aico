@@ -14,6 +14,10 @@ const targetKeyPrefix: Readonly<Record<string, string>> = {
   gift: 'npc',
   explore: 'map',
   combat: 'monster',
+  talk: 'npc',
+  plant: 'crop',
+  water: 'crop',
+  sell: 'crop',
 }
 
 const JournalPanel = () => {
@@ -69,7 +73,7 @@ const JournalPanel = () => {
             return (
               <div key={quest.id} style={styles.questCard}>
                 <div style={styles.questType}>
-                  {quest.type === 'main' ? t('ui.journal.main') : t('ui.journal.side')}
+                  {quest.type === 'prologue' ? t('ui.journal.prologue') : quest.type === 'main' ? t('ui.journal.main') : t('ui.journal.side')}
                 </div>
                 <div style={styles.questName}>{t(quest.nameKey as never)}</div>
                 <div style={styles.questDesc}>{t(quest.descKey as never)}</div>

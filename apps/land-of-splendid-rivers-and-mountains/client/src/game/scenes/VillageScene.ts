@@ -282,6 +282,10 @@ export class VillageScene extends Phaser.Scene {
           playerDefense: combatSystem.getDefense(),
           completedEvents: [],
           activeEventId: null,
+          activeQuests: useGameStore.getState().activeQuests as string[],
+          completedQuests: useGameStore.getState().completedQuests as string[],
+          questProgress: useGameStore.getState().questProgress as Record<string, number[]>,
+          prologueCompleted: useGameStore.getState().prologueCompleted,
         }
       },
       (data) => {
@@ -305,6 +309,8 @@ export class VillageScene extends Phaser.Scene {
         const store = useGameStore.getState()
         store.setGold(data.gold)
         store.setTime(data.day, data.season, data.year, data.timeOfDay)
+        store.setQuests(data.activeQuests ?? [], data.completedQuests ?? [], data.questProgress ?? {})
+        store.setPrologueCompleted(data.prologueCompleted ?? false)
         store.setWeather(data.weather)
         for (const [npcId, value] of Object.entries(relations)) {
           store.setNpcRelation(npcId, value)

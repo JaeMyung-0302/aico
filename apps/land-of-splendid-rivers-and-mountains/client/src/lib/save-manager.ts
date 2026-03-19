@@ -4,7 +4,7 @@ import { api, getUserId } from './api'
 
 const SAVE_KEY = 'land-of-splendid-rivers-and-mountains:save'
 const SYNC_DEBOUNCE_MS = 2000
-export const SAVE_VERSION = 8
+export const SAVE_VERSION = 9
 
 export interface SaveData {
   readonly version: number
@@ -30,6 +30,10 @@ export interface SaveData {
   readonly playerDefense: number
   readonly completedEvents: ReadonlyArray<string>
   readonly activeEventId: string | null
+  readonly activeQuests: ReadonlyArray<string>
+  readonly completedQuests: ReadonlyArray<string>
+  readonly questProgress: Readonly<Record<string, ReadonlyArray<number>>>
+  readonly prologueCompleted: boolean
 }
 
 const REQUIRED_SAVE_FIELDS = [
@@ -189,6 +193,9 @@ export class SaveManager {
     }
     if (migrated.version === 7) {
       migrated = { ...migrated, completedEvents: [], activeEventId: null, version: 8 }
+    }
+    if (migrated.version === 8) {
+      migrated = { ...migrated, activeQuests: [], completedQuests: [], questProgress: {}, prologueCompleted: false, version: 9 }
     }
     return migrated
   }

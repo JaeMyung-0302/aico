@@ -27,6 +27,7 @@ interface GameState {
   readonly activeQuests: ReadonlyArray<string>
   readonly completedQuests: ReadonlyArray<string>
   readonly questProgress: Readonly<Record<string, ReadonlyArray<number>>>
+  readonly prologueCompleted: boolean
   readonly currentScene: string
   readonly playerTileX: number
   readonly playerTileY: number
@@ -50,6 +51,7 @@ interface GameActions {
   setDungeonFloor: (floor: number) => void
   setFishingState: (state: 'idle' | 'casting' | 'waiting' | 'reeling', difficulty?: number) => void
   setQuests: (active: ReadonlyArray<string>, completed: ReadonlyArray<string>, progress: Readonly<Record<string, ReadonlyArray<number>>>) => void
+  setPrologueCompleted: (completed: boolean) => void
   togglePanel: (panel: 'inventory' | 'journal' | 'menu') => void
   setPlayerPosition: (scene: string, tileX: number, tileY: number) => void
   setDialogOpen: (open: boolean) => void
@@ -81,6 +83,7 @@ const initialState: GameState = {
   activeQuests: [],
   completedQuests: [],
   questProgress: {},
+  prologueCompleted: false,
   currentScene: 'FarmScene',
   playerTileX: 0,
   playerTileY: 0,
@@ -123,6 +126,8 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setFishingState: (fishingState, fishingDifficulty = 0) => set({ fishingState, fishingDifficulty }),
 
   setQuests: (activeQuests, completedQuests, questProgress) => set({ activeQuests, completedQuests, questProgress }),
+
+  setPrologueCompleted: (prologueCompleted) => set({ prologueCompleted }),
 
   togglePanel: (panel) =>
     set((state) => ({

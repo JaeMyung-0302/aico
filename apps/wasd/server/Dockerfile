@@ -12,6 +12,7 @@ COPY turbo.json ./
 # Copy only needed packages
 COPY packages/wasd-shared ./packages/wasd-shared
 COPY packages/typescript-config ./packages/typescript-config
+COPY packages/eslint-config ./packages/eslint-config
 COPY apps/wasd/server ./apps/wasd/server
 
 # Install dependencies

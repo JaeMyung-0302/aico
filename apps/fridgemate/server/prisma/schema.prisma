@@ -128,6 +128,8 @@ model Fridge {
   group           Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   compartments    Compartment[]
   recipeHistories RecipeHistory[]
+
+  @@index([groupId])
 }
 
 model Compartment {
@@ -138,6 +140,8 @@ model Compartment {
   position  Int
   fridge    Fridge          @relation(fields: [fridgeId], references: [id], onDelete: Cascade)
   foodItems FoodItem[]
+
+  @@index([fridgeId])
 }
 
 model FoodItem {
@@ -152,6 +156,8 @@ model FoodItem {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   compartment   Compartment  @relation(fields: [compartmentId], references: [id], onDelete: Cascade)
+
+  @@index([compartmentId, expiryDate])
 }
 
 model RecipeHistory {

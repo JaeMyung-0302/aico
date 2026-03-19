@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { SpriteText } from "../objects/sprite-text";
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import { Color, DoubleSide } from "three";
@@ -18,59 +16,47 @@ const WALL_HEIGHT = 5;
 const WALL_THICKNESS = 0.5;
 const HALF = GROUND_SIZE / 2;
 
-const TreeGroup = () => {
-  const trees = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, i) => ({
-        id: `tree-${i}`,
-        x: Math.cos((i / 12) * Math.PI * 2) * 15 + (Math.random() - 0.5) * 6,
-        z: Math.sin((i / 12) * Math.PI * 2) * 15 + (Math.random() - 0.5) * 6,
-        scale: 0.8 + Math.random() * 0.4,
-      })),
-    [],
-  );
+const TREES = Array.from({ length: 12 }, (_, i) => ({
+  id: `tree-${i}`,
+  x: Math.cos((i / 12) * Math.PI * 2) * 15 + (Math.sin(i * 0.37) * 0.5) * 6,
+  z: Math.sin((i / 12) * Math.PI * 2) * 15 + (Math.sin(i * 0.73) * 0.5) * 6,
+  scale: 0.8 + ((i % 5) / 5) * 0.4,
+}));
 
-  return (
-    <>
-      {trees.map((tree) => (
-        <group key={tree.id} position={[tree.x, 0, tree.z]}>
-          <mesh position={[0, 1, 0]} castShadow>
-            <cylinderGeometry args={[0.15, 0.2, 2, 6]} />
-            <meshStandardMaterial color="#5c3d2e" />
-          </mesh>
-          <mesh position={[0, 2.5, 0]} castShadow>
-            <coneGeometry args={[0.8 * tree.scale, 2 * tree.scale, 6]} />
-            <meshStandardMaterial color="#2d5a27" />
-          </mesh>
-        </group>
-      ))}
-    </>
-  );
-};
+const ROCKS = Array.from({ length: 8 }, (_, i) => ({
+  id: `rock-${i}`,
+  x: Math.cos((i / 8) * Math.PI * 2) * 20 + (Math.sin(i * 0.53) * 0.5) * 4,
+  z: Math.sin((i / 8) * Math.PI * 2) * 20 + (Math.sin(i * 0.91) * 0.5) * 4,
+  scale: 0.3 + ((i % 5) / 5) * 0.5,
+}));
 
-const RockGroup = () => {
-  const rocks = useMemo(
-    () =>
-      Array.from({ length: 8 }, (_, i) => ({
-        id: `rock-${i}`,
-        x: Math.cos((i / 8) * Math.PI * 2) * 20 + (Math.random() - 0.5) * 4,
-        z: Math.sin((i / 8) * Math.PI * 2) * 20 + (Math.random() - 0.5) * 4,
-        scale: 0.3 + Math.random() * 0.5,
-      })),
-    [],
-  );
-
-  return (
-    <>
-      {rocks.map((rock) => (
-        <mesh key={rock.id} position={[rock.x, rock.scale * 0.4, rock.z]} castShadow>
-          <dodecahedronGeometry args={[rock.scale, 0]} />
-          <meshStandardMaterial color="#6b6b6b" roughness={0.9} />
+const TreeGroup = () => (
+  <>
+    {TREES.map((tree) => (
+      <group key={tree.id} position={[tree.x, 0, tree.z]}>
+        <mesh position={[0, 1, 0]} castShadow>
+          <cylinderGeometry args={[0.15, 0.2, 2, 6]} />
+          <meshStandardMaterial color="#5c3d2e" />
         </mesh>
-      ))}
-    </>
-  );
-};
+        <mesh position={[0, 2.5, 0]} castShadow>
+          <coneGeometry args={[0.8 * tree.scale, 2 * tree.scale, 6]} />
+          <meshStandardMaterial color="#2d5a27" />
+        </mesh>
+      </group>
+    ))}
+  </>
+);
+
+const RockGroup = () => (
+  <>
+    {ROCKS.map((rock) => (
+      <mesh key={rock.id} position={[rock.x, rock.scale * 0.4, rock.z]} castShadow>
+        <dodecahedronGeometry args={[rock.scale, 0]} />
+        <meshStandardMaterial color="#6b6b6b" roughness={0.9} />
+      </mesh>
+    ))}
+  </>
+);
 
 export const HubWorld = () => (
   <>

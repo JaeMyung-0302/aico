@@ -134,6 +134,7 @@ model AnalysisHistory {
   user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt])
   @@map("analysis_history")
 }
 
@@ -165,6 +166,8 @@ model Subscription {
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   payments Payment[]
 
+  @@index([status, currentPeriodEnd])
+  @@index([status, retryCount])
   @@map("subscriptions")
 }
 
@@ -182,6 +185,7 @@ model Payment {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
+  @@index([userId, status])
   @@map("payments")
 }
 

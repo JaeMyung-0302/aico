@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { drainStream } from "@/lib/drain-stream";
 import { useWorldStore } from "@/stores/world-store";
 import styles from "@/styles/chat-overlay.module.scss";
 import type { ChatMessage } from "@/types";
@@ -68,13 +69,7 @@ export const ChatOverlay = () => {
       const reader = response.body?.getReader();
       if (!reader) throw new Error("스트림 불가");
 
-      const decoder = new TextDecoder();
-      let accumulated = "";
-      let rafPending = false;
-
-      const flushToState = () => {
-        rafPending = false;
-        const text = accumulated;
+      await drainStream(reader, (text) => {
         setMessages((prev) => {
           const updated = [...prev];
           const lastIdx = updated.length - 1;
@@ -85,24 +80,7 @@ export const ChatOverlay = () => {
           return updated;
         });
         scrollToBottom();
-      };
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        accumulated += decoder.decode(value, { stream: true });
-        if (!rafPending) {
-          rafPending = true;
-          requestAnimationFrame(flushToState);
-        }
-      }
-
-      // Flush any remaining text after stream ends
-      if (rafPending) {
-        cancelAnimationFrame(0);
-      }
-      flushToState();
+      });
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => prev.filter((m) => m.id !== assistantMsg.id));

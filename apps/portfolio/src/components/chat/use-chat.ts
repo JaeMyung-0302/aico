@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { drainStream } from "@/lib/drain-stream";
 import type { ChatMessage } from "@/types";
 
 interface UseChatReturn {
@@ -67,13 +68,7 @@ export const useChat = (): UseChatReturn => {
         const reader = response.body?.getReader();
         if (!reader) throw new Error("스트림을 읽을 수 없습니다.");
 
-        const decoder = new TextDecoder();
-        let accumulated = "";
-        let rafPending = false;
-
-        const flushToState = () => {
-          rafPending = false;
-          const text = accumulated;
+        await drainStream(reader, (text) => {
           setMessages((prev) => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
@@ -83,21 +78,7 @@ export const useChat = (): UseChatReturn => {
             }
             return updated;
           });
-        };
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          accumulated += decoder.decode(value, { stream: true });
-          if (!rafPending) {
-            rafPending = true;
-            requestAnimationFrame(flushToState);
-          }
-        }
-
-        // 스트림 종료 후 잔여 텍스트 flush
-        flushToState();
+        });
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") return;
 

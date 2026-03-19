@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames/bind'
 import { useFridgeStore } from '@/stores/useFridgeStore'
@@ -39,13 +39,20 @@ interface FridgeViewProps {
 
 // === 칸 셀 컴포넌트 ===
 
+const formatExpiry = (expiryDate: string | null): string | null => {
+  const days = getDaysUntilExpiry(expiryDate)
+  if (days === null) return null
+  if (days <= 0) return 'D-day'
+  return `D-${days}`
+}
+
 const FILL_LEVEL_CLASS: Record<number, string | undefined> = {
   0: 'fillLevel0',
   2: 'fillLevel2',
   3: 'fillLevel3',
 }
 
-const CompartmentCell = ({
+const CompartmentCell = memo(({
   compartment,
   fridgeType,
   onClick,
@@ -75,13 +82,6 @@ const CompartmentCell = ({
     if (!b.expiryDate) return -1
     return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
   })
-
-  const formatExpiry = (expiryDate: string | null): string | null => {
-    const days = getDaysUntilExpiry(expiryDate)
-    if (days === null) return null
-    if (days <= 0) return 'D-day'
-    return `D-${days}`
-  }
 
   return (
     <div
@@ -175,7 +175,7 @@ const CompartmentCell = ({
       )}
     </div>
   )
-}
+})
 
 // === 도어 섹션 기반 냉장고 (SIDE_BY_SIDE, FOUR_DOOR) ===
 

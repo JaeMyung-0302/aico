@@ -17,6 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set lowercase owner
+        run: echo "OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -30,7 +33,7 @@ jobs:
           context: .
           file: apps/wasd/server/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/wasd-server:latest
+          tags: ghcr.io/${{ env.OWNER }}/wasd-server:latest
 
       - name: Deploy to Lightsail
         uses: appleboy/ssh-action@v1

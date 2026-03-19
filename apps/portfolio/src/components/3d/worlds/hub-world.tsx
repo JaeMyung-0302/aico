@@ -22,6 +22,7 @@ const TreeGroup = () => {
   const trees = useMemo(
     () =>
       Array.from({ length: 12 }, (_, i) => ({
+        id: `tree-${i}`,
         x: Math.cos((i / 12) * Math.PI * 2) * 15 + (Math.random() - 0.5) * 6,
         z: Math.sin((i / 12) * Math.PI * 2) * 15 + (Math.random() - 0.5) * 6,
         scale: 0.8 + Math.random() * 0.4,
@@ -31,8 +32,8 @@ const TreeGroup = () => {
 
   return (
     <>
-      {trees.map((tree, i) => (
-        <group key={i} position={[tree.x, 0, tree.z]}>
+      {trees.map((tree) => (
+        <group key={tree.id} position={[tree.x, 0, tree.z]}>
           <mesh position={[0, 1, 0]} castShadow>
             <cylinderGeometry args={[0.15, 0.2, 2, 6]} />
             <meshStandardMaterial color="#5c3d2e" />
@@ -51,6 +52,7 @@ const RockGroup = () => {
   const rocks = useMemo(
     () =>
       Array.from({ length: 8 }, (_, i) => ({
+        id: `rock-${i}`,
         x: Math.cos((i / 8) * Math.PI * 2) * 20 + (Math.random() - 0.5) * 4,
         z: Math.sin((i / 8) * Math.PI * 2) * 20 + (Math.random() - 0.5) * 4,
         scale: 0.3 + Math.random() * 0.5,
@@ -60,8 +62,8 @@ const RockGroup = () => {
 
   return (
     <>
-      {rocks.map((rock, i) => (
-        <mesh key={i} position={[rock.x, rock.scale * 0.4, rock.z]} castShadow>
+      {rocks.map((rock) => (
+        <mesh key={rock.id} position={[rock.x, rock.scale * 0.4, rock.z]} castShadow>
           <dodecahedronGeometry args={[rock.scale, 0]} />
           <meshStandardMaterial color="#6b6b6b" roughness={0.9} />
         </mesh>

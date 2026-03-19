@@ -51,8 +51,8 @@ export const LabWorld = () => (
     </SpriteText>
 
     {/* Holographic display pillars */}
-    {([[-5, 5], [5, 5], [-5, -5], [5, -5]] as const).map(([x, z], i) => (
-      <mesh key={i} position={[x, 2, z]}>
+    {([[-5, 5], [5, 5], [-5, -5], [5, -5]] as const).map(([x, z]) => (
+      <mesh key={`${x},${z}`} position={[x, 2, z]}>
         <cylinderGeometry args={[0.1, 0.1, 4, 8]} />
         <meshStandardMaterial
           color="#4da6ff"

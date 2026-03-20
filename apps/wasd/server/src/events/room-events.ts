@@ -1,11 +1,55 @@
 import type { Server, Socket } from 'socket.io'
-import type { GamePhase } from '@wasd/shared'
+import type { GamePhase, Room, Player, Key } from '@wasd/shared'
 import { SocketEvents, MIN_PLAYERS, INVITE_CODE_LENGTH } from '@wasd/shared'
 import { roomManager } from '../rooms/room-manager.js'
 import { assignKeys } from '../rooms/key-assigner.js'
 import { GameLoop, gameLoops } from '../engine/game-loop.js'
 import { sanitizeNickname } from '../guards/rate-limiter.js'
 import { logger } from '../lib/logger.js'
+
+const validateNickname = (socket: Socket, nickname: string): string | null => {
+  const trimmed = sanitizeNickname(nickname)
+  if (!trimmed) {
+    socket.emit(SocketEvents.ERROR, {
+      message: '닉네임은 1~10자여야 합니다.',
+    })
+  }
+  return trimmed
+}
+
+const applyKeyAssignments = (
+  players: Player[],
+  assignments: { playerId: string; keys: Key[] }[],
+): Player[] => {
+  return players.map((player) => {
+    const assignment = assignments.find((a) => a.playerId === player.id)
+    return { ...player, keys: assignment?.keys ?? [] }
+  })
+}
+
+const stopGameLoop = (roomCode: string): void => {
+  const loop = gameLoops.get(roomCode)
+  if (loop) {
+    loop.stop()
+    gameLoops.delete(roomCode)
+  }
+}
+
+const resetRoomPhase = (
+  io: Server,
+  room: Room,
+  updatedRoom: Room | null,
+): void => {
+  if (!updatedRoom) return
+  const resetRoom: Room =
+    room.phase !== 'lobby'
+      ? { ...updatedRoom, phase: 'lobby' as GamePhase }
+      : updatedRoom
+  if (resetRoom !== updatedRoom) {
+    roomManager.updateRoom(room.code, resetRoom)
+  }
+  io.to(room.code).emit(SocketEvents.ROOM_UPDATED, resetRoom)
+}
 
 const cleanupExistingRoom = (socket: Socket, io: Server): void => {
   const existingRoom = roomManager.getRoomByPlayerId(socket.id)
@@ -30,13 +74,8 @@ export const registerRoomEvents = (io: Server) => {
     socket.on(
       SocketEvents.CREATE_ROOM,
       ({ nickname }: { nickname: string }) => {
-        const trimmed = sanitizeNickname(nickname)
-        if (!trimmed) {
-          socket.emit(SocketEvents.ERROR, {
-            message: '닉네임은 1~10자여야 합니다.',
-          })
-          return
-        }
+        const trimmed = validateNickname(socket, nickname)
+        if (!trimmed) return
 
         cleanupExistingRoom(socket, io)
 
@@ -61,13 +100,8 @@ export const registerRoomEvents = (io: Server) => {
           })
           return
         }
-        const trimmed = sanitizeNickname(nickname)
-        if (!trimmed) {
-          socket.emit(SocketEvents.ERROR, {
-            message: '닉네임은 1~10자여야 합니다.',
-          })
-          return
-        }
+        const trimmed = validateNickname(socket, nickname)
+        if (!trimmed) return
 
         cleanupExistingRoom(socket, io)
 
@@ -87,34 +121,14 @@ export const registerRoomEvents = (io: Server) => {
       const room = roomManager.getRoomByPlayerId(socket.id)
       if (!room) return
       socket.leave(room.code)
-
-      const existingLoop = gameLoops.get(room.code)
-      if (existingLoop) {
-        existingLoop.stop()
-        gameLoops.delete(room.code)
-      }
-
+      stopGameLoop(room.code)
       const updatedRoom = roomManager.leaveRoom(room.code, socket.id)
-      if (updatedRoom) {
-        const resetRoom =
-          room.phase !== 'lobby'
-            ? { ...updatedRoom, phase: 'lobby' as GamePhase }
-            : updatedRoom
-        if (resetRoom !== updatedRoom) {
-          roomManager.updateRoom(room.code, resetRoom)
-        }
-        io.to(room.code).emit(SocketEvents.ROOM_UPDATED, resetRoom)
-      }
+      resetRoomPhase(io, room, updatedRoom)
     })
 
     socket.on(SocketEvents.SOLO_START, ({ nickname }: { nickname: string }) => {
-      const trimmed = sanitizeNickname(nickname)
-      if (!trimmed) {
-        socket.emit(SocketEvents.ERROR, {
-          message: '닉네임은 1~10자여야 합니다.',
-        })
-        return
-      }
+      const trimmed = validateNickname(socket, nickname)
+      if (!trimmed) return
 
       cleanupExistingRoom(socket, io)
 
@@ -128,10 +142,7 @@ export const registerRoomEvents = (io: Server) => {
       socket.join(room.code)
 
       const assignments = assignKeys([socket.id])
-      const updatedPlayers = room.players.map((player) => {
-        const assignment = assignments.find((a) => a.playerId === player.id)
-        return { ...player, keys: assignment?.keys ?? [] }
-      })
+      const updatedPlayers = applyKeyAssignments(room.players, assignments)
 
       const updatedRoom = {
         ...room,
@@ -160,10 +171,7 @@ export const registerRoomEvents = (io: Server) => {
       if (room.players.length < MIN_PLAYERS) return
 
       const assignments = assignKeys(room.players.map((p) => p.id))
-      const updatedPlayers = room.players.map((player) => {
-        const assignment = assignments.find((a) => a.playerId === player.id)
-        return { ...player, keys: assignment?.keys ?? [] }
-      })
+      const updatedPlayers = applyKeyAssignments(room.players, assignments)
 
       const updatedRoom = {
         ...room,
@@ -198,22 +206,10 @@ export const registerRoomEvents = (io: Server) => {
       const room = roomManager.getRoomByPlayerId(socket.id)
       if (!room) return
 
-      const existingLoop = gameLoops.get(room.code)
-      if (existingLoop) {
-        existingLoop.stop()
-        gameLoops.delete(room.code)
-      }
-
+      stopGameLoop(room.code)
       const updatedRoom = roomManager.leaveRoom(room.code, socket.id)
+      resetRoomPhase(io, room, updatedRoom)
       if (updatedRoom) {
-        const resetRoom =
-          room.phase !== 'lobby'
-            ? { ...updatedRoom, phase: 'lobby' as GamePhase }
-            : updatedRoom
-        if (resetRoom !== updatedRoom) {
-          roomManager.updateRoom(room.code, resetRoom)
-        }
-        io.to(room.code).emit(SocketEvents.ROOM_UPDATED, resetRoom)
         io.to(room.code).emit(SocketEvents.PLAYER_DISCONNECTED, {
           playerId: socket.id,
         })

@@ -15,6 +15,9 @@ const configuration = () => ({
   gemini: {
     apiKey: process.env.GEMINI_API_KEY,
   },
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  },
   notion: {
     apiKey: process.env.NOTION_API_KEY || '',
   },

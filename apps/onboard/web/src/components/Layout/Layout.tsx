@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import styles from './Layout.module.scss'
 
 export const Layout = () => {
-  const { user, signOut } = useAuthStore()
+  const { user, tenant, signOut } = useAuthStore()
 
   return (
     <div className={styles.layout}>
@@ -27,6 +27,7 @@ export const Layout = () => {
           </NavLink>
         </nav>
         <div className={styles.userInfo}>
+          {tenant && <span className={styles.teamName}>{tenant.name}</span>}
           <span>{user?.name || user?.email}</span>
           <button onClick={signOut} className={styles.signOut}>로그아웃</button>
         </div>

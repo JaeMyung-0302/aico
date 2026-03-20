@@ -1,18 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 
 @Injectable()
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name)
   private readonly genAI: GoogleGenerativeAI
+  private readonly anthropic: Anthropic | null
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('gemini.apiKey')
-    if (!apiKey) {
-      this.logger.warn('GEMINI_API_KEY is not set. AI features will not work.')
+    const geminiKey = this.configService.get<string>('gemini.apiKey')
+    if (!geminiKey) {
+      this.logger.warn('GEMINI_API_KEY is not set. Embedding will not work.')
     }
-    this.genAI = new GoogleGenerativeAI(apiKey || '')
+    this.genAI = new GoogleGenerativeAI(geminiKey || '')
+
+    const anthropicKey = this.configService.get<string>('anthropic.apiKey')
+    if (anthropicKey) {
+      this.anthropic = new Anthropic({ apiKey: anthropicKey })
+      this.logger.log('Claude API initialized for answer generation')
+    } else {
+      this.anthropic = null
+      this.logger.warn('ANTHROPIC_API_KEY is not set. Chat answers will not work.')
+    }
   }
 
   generateEmbedding = async (text: string): Promise<number[]> => {
@@ -26,29 +37,28 @@ export class GeminiService {
     }
   }
 
-  generateAnswer = async (prompt: string, context: string): Promise<string> => {
+  generateAnswer = async (query: string, context: string): Promise<string> => {
+    if (!this.anthropic) {
+      throw new Error('ANTHROPIC_API_KEY is not configured')
+    }
+
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-      const result = await model.generateContent({
-        contents: [
+      const response = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        system: '당신은 사내 온보딩 도우미입니다. 제공된 참고 문서를 기반으로 질문에 답변하세요. 문서에 없는 내용은 "해당 정보를 찾을 수 없습니다."라고 답변하세요. 답변은 간결하고 정확하게 한국어로 작성하세요.',
+        messages: [
           {
             role: 'user',
-            parts: [{ text: `${prompt}\n\n참고 문서:\n${context}` }],
+            content: `질문: ${query}\n\n참고 문서:\n${context}`,
           },
         ],
-        systemInstruction: {
-          role: 'system',
-          parts: [
-            {
-              text: '당신은 사내 온보딩 도우미입니다. 제공된 문서를 기반으로 질문에 답변하세요. 문서에 없는 내용은 모른다고 답변하세요. 답변은 간결하고 정확하게 한국어로 작성하세요.',
-            },
-          ],
-        },
       })
 
-      return result.response.text()
+      const textBlock = response.content.find((block) => block.type === 'text')
+      return textBlock ? textBlock.text : '답변을 생성할 수 없습니다.'
     } catch (error) {
-      this.logger.error('Answer generation failed', error)
+      this.logger.error('Claude answer generation failed', error)
       throw error
     }
   }

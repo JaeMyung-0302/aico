@@ -33,9 +33,8 @@ COPY apps/cooksnap/server/prisma ./apps/cooksnap/server/prisma
 
 RUN pnpm install --frozen-lockfile --prod
 
-# Generate Prisma client in production
-RUN cd apps/cooksnap/server && npx prisma generate
-
+# Copy Prisma generated client from builder
+COPY --from=builder /app/apps/cooksnap/server/src/generated ./apps/cooksnap/server/src/generated
 COPY --from=builder /app/apps/cooksnap/server/dist ./apps/cooksnap/server/dist
 
 WORKDIR /app/apps/cooksnap/server
@@ -45,4 +44,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "pnpm --filter @cooksnap/server exec prisma migrate deploy && node dist/main"]

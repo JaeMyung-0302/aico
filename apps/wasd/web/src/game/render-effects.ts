@@ -29,23 +29,27 @@ const createParticle = (
   }
 }
 
+const pickColor = (colors: string[]): string =>
+  colors[Math.floor(Math.random() * colors.length)] ?? colors[0]!
+
+const appendParticles = (
+  state: EffectsState,
+  newParticles: Particle[],
+): EffectsState => ({
+  ...state,
+  particles: [...state.particles, ...newParticles].slice(-MAX_PARTICLES),
+})
+
 export const emitDeathParticles = (
   state: EffectsState,
   x: number,
   y: number,
 ): EffectsState => {
   const colors = ['#ff4444', '#ff6666', '#cc2222', '#ff8888']
-  const newParticles: Particle[] = []
-
-  for (let i = 0; i < 12; i++) {
-    const color = colors[Math.floor(Math.random() * colors.length)] ?? '#ff4444'
-    newParticles.push(createParticle(x, y, color, 2))
-  }
-
-  return {
-    ...state,
-    particles: [...state.particles, ...newParticles].slice(-MAX_PARTICLES),
-  }
+  const particles = Array.from({ length: 12 }, () =>
+    createParticle(x, y, pickColor(colors), 2),
+  )
+  return appendParticles(state, particles)
 }
 
 export const emitStageClearParticles = (
@@ -54,26 +58,21 @@ export const emitStageClearParticles = (
   canvasHeight: number,
 ): EffectsState => {
   const colors = ['#ffd700', '#00d4ff', '#7ec850', '#ff6b35', '#b44dff']
-  const newParticles: Particle[] = []
-
-  for (let i = 0; i < 20; i++) {
-    const x = Math.random() * canvasWidth
-    const y = canvasHeight + 10
-    const color = colors[Math.floor(Math.random() * colors.length)] ?? '#ffd700'
-    const base = createParticle(x, y, color, 2)
-    // 위로 올라가는 방향
-    newParticles.push({
+  const particles = Array.from({ length: 20 }, () => {
+    const base = createParticle(
+      Math.random() * canvasWidth,
+      canvasHeight + 10,
+      pickColor(colors),
+      2,
+    )
+    return {
       ...base,
       vy: -(3 + Math.random() * 4),
       vx: (Math.random() - 0.5) * 3,
       maxLife: 1 + Math.random(),
-    })
-  }
-
-  return {
-    ...state,
-    particles: [...state.particles, ...newParticles].slice(-MAX_PARTICLES),
-  }
+    }
+  })
+  return appendParticles(state, particles)
 }
 
 // --- Screen shake ---

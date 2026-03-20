@@ -29,16 +29,29 @@ const HomePage = () => {
     )
   }
 
-  const handleSoloStart = () => {
+  const requireNickname = (): string | null => {
     initAudio()
-    if (!nickname.trim()) {
+    const trimmed = nickname.trim()
+    if (!trimmed) {
       setError('닉네임을 입력해주세요.')
-      return
+      return null
     }
+    return trimmed
+  }
+
+  const onRoomJoined = (room: Room) => {
+    socket.off(SocketEvents.ERROR)
+    useGameStore.getState().updateRoom(room)
+    navigate(`/room/${room.code}`)
+  }
+
+  const handleSoloStart = () => {
+    const trimmed = requireNickname()
+    if (!trimmed) return
 
     socket.off(SocketEvents.GAME_STARTED)
     socket.off(SocketEvents.ERROR)
-    socket.emit(SocketEvents.SOLO_START, { nickname: nickname.trim() })
+    socket.emit(SocketEvents.SOLO_START, { nickname: trimmed })
 
     socket.once(
       SocketEvents.GAME_STARTED,
@@ -57,29 +70,18 @@ const HomePage = () => {
   }
 
   const handleCreateRoom = () => {
-    initAudio()
-    if (!nickname.trim()) {
-      setError('닉네임을 입력해주세요.')
-      return
-    }
+    const trimmed = requireNickname()
+    if (!trimmed) return
 
     socket.off(SocketEvents.ROOM_UPDATED)
     socket.off(SocketEvents.ERROR)
-    socket.emit(SocketEvents.CREATE_ROOM, { nickname: nickname.trim() })
-
-    socket.once(SocketEvents.ROOM_UPDATED, (room: Room) => {
-      socket.off(SocketEvents.ERROR)
-      useGameStore.getState().updateRoom(room)
-      navigate(`/room/${room.code}`)
-    })
+    socket.emit(SocketEvents.CREATE_ROOM, { nickname: trimmed })
+    socket.once(SocketEvents.ROOM_UPDATED, onRoomJoined)
   }
 
   const handleJoinRoom = () => {
-    initAudio()
-    if (!nickname.trim()) {
-      setError('닉네임을 입력해주세요.')
-      return
-    }
+    const trimmed = requireNickname()
+    if (!trimmed) return
     if (!inviteCode.trim()) {
       setError('초대 코드를 입력해주세요.')
       return
@@ -89,14 +91,9 @@ const HomePage = () => {
     socket.off(SocketEvents.ERROR)
     socket.emit(SocketEvents.JOIN_ROOM, {
       code: inviteCode.trim().toUpperCase(),
-      nickname: nickname.trim(),
+      nickname: trimmed,
     })
-
-    socket.once(SocketEvents.ROOM_UPDATED, (room: Room) => {
-      socket.off(SocketEvents.ERROR)
-      useGameStore.getState().updateRoom(room)
-      navigate(`/room/${room.code}`)
-    })
+    socket.once(SocketEvents.ROOM_UPDATED, onRoomJoined)
 
     socket.once(SocketEvents.ERROR, ({ message }: { message: string }) => {
       socket.off(SocketEvents.ROOM_UPDATED)

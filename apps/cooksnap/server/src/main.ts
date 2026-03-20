@@ -21,12 +21,12 @@ const bootstrap = async () => {
   )
   app.useGlobalFilters(new GlobalExceptionFilter())
 
-  const corsOrigins = configService.get<string>(
-    'CORS_ORIGINS',
-    'http://localhost:5173',
+  const clientOrigin = configService.get<string>(
+    'CLIENT_ORIGIN',
+    'http://localhost:5177',
   )
   app.enableCors({
-    origin: corsOrigins.split(',').map((o) => o.trim()),
+    origin: clientOrigin.split(',').map((o) => o.trim()),
     credentials: true,
   })
 

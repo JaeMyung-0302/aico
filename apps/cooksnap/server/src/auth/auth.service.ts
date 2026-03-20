@@ -126,8 +126,8 @@ export class AuthService {
   }
 
   private getBackendUrl = (): string => {
-    const frontendUrl = this.configService.get<string>('app.frontendUrl') || ''
-    if (frontendUrl.includes('localhost')) {
+    const clientOrigin = this.configService.get<string>('app.clientOrigin') || ''
+    if (clientOrigin.includes('localhost')) {
       return 'http://localhost:4000'
     }
     return 'https://api.cooksnap.aico-app.com'

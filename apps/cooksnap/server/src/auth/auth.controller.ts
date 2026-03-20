@@ -53,12 +53,12 @@ export class AuthController {
   async kakaoCallback(@Query('code') code: string, @Res() res: Response) {
     try {
       const token = await this.authService.handleKakaoCallback(code)
-      const frontendUrl = this.configService.get<string>('app.frontendUrl')
-      return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
+      const clientOrigin = this.configService.get<string>('app.clientOrigin')
+      return res.redirect(`${clientOrigin}/auth/callback?token=${token}`)
     } catch (error: any) {
       console.error('Kakao OAuth error:', error?.response?.data || error?.message)
-      const frontendUrl = this.configService.get<string>('app.frontendUrl')
-      return res.redirect(`${frontendUrl}/auth?error=kakao_failed`)
+      const clientOrigin = this.configService.get<string>('app.clientOrigin')
+      return res.redirect(`${clientOrigin}/auth?error=kakao_failed`)
     }
   }
 
@@ -74,18 +74,18 @@ export class AuthController {
   async googleCallback(@Query('code') code: string, @Res() res: Response) {
     try {
       const token = await this.authService.handleGoogleCallback(code)
-      const frontendUrl = this.configService.get<string>('app.frontendUrl')
-      return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
+      const clientOrigin = this.configService.get<string>('app.clientOrigin')
+      return res.redirect(`${clientOrigin}/auth/callback?token=${token}`)
     } catch (error: any) {
       console.error('Google OAuth error:', error?.response?.data || error?.message)
-      const frontendUrl = this.configService.get<string>('app.frontendUrl')
-      return res.redirect(`${frontendUrl}/auth?error=google_failed`)
+      const clientOrigin = this.configService.get<string>('app.clientOrigin')
+      return res.redirect(`${clientOrigin}/auth?error=google_failed`)
     }
   }
 
   private getBackendUrl = (): string => {
-    const frontendUrl = this.configService.get<string>('app.frontendUrl') || ''
-    if (frontendUrl.includes('localhost')) {
+    const clientOrigin = this.configService.get<string>('app.clientOrigin') || ''
+    if (clientOrigin.includes('localhost')) {
       return 'http://localhost:4000'
     }
     return 'https://api.cooksnap.aico-app.com'

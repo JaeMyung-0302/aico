@@ -26,7 +26,7 @@ const configuration = () => ({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
   },
   app: {
-    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5177',
+    clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5177',
   },
   portone: {
     storeId: process.env.PORTONE_STORE_ID || '',

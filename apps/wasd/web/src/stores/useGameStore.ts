@@ -114,15 +114,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   applyGameStarted: (room, assignments) => {
-    const { myPlayerId, myKeys } = get()
-    const myAssignment = assignments.find((a) => a.playerId === myPlayerId)
-    set({
-      roomCode: room.code,
-      players: room.players,
-      isHost: room.hostId === myPlayerId,
-      gamePhase: room.phase,
-      myKeys: myAssignment?.keys ?? myKeys,
-    })
+    get().updateRoom(room)
+    const myAssignment = assignments.find((a) => a.playerId === get().myPlayerId)
+    if (myAssignment) set({ myKeys: myAssignment.keys })
   },
 
   setGameResult: (result) => set({ gameResult: result, gamePhase: 'complete' }),

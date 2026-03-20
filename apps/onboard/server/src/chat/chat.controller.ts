@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, Headers, UseGuards, Req } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { ChatService } from './chat.service'
 import { AuthGuard } from '../auth/guards/auth.guard'
 import { AskQuestionDto } from './dto/ask-question.dto'
@@ -37,6 +38,7 @@ export class ChatController {
   }
 
   @Post('sessions/:id/messages')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   askQuestion(
     @Param('id') id: string,
     @Body() dto: AskQuestionDto,

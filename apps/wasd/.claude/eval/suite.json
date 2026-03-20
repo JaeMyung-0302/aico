@@ -1,0 +1,41 @@
+{
+  "metrics": [
+    {
+      "name": "server-build",
+      "command": "pnpm --filter @wasd/server build",
+      "type": "exit_code",
+      "goal": 0
+    },
+    {
+      "name": "web-build",
+      "command": "pnpm --filter @wasd/web build",
+      "type": "exit_code",
+      "goal": 0
+    },
+    {
+      "name": "server-test",
+      "command": "pnpm --filter @wasd/server test",
+      "type": "exit_code",
+      "goal": 0
+    },
+    {
+      "name": "server-lint",
+      "command": "pnpm --filter @wasd/server lint",
+      "type": "exit_code",
+      "goal": 0
+    },
+    {
+      "name": "web-lint",
+      "command": "pnpm --filter @wasd/web lint",
+      "type": "exit_code",
+      "goal": 0
+    },
+    {
+      "name": "max-file-lines",
+      "command": "find server/src web/src \\( -name '*.ts' -o -name '*.tsx' \\) -exec wc -l {} + | grep -v total | awk '{print $1}' | sort -rn | head -1",
+      "type": "number",
+      "goal": "<300"
+    }
+  ],
+  "timeout": 120000
+}

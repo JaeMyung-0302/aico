@@ -22,11 +22,12 @@ vi.mock('../rooms/room-manager.js', () => ({
 import { GameLoop, gameLoops } from './game-loop.js'
 import { GAME_LOOP_TTL_MS, MAX_INPUT_QUEUE, SocketEvents } from '@wasd/shared'
 import type { InputEntry } from './game-state.js'
+import type { Server } from 'socket.io'
 
 const makeIo = () => {
   const emit = vi.fn()
   const io = { to: vi.fn().mockReturnValue({ emit }) }
-  return { io: io as any, emit }
+  return { io: io as unknown as Server, emit }
 }
 
 const makeInput = (key: InputEntry['key'] = 'ArrowRight'): InputEntry => ({

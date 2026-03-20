@@ -6,4 +6,9 @@ export default [
   {
     ignores: ["dist/**"],
   },
+  {
+    rules: {
+      "turbo/no-undeclared-env-vars": "off",
+    },
+  },
 ];

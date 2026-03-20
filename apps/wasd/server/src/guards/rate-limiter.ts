@@ -7,6 +7,7 @@ import {
 } from '@wasd/shared'
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\x00-\x1F\x7F\u200B-\u200F\u202A-\u202E\uFEFF]/g
 
 // --- Rate Limiter ---

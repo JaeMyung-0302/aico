@@ -47,6 +47,24 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /app
+            cat > .env.cooksnap << 'ENVEOF'
+            CLIENT_ORIGIN=${{ secrets.CLIENT_ORIGIN }}
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            KAMIS_API_KEY=${{ secrets.KAMIS_API_KEY }}
+            KAMIS_API_ID=${{ secrets.KAMIS_API_ID }}
+            COUPANG_ACCESS_KEY=${{ secrets.COUPANG_ACCESS_KEY }}
+            COUPANG_SECRET_KEY=${{ secrets.COUPANG_SECRET_KEY }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            PORTONE_STORE_ID=${{ secrets.PORTONE_STORE_ID }}
+            PORTONE_API_SECRET=${{ secrets.PORTONE_API_SECRET }}
+            PORTONE_CHANNEL_KEY=${{ secrets.PORTONE_CHANNEL_KEY }}
+            BILLING_ENCRYPT_KEY=${{ secrets.BILLING_ENCRYPT_KEY }}
+            ADMIN_EMAILS=${{ secrets.ADMIN_EMAILS }}
+            ENVEOF
             docker compose pull cooksnap-server
-            docker compose up -d cooksnap-server cooksnap-db
+            docker compose up -d --force-recreate cooksnap-server cooksnap-db
             docker image prune -f

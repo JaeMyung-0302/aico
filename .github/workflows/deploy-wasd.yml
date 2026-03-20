@@ -48,8 +48,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /app
-            echo "GITHUB_REPOSITORY=${{ github.repository }}" > .env
-            echo "WASD_CLIENT_ORIGIN=${{ secrets.WASD_CLIENT_ORIGIN }}" >> .env
+            cat > .env.wasd << 'ENVEOF'
+            CLIENT_ORIGIN=${{ secrets.CLIENT_ORIGIN }}
+            ENVEOF
             docker compose pull wasd-server
-            docker compose up -d wasd-server
+            docker compose up -d --force-recreate wasd-server
             docker image prune -f

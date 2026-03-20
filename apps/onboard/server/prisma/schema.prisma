@@ -1,0 +1,179 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships  TenantMember[]
+  chatSessions ChatSession[]
+
+  @@map("users")
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members      TenantMember[]
+  integrations Integration[]
+  documents    Document[]
+  chatSessions ChatSession[]
+  checklists   Checklist[]
+
+  @@map("tenants")
+}
+
+model TenantMember {
+  id       String     @id @default(uuid())
+  role     TenantRole @default(MEMBER)
+  joinedAt DateTime   @default(now())
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  checklistProgress ChecklistProgress[]
+
+  @@unique([userId, tenantId])
+  @@map("tenant_members")
+}
+
+// Phase 1에서 구현
+model Integration {
+  id          String   @id @default(uuid())
+  type        String   // 'notion' | 'github'
+  accessToken String
+  config      Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents Document[]
+
+  @@map("integrations")
+}
+
+model Document {
+  id            String   @id @default(uuid())
+  externalId    String
+  title         String
+  content       String   @db.Text
+  sourceUrl     String?
+  lastSyncedAt  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenantId      String
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  integrationId String
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  chunks        DocumentChunk[]
+
+  @@unique([integrationId, externalId])
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id        String @id @default(uuid())
+  content   String @db.Text
+  embedding Unsupported("vector(768)")?
+  metadata  Json   @default("{}")
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_chunks")
+}
+
+// Phase 2에서 구현
+model ChatSession {
+  id        String   @id @default(uuid())
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId   String
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId String
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  role      String   // 'user' | 'assistant'
+  content   String   @db.Text
+  sources   Json     @default("[]")
+  createdAt DateTime @default(now())
+
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+// Phase 3에서 구현
+model Checklist {
+  id        String   @id @default(uuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId String
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  items    ChecklistItem[]
+
+  @@map("checklists")
+}
+
+model ChecklistItem {
+  id          String @id @default(uuid())
+  title       String
+  description String?
+  orderIndex  Int    @default(0)
+
+  checklistId String
+  checklist   Checklist           @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  progress    ChecklistProgress[]
+
+  @@map("checklist_items")
+}
+
+model ChecklistProgress {
+  id          String   @id @default(uuid())
+  completedAt DateTime?
+
+  memberId String
+  member   TenantMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  itemId   String
+  item     ChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, itemId])
+  @@map("checklist_progress")
+}

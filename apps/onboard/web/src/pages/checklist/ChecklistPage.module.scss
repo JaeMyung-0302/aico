@@ -1,0 +1,47 @@
+.container { max-width: 800px; }
+.title { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+
+.createForm {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 24px; padding: 16px; background: #fff;
+  border: 1px solid #eee; border-radius: 8px;
+}
+.input, .textarea {
+  padding: 10px 12px; border: 1px solid #ddd;
+  border-radius: 6px; font-size: 14px;
+}
+.textarea { resize: vertical; font-family: inherit; }
+.createBtn {
+  align-self: flex-end; padding: 8px 16px;
+  background: #333; color: #fff; border: none;
+  border-radius: 6px; font-size: 14px; cursor: pointer;
+  &:disabled { opacity: 0.6; }
+}
+
+.grid { display: flex; gap: 16px; }
+.listPanel { width: 280px; display: flex; flex-direction: column; gap: 4px; }
+.listItem {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; background: #fff; border: 1px solid #eee;
+  border-radius: 8px; cursor: pointer; text-align: left;
+  &:hover { background: #f5f5f5; }
+}
+.active { border-color: #333; font-weight: 600; }
+.count { font-size: 12px; color: #888; }
+.empty { color: #888; text-align: center; padding: 40px; }
+
+.progressPanel { flex: 1; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; }
+.progressBar {
+  height: 8px; background: #eee; border-radius: 4px;
+  overflow: hidden; margin-bottom: 8px;
+}
+.progressFill { height: 100%; background: #333; border-radius: 4px; transition: width 0.3s; }
+.progressText { font-size: 13px; color: #888; display: block; margin-bottom: 16px; }
+
+.items { display: flex; flex-direction: column; gap: 8px; }
+.checkItem {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; cursor: pointer;
+  input { width: 16px; height: 16px; cursor: pointer; }
+}
+.completed { text-decoration: line-through; color: #aaa; }

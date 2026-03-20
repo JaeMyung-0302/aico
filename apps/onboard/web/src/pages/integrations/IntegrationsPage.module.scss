@@ -1,0 +1,105 @@
+.container {
+  max-width: 700px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+
+  select,
+  input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 8px 16px;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.cardInfo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.type {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.date {
+  font-size: 13px;
+  color: #888;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+
+  button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+}
+
+.deleteBtn {
+  color: #e53e3e !important;
+  border-color: #e53e3e !important;
+}
+
+.empty {
+  color: #888;
+  text-align: center;
+  padding: 40px;
+}

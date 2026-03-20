@@ -63,6 +63,13 @@ export class AuthService {
     const clientSecret = this.configService.get<string>('kakao.clientSecret')
     const redirectUri = `${this.getBackendUrl()}/api/v1/auth/kakao/callback`
 
+    console.log('Kakao OAuth debug:', {
+      clientId: clientId ? `${clientId.slice(0, 4)}...${clientId.slice(-4)} (len=${clientId.length})` : 'EMPTY',
+      clientSecret: clientSecret ? `${clientSecret.slice(0, 4)}...${clientSecret.slice(-4)} (len=${clientSecret.length})` : 'EMPTY',
+      redirectUri,
+      codeLength: code?.length,
+    })
+
     const tokenRes = await axios.post(
       'https://kauth.kakao.com/oauth/token',
       new URLSearchParams({

@@ -31,10 +31,10 @@
       "goal": 0
     },
     {
-      "name": "max-file-lines",
-      "command": "find server/src web/src \\( -name '*.ts' -o -name '*.tsx' \\) -exec wc -l {} + | grep -v total | awk '{print $1}' | sort -rn | head -1",
+      "name": "total-lines",
+      "command": "find server/src web/src \\( -name '*.ts' -o -name '*.tsx' \\) -exec wc -l {} + | grep total | awk '{print $1}'",
       "type": "number",
-      "goal": "<300"
+      "goal": "<5000"
     }
   ],
   "timeout": 120000

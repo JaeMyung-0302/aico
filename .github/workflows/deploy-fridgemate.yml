@@ -1,0 +1,74 @@
+name: Deploy FridgeMate Server
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/fridgemate/server/**'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: fridgemate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set lowercase owner
+        run: echo "OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/fridgemate/server/Dockerfile
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/fridgemate-server:latest
+
+      - name: Deploy to Lightsail
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: CLIENT_ORIGIN,GEMINI_API_KEY,JWT_SECRET,VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY,VAPID_SUBJECT,PORTONE_API_SECRET,PORTONE_STORE_ID,PORTONE_WEBHOOK_SECRET,BILLING_ENCRYPT_KEY
+          script: |
+            cd /app
+            echo "CLIENT_ORIGIN=${CLIENT_ORIGIN}" > .env.fridgemate
+            echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env.fridgemate
+            echo "JWT_SECRET=${JWT_SECRET}" >> .env.fridgemate
+            echo "VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}" >> .env.fridgemate
+            echo "VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}" >> .env.fridgemate
+            echo "VAPID_SUBJECT=${VAPID_SUBJECT}" >> .env.fridgemate
+            echo "PORTONE_API_SECRET=${PORTONE_API_SECRET}" >> .env.fridgemate
+            echo "PORTONE_STORE_ID=${PORTONE_STORE_ID}" >> .env.fridgemate
+            echo "PORTONE_WEBHOOK_SECRET=${PORTONE_WEBHOOK_SECRET}" >> .env.fridgemate
+            echo "BILLING_ENCRYPT_KEY=${BILLING_ENCRYPT_KEY}" >> .env.fridgemate
+            docker compose pull fridgemate-server
+            docker compose up -d --force-recreate fridgemate-server fridgemate-db
+            docker image prune -f
+        env:
+          CLIENT_ORIGIN: ${{ secrets.CLIENT_ORIGIN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          PORTONE_API_SECRET: ${{ secrets.PORTONE_API_SECRET }}
+          PORTONE_STORE_ID: ${{ secrets.PORTONE_STORE_ID }}
+          PORTONE_WEBHOOK_SECRET: ${{ secrets.PORTONE_WEBHOOK_SECRET }}
+          BILLING_ENCRYPT_KEY: ${{ secrets.BILLING_ENCRYPT_KEY }}

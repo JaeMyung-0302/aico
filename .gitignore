@@ -12,6 +12,7 @@ node_modules
 .env.production.local
 .env.cooksnap
 .env.wasd
+.env.fridgemate
 
 # Testing
 coverage

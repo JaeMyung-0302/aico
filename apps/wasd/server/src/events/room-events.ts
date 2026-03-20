@@ -56,11 +56,7 @@ const cleanupExistingRoom = (socket: Socket, io: Server): void => {
   if (!existingRoom) return
 
   socket.leave(existingRoom.code)
-  const existingLoop = gameLoops.get(existingRoom.code)
-  if (existingLoop) {
-    existingLoop.stop()
-    gameLoops.delete(existingRoom.code)
-  }
+  stopGameLoop(existingRoom.code)
   const updatedRoom = roomManager.leaveRoom(existingRoom.code, socket.id)
   if (updatedRoom) {
     io.to(existingRoom.code).emit(SocketEvents.ROOM_UPDATED, updatedRoom)

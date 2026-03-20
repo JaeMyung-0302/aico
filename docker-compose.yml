@@ -12,6 +12,52 @@ services:
     networks:
       - aico-network
 
+  cooksnap-server:
+    image: ghcr.io/jaemyung-0302/cooksnap-server:latest
+    container_name: cooksnap-server
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=postgresql://cooksnap:cooksnap@cooksnap-db:5432/cooksnap
+      - CORS_ORIGINS=${COOKSNAP_CORS_ORIGINS}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - KAMIS_API_KEY=${KAMIS_API_KEY}
+      - KAMIS_API_ID=${KAMIS_API_ID}
+      - COUPANG_ACCESS_KEY=${COUPANG_ACCESS_KEY}
+      - COUPANG_SECRET_KEY=${COUPANG_SECRET_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - PORTONE_STORE_ID=${PORTONE_STORE_ID}
+      - PORTONE_API_SECRET=${PORTONE_API_SECRET}
+      - PORTONE_CHANNEL_KEY=${PORTONE_CHANNEL_KEY}
+      - BILLING_ENCRYPT_KEY=${BILLING_ENCRYPT_KEY}
+      - ADMIN_EMAILS=${ADMIN_EMAILS}
+    depends_on:
+      - cooksnap-db
+    networks:
+      - aico-network
+
+  cooksnap-db:
+    image: postgres:16-alpine
+    container_name: cooksnap-db
+    restart: unless-stopped
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_USER=cooksnap
+      - POSTGRES_PASSWORD=cooksnap
+      - POSTGRES_DB=cooksnap
+    volumes:
+      - cooksnap-data:/var/lib/postgresql/data
+    networks:
+      - aico-network
+
 networks:
   aico-network:
     driver: bridge
+
+volumes:
+  cooksnap-data:

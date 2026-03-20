@@ -1,0 +1,26 @@
+name: onboard
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: onboard-db
+    environment:
+      POSTGRES_USER: onboard
+      POSTGRES_PASSWORD: onboard
+      POSTGRES_DB: onboard_dev
+    ports:
+      - '5437:5432'
+    volumes:
+      - onboard_pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: onboard-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - onboard_redis:/data
+
+volumes:
+  onboard_pgdata:
+  onboard_redis:

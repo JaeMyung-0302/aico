@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      {
+        "include": "generated/prisma/**/*.js",
+        "watchAssets": true
+      },
+      {
+        "include": "generated/prisma/**/*.mjs",
+        "watchAssets": true
+      },
+      {
+        "include": "generated/prisma/schema.prisma",
+        "watchAssets": true
+      }
+    ]
+  }
+}

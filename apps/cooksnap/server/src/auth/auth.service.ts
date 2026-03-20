@@ -61,7 +61,6 @@ export class AuthService {
   handleKakaoCallback = async (code: string) => {
     const clientId = this.configService.get<string>('kakao.clientId')
     const clientSecret = this.configService.get<string>('kakao.clientSecret')
-    const backendUrl = this.configService.get<string>('app.frontendUrl')?.replace(/:\d+$/, ':4000') || 'http://localhost:4000'
     const redirectUri = `${this.getBackendUrl()}/api/v1/auth/kakao/callback`
 
     const tokenRes = await axios.post(
@@ -127,8 +126,8 @@ export class AuthService {
   }
 
   private getBackendUrl = (): string => {
-    const corsOrigins = this.configService.get<string>('cors.origins') || ''
-    if (corsOrigins.includes('localhost')) {
+    const frontendUrl = this.configService.get<string>('app.frontendUrl') || ''
+    if (frontendUrl.includes('localhost')) {
       return 'http://localhost:4000'
     }
     return 'https://api.cooksnap.aico-app.com'

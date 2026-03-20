@@ -82,8 +82,8 @@ export class AuthController {
   }
 
   private getBackendUrl = (): string => {
-    const corsOrigins = this.configService.get<string>('cors.origins') || ''
-    if (corsOrigins.includes('localhost')) {
+    const frontendUrl = this.configService.get<string>('app.frontendUrl') || ''
+    if (frontendUrl.includes('localhost')) {
       return 'http://localhost:4000'
     }
     return 'https://api.cooksnap.aico-app.com'

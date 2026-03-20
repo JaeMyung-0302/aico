@@ -29,7 +29,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.actor
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
@@ -46,11 +46,12 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ubuntu
           key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: CLIENT_ORIGIN
           script: |
             cd /app
-            cat > .env.wasd << 'ENVEOF'
-            CLIENT_ORIGIN=${{ secrets.CLIENT_ORIGIN }}
-            ENVEOF
+            echo "CLIENT_ORIGIN=${CLIENT_ORIGIN}" > .env.wasd
             docker compose pull wasd-server
             docker compose up -d --force-recreate wasd-server
             docker image prune -f
+        env:
+          CLIENT_ORIGIN: ${{ secrets.CLIENT_ORIGIN }}

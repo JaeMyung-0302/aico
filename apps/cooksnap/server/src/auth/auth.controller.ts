@@ -56,7 +56,7 @@ export class AuthController {
       const frontendUrl = this.configService.get<string>('app.frontendUrl')
       return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
     } catch (error: any) {
-      console.error('Kakao OAuth error:', error?.response?.data || error?.message || error)
+      console.error('Kakao OAuth error:', error?.response?.data || error?.message)
       const frontendUrl = this.configService.get<string>('app.frontendUrl')
       return res.redirect(`${frontendUrl}/auth?error=kakao_failed`)
     }
@@ -66,8 +66,6 @@ export class AuthController {
   googleLogin(@Res() res: Response) {
     const clientId = this.configService.get<string>('google.clientId')
     const redirectUri = `${this.getBackendUrl()}/api/v1/auth/google/callback`
-    console.log('Google redirect URI:', redirectUri)
-    console.log('Google client ID:', clientId)
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile`
     return res.redirect(url)
   }
@@ -79,7 +77,7 @@ export class AuthController {
       const frontendUrl = this.configService.get<string>('app.frontendUrl')
       return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
     } catch (error: any) {
-      console.error('Google OAuth error:', error?.response?.data || error?.message || error)
+      console.error('Google OAuth error:', error?.response?.data || error?.message)
       const frontendUrl = this.configService.get<string>('app.frontendUrl')
       return res.redirect(`${frontendUrl}/auth?error=google_failed`)
     }

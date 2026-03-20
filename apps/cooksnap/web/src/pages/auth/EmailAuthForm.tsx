@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import classnames from 'classnames/bind'
 import { useAuthStore } from '@/stores/useAuthStore'
 import styles from './EmailAuthForm.module.scss'
@@ -16,7 +17,7 @@ const EmailAuthForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showConfirmation, setShowConfirmation] = useState(false)
+  const navigate = useNavigate()
 
   const validate = (): string | null => {
     if (!email.trim()) return '이메일을 입력해주세요.'
@@ -43,13 +44,15 @@ const EmailAuthForm = () => {
         const result = await signUpWithEmail(email.trim(), password)
         if (result.error) {
           setError(result.error)
-        } else if (result.needsConfirmation) {
-          setShowConfirmation(true)
+        } else {
+          navigate('/', { replace: true })
         }
       } else {
         const result = await signInWithEmail(email.trim(), password)
         if (result.error) {
           setError(result.error)
+        } else {
+          navigate('/', { replace: true })
         }
       }
     } finally {
@@ -63,28 +66,6 @@ const EmailAuthForm = () => {
     setMode(mode === 'signin' ? 'signup' : 'signin')
     setError('')
     setConfirmPassword('')
-    setShowConfirmation(false)
-  }
-
-  if (showConfirmation) {
-    return (
-      <div className={cx('confirmation')}>
-        <p className={cx('confirmationTitle')}>인증 이메일을 발송했습니다</p>
-        <p className={cx('confirmationText')}>
-          <strong>{email}</strong>으로 발송된 인증 링크를 클릭하여 가입을
-          완료해주세요.
-        </p>
-        <button
-          className={cx('backButton')}
-          onClick={() => {
-            setShowConfirmation(false)
-            setMode('signin')
-          }}
-        >
-          로그인으로 돌아가기
-        </button>
-      </div>
-    )
   }
 
   return (

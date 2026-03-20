@@ -14,9 +14,19 @@ const configuration = () => ({
     accessKey: process.env.COUPANG_ACCESS_KEY,
     secretKey: process.env.COUPANG_SECRET_KEY,
   },
-  supabase: {
-    url: process.env.SUPABASE_URL || '',
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  jwt: {
+    secret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
+  },
+  kakao: {
+    clientId: process.env.KAKAO_CLIENT_ID || '',
+    clientSecret: process.env.KAKAO_CLIENT_SECRET || '',
+  },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  },
+  app: {
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5177',
   },
   portone: {
     storeId: process.env.PORTONE_STORE_ID || '',

@@ -9,6 +9,7 @@ const ResultPage = lazy(() => import('@/pages/result/ResultPage'))
 const AuthPage = lazy(() => import('@/pages/auth/AuthPage'))
 const MyPage = lazy(() => import('@/pages/mypage/MyPage'))
 const NotFoundPage = lazy(() => import('@/pages/error/NotFoundPage'))
+const AuthCallbackPage = lazy(() => import('@/pages/auth/AuthCallbackPage'))
 const AdminFeedbackPage = lazy(
   () => import('@/pages/admin/feedback/AdminFeedbackPage'),
 )
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/result/:id', element: <ResultPage /> },
       { path: '/auth', element: <AuthPage /> },
+      { path: '/auth/callback', element: <AuthCallbackPage /> },
       { path: '/mypage', element: <MyPage /> },
       {
         path: '/admin/feedback',

@@ -41,6 +41,7 @@ model User {
   id               String    @id @default(uuid())
   email            String
   nickname         String?
+  passwordHash     String?   @map("password_hash")
   provider         String    // "kakao" | "google" | "email"
   providerId       String    @map("provider_id")
   isPremium        Boolean   @default(false) @map("is_premium")

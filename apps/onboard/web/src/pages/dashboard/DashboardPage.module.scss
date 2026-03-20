@@ -1,0 +1,32 @@
+.container { max-width: 800px; }
+.title { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+.sectionTitle { font-size: 18px; font-weight: 600; margin: 32px 0 16px; }
+
+.statsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.statCard {
+  background: #fff; border: 1px solid #eee; border-radius: 8px;
+  padding: 20px; display: flex; flex-direction: column; align-items: center;
+}
+.statValue { font-size: 32px; font-weight: 700; }
+.statLabel { font-size: 13px; color: #888; margin-top: 4px; }
+
+.table { background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+.tableHeader, .tableRow {
+  display: grid; grid-template-columns: 1fr 100px 200px;
+  padding: 12px 16px; align-items: center;
+}
+.tableHeader {
+  background: #f8f8f8; font-size: 13px; font-weight: 600; color: #666;
+}
+.tableRow {
+  border-top: 1px solid #f0f0f0; font-size: 14px;
+}
+.role { font-size: 12px; color: #888; text-transform: lowercase; }
+
+.progressCell { display: flex; align-items: center; gap: 8px; }
+.miniBar {
+  flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;
+}
+.miniFill { height: 100%; background: #333; border-radius: 3px; }
+
+.empty { color: #888; text-align: center; padding: 40px; }

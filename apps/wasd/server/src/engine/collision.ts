@@ -9,19 +9,24 @@ const getOverlappingTiles = (position: Position) => {
   return { startCol, endCol, startRow, endRow }
 }
 
-export const checkWallCollision = (
+const hasTileAt = (
   position: Position,
   tileMap: TileMap,
+  type: TileType,
 ): boolean => {
   const { startCol, endCol, startRow, endRow } = getOverlappingTiles(position)
-
   for (let row = startRow; row <= endRow; row++) {
     for (let col = startCol; col <= endCol; col++) {
-      if (tileMap[row]?.[col] === TileType.WALL) return true
+      if (tileMap[row]?.[col] === type) return true
     }
   }
   return false
 }
+
+export const checkWallCollision = (
+  position: Position,
+  tileMap: TileMap,
+): boolean => hasTileAt(position, tileMap, TileType.WALL)
 
 export const checkCoinCollection = (
   position: Position,
@@ -45,13 +50,4 @@ export const checkCoinCollection = (
 export const checkGoalReached = (
   position: Position,
   tileMap: TileMap,
-): boolean => {
-  const { startCol, endCol, startRow, endRow } = getOverlappingTiles(position)
-
-  for (let row = startRow; row <= endRow; row++) {
-    for (let col = startCol; col <= endCol; col++) {
-      if (tileMap[row]?.[col] === TileType.GOAL) return true
-    }
-  }
-  return false
-}
+): boolean => hasTileAt(position, tileMap, TileType.GOAL)

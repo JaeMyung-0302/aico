@@ -57,12 +57,8 @@ io.on('connection', (socket) => {
 app.use(cors({ origin: corsOrigins }))
 app.use(express.json())
 
-app.get('/', (_req, res) => {
+app.get(['/', '/health'], (_req, res) => {
   res.json({ status: 'ok', service: 'wasd-server' })
-})
-
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' })
 })
 
 registerRoomEvents(io)

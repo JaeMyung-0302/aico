@@ -38,14 +38,7 @@ const RoomPage = () => {
       room: Room
       assignments: KeyAssignment[]
     }) => {
-      const state = useGameStore.getState()
-      state.updateRoom(room)
-      const myAssignment = assignments.find(
-        (a) => a.playerId === state.myPlayerId,
-      )
-      if (myAssignment) {
-        state.setMyKeys(myAssignment.keys)
-      }
+      useGameStore.getState().applyGameStarted(room, assignments)
 
       setCountdown(COUNTDOWN_SECONDS)
       sound.countdown()

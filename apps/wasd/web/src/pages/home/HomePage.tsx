@@ -44,14 +44,7 @@ const HomePage = () => {
       SocketEvents.GAME_STARTED,
       ({ room, assignments }: { room: Room; assignments: KeyAssignment[] }) => {
         socket.off(SocketEvents.ERROR)
-        const state = useGameStore.getState()
-        state.updateRoom(room)
-        const myAssignment = assignments.find(
-          (a) => a.playerId === state.myPlayerId,
-        )
-        if (myAssignment) {
-          state.setMyKeys(myAssignment.keys)
-        }
+        useGameStore.getState().applyGameStarted(room, assignments)
         sound.countdownGo()
         navigate(`/game/${room.code}`)
       },

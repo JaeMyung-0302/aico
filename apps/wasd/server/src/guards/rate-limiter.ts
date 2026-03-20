@@ -30,10 +30,6 @@ export class RateLimiter {
     const entries = this.timestamps.get(id) ?? []
     const filtered = entries.filter((t) => now - t < this.windowMs)
 
-    if (filtered.length === 0 && entries.length > 0) {
-      this.timestamps.delete(id)
-    }
-
     if (filtered.length >= this.maxEvents) {
       this.timestamps.set(id, filtered)
       return false

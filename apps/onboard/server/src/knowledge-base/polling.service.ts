@@ -16,8 +16,11 @@ export class PollingService {
     private readonly syncProcessor: SyncProcessor,
   ) {}
 
-  @Cron('0 */15 * * * *')
-  async handleNotionPolling() {
+  // 매일 새벽 3시에 자동 동기화
+  @Cron('0 0 3 * * *')
+  async handleDailySync() {
+    this.logger.log('Starting daily Notion sync...')
+
     const notionIntegrations = await this.prisma.integration.findMany({
       where: { type: 'notion' },
     })
@@ -46,10 +49,14 @@ export class PollingService {
             tenantId: integration.tenantId,
           })
           this.logger.log(`Notion changes detected for integration ${integration.id}`)
+        } else {
+          this.logger.log(`No changes for integration ${integration.id}`)
         }
       } catch (error) {
         this.logger.error(`Notion polling failed for integration ${integration.id}`, error)
       }
     }
+
+    this.logger.log('Daily Notion sync completed')
   }
 }

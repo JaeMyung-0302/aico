@@ -11,7 +11,9 @@ const AuthCallbackPage = () => {
     const token = params.get('token')
 
     if (token) {
-      setTokenAndFetchUser(token).then(() => navigate('/', { replace: true }))
+      setTokenAndFetchUser(token)
+        .then(() => navigate('/', { replace: true }))
+        .catch(() => navigate('/auth', { replace: true }))
     } else {
       navigate('/auth', { replace: true })
     }

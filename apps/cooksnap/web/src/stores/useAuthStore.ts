@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import type { User, QuotaStatus } from '@/types/user'
 
@@ -66,10 +67,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: userData })
       get().fetchQuota()
       return {}
-    } catch (error: any) {
+    } catch (error) {
       return {
         error:
-          error.response?.data?.message || '회원가입 중 오류가 발생했습니다.',
+          error instanceof AxiosError
+            ? error.response?.data?.message || '회원가입 중 오류가 발생했습니다.'
+            : '회원가입 중 오류가 발생했습니다.',
       }
     }
   },
@@ -85,11 +88,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: userData })
       get().fetchQuota()
       return {}
-    } catch (error: any) {
+    } catch (error) {
       return {
         error:
-          error.response?.data?.message ||
-          '이메일 또는 비밀번호가 올바르지 않습니다.',
+          error instanceof AxiosError
+            ? error.response?.data?.message || '이메일 또는 비밀번호가 올바르지 않습니다.'
+            : '이메일 또는 비밀번호가 올바르지 않습니다.',
       }
     }
   },

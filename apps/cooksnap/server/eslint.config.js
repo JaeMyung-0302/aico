@@ -4,6 +4,6 @@ import { nodeConfig } from "@repo/eslint-config/node";
 export default [
   ...nodeConfig,
   {
-    ignores: ["dist/**"],
+    ignores: ["dist/**", "src/generated/**"],
   },
 ];

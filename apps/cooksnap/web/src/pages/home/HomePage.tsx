@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import api from '@/lib/api'
 import PremiumModal from '@/components/PremiumModal'
 import type { AnalyzeResponse } from '@/types/recipe'
+import { AxiosError } from 'axios'
 import styles from './HomePage.module.scss'
 
 const cx = classnames.bind(styles)
@@ -108,15 +109,13 @@ const Landing = () => {
       queryClient.invalidateQueries({ queryKey: ['my-history'] })
       navigate(`/result/${data.id}`)
     } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const status = (err as any)?.response?.status
-      if (status === 403) {
+      if (err instanceof AxiosError && err.response?.status === 403) {
         setShowPremiumModal(true)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const message =
-          (err as any)?.response?.data?.message ||
-          '분석 중 오류가 발생했습니다. 다시 시도해주세요.'
+          err instanceof AxiosError
+            ? err.response?.data?.message || '분석 중 오류가 발생했습니다. 다시 시도해주세요.'
+            : '분석 중 오류가 발생했습니다. 다시 시도해주세요.'
         setError(message)
       }
     } finally {
@@ -211,7 +210,7 @@ const Landing = () => {
       <div className={cx('valueCard')}>
         <p className={cx('valueTitle')}>핵심 가치</p>
         <p className={cx('valueHighlight')}>
-          "이 레시피, 재료비 총 4,200원 — 외식비 대비 62% 절약"
+          {'"이 레시피, 재료비 총 4,200원 — 외식비 대비 62% 절약"'}
         </p>
       </div>
 

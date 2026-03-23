@@ -1,4 +1,4 @@
-import { execSync, spawn, type ChildProcess } from 'child_process'
+import { spawn, type ChildProcess } from 'child_process'
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import puppeteer from 'puppeteer'

@@ -60,7 +60,11 @@ export class PortoneService {
       throw new Error(`포트원 결제 실패: ${response.status}`)
     }
 
-    return response.json()
+    try {
+      return await response.json()
+    } catch {
+      throw new Error('포트원 응답 파싱 실패')
+    }
   }
 
   cancelPayment = async (paymentId: string, reason: string): Promise<void> => {
@@ -117,6 +121,10 @@ export class PortoneService {
       throw new Error(`포트원 결제 조회 실패: ${response.status}`)
     }
 
-    return response.json()
+    try {
+      return await response.json()
+    } catch {
+      throw new Error('포트원 응답 파싱 실패')
+    }
   }
 }

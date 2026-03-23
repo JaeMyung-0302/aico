@@ -1,13 +1,17 @@
-import { Controller, Get, Post, Body, Query, Res, UseGuards, Req } from '@nestjs/common'
+import { Controller, Get, Post, Body, Query, Res, UseGuards, Req, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Response } from 'express'
 import { AuthService } from './auth.service'
 import { AuthGuard } from './guards/auth.guard'
 import { PremiumService } from '../premium/premium.service'
 import { EmailAuthDto } from './dto/email-auth.dto'
+import { isAxiosError } from 'axios'
+import type { AuthenticatedRequest } from '../common/interfaces/authenticated-request'
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name)
+
   constructor(
     private readonly authService: AuthService,
     private readonly premiumService: PremiumService,
@@ -16,7 +20,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  getMe(@Req() req: any) {
+  getMe(@Req() req: AuthenticatedRequest) {
     const adminEmails = this.configService.get<string>('admin.emails') || ''
     const allowedEmails = adminEmails
       .split(',')
@@ -55,8 +59,8 @@ export class AuthController {
       const token = await this.authService.handleKakaoCallback(code)
       const clientOrigin = this.configService.get<string>('app.clientOrigin')
       return res.redirect(`${clientOrigin}/auth/callback?token=${token}`)
-    } catch (error: any) {
-      console.error('Kakao OAuth error:', error?.response?.data || error?.message)
+    } catch (error) {
+      this.logger.error('Kakao OAuth error', isAxiosError(error) ? error.response?.status : error)
       const clientOrigin = this.configService.get<string>('app.clientOrigin')
       return res.redirect(`${clientOrigin}/auth?error=kakao_failed`)
     }
@@ -76,8 +80,8 @@ export class AuthController {
       const token = await this.authService.handleGoogleCallback(code)
       const clientOrigin = this.configService.get<string>('app.clientOrigin')
       return res.redirect(`${clientOrigin}/auth/callback?token=${token}`)
-    } catch (error: any) {
-      console.error('Google OAuth error:', error?.response?.data || error?.message)
+    } catch (error) {
+      this.logger.error('Google OAuth error', isAxiosError(error) ? error.response?.status : error)
       const clientOrigin = this.configService.get<string>('app.clientOrigin')
       return res.redirect(`${clientOrigin}/auth?error=google_failed`)
     }

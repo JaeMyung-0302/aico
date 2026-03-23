@@ -17,11 +17,7 @@ import { AdminGuard } from './guards/admin.guard'
 import { CreateFeedbackDto } from './dto/create-feedback.dto'
 import { UpdateFeedbackStatusDto } from './dto/update-feedback-status.dto'
 import { FeedbackQueryDto } from './dto/feedback-query.dto'
-import type { User } from '../generated/prisma'
-
-interface AuthenticatedRequest extends Request {
-  user: User
-}
+import type { AuthenticatedRequest } from '../common/interfaces/authenticated-request'
 
 @Controller('feedback')
 export class FeedbackController {

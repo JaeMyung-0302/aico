@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import classnames from 'classnames/bind'
+import { AxiosError } from 'axios'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { Loading } from '@repo/ui'
@@ -41,8 +42,7 @@ const Result = () => {
 
   // 403 (소유권 없음) 시 메인으로 이동
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (error && (error as any)?.response?.status === 403) {
+    if (error instanceof AxiosError && error.response?.status === 403) {
       navigate('/', { replace: true })
     }
   }, [error, navigate])
@@ -248,7 +248,7 @@ const Result = () => {
                     <a
                       href={purchaseUrl}
                       target="_blank"
-                      rel="noopener"
+                      rel="noreferrer"
                       className={cx('coupangLink')}
                     >
                       구매
@@ -294,7 +294,7 @@ const Result = () => {
         <a
           href="https://link.coupang.com/a/dV0oMd"
           target="_blank"
-          rel="noopener"
+          rel="noreferrer"
           className={cx('coupangBannerLink')}
         >
           쿠팡에서 최저가 확인하기
@@ -311,7 +311,7 @@ const Result = () => {
           <a
             href="https://link.coupang.com/a/dV0oMd"
             target="_blank"
-            rel="noopener"
+            rel="noreferrer"
             className={cx('cartButton')}
           >
             쿠팡에서 재료 구매하기

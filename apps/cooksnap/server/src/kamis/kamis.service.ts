@@ -169,7 +169,7 @@ export class KamisService implements OnModuleInit {
         }
         // rate limit 방지
         await new Promise((r) => setTimeout(r, 500))
-      } catch (error) {
+      } catch {
         this.logger.warn(`카테고리 ${categoryCode} 조회 실패, 재시도...`)
         // 한 번 더 시도 (간격 늘려서)
         await new Promise((r) => setTimeout(r, 2000))

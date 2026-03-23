@@ -19,34 +19,34 @@ interface Tenant {
 interface AuthState {
   user: User | null
   tenant: Tenant | null
+  tenants: Tenant[]
   isLoading: boolean
   initialize: () => Promise<void>
   signUp: (email: string, password: string, name?: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => void
+  fetchTenants: () => Promise<Tenant[]>
+  setTenant: (tenant: Tenant) => void
+  createTenant: (name: string, slug: string) => Promise<Tenant>
 }
 
-const ensureTenant = async (): Promise<Tenant> => {
-  const { data: tenants } = await api.get('/tenants')
+const restoreTenant = (tenants: Tenant[]): Tenant | null => {
+  if (tenants.length === 0) return null
 
-  if (tenants.length > 0) {
-    const tenant = tenants[0]
-    localStorage.setItem('current_tenant_id', tenant.id)
-    return tenant
-  }
+  const savedId = localStorage.getItem('current_tenant_id')
+  const saved = tenants.find((t) => t.id === savedId)
+  if (saved) return saved
 
-  const slug = `team-${Date.now()}`
-  const { data: newTenant } = await api.post('/tenants', {
-    name: 'My Team',
-    slug,
-  })
-  localStorage.setItem('current_tenant_id', newTenant.id)
-  return { id: newTenant.id, name: newTenant.name, slug: newTenant.slug, role: 'OWNER' }
+  const first = tenants.at(0)
+  if (!first) return null
+  localStorage.setItem('current_tenant_id', first.id)
+  return first
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   tenant: null,
+  tenants: [],
   isLoading: true,
 
   initialize: async () => {
@@ -57,13 +57,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
 
     try {
-      const { data } = await api.get('/auth/me')
-      const tenant = await ensureTenant()
-      set({ user: data, tenant, isLoading: false })
+      const { data: user } = await api.get('/auth/me')
+      const { data: tenants } = await api.get('/tenants')
+      const tenant = restoreTenant(tenants)
+      set({ user, tenants, tenant, isLoading: false })
     } catch {
       localStorage.removeItem('access_token')
       localStorage.removeItem('current_tenant_id')
-      set({ user: null, tenant: null, isLoading: false })
+      set({ user: null, tenant: null, tenants: [], isLoading: false })
     }
   },
 
@@ -72,8 +73,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data } = await api.post('/auth/signup', { email, password, name })
       localStorage.setItem('access_token', data.token)
       const { data: user } = await api.get('/auth/me')
-      const tenant = await ensureTenant()
-      set({ user, tenant })
+      const { data: tenants } = await api.get('/tenants')
+      const tenant = restoreTenant(tenants)
+      set({ user, tenants, tenant })
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.message || '회원가입에 실패했습니다.')
@@ -87,8 +89,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data } = await api.post('/auth/signin', { email, password })
       localStorage.setItem('access_token', data.token)
       const { data: user } = await api.get('/auth/me')
-      const tenant = await ensureTenant()
-      set({ user, tenant })
+      const { data: tenants } = await api.get('/tenants')
+      const tenant = restoreTenant(tenants)
+      set({ user, tenants, tenant })
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.message || '로그인에 실패했습니다.')
@@ -100,6 +103,45 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('current_tenant_id')
-    set({ user: null, tenant: null })
+    set({ user: null, tenant: null, tenants: [] })
+  },
+
+  fetchTenants: async () => {
+    try {
+      const { data: tenants } = await api.get('/tenants')
+      set({ tenants })
+      return tenants
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || '팀 목록을 불러오지 못했습니다.')
+      }
+      throw error
+    }
+  },
+
+  setTenant: (tenant) => {
+    localStorage.setItem('current_tenant_id', tenant.id)
+    set({ tenant })
+  },
+
+  createTenant: async (name, slug) => {
+    try {
+      const { data: newTenant } = await api.post('/tenants', { name, slug })
+      const tenant: Tenant = {
+        id: newTenant.id,
+        name: newTenant.name,
+        slug: newTenant.slug,
+        role: 'OWNER',
+      }
+      const { tenants } = get()
+      localStorage.setItem('current_tenant_id', tenant.id)
+      set({ tenants: [...tenants, tenant], tenant })
+      return tenant
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || '팀 생성에 실패했습니다.')
+      }
+      throw error
+    }
   },
 }))

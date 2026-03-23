@@ -1,0 +1,14 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.page { display: flex; flex-direction: column; gap: $space-lg; }
+.loading, .empty { color: $color-text-secondary; text-align: center; padding: $space-xxl 0; }
+.list { display: flex; flex-direction: column; gap: $space-md; }
+.card {
+  @include card;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer;
+  &:hover { border-color: $color-primary; }
+}
+.date { font-weight: 600; }
+.via { font-size: 12px; color: $color-text-secondary; }

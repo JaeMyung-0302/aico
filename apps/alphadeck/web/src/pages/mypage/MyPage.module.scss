@@ -1,0 +1,80 @@
+@use '../../styles/variables' as *;
+
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+
+  h2 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary, #a0a0b0);
+  }
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.label {
+  color: var(--text-secondary, #a0a0b0);
+  font-size: 0.875rem;
+}
+
+.planCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.planBadge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: var(--accent, #4a9eff);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary, #e0e0e0);
+  cursor: pointer;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: var(--bg-tertiary, #2a2a3e);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.logoutButton {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  background: transparent;
+  color: #e74c3c;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(231, 76, 60, 0.1);
+  }
+}

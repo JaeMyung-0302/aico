@@ -1,0 +1,59 @@
+@use '../../styles/variables' as *;
+
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+}
+
+.symbol {
+  font-weight: 700;
+  min-width: 60px;
+}
+
+.addForm {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  input {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border, #2a2a3e);
+    border-radius: 6px;
+    background: var(--bg-secondary, #1a1a2e);
+    color: var(--text-primary, #e0e0e0);
+  }
+
+  button {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent, #4a9eff);
+    color: white;
+    cursor: pointer;
+  }
+}
+
+.error {
+  color: #e74c3c;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}

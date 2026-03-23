@@ -1,0 +1,56 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  @include flex-center;
+  min-height: 60vh;
+}
+
+.form {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  width: 100%;
+  max-width: 400px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.error {
+  color: $color-danger;
+  font-size: 14px;
+  text-align: center;
+}
+
+.input {
+  padding: $space-md;
+  background: $color-bg;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: 14px;
+
+  &:focus { outline: none; border-color: $color-primary; }
+}
+
+.button {
+  padding: $space-md;
+  background: $color-primary;
+  color: white;
+  border-radius: $radius-sm;
+  font-weight: 600;
+
+  &:hover { background: $color-primary-dark; }
+}
+
+.toggle {
+  font-size: 13px;
+  color: $color-text-secondary;
+  text-align: center;
+
+  &:hover { color: $color-primary; }
+}

@@ -1,0 +1,181 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PriceData {
+  id       Int      @id @default(autoincrement())
+  symbol   String
+  date     DateTime @db.Date
+  open     Float
+  high     Float
+  low      Float
+  close    Float
+  volume   BigInt
+  fetchedAt DateTime @default(now()) @map("fetched_at")
+
+  @@unique([symbol, date])
+  @@index([symbol])
+  @@map("price_data")
+}
+
+model TaResult {
+  id             Int      @id @default(autoincrement())
+  symbol         String
+  date           DateTime @db.Date
+  sma20          Float?   @map("sma_20")
+  sma50          Float?   @map("sma_50")
+  sma200         Float?   @map("sma_200")
+  ema12          Float?   @map("ema_12")
+  ema26          Float?   @map("ema_26")
+  rsi14          Float?   @map("rsi_14")
+  macdLine       Float?   @map("macd_line")
+  macdSignal     Float?   @map("macd_signal")
+  macdHistogram  Float?   @map("macd_histogram")
+  bbUpper        Float?   @map("bb_upper")
+  bbMiddle       Float?   @map("bb_middle")
+  bbLower        Float?   @map("bb_lower")
+  volumeRatio    Float?   @map("volume_ratio")
+  compositeScore Float?   @map("composite_score")
+  calculatedAt   DateTime @default(now()) @map("calculated_at")
+
+  @@unique([symbol, date])
+  @@index([symbol])
+  @@map("ta_results")
+}
+
+enum Plan {
+  FREE
+  PRO
+  MAX
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String?   @map("password_hash")
+  nickname     String?
+  provider     String    @default("email")
+  providerId   String?   @map("provider_id")
+  plan             Plan      @default(FREE)
+  pushSubscription String?   @map("push_subscription") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  portfolios       Portfolio[]
+  briefingLogs     BriefingLog[]
+  signalLogs       SignalLog[]
+  alertPreferences AlertPreference[]
+  tradeLogs        TradeLog[]
+
+  @@map("users")
+}
+
+model Portfolio {
+  id        Int             @id @default(autoincrement())
+  userId    Int             @map("user_id")
+  name      String          @default("기본 포트폴리오")
+  isDefault Boolean         @default(true) @map("is_default")
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  user  User              @relation(fields: [userId], references: [id])
+  items PortfolioItem[]
+
+  @@map("portfolios")
+}
+
+model PortfolioItem {
+  id          Int      @id @default(autoincrement())
+  portfolioId Int      @map("portfolio_id")
+  symbol      String
+  quantity    Float
+  avgBuyPrice Float    @map("avg_buy_price")
+  addedAt     DateTime @default(now()) @map("added_at")
+
+  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioId, symbol])
+  @@map("portfolio_items")
+}
+
+model BriefingLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  content   Json
+  sentVia   String?  @map("sent_via")
+  openedAt  DateTime? @map("opened_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("briefing_logs")
+}
+
+model LlmCache {
+  id            Int      @id @default(autoincrement())
+  cacheKey      String   @unique @map("cache_key")
+  response      String   @db.Text
+  model         String
+  promptVersion String   @map("prompt_version")
+  tokenUsage    Int?     @map("token_usage")
+  createdAt     DateTime @default(now()) @map("created_at")
+  expiresAt     DateTime @map("expires_at")
+
+  @@map("llm_cache")
+}
+
+model SignalLog {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  symbol    String
+  type      String
+  direction String
+  value     Float
+  threshold Float
+  message   String
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([userId, symbol, type])
+  @@map("signal_logs")
+}
+
+model AlertPreference {
+  id           Int     @id @default(autoincrement())
+  userId       Int     @map("user_id")
+  symbol       String
+  enabled      Boolean @default(true)
+  emailEnabled Boolean @default(true) @map("email_enabled")
+  pushEnabled  Boolean @default(true) @map("push_enabled")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, symbol])
+  @@map("alert_preferences")
+}
+
+model TradeLog {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  symbol     String
+  action     String
+  quantity   Float
+  price      Float
+  tradedAt   DateTime  @map("traded_at")
+  memo       String?
+  taSnapshot Json?     @map("ta_snapshot")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, tradedAt])
+  @@map("trade_logs")
+}

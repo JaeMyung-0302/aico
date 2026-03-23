@@ -1,4 +1,4 @@
-import { IsString, IsIn, IsOptional } from 'class-validator'
+import { IsString, IsIn, IsOptional, IsObject } from 'class-validator'
 
 export class CreateIntegrationDto {
   @IsString()
@@ -9,5 +9,6 @@ export class CreateIntegrationDto {
   accessToken!: string
 
   @IsOptional()
+  @IsObject()
   config?: Record<string, unknown>
 }

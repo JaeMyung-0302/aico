@@ -43,12 +43,18 @@ export class NotionProvider {
       )
 
       for (const page of res.data.results) {
-        const titleProp = Object.values(page.properties || {}).find(
-          (p: unknown) => (p as Record<string, unknown>).type === 'title',
-        ) as Record<string, unknown> | undefined
+        let title = 'Untitled'
+        const properties = page.properties
+        if (properties && typeof properties === 'object') {
+          const titleProp = Object.values(properties).find(
+            (p: unknown) => p != null && typeof p === 'object' && (p as Record<string, unknown>).type === 'title',
+          ) as Record<string, unknown> | undefined
 
-        const titleArr = (titleProp as Record<string, unknown>)?.title as Array<{ plain_text: string }> | undefined
-        const title = titleArr?.map((t) => t.plain_text).join('') || 'Untitled'
+          const titleArr = Array.isArray(titleProp?.title)
+            ? (titleProp.title as Array<{ plain_text: string }>)
+            : undefined
+          title = titleArr?.map((t) => t.plain_text).join('') || 'Untitled'
+        }
 
         pages.push({
           id: page.id,

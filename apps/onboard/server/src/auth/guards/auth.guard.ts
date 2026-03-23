@@ -22,20 +22,21 @@ export class AuthGuard implements CanActivate {
     }
     const token = authHeader.slice(7)
 
+    let payload: { sub: string }
     try {
-      const payload = this.jwtService.verify(token)
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-      })
-
-      if (!user) {
-        throw new UnauthorizedException('사용자를 찾을 수 없습니다.')
-      }
-
-      request.user = user
-      return true
+      payload = this.jwtService.verify(token)
     } catch {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.')
     }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    })
+    if (!user) {
+      throw new UnauthorizedException('사용자를 찾을 수 없습니다.')
+    }
+
+    request.user = user
+    return true
   }
 }

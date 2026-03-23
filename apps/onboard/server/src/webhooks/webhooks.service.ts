@@ -32,10 +32,12 @@ export class WebhooksService {
 
   handleGitHubPush = async (payload: Record<string, unknown>) => {
     const repository = payload.repository as Record<string, unknown> | undefined
-    if (!repository) return
+    if (!repository) return { processed: 0 }
 
-    const fullName = repository.full_name as string
+    const fullName = repository.full_name
+    if (typeof fullName !== 'string') return { processed: 0 }
     const [owner, repo] = fullName.split('/')
+    if (!owner || !repo) return { processed: 0 }
 
     const integrations = await this.prisma.integration.findMany({
       where: {

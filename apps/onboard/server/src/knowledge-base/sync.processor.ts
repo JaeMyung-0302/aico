@@ -19,7 +19,10 @@ export class SyncProcessor {
     this.logger.log(`Sync job queued: integration=${job.integrationId}`)
 
     if (!this.processing) {
-      this.processQueue()
+      this.processQueue().catch((error) => {
+        this.logger.error('Queue processing failed unexpectedly', error)
+        this.processing = false
+      })
     }
   }
 

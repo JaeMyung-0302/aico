@@ -25,8 +25,8 @@ export class PollingService {
       where: { type: 'notion' },
     })
 
-    for (const integration of notionIntegrations) {
-      try {
+    const results = await Promise.allSettled(
+      notionIntegrations.map(async (integration) => {
         const token = this.integrationsService.getDecryptedToken(integration.accessToken)
         const pages = await this.notionProvider.fetchPages(token)
 
@@ -52,8 +52,15 @@ export class PollingService {
         } else {
           this.logger.log(`No changes for integration ${integration.id}`)
         }
-      } catch (error) {
-        this.logger.error(`Notion polling failed for integration ${integration.id}`, error)
+      }),
+    )
+
+    for (const [i, result] of results.entries()) {
+      if (result.status === 'rejected') {
+        const integration = notionIntegrations[i]
+        if (integration) {
+          this.logger.error(`Notion polling failed for integration ${integration.id}`, result.reason)
+        }
       }
     }
 

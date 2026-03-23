@@ -42,6 +42,9 @@ export class GitHubProvider {
           type: 'file',
           url: item.html_url,
         })
+      } else if (item.type === 'dir') {
+        const subFiles = await this.fetchRepoFiles(token, owner, repo, item.path)
+        docFiles.push(...subFiles)
       }
     }
 

@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { GeminiService } from '../gemini/gemini.service'
@@ -83,6 +84,18 @@ export class KnowledgeBaseService {
       const content = await this.notionProvider.fetchPageContent(token, page.id)
       if (!content.trim()) continue
 
+      const contentHash = createHash('md5').update(content).digest('hex')
+
+      const existing = await this.prisma.document.findUnique({
+        where: { integrationId_externalId: { integrationId, externalId: page.id } },
+        select: { id: true, content: true },
+      })
+
+      if (existing && createHash('md5').update(existing.content).digest('hex') === contentHash) {
+        this.logger.log(`Skipping unchanged Notion page ${page.id}`)
+        continue
+      }
+
       const document = await this.prisma.document.upsert({
         where: { integrationId_externalId: { integrationId, externalId: page.id } },
         update: { title: page.title, content, sourceUrl: page.url, lastSyncedAt: new Date() },
@@ -114,11 +127,23 @@ export class KnowledgeBaseService {
       const content = await this.githubProvider.fetchFileContent(token, owner, repo, file.path)
       if (!content.trim()) continue
 
+      const contentHash = createHash('md5').update(content).digest('hex')
+
+      const existing = await this.prisma.document.findUnique({
+        where: { integrationId_externalId: { integrationId, externalId: file.path } },
+        select: { id: true, content: true },
+      })
+
+      if (existing && createHash('md5').update(existing.content).digest('hex') === contentHash) {
+        this.logger.log(`Skipping unchanged GitHub file ${file.path}`)
+        continue
+      }
+
       const document = await this.prisma.document.upsert({
-        where: { integrationId_externalId: { integrationId, externalId: file.sha } },
+        where: { integrationId_externalId: { integrationId, externalId: file.path } },
         update: { title: file.path, content, sourceUrl: file.url, lastSyncedAt: new Date() },
         create: {
-          externalId: file.sha,
+          externalId: file.path,
           title: file.path,
           content,
           sourceUrl: file.url,

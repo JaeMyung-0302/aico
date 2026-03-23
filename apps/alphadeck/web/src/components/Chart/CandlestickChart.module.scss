@@ -1,0 +1,12 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.chartContainer {
+  @include card;
+  padding: $space-md;
+  width: 100%;
+
+  @include mobile {
+    padding: $space-sm;
+  }
+}

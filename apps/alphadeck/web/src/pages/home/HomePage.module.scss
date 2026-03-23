@@ -1,0 +1,98 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xxl;
+}
+
+.hero {
+  text-align: center;
+  padding: $space-xxl 0;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: $space-sm;
+
+  @include mobile {
+    font-size: 28px;
+  }
+}
+
+.subtitle {
+  color: $color-text-secondary;
+  font-size: 16px;
+  margin-bottom: $space-xl;
+}
+
+.searchForm {
+  display: flex;
+  max-width: 500px;
+  margin: 0 auto;
+  gap: $space-sm;
+
+  @include mobile {
+    flex-direction: column;
+  }
+}
+
+.searchInput {
+  flex: 1;
+  padding: $space-md;
+  background: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: 16px;
+  color: $color-text;
+
+  &::placeholder {
+    color: $color-text-secondary;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+}
+
+.searchButton {
+  padding: $space-md $space-lg;
+  background: $color-primary;
+  color: white;
+  border-radius: $radius-sm;
+  font-weight: 600;
+  transition: background $transition-base;
+
+  &:hover {
+    background: $color-primary-dark;
+  }
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: $space-md;
+}
+
+.symbolGrid {
+  display: flex;
+  gap: $space-md;
+  flex-wrap: wrap;
+}
+
+.symbolCard {
+  @include card;
+  padding: $space-md $space-lg;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:hover {
+    border-color: $color-primary;
+    background: $color-bg-hover;
+  }
+}

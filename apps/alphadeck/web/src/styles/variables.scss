@@ -1,0 +1,43 @@
+// Colors
+$color-primary: #3b82f6;
+$color-primary-dark: #2563eb;
+$color-secondary: #1e293b;
+$color-bg: #0f172a;
+$color-bg-card: #1e293b;
+$color-bg-hover: #334155;
+$color-text: #f1f5f9;
+$color-text-secondary: #94a3b8;
+$color-border: #334155;
+$color-success: #22c55e;
+$color-danger: #ef4444;
+$color-warning: #f59e0b;
+$color-neutral: #6b7280;
+
+// Breakpoints
+$bp-mobile: 480px;
+$bp-tablet: 768px;
+$bp-desktop: 1024px;
+$bp-wide: 1280px;
+
+// Spacing
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+$space-xl: 32px;
+$space-xxl: 48px;
+
+// Shadows
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+// Border Radius
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+
+// Transitions
+$transition-base: 200ms ease;
+
+// Font
+$font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

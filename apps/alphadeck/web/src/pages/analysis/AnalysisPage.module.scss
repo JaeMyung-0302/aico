@@ -1,0 +1,144 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+}
+
+.loading, .error {
+  @include flex-center;
+  min-height: 300px;
+  font-size: 16px;
+  color: $color-text-secondary;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.symbol {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.scoreWrapper {
+  text-align: right;
+}
+
+.score {
+  font-size: 40px;
+  font-weight: 800;
+  display: block;
+  line-height: 1;
+}
+
+.scoreLabel {
+  font-size: 14px;
+  color: $color-text-secondary;
+}
+
+.indicators h2,
+.breakdown h2,
+.interpretation h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: $space-md;
+}
+
+.indicatorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: $space-md;
+}
+
+.indicatorCard {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.indicatorName {
+  font-size: 12px;
+  color: $color-text-secondary;
+}
+
+.indicatorValue {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.breakdownList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.breakdownItem {
+  display: grid;
+  grid-template-columns: 120px 60px 1fr 60px;
+  align-items: center;
+  gap: $space-sm;
+
+  @include mobile {
+    grid-template-columns: 80px 50px 1fr 50px;
+  }
+}
+
+.breakdownName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.breakdownDirection {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-align: center;
+
+  &[data-direction='BUY'] {
+    background: rgba($color-success, 0.15);
+    color: $color-success;
+  }
+  &[data-direction='SELL'] {
+    background: rgba($color-danger, 0.15);
+    color: $color-danger;
+  }
+  &[data-direction='NEUTRAL'] {
+    background: rgba($color-neutral, 0.15);
+    color: $color-neutral;
+  }
+}
+
+.breakdownBar {
+  height: 8px;
+  background: $color-bg;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+.breakdownFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width $transition-base;
+}
+
+.breakdownValue {
+  font-size: 13px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.interpretation {
+  @include card;
+
+  p {
+    line-height: 1.8;
+    color: $color-text-secondary;
+  }
+}

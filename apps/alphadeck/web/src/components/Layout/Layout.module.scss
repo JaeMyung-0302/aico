@@ -1,0 +1,15 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  @include container;
+  padding-top: $space-lg;
+  padding-bottom: $space-lg;
+}

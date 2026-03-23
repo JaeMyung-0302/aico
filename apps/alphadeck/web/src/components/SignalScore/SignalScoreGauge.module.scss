@@ -1,0 +1,19 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.gauge {
+  @include flex-center;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.svg {
+  width: 200px;
+  height: 120px;
+}
+
+.value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}

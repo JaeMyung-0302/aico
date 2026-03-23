@@ -1,0 +1,35 @@
+@use '../../styles/variables' as *;
+
+.card {
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.title {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary, #a0a0b0);
+}
+
+.content {
+  line-height: 1.7;
+  font-size: 0.9375rem;
+
+  p {
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.disclaimer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border, #2a2a3e);
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #6b7280);
+}

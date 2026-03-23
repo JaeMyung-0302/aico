@@ -1,0 +1,12 @@
+@use '../../styles/variables' as *;
+
+.disclaimer {
+  background: rgba($color-warning, 0.1);
+  border: 1px solid rgba($color-warning, 0.3);
+  border-radius: $radius-sm;
+  padding: $space-sm $space-md;
+  font-size: 12px;
+  color: $color-text-secondary;
+  text-align: center;
+  line-height: 1.5;
+}

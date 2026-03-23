@@ -1,0 +1,32 @@
+@use 'variables' as *;
+
+@mixin mobile {
+  @media (max-width: $bp-tablet - 1) { @content; }
+}
+
+@mixin tablet {
+  @media (min-width: $bp-tablet) and (max-width: $bp-desktop - 1) { @content; }
+}
+
+@mixin desktop {
+  @media (min-width: $bp-desktop) { @content; }
+}
+
+@mixin container {
+  max-width: $bp-wide;
+  margin: 0 auto;
+  padding: 0 $space-md;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card {
+  background: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: $space-lg;
+}

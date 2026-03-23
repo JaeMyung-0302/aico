@@ -1,0 +1,21 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.footer {
+  border-top: 1px solid $color-border;
+  padding: $space-lg 0;
+  margin-top: auto;
+}
+
+.container {
+  @include container;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  align-items: center;
+}
+
+.copyright {
+  font-size: 12px;
+  color: $color-text-secondary;
+}

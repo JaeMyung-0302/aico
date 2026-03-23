@@ -1,0 +1,29 @@
+@use '../../styles/variables' as *;
+
+.form {
+  display: flex;
+  gap: $space-sm;
+}
+
+.input {
+  flex: 1;
+  padding: $space-sm $space-md;
+  background: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: 14px;
+
+  &::placeholder { color: $color-text-secondary; }
+  &:focus { outline: none; border-color: $color-primary; }
+}
+
+.button {
+  padding: $space-sm $space-md;
+  background: $color-primary;
+  color: white;
+  border-radius: $radius-sm;
+  font-weight: 600;
+  font-size: 14px;
+
+  &:hover { background: $color-primary-dark; }
+}

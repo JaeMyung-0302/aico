@@ -1,0 +1,92 @@
+@use '../../styles/variables' as *;
+
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.reviewLink {
+  padding: 0.5rem 1rem;
+  background: var(--accent, #4a9eff);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+
+  input, select {
+    flex: 1;
+    min-width: 100px;
+    padding: 0.5rem;
+    border: 1px solid var(--border, #2a2a3e);
+    border-radius: 4px;
+    background: var(--bg-primary, #0f0f1a);
+    color: var(--text-primary, #e0e0e0);
+  }
+
+  button {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    background: var(--accent, #4a9eff);
+    color: white;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.5; }
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tradeCard {
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 6px;
+}
+
+.tradeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.symbol { font-weight: 700; }
+.buy { color: #22c55e; }
+.sell { color: #ef4444; }
+.date { color: var(--text-tertiary, #6b7280); margin-left: auto; }
+
+.deleteButton {
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #6b7280);
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+.memo {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #a0a0b0);
+}

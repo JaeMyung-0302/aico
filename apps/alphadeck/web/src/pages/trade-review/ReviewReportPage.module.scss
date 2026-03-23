@@ -1,0 +1,96 @@
+@use '../../styles/variables' as *;
+
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #a0a0b0);
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.startCard {
+  text-align: center;
+  padding: 3rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+
+  p { margin-bottom: 1.5rem; color: var(--text-secondary, #a0a0b0); }
+}
+
+.generateButton {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent, #4a9eff);
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary, #a0a0b0);
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #f59e0b;
+}
+
+.section {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.analysisList, .patternList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.analysisCard {
+  padding: 1rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+  border-left: 3px solid var(--border, #2a2a3e);
+}
+
+.risky { border-left-color: #ef4444; }
+.good { border-left-color: #22c55e; }
+
+.analysisHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.symbol { font-weight: 700; }
+.buy { color: #22c55e; }
+.sell { color: #ef4444; }
+.date { margin-left: auto; color: var(--text-tertiary, #6b7280); }
+
+.result {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.hindsight {
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #a0a0b0);
+  line-height: 1.5;
+}

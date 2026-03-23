@@ -1,0 +1,40 @@
+@use '../../styles/variables' as *;
+
+.card {
+  padding: 1rem 1.25rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 8px;
+  border-left: 3px solid var(--border, #2a2a3e);
+}
+
+.critical { border-left-color: #ef4444; }
+.warning { border-left-color: #f59e0b; }
+.info { border-left-color: #22c55e; }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.count {
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #a0a0b0);
+}
+
+.ratio {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #6b7280);
+}
+
+.description {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #a0a0b0);
+}

@@ -3,70 +3,85 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--color-bg);
 }
 
 .card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 40px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
 }
 
 .title {
-  font-size: 28px;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   text-align: center;
   margin: 0;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
 }
 
 .subtitle {
-  font-size: 14px;
-  color: #666;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
   text-align: center;
-  margin: 8px 0 32px;
+  margin: var(--space-2) 0 var(--space-8);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .input {
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: var(--color-surface);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
 
   &:focus {
-    border-color: #333;
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
   }
 }
 
 .error {
-  color: #e53e3e;
-  font-size: 13px;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
   margin: 0;
 }
 
 .button {
-  padding: 12px;
-  background: #333;
-  color: #fff;
+  padding: var(--space-3);
+  background: var(--color-primary);
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  margin-top: var(--space-1);
 
   &:hover:not(:disabled) {
-    background: #555;
+    background: var(--color-primary-hover);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
   &:disabled {
@@ -78,16 +93,17 @@
 .toggle {
   display: block;
   width: 100%;
-  margin-top: 16px;
+  margin-top: var(--space-5);
   padding: 0;
   background: none;
   border: none;
-  color: #666;
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
   cursor: pointer;
   text-align: center;
+  transition: color var(--transition-fast);
 
   &:hover {
-    color: #333;
+    color: var(--color-primary);
   }
 }

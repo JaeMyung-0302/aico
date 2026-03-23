@@ -1,0 +1,44 @@
+@use '../../styles/variables' as *;
+
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.settingsLink {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 6px;
+  color: var(--text-secondary, #a0a0b0);
+  text-decoration: none;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: var(--bg-tertiary, #2a2a3e);
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-secondary, #a0a0b0);
+  padding: 3rem 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem 0;
+}

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 
 @Injectable()
@@ -9,10 +9,7 @@ export class ChecklistsService {
     title: string,
     items: Array<{ title: string; description?: string }>,
     tenantId: string,
-    userId: string,
   ) => {
-    await this.verifyMembership(tenantId, userId)
-
     return this.prisma.checklist.create({
       data: {
         title,
@@ -29,9 +26,7 @@ export class ChecklistsService {
     })
   }
 
-  getChecklists = async (tenantId: string, userId: string) => {
-    await this.verifyMembership(tenantId, userId)
-
+  getChecklists = async (tenantId: string) => {
     return this.prisma.checklist.findMany({
       where: { tenantId },
       include: {
@@ -48,10 +43,8 @@ export class ChecklistsService {
     checklistId: string,
     itemId: string,
     tenantId: string,
-    userId: string,
+    memberId: string,
   ) => {
-    const member = await this.verifyMembership(tenantId, userId)
-
     const checklist = await this.prisma.checklist.findFirst({
       where: { id: checklistId, tenantId },
     })
@@ -60,7 +53,7 @@ export class ChecklistsService {
     }
 
     const existing = await this.prisma.checklistProgress.findUnique({
-      where: { memberId_itemId: { memberId: member.id, itemId } },
+      where: { memberId_itemId: { memberId, itemId } },
     })
 
     if (existing) {
@@ -78,21 +71,26 @@ export class ChecklistsService {
 
     return this.prisma.checklistProgress.create({
       data: {
-        memberId: member.id,
+        memberId,
         itemId,
         completedAt: new Date(),
       },
     })
   }
 
-  getProgress = async (checklistId: string, tenantId: string, userId: string) => {
-    const member = await this.verifyMembership(tenantId, userId)
+  getProgress = async (checklistId: string, memberId: string, tenantId: string) => {
+    const checklist = await this.prisma.checklist.findFirst({
+      where: { id: checklistId, tenantId },
+    })
+    if (!checklist) {
+      throw new NotFoundException('체크리스트를 찾을 수 없습니다.')
+    }
 
     const items = await this.prisma.checklistItem.findMany({
       where: { checklistId },
       include: {
         progress: {
-          where: { memberId: member.id },
+          where: { memberId },
         },
       },
       orderBy: { orderIndex: 'asc' },
@@ -104,15 +102,5 @@ export class ChecklistsService {
       description: item.description,
       completed: item.progress.length > 0 && item.progress[0]?.completedAt != null,
     }))
-  }
-
-  private verifyMembership = async (tenantId: string, userId: string) => {
-    const member = await this.prisma.tenantMember.findUnique({
-      where: { userId_tenantId: { userId, tenantId } },
-    })
-    if (!member) {
-      throw new ForbiddenException('이 팀에 접근 권한이 없습니다.')
-    }
-    return member
   }
 }

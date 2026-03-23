@@ -1,15 +1,18 @@
-import { Controller, Get, Post, Body, Headers, UseGuards, Req, HttpCode } from '@nestjs/common'
+import { Controller, Get, Post, Body, Headers, UseGuards, HttpCode } from '@nestjs/common'
+import { IsString, IsUUID } from 'class-validator'
 import { KnowledgeBaseService } from './knowledge-base.service'
 import { SyncProcessor } from './sync.processor'
 import { AuthGuard } from '../auth/guards/auth.guard'
-import type { AuthenticatedRequest } from '../common/interfaces/authenticated-request'
+import { TenantGuard } from '../common/guards/tenant.guard'
 
 class SyncRequestDto {
+  @IsString()
+  @IsUUID()
   integrationId!: string
 }
 
 @Controller('knowledge-base')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 export class KnowledgeBaseController {
   constructor(
     private readonly knowledgeBaseService: KnowledgeBaseService,

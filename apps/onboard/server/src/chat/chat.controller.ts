@@ -2,12 +2,13 @@ import { Controller, Get, Post, Body, Param, Headers, UseGuards, Req } from '@ne
 import { Throttle } from '@nestjs/throttler'
 import { ChatService } from './chat.service'
 import { AuthGuard } from '../auth/guards/auth.guard'
+import { TenantGuard } from '../common/guards/tenant.guard'
 import { AskQuestionDto } from './dto/ask-question.dto'
 import { CreateSessionDto } from './dto/create-session.dto'
 import type { AuthenticatedRequest } from '../common/interfaces/authenticated-request'
 
 @Controller('chat')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 

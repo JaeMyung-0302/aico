@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  ForbiddenException,
   Logger,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -22,9 +21,13 @@ export class IntegrationsService {
     private readonly githubProvider: GitHubProvider,
   ) {
     const key = this.configService.get<string>('encryption.key')
-    this.encryptionKey = key
-      ? Buffer.from(key, 'hex')
-      : randomBytes(32)
+    if (!key && process.env.NODE_ENV === 'production') {
+      throw new Error('ENCRYPTION_KEY is required in production')
+    }
+    if (!key) {
+      this.logger.warn('ENCRYPTION_KEY not set. Using random key (tokens will not survive restarts)')
+    }
+    this.encryptionKey = key ? Buffer.from(key, 'hex') : randomBytes(32)
   }
 
   private encrypt = (plaintext: string): string => {
@@ -49,11 +52,8 @@ export class IntegrationsService {
     type: 'notion' | 'github',
     accessToken: string,
     tenantId: string,
-    userId: string,
     config?: Record<string, unknown>,
   ) => {
-    await this.verifyMembership(tenantId, userId)
-
     const encryptedToken = this.encrypt(accessToken)
     const integration = await this.prisma.integration.create({
       data: {
@@ -67,9 +67,7 @@ export class IntegrationsService {
     return { ...integration, accessToken: '***' }
   }
 
-  listIntegrations = async (tenantId: string, userId: string) => {
-    await this.verifyMembership(tenantId, userId)
-
+  listIntegrations = async (tenantId: string) => {
     const integrations = await this.prisma.integration.findMany({
       where: { tenantId },
       select: {
@@ -85,9 +83,7 @@ export class IntegrationsService {
     return integrations
   }
 
-  deleteIntegration = async (id: string, tenantId: string, userId: string) => {
-    await this.verifyMembership(tenantId, userId)
-
+  deleteIntegration = async (id: string, tenantId: string) => {
     const integration = await this.prisma.integration.findFirst({
       where: { id, tenantId },
     })
@@ -99,9 +95,7 @@ export class IntegrationsService {
     return { deleted: true }
   }
 
-  testConnection = async (id: string, tenantId: string, userId: string) => {
-    await this.verifyMembership(tenantId, userId)
-
+  testConnection = async (id: string, tenantId: string) => {
     const integration = await this.prisma.integration.findFirst({
       where: { id, tenantId },
     })
@@ -126,14 +120,5 @@ export class IntegrationsService {
 
   getDecryptedToken = (encryptedToken: string): string => {
     return this.decrypt(encryptedToken)
-  }
-
-  private verifyMembership = async (tenantId: string, userId: string) => {
-    const member = await this.prisma.tenantMember.findUnique({
-      where: { userId_tenantId: { userId, tenantId } },
-    })
-    if (!member) {
-      throw new ForbiddenException('이 팀에 접근 권한이 없습니다.')
-    }
   }
 }

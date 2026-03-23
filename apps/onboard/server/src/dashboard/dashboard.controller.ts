@@ -1,26 +1,20 @@
-import { Controller, Get, Headers, UseGuards, Req } from '@nestjs/common'
+import { Controller, Get, Headers, UseGuards } from '@nestjs/common'
 import { DashboardService } from './dashboard.service'
 import { AuthGuard } from '../auth/guards/auth.guard'
-import type { AuthenticatedRequest } from '../common/interfaces/authenticated-request'
+import { TenantGuard } from '../common/guards/tenant.guard'
 
 @Controller('dashboard')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
-  getStats(
-    @Headers('x-tenant-id') tenantId: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    return this.dashboardService.getTeamStats(tenantId, req.user.id)
+  getStats(@Headers('x-tenant-id') tenantId: string) {
+    return this.dashboardService.getTeamStats(tenantId)
   }
 
   @Get('members-progress')
-  getMembersProgress(
-    @Headers('x-tenant-id') tenantId: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    return this.dashboardService.getMembersProgress(tenantId, req.user.id)
+  getMembersProgress(@Headers('x-tenant-id') tenantId: string) {
+    return this.dashboardService.getMembersProgress(tenantId)
   }
 }

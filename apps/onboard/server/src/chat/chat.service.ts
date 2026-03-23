@@ -15,8 +15,6 @@ export class ChatService {
   ) {}
 
   createSession = async (userId: string, tenantId: string, title?: string) => {
-    await this.verifyMembership(tenantId, userId)
-
     return this.prisma.chatSession.create({
       data: {
         title: title || '새 대화',
@@ -106,14 +104,5 @@ export class ChatService {
     })
 
     return assistantMessage
-  }
-
-  private verifyMembership = async (tenantId: string, userId: string) => {
-    const member = await this.prisma.tenantMember.findUnique({
-      where: { userId_tenantId: { userId, tenantId } },
-    })
-    if (!member) {
-      throw new ForbiddenException('이 팀에 접근 권한이 없습니다.')
-    }
   }
 }

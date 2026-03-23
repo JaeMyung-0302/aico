@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: alphadeck-db
+    environment:
+      POSTGRES_USER: alphadeck
+      POSTGRES_PASSWORD: alphadeck
+      POSTGRES_DB: alphadeck_dev
+    ports:
+      - "5437:5432"
+    volumes:
+      - alphadeck_pgdata:/var/lib/postgresql/data
+
+volumes:
+  alphadeck_pgdata:

@@ -1,13 +1,14 @@
+import { useEffect, useRef } from 'react';
 import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+  createChart,
+  CandlestickSeries,
+  HistogramSeries,
+  LineSeries,
+  type IChartApi,
+  type CandlestickData,
+  type Time,
+  ColorType,
+} from 'lightweight-charts';
 import type { PriceData, TaResult } from '@/types/analysis';
 import styles from './CandlestickChart.module.scss';
 
@@ -17,61 +18,101 @@ interface Props {
 }
 
 const CandlestickChart = ({ prices, taResult }: Props) => {
-  const chartData = prices.map((p) => ({
-    date: new Date(p.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
-    open: p.open,
-    high: p.high,
-    low: p.low,
-    close: p.close,
-    volume: p.volume,
-    color: p.close >= p.open ? '#22c55e' : '#ef4444',
-    bodyTop: Math.max(p.open, p.close),
-    bodyBottom: Math.min(p.open, p.close),
-  }));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
 
-  return (
-    <div className={styles.chartContainer}>
-      <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis
-            dataKey="date"
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
-            tickLine={false}
-            interval="preserveStartEnd"
-          />
-          <YAxis
-            domain={['auto', 'auto']}
-            tick={{ fill: '#94a3b8', fontSize: 11 }}
-            tickLine={false}
-            axisLine={false}
-          />
-          <Tooltip
-            contentStyle={{
-              background: '#1e293b',
-              border: '1px solid #334155',
-              borderRadius: 8,
-              color: '#f1f5f9',
-            }}
-          />
-          <Bar dataKey="bodyTop" fill="transparent" stackId="candle" />
-          <Line
-            type="monotone"
-            dataKey="close"
-            stroke="#3b82f6"
-            dot={false}
-            strokeWidth={2}
-          />
-          {taResult?.bbUpper && (
-            <>
-              <Line type="monotone" dataKey={() => taResult.bbUpper} stroke="#6b7280" dot={false} strokeDasharray="4 4" strokeWidth={1} />
-              <Line type="monotone" dataKey={() => taResult.bbLower} stroke="#6b7280" dot={false} strokeDasharray="4 4" strokeWidth={1} />
-            </>
-          )}
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-  );
+  useEffect(() => {
+    if (!containerRef.current || prices.length === 0) return;
+
+    const chart = createChart(containerRef.current, {
+      width: containerRef.current.clientWidth,
+      height: 400,
+      layout: {
+        background: { type: ColorType.Solid, color: '#0f0f1a' },
+        textColor: '#94a3b8',
+      },
+      grid: {
+        vertLines: { color: '#1e293b' },
+        horzLines: { color: '#1e293b' },
+      },
+      timeScale: {
+        borderColor: '#334155',
+      },
+    });
+
+    chartRef.current = chart;
+
+    const candleSeries = chart.addSeries(CandlestickSeries, {
+      upColor: '#22c55e',
+      downColor: '#ef4444',
+      borderUpColor: '#22c55e',
+      borderDownColor: '#ef4444',
+      wickUpColor: '#22c55e',
+      wickDownColor: '#ef4444',
+    });
+
+    const candleData: CandlestickData<Time>[] = prices.map((p) => ({
+      time: p.date.split('T')[0] as unknown as Time,
+      open: p.open,
+      high: p.high,
+      low: p.low,
+      close: p.close,
+    }));
+
+    candleSeries.setData(candleData);
+
+    // Volume
+    const volumeSeries = chart.addSeries(HistogramSeries, {
+      priceFormat: { type: 'volume' },
+      priceScaleId: 'volume',
+    });
+
+    chart.priceScale('volume').applyOptions({
+      scaleMargins: { top: 0.8, bottom: 0 },
+    });
+
+    volumeSeries.setData(
+      prices.map((p) => ({
+        time: p.date.split('T')[0] as unknown as Time,
+        value: p.volume,
+        color: p.close >= p.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+      })),
+    );
+
+    // BB overlay lines
+    if (taResult?.bbUpper != null && taResult?.bbLower != null) {
+      const bbUpper = chart.addSeries(LineSeries, {
+        color: 'rgba(107,114,128,0.5)',
+        lineWidth: 1,
+        lineStyle: 2,
+      });
+      const bbLower = chart.addSeries(LineSeries, {
+        color: 'rgba(107,114,128,0.5)',
+        lineWidth: 1,
+        lineStyle: 2,
+      });
+
+      const lastDate = prices[prices.length - 1]?.date.split('T')[0] as unknown as Time;
+      bbUpper.setData([{ time: lastDate, value: taResult.bbUpper }]);
+      bbLower.setData([{ time: lastDate, value: taResult.bbLower }]);
+    }
+
+    chart.timeScale().fitContent();
+
+    const handleResize = () => {
+      if (containerRef.current) {
+        chart.applyOptions({ width: containerRef.current.clientWidth });
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chart.remove();
+    };
+  }, [prices, taResult]);
+
+  return <div ref={containerRef} className={styles.chartContainer} />;
 };
 
 export default CandlestickChart;

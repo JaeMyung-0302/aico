@@ -1,21 +1,24 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { lazy } from 'react';
 import Layout from '@/components/Layout/Layout';
 import AuthGuard from '@/components/AuthGuard/AuthGuard';
 import HomePage from '@/pages/home/HomePage';
-import AnalysisPage from '@/pages/analysis/AnalysisPage';
 import AuthPage from '@/pages/auth/AuthPage';
 import AuthCallbackPage from '@/pages/auth/AuthCallbackPage';
-import BriefingPage from '@/pages/briefing/BriefingPage';
-import BriefingDetailPage from '@/pages/briefing/BriefingDetailPage';
-import PortfolioPage from '@/pages/portfolio/PortfolioPage';
-import MyPage from '@/pages/mypage/MyPage';
-import SignalsPage from '@/pages/signals/SignalsPage';
-import AlertSettingsPage from '@/pages/signals/AlertSettingsPage';
-import TradeLogPage from '@/pages/trade-review/TradeLogPage';
-import ReviewReportPage from '@/pages/trade-review/ReviewReportPage';
-import BacktestPage from '@/pages/backtest/BacktestPage';
 import NotFoundPage from '@/pages/error/NotFoundPage';
 import ErrorPage from '@/pages/error/ErrorPage';
+
+// Lazy load heavy pages (chart, backtest, etc.)
+const AnalysisPage = lazy(() => import('@/pages/analysis/AnalysisPage'));
+const BriefingPage = lazy(() => import('@/pages/briefing/BriefingPage'));
+const BriefingDetailPage = lazy(() => import('@/pages/briefing/BriefingDetailPage'));
+const PortfolioPage = lazy(() => import('@/pages/portfolio/PortfolioPage'));
+const MyPage = lazy(() => import('@/pages/mypage/MyPage'));
+const SignalsPage = lazy(() => import('@/pages/signals/SignalsPage'));
+const AlertSettingsPage = lazy(() => import('@/pages/signals/AlertSettingsPage'));
+const TradeLogPage = lazy(() => import('@/pages/trade-review/TradeLogPage'));
+const ReviewReportPage = lazy(() => import('@/pages/trade-review/ReviewReportPage'));
+const BacktestPage = lazy(() => import('@/pages/backtest/BacktestPage'));
 
 const router = createBrowserRouter([
   {

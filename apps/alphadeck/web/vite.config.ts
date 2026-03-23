@@ -29,7 +29,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-query': ['@tanstack/react-query', 'axios'],
-          'vendor-chart': ['recharts'],
+          'vendor-chart': ['lightweight-charts'],
         },
       },
     },

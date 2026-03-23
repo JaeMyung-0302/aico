@@ -1,11 +1,13 @@
 import { Controller, Get, Put, Patch, Param, Body, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
 import { SignalsService } from './signals.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { PlanGuard, RequirePlan } from '../common/guards/plan.guard';
 import { AuthenticatedRequest } from '../common/interfaces/authenticated-request';
 import { AlertPreferenceDto } from './dto/alert-preference.dto';
 
 @Controller('signals')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PlanGuard)
+@RequirePlan('PRO', 'MAX')
 export class SignalsController {
   constructor(private readonly signalsService: SignalsService) {}
 

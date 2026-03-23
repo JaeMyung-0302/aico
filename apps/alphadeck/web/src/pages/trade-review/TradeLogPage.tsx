@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '@/lib/api';
 import Disclaimer from '@/components/Disclaimer/Disclaimer';
+import type { TradeLog } from '@/types/signal';
 import styles from './TradeLogPage.module.scss';
 
 const TradeLogPage = () => {
@@ -14,7 +15,7 @@ const TradeLogPage = () => {
   const [tradedAt, setTradedAt] = useState('');
   const [memo, setMemo] = useState('');
 
-  const { data: trades, isLoading } = useQuery({
+  const { data: trades, isLoading } = useQuery<TradeLog[]>({
     queryKey: ['trades'],
     queryFn: async () => {
       const { data } = await api.get('/trades');
@@ -84,7 +85,7 @@ const TradeLogPage = () => {
         <div>로딩 중...</div>
       ) : (
         <div className={styles.list}>
-          {trades?.map((trade: any) => (
+          {trades?.map((trade) => (
             <div key={trade.id} className={styles.tradeCard}>
               <div className={styles.tradeHeader}>
                 <span className={styles.symbol}>{trade.symbol}</span>

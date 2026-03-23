@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import type { BriefingLog } from '@/types/briefing';
 import styles from './BriefingPage.module.scss';
 
 const BriefingPage = () => {
-  const { data: briefings, isLoading } = useQuery({
+  const { data: briefings, isLoading } = useQuery<BriefingLog[]>({
     queryKey: ['briefings'],
     queryFn: async () => {
       const { data } = await api.get('/briefings');
@@ -20,7 +21,7 @@ const BriefingPage = () => {
         <p className={styles.empty}>아직 브리핑이 없습니다. Pro 플랜 이상에서 매일 아침 브리핑을 받을 수 있습니다.</p>
       ) : (
         <div className={styles.list}>
-          {briefings.map((b: any) => (
+          {briefings.map((b) => (
             <div key={b.id} className={styles.card}>
               <span className={styles.date}>
                 {new Date(b.createdAt).toLocaleDateString('ko-KR')}

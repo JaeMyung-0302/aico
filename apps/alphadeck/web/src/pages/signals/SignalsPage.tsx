@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import api from '@/lib/api';
 import SignalCard from '@/components/SignalCard/SignalCard';
 import Disclaimer from '@/components/Disclaimer/Disclaimer';
+import type { SignalLog } from '@/types/signal';
 import styles from './SignalsPage.module.scss';
 
 const SignalsPage = () => {
   const queryClient = useQueryClient();
 
-  const { data: signals, isLoading } = useQuery({
+  const { data: signals, isLoading } = useQuery<SignalLog[]>({
     queryKey: ['signals'],
     queryFn: async () => {
       const { data } = await api.get('/signals/history');
@@ -42,7 +43,7 @@ const SignalsPage = () => {
         </p>
       ) : (
         <div className={styles.list}>
-          {signals.map((signal: any) => (
+          {signals.map((signal) => (
             <SignalCard
               key={signal.id}
               signal={signal}

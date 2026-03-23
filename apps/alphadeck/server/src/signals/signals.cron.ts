@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { SignalsService } from './signals.service';
-import { NotificationService } from '../briefing/notification.service';
+import { NotificationService } from '../notification/notification.service';
 import type { DetectedSignal } from './signal-detector';
 
 @Injectable()

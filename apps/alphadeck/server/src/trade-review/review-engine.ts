@@ -1,3 +1,5 @@
+import type { TaSnapshot } from './interfaces/ta-snapshot.interface';
+
 interface TradeLog {
   id: number;
   symbol: string;
@@ -5,7 +7,7 @@ interface TradeLog {
   quantity: number;
   price: number;
   tradedAt: Date;
-  taSnapshot: any;
+  taSnapshot: TaSnapshot | null;
 }
 
 export interface TradeAnalysis {
@@ -47,7 +49,7 @@ export class ReviewEngine {
     });
   }
 
-  private evaluateTradeDecision(action: string, ta: any): string {
+  private evaluateTradeDecision(action: string, ta: TaSnapshot): string {
     const rsi = ta.rsi14;
     const score = ta.compositeScore;
 
@@ -68,7 +70,7 @@ export class ReviewEngine {
     return 'UNKNOWN';
   }
 
-  private generateHindsight(action: string, ta: any): string {
+  private generateHindsight(action: string, ta: TaSnapshot): string {
     const rsi = ta.rsi14;
     const macd = ta.macdHistogram;
 

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import router from './Router';
@@ -13,7 +14,9 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <RouterProvider router={router} />
+    <Suspense fallback={<div style={{ textAlign: 'center', padding: '4rem' }}>로딩 중...</div>}>
+      <RouterProvider router={router} />
+    </Suspense>
   </QueryClientProvider>
 );
 

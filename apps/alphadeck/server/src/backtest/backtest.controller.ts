@@ -1,15 +1,24 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 import { BacktestService } from './backtest.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { PlanGuard, RequirePlan } from '../common/guards/plan.guard';
 
 class RunBacktestDto {
+  @IsString()
   symbol!: string;
+
+  @IsString()
   strategy!: string;
+
+  @IsOptional()
+  @IsNumber()
   periodDays?: number;
 }
 
 @Controller('backtest')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PlanGuard)
+@RequirePlan('MAX')
 export class BacktestController {
   constructor(private readonly backtestService: BacktestService) {}
 

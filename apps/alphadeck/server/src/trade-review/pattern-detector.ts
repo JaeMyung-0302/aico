@@ -1,3 +1,5 @@
+import type { TaSnapshot } from './interfaces/ta-snapshot.interface';
+
 interface TradeLog {
   id: number;
   symbol: string;
@@ -5,7 +7,7 @@ interface TradeLog {
   quantity: number;
   price: number;
   tradedAt: Date;
-  taSnapshot: any;
+  taSnapshot: TaSnapshot | null;
 }
 
 export interface DetectedPattern {

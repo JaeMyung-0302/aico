@@ -37,8 +37,8 @@ export class PushService {
     try {
       await webpush.sendNotification(subscription, payload);
       return true;
-    } catch (error: any) {
-      if (error.statusCode === 410) {
+    } catch (error) {
+      if (error instanceof Error && 'statusCode' in error && (error as Record<string, unknown>).statusCode === 410) {
         this.logger.log('Subscription expired, should be removed');
         return false;
       }

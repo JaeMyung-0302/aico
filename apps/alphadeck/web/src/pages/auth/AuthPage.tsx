@@ -22,8 +22,9 @@ const AuthPage = () => {
         await signin(email, password);
       }
       navigate('/');
-    } catch (err: any) {
-      setError(err.response?.data?.message || '오류가 발생했습니다');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '오류가 발생했습니다';
+      setError(message);
     }
   };
 

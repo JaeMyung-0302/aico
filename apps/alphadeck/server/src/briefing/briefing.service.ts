@@ -36,10 +36,8 @@ export class BriefingService {
     const symbols = portfolios.flatMap((p) => p.items.map((i) => i.symbol));
     const uniqueSymbols = [...new Set(symbols)];
 
-    const items: BriefingItem[] = [];
-
-    for (const symbol of uniqueSymbols) {
-      try {
+    const results = await Promise.allSettled(
+      uniqueSymbols.map(async (symbol) => {
         const analysis = await this.analysisService.analyzeSymbol(symbol);
         const currentPrice = analysis.prices[analysis.prices.length - 1]?.close ?? 0;
 
@@ -50,16 +48,23 @@ export class BriefingService {
           analysis.signalScore,
         );
 
-        items.push({
+        return {
           symbol,
           score: analysis.signalScore.score,
           interpretation,
           rsi14: analysis.taResult.rsi14,
           macdHistogram: analysis.taResult.macdHistogram,
-        });
-      } catch (error) {
-        this.logger.warn(`Briefing generation failed for ${symbol}: ${error}`);
-      }
+        };
+      }),
+    );
+
+    const items: BriefingItem[] = results
+      .filter((r): r is PromiseFulfilledResult<BriefingItem> => r.status === 'fulfilled')
+      .map((r) => r.value);
+
+    const failures = results.filter((r) => r.status === 'rejected');
+    if (failures.length > 0) {
+      this.logger.warn(`${failures.length} symbols failed during briefing generation`);
     }
 
     const result: BriefingResult = {

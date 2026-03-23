@@ -1,11 +1,13 @@
 import { Controller, Get, Post, Delete, Body, Param, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
 import { TradeReviewService } from './trade-review.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { PlanGuard, RequirePlan } from '../common/guards/plan.guard';
 import { AuthenticatedRequest } from '../common/interfaces/authenticated-request';
 import { CreateTradeDto } from './dto/create-trade.dto';
 
 @Controller('trades')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PlanGuard)
+@RequirePlan('MAX')
 export class TradeReviewController {
   constructor(private readonly tradeReviewService: TradeReviewService) {}
 

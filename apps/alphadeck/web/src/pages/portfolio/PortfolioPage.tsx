@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import Disclaimer from '@/components/Disclaimer/Disclaimer';
+import type { Portfolio } from '@/types/portfolio';
 import styles from './PortfolioPage.module.scss';
 
 const PortfolioPage = () => {
@@ -10,7 +11,7 @@ const PortfolioPage = () => {
   const [quantity, setQuantity] = useState('');
   const [avgPrice, setAvgPrice] = useState('');
 
-  const { data: portfolios, isLoading } = useQuery({
+  const { data: portfolios, isLoading } = useQuery<Portfolio[]>({
     queryKey: ['portfolios'],
     queryFn: async () => {
       const { data } = await api.get('/portfolios');
@@ -45,7 +46,7 @@ const PortfolioPage = () => {
       {portfolio && (
         <>
           <div className={styles.items}>
-            {portfolio.items?.map((item: any) => (
+            {portfolio.items?.map((item) => (
               <div key={item.id} className={styles.item}>
                 <span className={styles.symbol}>{item.symbol}</span>
                 <span>{item.quantity}주</span>

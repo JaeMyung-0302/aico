@@ -19,29 +19,30 @@ export const KnowledgeBasePage = () => {
   const [documents, setDocuments] = useState<Document[]>([])
   const [status, setStatus] = useState<SyncStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
-  const tenantId = localStorage.getItem('current_tenant_id') || ''
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!tenantId) return
-
+    const controller = new AbortController()
     const fetchData = async () => {
       try {
         const [docsRes, statusRes] = await Promise.all([
-          api.get('/knowledge-base/documents', { headers: { 'x-tenant-id': tenantId } }),
-          api.get('/knowledge-base/status', { headers: { 'x-tenant-id': tenantId } }),
+          api.get('/knowledge-base/documents', { signal: controller.signal }),
+          api.get('/knowledge-base/status', { signal: controller.signal }),
         ])
         setDocuments(docsRes.data)
         setStatus(statusRes.data)
-      } catch {
-        // silently fail
+        setError(null)
+      } catch (err) {
+        if (controller.signal.aborted) return
+        setError('지식 베이스 데이터를 불러오는 중 오류가 발생했습니다.')
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
 
     fetchData()
-  }, [tenantId])
+    return () => controller.abort()
+  }, [])
 
   if (isLoading) {
     return <div>로딩 중...</div>
@@ -50,6 +51,8 @@ export const KnowledgeBasePage = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>지식 베이스</h1>
+
+      {error && <p style={{ color: 'var(--color-error)', margin: '0.5rem 0' }}>{error}</p>}
 
       {status && (
         <div className={styles.stats}>

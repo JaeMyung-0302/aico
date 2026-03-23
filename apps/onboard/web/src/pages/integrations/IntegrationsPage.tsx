@@ -17,24 +17,21 @@ export const IntegrationsPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const tenantId = localStorage.getItem('current_tenant_id') || ''
-
-  const fetchIntegrations = async () => {
+  const fetchIntegrations = async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/integrations', {
-        headers: { 'x-tenant-id': tenantId },
-      })
+      const { data } = await api.get('/integrations', { signal })
       setIntegrations(data)
-    } catch {
+    } catch (err) {
+      if (signal?.aborted) return
       setError('연동 목록을 불러올 수 없습니다.')
     }
   }
 
   useEffect(() => {
-    if (tenantId) {
-      fetchIntegrations()
-    }
-  }, [tenantId])
+    const controller = new AbortController()
+    fetchIntegrations(controller.signal)
+    return () => controller.abort()
+  }, [])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,11 +40,7 @@ export const IntegrationsPage = () => {
 
     try {
       const config = type === 'github' ? { owner, repo } : {}
-      await api.post(
-        '/integrations',
-        { type, accessToken: token, config },
-        { headers: { 'x-tenant-id': tenantId } },
-      )
+      await api.post('/integrations', { type, accessToken: token, config })
       setToken('')
       setOwner('')
       setRepo('')
@@ -61,9 +54,7 @@ export const IntegrationsPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/integrations/${id}`, {
-        headers: { 'x-tenant-id': tenantId },
-      })
+      await api.delete(`/integrations/${id}`)
       await fetchIntegrations()
     } catch {
       setError('연동 삭제에 실패했습니다.')
@@ -72,11 +63,7 @@ export const IntegrationsPage = () => {
 
   const handleSync = async (integrationId: string) => {
     try {
-      await api.post(
-        '/knowledge-base/sync',
-        { integrationId },
-        { headers: { 'x-tenant-id': tenantId } },
-      )
+      await api.post('/knowledge-base/sync', { integrationId })
       alert('동기화 작업이 시작되었습니다.')
     } catch {
       setError('동기화 요청에 실패했습니다.')

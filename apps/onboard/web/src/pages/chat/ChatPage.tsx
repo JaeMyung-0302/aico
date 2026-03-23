@@ -23,36 +23,42 @@ export const ChatPage = () => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const tenantId = localStorage.getItem('current_tenant_id') || ''
-
-  const fetchSessions = async () => {
+  const fetchSessions = async (signal?: AbortSignal) => {
     try {
-      const { data } = await api.get('/chat/sessions', {
-        headers: { 'x-tenant-id': tenantId },
-      })
+      const { data } = await api.get('/chat/sessions', { signal })
       setSessions(data)
-    } catch {
-      // silently fail
+      setError(null)
+    } catch (err) {
+      if (signal?.aborted) return
+      setError('세션 목록을 불러오는 중 오류가 발생했습니다.')
     }
   }
 
-  const fetchMessages = async (sessionId: string) => {
+  const fetchMessages = async (sessionId: string, signal?: AbortSignal) => {
     try {
-      const { data } = await api.get(`/chat/sessions/${sessionId}`)
+      const { data } = await api.get(`/chat/sessions/${sessionId}`, { signal })
       setMessages(data)
-    } catch {
-      // silently fail
+      setError(null)
+    } catch (err) {
+      if (signal?.aborted) return
+      setError('메시지를 불러오는 중 오류가 발생했습니다.')
     }
   }
 
   useEffect(() => {
-    if (tenantId) fetchSessions()
-  }, [tenantId])
+    const controller = new AbortController()
+    fetchSessions(controller.signal)
+    return () => controller.abort()
+  }, [])
 
   useEffect(() => {
-    if (currentSessionId) fetchMessages(currentSessionId)
+    if (!currentSessionId) return
+    const controller = new AbortController()
+    fetchMessages(currentSessionId, controller.signal)
+    return () => controller.abort()
   }, [currentSessionId])
 
   useEffect(() => {
@@ -61,44 +67,45 @@ export const ChatPage = () => {
 
   const handleNewSession = async (): Promise<string | null> => {
     try {
-      const { data } = await api.post(
-        '/chat/sessions',
-        { title: '새 대화' },
-        { headers: { 'x-tenant-id': tenantId } },
-      )
+      const { data } = await api.post('/chat/sessions', { title: '새 대화' })
       setSessions((prev) => [data, ...prev])
       setCurrentSessionId(data.id)
       setMessages([])
       return data.id
     } catch {
+      setError('새 세션을 생성하는 중 오류가 발생했습니다.')
       return null
     }
   }
 
   const handleSend = async (query: string) => {
-    const sessionId = currentSessionId ?? await handleNewSession()
-    if (!sessionId) return
+    let sessionId = currentSessionId
+    if (!sessionId) {
+      sessionId = await handleNewSession()
+      if (!sessionId) return
+    }
 
+    const tempId = `temp-${Date.now()}`
     setMessages((prev) => [
       ...prev,
-      { id: `temp-${Date.now()}`, role: 'user', content: query, sources: [], createdAt: new Date().toISOString() },
+      { id: tempId, role: 'user', content: query, sources: [], createdAt: new Date().toISOString() },
     ])
     setIsLoading(true)
+    setError(null)
 
     try {
-      const { data } = await api.post(
-        `/chat/sessions/${sessionId}/messages`,
-        { query },
-        { headers: { 'x-tenant-id': tenantId } },
-      )
-      setMessages((prev) => [...prev.filter((m) => !m.id.startsWith('temp-')).concat(
+      const { data } = await api.post(`/chat/sessions/${sessionId}/messages`, { query })
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== tempId),
         { id: `user-${Date.now()}`, role: 'user', content: query, sources: [], createdAt: new Date().toISOString() },
-      ), data])
+        data,
+      ])
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: `err-${Date.now()}`, role: 'assistant', content: '오류가 발생했습니다.', sources: [], createdAt: new Date().toISOString() },
+        { id: `err-${Date.now()}`, role: 'assistant', content: '오류가 발생했습니다. 다시 시도해주세요.', sources: [], createdAt: new Date().toISOString() },
       ])
+      setError('메시지 전송에 실패했습니다.')
     } finally {
       setIsLoading(false)
     }
@@ -122,6 +129,7 @@ export const ChatPage = () => {
       </aside>
 
       <div className={styles.chatArea}>
+        {error && <p style={{ color: 'var(--color-error)', padding: '0.5rem 1rem', margin: 0 }}>{error}</p>}
         <div className={styles.messageList}>
           {messages.length === 0 && (
             <div className={styles.emptyChat}>

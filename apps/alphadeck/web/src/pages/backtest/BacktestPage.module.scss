@@ -1,0 +1,49 @@
+@use '../../styles/variables' as *;
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.input, .select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 6px;
+  background: var(--bg-secondary, #1a1a2e);
+  color: var(--text-primary, #e0e0e0);
+}
+
+.input { min-width: 120px; }
+
+.runButton {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent, #4a9eff);
+  color: white;
+  cursor: pointer;
+  &:disabled { opacity: 0.5; }
+}
+
+.compareButton {
+  padding: 0.5rem 1.5rem;
+  border: 1px solid var(--accent, #4a9eff);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent, #4a9eff);
+  cursor: pointer;
+  &:disabled { opacity: 0.5; }
+}
+
+.error {
+  color: #ef4444;
+  margin-bottom: 1rem;
+}

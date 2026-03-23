@@ -1,0 +1,35 @@
+@use '../../styles/variables' as *;
+
+.container {
+  margin-bottom: 2rem;
+
+  h2 { margin-bottom: 1rem; }
+}
+
+.table {
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.headerRow {
+  display: grid;
+  grid-template-columns: 2fr repeat(6, 1fr);
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary, #2a2a3e);
+  font-size: 0.75rem;
+  color: var(--text-secondary, #a0a0b0);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2fr repeat(6, 1fr);
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border, #2a2a3e);
+  font-size: 0.875rem;
+  align-items: center;
+}
+
+.strategy { font-weight: 600; }
+.positive { color: #22c55e; }
+.negative { color: #ef4444; }

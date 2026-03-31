@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /game/
 Disallow: /result/
+Disallow: /room/
 
-Sitemap: /sitemap.xml
+Sitemap: https://wasd.aico-app.com/sitemap.xml

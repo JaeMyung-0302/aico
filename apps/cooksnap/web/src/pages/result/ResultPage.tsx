@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
@@ -8,7 +8,6 @@ import api from '@/lib/api'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { Loading } from '@repo/ui'
 import useRedirectUrl from '@/hooks/useRedirectUrl'
-import PremiumModal from '@/components/PremiumModal'
 import type { Recipe, PriceInfo, PurchaseLink } from '@/types/recipe'
 import styles from './ResultPage.module.scss'
 
@@ -25,8 +24,6 @@ const Result = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
-  const [showPremiumModal, setShowPremiumModal] = useState(false)
-
   const {
     data: recipe,
     isLoading,
@@ -47,14 +44,15 @@ const Result = () => {
     }
   }, [error, navigate])
 
-  // 저장 여부 확인 (프리미엄 로그인 사용자만)
+  // 저장 여부 확인 (로그인 사용자)
+  // TODO: PMF 검증 완료 후 enabled 조건에 !!user?.isPremium 복구
   const { data: saveStatus } = useQuery<{ saved: boolean }>({
     queryKey: ['recipe-saved', id],
     queryFn: async () => {
       const { data } = await api.get(`/users/me/recipes/${id}/saved`)
       return data
     },
-    enabled: !!user?.isPremium && !!id,
+    enabled: !!user && !!id,
   })
 
   const saveMutation = useMutation({
@@ -73,12 +71,8 @@ const Result = () => {
     },
   })
 
+  // TODO: PMF 검증 완료 후 isPremium 체크 복구
   const handleToggleSave = () => {
-    if (!user?.isPremium) {
-      setShowPremiumModal(true)
-      return
-    }
-
     if (saveStatus?.saved) {
       unsaveMutation.mutate()
     } else {
@@ -189,12 +183,10 @@ const Result = () => {
             <button
               className={cx('saveButton', {
                 saved: saveStatus?.saved,
-                locked: !user.isPremium,
               })}
               onClick={handleToggleSave}
               disabled={saveMutation.isPending || unsaveMutation.isPending}
             >
-              {!user.isPremium && '🔒 '}
               {saveStatus?.saved ? '저장됨' : '저장'}
             </button>
           )}
@@ -305,8 +297,8 @@ const Result = () => {
         </p>
       </div>
 
-      {/* 쿠팡에서 재료 구매 (sticky) - Premium만 */}
-      {recipe.ingredients.length > 0 && user?.isPremium && (
+      {/* 쿠팡에서 재료 구매 (sticky) - TODO: PMF 검증 완료 후 isPremium 체크 복구 */}
+      {recipe.ingredients.length > 0 && user && (
         <div className={cx('stickyBottom')}>
           <a
             href="https://link.coupang.com/a/dV0oMd"
@@ -319,9 +311,6 @@ const Result = () => {
         </div>
       )}
 
-      {showPremiumModal && (
-        <PremiumModal onClose={() => setShowPremiumModal(false)} />
-      )}
     </div>
   )
 }

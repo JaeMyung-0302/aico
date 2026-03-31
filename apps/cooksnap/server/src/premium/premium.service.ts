@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 
-const FREE_DAILY_LIMIT = 1
+// TODO: PMF 검증 완료 후 FREE_DAILY_LIMIT = 1 로 복구
+const FREE_DAILY_LIMIT = 999
 
 // KST 기준 오늘 날짜 (YYYY-MM-DD)
 const getTodayKST = (): Date => {

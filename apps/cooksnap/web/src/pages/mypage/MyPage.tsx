@@ -145,6 +145,7 @@ const MyPage = () => {
             </div>
           )}
         </div>
+        {/* TODO: PMF 검증 완료 후 Premium 구독하기 버튼 복구
         {!user?.isPremium && (
           <button
             className={cx('upgradeButton')}
@@ -152,7 +153,7 @@ const MyPage = () => {
           >
             Premium 구독하기
           </button>
-        )}
+        )} */}
       </div>
 
       <div className={cx('tabs')}>
@@ -218,9 +219,8 @@ const MyPage = () => {
               <div key={item.id} className={cx('historyItem')}>
                 <div className={cx('historyInfo')}>
                   <p className={cx('historyTitle')}>{item.recipe.title}</p>
-                  {user?.isPremium && (
-                    <p className={cx('historyUrl')}>{item.videoUrl}</p>
-                  )}
+                  {/* TODO: PMF 검증 완료 후 isPremium 체크 복구 */}
+                  <p className={cx('historyUrl')}>{item.videoUrl}</p>
                 </div>
                 <span className={cx('historyDate')}>
                   {new Date(item.createdAt).toLocaleDateString('ko-KR')}

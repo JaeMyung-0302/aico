@@ -192,8 +192,8 @@ const Landing = () => {
         {error && <p className={cx('errorMessage')}>{error}</p>}
       </div>
 
-      {/* 쿼터 표시 */}
-      {user && quotaStatus && !quotaStatus.isPremium && (
+      {/* 쿼터 표시 - TODO: PMF 검증 완료 후 복구 (FREE_DAILY_LIMIT=999로 사실상 무제한) */}
+      {user && quotaStatus && !quotaStatus.isPremium && quotaStatus.remaining < 100 && (
         <p className={cx('quotaBadge', { exhausted: quotaExhausted })}>
           {quotaExhausted
             ? '오늘 무료 분석을 모두 사용했어요'

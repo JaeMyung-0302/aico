@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import classnames from 'classnames/bind'
 import styles from './LandingPage.module.scss'
 
@@ -7,6 +8,14 @@ const cx = classnames.bind(styles)
 export const LandingPage = () => {
   return (
     <div className={cx('landing')}>
+      <Helmet>
+        <title>FridgeMate - 스마트 냉장고 관리 앱</title>
+        <meta
+          name="description"
+          content="냉장고 재료를 스마트하게 관리하세요. 유통기한 알림, AI 레시피 추천, 가족 그룹 공유까지. 지금 무료로 시작하세요."
+        />
+        <link rel="canonical" href="https://fridgemate.aico-app.com/" />
+      </Helmet>
       <header className={cx('hero')}>
         <h1 className={cx('title')}>
           냉장고 관리,

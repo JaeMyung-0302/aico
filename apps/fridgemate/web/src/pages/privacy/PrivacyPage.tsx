@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import classnames from 'classnames/bind'
 import styles from './PrivacyPage.module.scss'
 
@@ -7,6 +8,11 @@ const cx = classnames.bind(styles)
 export const PrivacyPage = () => {
   return (
     <div className={cx('legal')}>
+      <Helmet>
+        <title>개인정보처리방침 - FridgeMate</title>
+        <meta name="description" content="FridgeMate 개인정보처리방침" />
+        <link rel="canonical" href="https://fridgemate.aico-app.com/privacy" />
+      </Helmet>
       <Link to="/" className={cx('back')}>&larr; 홈으로</Link>
       <h1>개인정보처리방침</h1>
       <p className={cx('updated')}>최종 수정일: 2026년 3월 31일</p>

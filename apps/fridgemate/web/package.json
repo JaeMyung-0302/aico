@@ -15,6 +15,7 @@
     "classnames": "^2.5.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.6.1",
     "zustand": "^5.0.5"
   },

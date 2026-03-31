@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import classnames from 'classnames/bind'
 import styles from './TermsPage.module.scss'
 
@@ -7,6 +8,11 @@ const cx = classnames.bind(styles)
 export const TermsPage = () => {
   return (
     <div className={cx('legal')}>
+      <Helmet>
+        <title>이용약관 - FridgeMate</title>
+        <meta name="description" content="FridgeMate 서비스 이용약관" />
+        <link rel="canonical" href="https://fridgemate.aico-app.com/terms" />
+      </Helmet>
       <Link to="/" className={cx('back')}>&larr; 홈으로</Link>
       <h1>이용약관</h1>
       <p className={cx('updated')}>최종 수정일: 2026년 3월 31일</p>

@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /group-setup
+Disallow: /select
+Disallow: /setup
+Disallow: /fridge
+Disallow: /recipes
+Disallow: /alerts
+Disallow: /settings
+
+Sitemap: https://fridgemate.aico-app.com/sitemap.xml

@@ -139,7 +139,13 @@ const Result = () => {
     ...(recipe.thumbnailUrl && { image: recipe.thumbnailUrl }),
     ...(recipe.cookTime && { cookTime: `PT${recipe.cookTime}M` }),
     ...(recipe.servings && { recipeYield: `${recipe.servings}인분` }),
-    ...(recipe.difficulty && { description: `난이도: ${recipe.difficulty}` }),
+    description: `${recipe.title} 레시피 - 재료 ${recipe.ingredients.length}가지`,
+    datePublished: recipe.createdAt,
+    author: {
+      '@type': 'Organization',
+      name: 'CookSnap',
+      url: 'https://cooksnap.aico-app.com/',
+    },
     recipeIngredient: recipe.ingredients.map(
       (i) => `${i.name}${i.amount ? ` ${i.amount}` : ''}${i.unit || ''}`,
     ),
@@ -159,7 +165,7 @@ const Result = () => {
         />
         <link
           rel="canonical"
-          href={`https://aico-cooksnap.vercel.app/result/${id}`}
+          href={`https://cooksnap.aico-app.com/result/${id}`}
         />
         <meta property="og:title" content={`${recipe.title} - CookSnap`} />
         <meta
@@ -171,7 +177,7 @@ const Result = () => {
         )}
         <meta
           property="og:url"
-          content={`https://aico-cooksnap.vercel.app/result/${id}`}
+          content={`https://cooksnap.aico-app.com/result/${id}`}
         />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>

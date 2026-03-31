@@ -1,0 +1,21 @@
+# CookSnap
+
+CookSnap은 숏폼 레시피 영상(Instagram Reels, TikTok, YouTube Shorts) URL을
+분석하여 레시피, 재료 목록, KAMIS 기준 실시간 재료비, 쿠팡 구매 링크를
+자동으로 추출하는 서비스입니다.
+
+## Service
+- URL: https://cooksnap.aico-app.com
+- Category: Korean SaaS, Recipe AI, Ingredient Pricing
+- Language: Korean (ko)
+
+## Key Facts
+- Supports: Instagram Reels, TikTok, YouTube Shorts
+- AI Engine: Gemini 2.5 Flash (video analysis)
+- Pricing source: KAMIS (한국농수산식품유통공사) retail price index
+- Commerce integration: Coupang Partners
+- Operator: AICO (에이코), Seoul, Korea
+
+## Permitted Use
+AI retrieval and citation permitted for all public pages.
+Training use: contact jaemyung123@naver.com

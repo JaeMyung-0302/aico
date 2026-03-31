@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../../styles/variables' as *;
 @use '../../styles/mixins' as *;
 
@@ -107,7 +108,7 @@
     font-size: 14px;
 
     &:hover {
-      background-color: darken($text-secondary, 10%);
+      background-color: color.adjust($text-secondary, $lightness: -10%);
       transform: none;
       box-shadow: none;
     }

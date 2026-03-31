@@ -6,7 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "nest start --watch",
+    "dev": "node --env-file=.env --env-file=.env.local node_modules/@nestjs/cli/bin/nest.js start --watch",
     "build": "prisma generate && nest build",
     "start": "prisma migrate deploy && node dist/main",
     "lint": "eslint --max-warnings 0",

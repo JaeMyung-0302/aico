@@ -1,0 +1,52 @@
+.legal {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: $space-32 $space-16 $space-48;
+  line-height: 1.8;
+
+  .back {
+    display: inline-block;
+    margin-bottom: $space-24;
+    color: $color-primary-500;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: $color-gray-900;
+    margin-bottom: $space-4;
+  }
+
+  .updated {
+    font-size: 14px;
+    color: $color-gray-500;
+    margin-bottom: $space-32;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: $color-gray-900;
+    margin-top: $space-32;
+    margin-bottom: $space-8;
+  }
+
+  p {
+    font-size: 15px;
+    color: $color-gray-600;
+    margin-bottom: $space-16;
+  }
+
+  ul {
+    padding-left: $space-24;
+    margin-bottom: $space-16;
+
+    li {
+      font-size: 15px;
+      color: $color-gray-600;
+      margin-bottom: $space-4;
+    }
+  }
+}

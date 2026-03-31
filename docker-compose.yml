@@ -77,6 +77,51 @@ services:
     networks:
       - aico-network
 
+  alphadeck-db:
+    image: postgres:16-alpine
+    container_name: alphadeck-db
+    restart: unless-stopped
+    ports:
+      - "5437:5432"
+    environment:
+      - POSTGRES_USER=alphadeck
+      - POSTGRES_PASSWORD=alphadeck
+      - POSTGRES_DB=alphadeck_dev
+    volumes:
+      - alphadeck-data:/var/lib/postgresql/data
+    networks:
+      - aico-network
+
+  geumsugangsan-db:
+    image: postgres:16-alpine
+    container_name: geumsugangsan-db
+    restart: unless-stopped
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=geumsugangsan
+      - POSTGRES_PASSWORD=geumsugangsan
+      - POSTGRES_DB=geumsugangsan_dev
+    volumes:
+      - geumsugangsan-data:/var/lib/postgresql/data
+    networks:
+      - aico-network
+
+  onboard-db:
+    image: postgres:16-alpine
+    container_name: onboard-db
+    restart: unless-stopped
+    ports:
+      - "5438:5432"
+    environment:
+      - POSTGRES_USER=onboard
+      - POSTGRES_PASSWORD=onboard
+      - POSTGRES_DB=onboard_dev
+    volumes:
+      - onboard-data:/var/lib/postgresql/data
+    networks:
+      - aico-network
+
 networks:
   aico-network:
     driver: bridge
@@ -84,3 +129,6 @@ networks:
 volumes:
   cooksnap-data:
   fridgemate-data:
+  geumsugangsan-data:
+  alphadeck-data:
+  onboard-data:

@@ -17,6 +17,7 @@ import type {
 export const recipeSuggestRouter: RouterType = Router()
 
 const CACHE_TTL_HOURS = 24
+const PREMIUM_FOR_ALL = process.env['PREMIUM_FOR_ALL'] === 'true'
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -120,31 +121,37 @@ recipeSuggestRouter.post(
         const cachedResponse = cached.response as unknown as {
           recipes: RecipeSuggestion[]
         }
-        const usage = await prisma.dailyUsage.findUnique({
-          where: { groupId_date: { groupId, date: weekStart } },
-        })
+        const remainingCount = PREMIUM_FOR_ALL
+          ? -1
+          : await prisma.dailyUsage
+              .findUnique({
+                where: { groupId_date: { groupId, date: weekStart } },
+              })
+              .then((u) => Math.max(0, FREE_WEEKLY_LIMIT - (u?.count ?? 0)))
 
         const response: RecipeSuggestResponse = {
           recipes: cachedResponse.recipes,
           cached: true,
-          remainingCount: Math.max(0, FREE_WEEKLY_LIMIT - (usage?.count ?? 0)),
+          remainingCount,
         }
         res.json(response)
         return
       }
 
-      // 3. 캐시 미스 → 사용량 확인
-      const usage = await prisma.dailyUsage.findUnique({
-        where: { groupId_date: { groupId, date: weekStart } },
-      })
-      const currentCount = usage?.count ?? 0
-
-      if (currentCount >= FREE_WEEKLY_LIMIT) {
-        res.status(403).json({
-          error: '이번 주 무료 추천 횟수를 모두 사용했습니다',
-          remainingCount: 0,
+      // 3. 캐시 미스 → 사용량 확인 (PREMIUM_FOR_ALL이면 스킵)
+      if (!PREMIUM_FOR_ALL) {
+        const usage = await prisma.dailyUsage.findUnique({
+          where: { groupId_date: { groupId, date: weekStart } },
         })
-        return
+        const currentCount = usage?.count ?? 0
+
+        if (currentCount >= FREE_WEEKLY_LIMIT) {
+          res.status(403).json({
+            error: '이번 주 무료 추천 횟수를 모두 사용했습니다',
+            remainingCount: 0,
+          })
+          return
+        }
       }
 
       // 4. Gemini API 호출
@@ -213,7 +220,9 @@ recipeSuggestRouter.post(
       const response: RecipeSuggestResponse = {
         recipes,
         cached: false,
-        remainingCount: Math.max(0, FREE_WEEKLY_LIMIT - updatedUsage.count),
+        remainingCount: PREMIUM_FOR_ALL
+          ? -1
+          : Math.max(0, FREE_WEEKLY_LIMIT - updatedUsage.count),
       }
 
       res.json(response)

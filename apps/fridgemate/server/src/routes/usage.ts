@@ -7,8 +7,15 @@ import { FREE_WEEKLY_LIMIT } from '../middleware/usage-check.js'
 
 export const usageRouter: RouterType = Router()
 
+const PREMIUM_FOR_ALL = process.env['PREMIUM_FOR_ALL'] === 'true'
+
 // GET /api/usage/remaining — 이번 주 남은 추천 횟수 조회
 usageRouter.get('/remaining', async (req, res: Response): Promise<void> => {
+  if (PREMIUM_FOR_ALL) {
+    res.json({ remainingCount: -1, isPremium: true })
+    return
+  }
+
   const { groupId } = req as unknown as AuthRequest
 
   try {

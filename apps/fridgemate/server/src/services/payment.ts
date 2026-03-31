@@ -114,7 +114,18 @@ export const cancelSubscription = async (groupId: string) => {
   }
 }
 
+const PREMIUM_FOR_ALL = process.env['PREMIUM_FOR_ALL'] === 'true'
+
 export const getStatus = async (groupId: string) => {
+  if (PREMIUM_FOR_ALL) {
+    return {
+      hasSubscription: false,
+      status: null,
+      currentPeriodEnd: null,
+      isPremium: true,
+    }
+  }
+
   const [subscription, group] = await Promise.all([
     prisma.subscription.findFirst({
       where: {

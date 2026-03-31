@@ -4,12 +4,18 @@ import { getKSTWeekStart } from '../lib/date.js'
 import type { AuthRequest } from './auth.js'
 
 export const FREE_WEEKLY_LIMIT = 1
+const PREMIUM_FOR_ALL = process.env['PREMIUM_FOR_ALL'] === 'true'
 
 export const usageCheck = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  if (PREMIUM_FOR_ALL) {
+    next()
+    return
+  }
+
   const { groupId } = req as AuthRequest
 
   const weekStart = getKSTWeekStart()

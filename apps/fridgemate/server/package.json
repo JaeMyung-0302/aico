@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch --env-file=.env src/main.ts",
+    "dev": "tsx watch --env-file=.env --env-file=.env.local src/main.ts",
     "build": "prisma generate && tsc && cp -r src/generated dist/ && rm -f dist/generated/prisma/*.node dist/generated/prisma/*.wasm",
     "start": "node dist/main.js",
     "lint": "eslint --max-warnings 0",

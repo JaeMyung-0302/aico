@@ -47,11 +47,34 @@ const RecipeDetailPage = lazy(() =>
     default: m.RecipeDetailPage,
   })),
 )
+const LandingPage = lazy(() =>
+  import('@/pages/landing/LandingPage').then((m) => ({
+    default: m.LandingPage,
+  })),
+)
+const TermsPage = lazy(() =>
+  import('@/pages/terms/TermsPage').then((m) => ({
+    default: m.TermsPage,
+  })),
+)
+const PrivacyPage = lazy(() =>
+  import('@/pages/privacy/PrivacyPage').then((m) => ({
+    default: m.PrivacyPage,
+  })),
+)
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/login" replace />,
+    element: <LandingPage />,
+  },
+  {
+    path: '/terms',
+    element: <TermsPage />,
+  },
+  {
+    path: '/privacy',
+    element: <PrivacyPage />,
   },
   {
     path: '/login',

@@ -24,7 +24,8 @@ RUN pnpm --filter @cooksnap/server run build
 # Production stage
 FROM node:22-alpine AS runner
 RUN npm install -g pnpm@10.29.2
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl python3 py3-pip \
+    && pip3 install --break-system-packages yt-dlp
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./

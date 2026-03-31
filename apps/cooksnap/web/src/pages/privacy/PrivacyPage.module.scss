@@ -1,0 +1,49 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.privacy {
+  @include container;
+  max-width: 720px;
+  padding-top: $spacing-xxl;
+  padding-bottom: $spacing-xxl * 2;
+  text-align: left;
+  line-height: 1.8;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: $spacing-sm;
+  }
+
+  .updated {
+    font-size: 14px;
+    color: $text-secondary;
+    margin-bottom: $spacing-xl;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: $text-primary;
+    margin-top: $spacing-xl;
+    margin-bottom: $spacing-sm;
+  }
+
+  p {
+    font-size: 15px;
+    color: $text-secondary;
+    margin-bottom: $spacing-md;
+  }
+
+  ul {
+    padding-left: $spacing-lg;
+    margin-bottom: $spacing-md;
+
+    li {
+      font-size: 15px;
+      color: $text-secondary;
+      margin-bottom: $spacing-xs;
+    }
+  }
+}

@@ -13,6 +13,8 @@ const AuthCallbackPage = lazy(() => import('@/pages/auth/AuthCallbackPage'))
 const AdminFeedbackPage = lazy(
   () => import('@/pages/admin/feedback/AdminFeedbackPage'),
 )
+const TermsPage = lazy(() => import('@/pages/terms/TermsPage'))
+const PrivacyPage = lazy(() => import('@/pages/privacy/PrivacyPage'))
 
 export const router = createBrowserRouter([
   {
@@ -32,6 +34,8 @@ export const router = createBrowserRouter([
           </AuthGuard>
         ),
       },
+      { path: '/terms', element: <TermsPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

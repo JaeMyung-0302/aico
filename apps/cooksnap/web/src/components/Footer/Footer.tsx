@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import classnames from 'classnames/bind'
 import styles from './Footer.module.scss'
 
@@ -11,9 +12,9 @@ const Footer = () => {
     <footer className={cx('footer')}>
       <div className={cx('inner')}>
         <div className={cx('links')}>
-          <span className={cx('link')}>이용약관</span>
+          <Link to="/terms" className={cx('link')}>이용약관</Link>
           <span className={cx('divider')}>|</span>
-          <span className={cx('link', 'bold')}>개인정보처리방침</span>
+          <Link to="/privacy" className={cx('link', 'bold')}>개인정보처리방침</Link>
         </div>
 
         <button

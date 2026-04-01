@@ -13,6 +13,11 @@ export interface TaResult {
   bbLower?: number;
   volumeRatio?: number;
   compositeScore?: number;
+  atr14?: number;
+  obv?: number;
+  stochasticK?: number;
+  stochasticD?: number;
+  adx14?: number;
 }
 
 export interface IndicatorScore {
@@ -36,10 +41,39 @@ export interface PriceData {
   volume: number;
 }
 
+export type Interval = '1d' | '1wk' | '1mo';
+
+export interface NewsArticle {
+  title: string;
+  summary: string;
+  sentiment: 'positive' | 'negative' | 'neutral';
+}
+
+export interface UpcomingEvent {
+  date: string;
+  type: string;
+  description: string;
+}
+
+export interface NewsContext {
+  articles: NewsArticle[];
+  overallSentiment: number;
+  upcomingEvents: UpcomingEvent[];
+}
+
+export interface AccuracyResult {
+  signalType: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+
 export interface AnalysisResponse {
   symbol: string;
   prices: PriceData[];
   taResult: TaResult;
   signalScore: SignalScore;
   interpretation?: string;
+  newsContext?: NewsContext | null;
+  accuracy?: AccuracyResult[];
 }

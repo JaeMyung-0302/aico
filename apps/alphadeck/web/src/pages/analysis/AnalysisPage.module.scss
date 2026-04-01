@@ -134,6 +134,28 @@
   font-weight: 600;
 }
 
+.timeframeWrapper {
+  display: flex;
+  gap: 4px;
+}
+
+.timeframeTab {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 8px;
+  background: $color-bg;
+  color: $color-text-secondary;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &[data-active='true'] {
+    background: $color-primary;
+    color: white;
+  }
+}
+
 .interpretation {
   @include card;
 
@@ -141,4 +163,146 @@
     line-height: 1.8;
     color: $color-text-secondary;
   }
+}
+
+.newsSection {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+}
+
+.sentimentBadge {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.articlesList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.articleItem {
+  display: flex;
+  gap: $space-sm;
+  align-items: flex-start;
+}
+
+.articleSentiment {
+  font-size: 10px;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.articleTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.articleSummary {
+  font-size: 13px;
+  color: $color-text-secondary;
+  line-height: 1.5;
+}
+
+.noData {
+  font-size: 13px;
+  color: $color-text-secondary;
+}
+
+.events {
+  margin-top: $space-sm;
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: $space-xs;
+  }
+}
+
+.eventItem {
+  display: flex;
+  gap: $space-sm;
+  font-size: 13px;
+  color: $color-text-secondary;
+  padding: 4px 0;
+}
+
+.eventDate {
+  font-weight: 600;
+  color: $color-text;
+}
+
+.eventType {
+  background: rgba($color-primary, 0.15);
+  color: $color-primary;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.newsDisclaimer {
+  font-size: 11px;
+  color: $color-text-secondary;
+  opacity: 0.7;
+}
+
+.accuracySection {
+  @include card;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: $space-md;
+  }
+}
+
+.accuracyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $space-md;
+}
+
+.accuracyCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accuracyType {
+  font-size: 12px;
+  color: $color-text-secondary;
+}
+
+.accuracyValue {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.accuracyBar {
+  height: 8px;
+  background: $color-bg;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.accuracyFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width $transition-base;
+}
+
+.accuracyDetail {
+  font-size: 11px;
+  color: $color-text-secondary;
 }

@@ -3,6 +3,9 @@ export default () => ({
   database: {
     url: process.env.DATABASE_URL,
   },
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY,
   },

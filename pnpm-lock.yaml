@@ -142,7 +142,7 @@ importers:
         specifier: ^5.80.6
         version: 5.90.20(react@19.2.0)
       axios:
-        specifier: ^1.9.0
+        specifier: 1.13.2
         version: 1.13.2
       lightweight-charts:
         specifier: ^5.1.0
@@ -221,7 +221,7 @@ importers:
         specifier: ^6.19.2
         version: 6.19.2(prisma@6.19.2(typescript@5.9.2))(typescript@5.9.2)
       axios:
-        specifier: ^1.9.0
+        specifier: 1.13.2
         version: 1.13.2
       bcrypt:
         specifier: ^6.0.0
@@ -303,7 +303,7 @@ importers:
         specifier: ^5.80.6
         version: 5.90.20(react@19.2.0)
       axios:
-        specifier: ^1.9.0
+        specifier: 1.13.2
         version: 1.13.2
       classnames:
         specifier: ^2.5.1
@@ -617,10 +617,11 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
-  apps/neurex-viz: {}
-
   apps/neurex-viz/server:
     dependencies:
+      '@neurex-viz/shared':
+        specifier: workspace:*
+        version: link:../../../packages/neurex-viz-shared
       chokidar:
         specifier: ^4.0.0
         version: 4.0.3
@@ -658,6 +659,9 @@ importers:
 
   apps/neurex-viz/web:
     dependencies:
+      '@neurex-viz/shared':
+        specifier: workspace:*
+        version: link:../../../packages/neurex-viz-shared
       three:
         specifier: ^0.175.0
         version: 0.175.0
@@ -714,7 +718,7 @@ importers:
         specifier: ^6.19.2
         version: 6.19.2(prisma@6.19.2(typescript@5.9.2))(typescript@5.9.2)
       axios:
-        specifier: ^1.13.2
+        specifier: 1.13.2
         version: 1.13.2
       bcrypt:
         specifier: ^6.0.0
@@ -787,7 +791,7 @@ importers:
         specifier: ^5.80.6
         version: 5.90.20(react@19.2.0)
       axios:
-        specifier: ^1.9.0
+        specifier: 1.13.2
         version: 1.13.2
       classnames:
         specifier: ^2.5.1
@@ -1017,6 +1021,15 @@ importers:
         version: 8.50.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.2)
 
   packages/land-of-splendid-rivers-and-mountains-shared:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+
+  packages/neurex-viz-shared:
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*

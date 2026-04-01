@@ -3,6 +3,14 @@ import { LlmService } from '../llm.service';
 import { FORBIDDEN_KEYWORDS } from '../prompts/regulatory-guard.prompt';
 import { TaResultData } from '../../ta-engine/ta-engine.service';
 import { SignalScore } from '../../ta-engine/interfaces/signal-score.interface';
+import { PrismaService } from '../../prisma/prisma.service';
+
+const mockPrismaService = {
+  llmCache: {
+    findFirst: jest.fn().mockResolvedValue(null),
+    upsert: jest.fn().mockResolvedValue({}),
+  },
+};
 
 const mockGeminiProvider = {
   generate: jest.fn().mockResolvedValue(
@@ -42,6 +50,7 @@ describe('LlmService', () => {
       providers: [
         LlmService,
         { provide: 'GEMINI_PROVIDER', useValue: mockGeminiProvider },
+        { provide: PrismaService, useValue: mockPrismaService },
       ],
     }).compile();
 

@@ -4,6 +4,8 @@ import { MarketDataService } from '../../market-data/market-data.service';
 import { TaEngineService } from '../../ta-engine/ta-engine.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PriceDataRow } from '../../market-data/interfaces/market-data-provider.interface';
+import { LlmService } from '../../llm/llm.service';
+import { AccuracyService } from '../../backtest/accuracy.service';
 
 const mockPrices: PriceDataRow[] = Array.from({ length: 210 }, (_, i) => ({
   date: new Date(`2024-01-${String(i + 1).padStart(2, '0')}`),
@@ -25,6 +27,23 @@ const mockPrismaService = {
   },
 };
 
+const mockLlmService = {
+  interpretWithCache: jest.fn().mockResolvedValue('AI 해석 텍스트'),
+  filterForbiddenKeywords: jest.fn((text: string) => text),
+};
+
+const mockNewsProvider = {
+  fetchNewsWithSentiment: jest.fn().mockResolvedValue({
+    articles: [{ title: 'Test', summary: 'Summary', sentiment: 'neutral' }],
+    overallSentiment: 0,
+    upcomingEvents: [],
+  }),
+};
+
+const mockAccuracyService = {
+  calculateAccuracy: jest.fn().mockResolvedValue([]),
+};
+
 describe('AnalysisService', () => {
   let service: AnalysisService;
 
@@ -35,6 +54,9 @@ describe('AnalysisService', () => {
         TaEngineService,
         { provide: MarketDataService, useValue: mockMarketDataService },
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: LlmService, useValue: mockLlmService },
+        { provide: 'ANTHROPIC_NEWS_PROVIDER', useValue: mockNewsProvider },
+        { provide: AccuracyService, useValue: mockAccuracyService },
       ],
     }).compile();
 

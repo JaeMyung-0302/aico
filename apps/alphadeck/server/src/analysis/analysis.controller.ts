@@ -14,6 +14,6 @@ export class AnalysisController {
     @Query() _query: AnalysisQueryDto,
   ) {
     const upperSymbol = symbol.toUpperCase();
-    return this.analysisService.analyzeSymbol(upperSymbol);
+    return this.analysisService.analyzeSymbol(upperSymbol, _query.interval);
   }
 }

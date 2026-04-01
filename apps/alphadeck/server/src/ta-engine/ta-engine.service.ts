@@ -5,6 +5,10 @@ import { RsiIndicator } from './indicators/rsi.indicator';
 import { MacdIndicator } from './indicators/macd.indicator';
 import { BollingerIndicator } from './indicators/bollinger.indicator';
 import { VolumeIndicator } from './indicators/volume.indicator';
+import { AtrIndicator } from './indicators/atr.indicator';
+import { ObvIndicator } from './indicators/obv.indicator';
+import { StochasticIndicator } from './indicators/stochastic.indicator';
+import { AdxIndicator } from './indicators/adx.indicator';
 
 export interface TaResultData {
   sma20?: number;
@@ -20,6 +24,11 @@ export interface TaResultData {
   bbMiddle?: number;
   bbLower?: number;
   volumeRatio?: number;
+  atr14?: number;
+  obv?: number;
+  stochasticK?: number;
+  stochasticD?: number;
+  adx14?: number;
 }
 
 @Injectable()
@@ -30,14 +39,30 @@ export class TaEngineService {
   private readonly macd = new MacdIndicator();
   private readonly bollinger = new BollingerIndicator();
   private readonly volume = new VolumeIndicator();
+  private readonly atr = new AtrIndicator();
+  private readonly obv = new ObvIndicator();
+  private readonly stochastic = new StochasticIndicator();
+  private readonly adx = new AdxIndicator();
 
-  calculateAll(closePrices: number[], volumes: number[]): TaResultData {
+  calculateAll(
+    closePrices: number[],
+    volumes: number[],
+    highs?: number[],
+    lows?: number[],
+  ): TaResultData {
     const smaResult = this.sma.calculate(closePrices);
     const emaResult = this.ema.calculate(closePrices);
     const rsiResult = this.rsi.calculate(closePrices);
     const macdResult = this.macd.calculate(closePrices);
     const bbResult = this.bollinger.calculate(closePrices);
     const volResult = this.volume.calculate(volumes);
+
+    const obvResult = this.obv.calculate(closePrices, volumes);
+
+    const hasHlc = highs && lows && highs.length > 0 && lows.length > 0;
+    const atrResult = hasHlc ? this.atr.calculate(highs, lows, closePrices) : undefined;
+    const stochResult = hasHlc ? this.stochastic.calculate(highs, lows, closePrices) : undefined;
+    const adxResult = hasHlc ? this.adx.calculate(highs, lows, closePrices) : undefined;
 
     return {
       sma20: smaResult.values.sma20,
@@ -53,6 +78,11 @@ export class TaEngineService {
       bbMiddle: bbResult.values.bbMiddle,
       bbLower: bbResult.values.bbLower,
       volumeRatio: volResult.values.volumeRatio,
+      atr14: atrResult?.values.atr14,
+      obv: obvResult.values.obv,
+      stochasticK: stochResult?.values.stochasticK,
+      stochasticD: stochResult?.values.stochasticD,
+      adx14: adxResult?.values.adx14,
     };
   }
 }

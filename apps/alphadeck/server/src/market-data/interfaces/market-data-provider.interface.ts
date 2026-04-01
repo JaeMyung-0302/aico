@@ -8,5 +8,5 @@ export interface PriceDataRow {
 }
 
 export interface MarketDataProvider {
-  fetchHistorical(symbol: string, days: number): Promise<PriceDataRow[]>;
+  fetchHistorical(symbol: string, days: number, interval?: string): Promise<PriceDataRow[]>;
 }

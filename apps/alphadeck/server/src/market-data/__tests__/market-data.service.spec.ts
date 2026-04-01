@@ -40,7 +40,7 @@ describe('MarketDataService', () => {
     it('Yahoo에서 데이터를 가져와 DB에 저장해야 한다', async () => {
       const result = await service.fetchAndStore('AAPL');
 
-      expect(mockYahooProvider.fetchHistorical).toHaveBeenCalledWith('AAPL', 200);
+      expect(mockYahooProvider.fetchHistorical).toHaveBeenCalledWith('AAPL', 200, '1d');
       expect(mockPrismaService.priceData.upsert).toHaveBeenCalledTimes(3);
       expect(result).toHaveLength(3);
     });

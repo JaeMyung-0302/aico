@@ -23,49 +23,53 @@ export class MarketDataService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async fetchAndStore(symbol: string, days = 200): Promise<PriceDataRow[]> {
-    const cached = this.cache.get(symbol);
+  async fetchAndStore(symbol: string, days = 200, interval = '1d'): Promise<PriceDataRow[]> {
+    const cacheKey = `${symbol}:${interval}`;
+    const cached = this.cache.get(cacheKey);
     if (cached && cached.expiry > Date.now()) {
       return cached.prices;
     }
 
-    const prices = await this.yahooProvider.fetchHistorical(symbol, days);
+    const prices = await this.yahooProvider.fetchHistorical(symbol, days, interval);
 
-    for (const price of prices) {
-      await this.prisma.priceData.upsert({
-        where: {
-          symbol_date: { symbol, date: price.date },
-        },
-        update: {
-          open: price.open,
-          high: price.high,
-          low: price.low,
-          close: price.close,
-          volume: price.volume,
-        },
-        create: {
-          symbol,
-          date: price.date,
-          open: price.open,
-          high: price.high,
-          low: price.low,
-          close: price.close,
-          volume: price.volume,
-        },
-      });
+    // 일봉만 DB에 저장 (주봉/월봉은 in-memory 캐시만)
+    if (interval === '1d') {
+      for (const price of prices) {
+        await this.prisma.priceData.upsert({
+          where: {
+            symbol_date: { symbol, date: price.date },
+          },
+          update: {
+            open: price.open,
+            high: price.high,
+            low: price.low,
+            close: price.close,
+            volume: price.volume,
+          },
+          create: {
+            symbol,
+            date: price.date,
+            open: price.open,
+            high: price.high,
+            low: price.low,
+            close: price.close,
+            volume: price.volume,
+          },
+        });
+      }
     }
 
-    this.cache.set(symbol, {
+    this.cache.set(cacheKey, {
       prices,
       expiry: Date.now() + CACHE_TTL_MS,
     });
 
-    this.logger.log(`Fetched and stored ${prices.length} prices for ${symbol}`);
+    this.logger.log(`Fetched and stored ${prices.length} prices for ${symbol} (${interval})`);
     return prices;
   }
 
   async getPrices(symbol: string): Promise<PriceDataRow[]> {
-    const cached = this.cache.get(symbol);
+    const cached = this.cache.get(`${symbol}:1d`);
     if (cached && cached.expiry > Date.now()) {
       return cached.prices;
     }
@@ -85,7 +89,7 @@ export class MarketDataService {
     }));
 
     if (prices.length > 0) {
-      this.cache.set(symbol, {
+      this.cache.set(`${symbol}:1d`, {
         prices,
         expiry: Date.now() + CACHE_TTL_MS,
       });

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import yahooFinance from 'yahoo-finance2';
+import YahooFinance from 'yahoo-finance2';
 import {
   MarketDataProvider,
   PriceDataRow,
@@ -9,22 +9,24 @@ import {
 export class YahooProvider implements MarketDataProvider {
   private readonly logger = new Logger(YahooProvider.name);
   private readonly maxRetries = 3;
+  private readonly yahooFinance: InstanceType<typeof YahooFinance>;
 
   constructor(private readonly timeout: number = 10000) {
-    yahooFinance.suppressNotices(['ripHistorical']);
+    this.yahooFinance = new YahooFinance();
   }
 
-  async fetchHistorical(symbol: string, days: number): Promise<PriceDataRow[]> {
+  async fetchHistorical(symbol: string, days: number, interval: string = '1d'): Promise<PriceDataRow[]> {
+    const adjustedDays = interval === '1mo' ? Math.max(days, 1095) : interval === '1wk' ? Math.max(days, 365) : days;
     const period1 = new Date();
-    period1.setDate(period1.getDate() - days);
+    period1.setDate(period1.getDate() - adjustedDays);
 
     let lastError: Error | undefined;
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        const result = await yahooFinance.chart(symbol, {
+        const result = await this.yahooFinance.chart(symbol, {
           period1,
-          interval: '1d',
+          interval: interval as '1d' | '1wk' | '1mo',
         });
 
         const quotes = result.quotes;

@@ -1,16 +1,13 @@
 import { YahooProvider } from '../providers/yahoo.provider';
 
+const mockChart = jest.fn();
+
 jest.mock('yahoo-finance2', () => ({
   __esModule: true,
-  default: {
-    chart: jest.fn(),
-    suppressNotices: jest.fn(),
-  },
+  default: jest.fn().mockImplementation(() => ({
+    chart: mockChart,
+  })),
 }));
-
-import yahooFinance from 'yahoo-finance2';
-
-const mockChart = yahooFinance.chart as jest.MockedFunction<typeof yahooFinance.chart>;
 
 describe('YahooProvider', () => {
   let provider: YahooProvider;

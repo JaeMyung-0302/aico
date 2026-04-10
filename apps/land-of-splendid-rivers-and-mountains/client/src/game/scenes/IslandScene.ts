@@ -5,27 +5,33 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { NPCSystem } from "../systems/npc";
+import { FishingSystem } from "../systems/fishing";
+import { ReputationSystem } from "../systems/reputation";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { saveManager } from "@/lib/save-manager";
 import { useGameStore } from "@/stores/useGameStore";
+
 const PLAYER_SPAWN_X = 12;
 const PLAYER_SPAWN_Y = 1;
 
-export class BeachScene extends Phaser.Scene {
+export class IslandScene extends Phaser.Scene {
   private player!: Player;
   private inputManager!: InputManager;
   private keyboardInput!: KeyboardInput;
   private touchInput!: TouchInput;
-  private readonly emitPosition = createPositionEmitter("BeachScene");
+  private npcSystem: NPCSystem | null = null;
+  private fishingSystem: FishingSystem | null = null;
+  private readonly emitPosition = createPositionEmitter("IslandScene");
 
   constructor() {
-    super({ key: "BeachScene" });
+    super({ key: "IslandScene" });
   }
 
   preload(): void {
     this.createTilesetTexture();
-    this.load.tilemapTiledJSON("beach-map", "/assets/tilemaps/beach.json");
+    this.load.tilemapTiledJSON("island-map", "/assets/tilemaps/island.json");
   }
 
   create(): void {
@@ -55,6 +61,13 @@ export class BeachScene extends Phaser.Scene {
       useGameStore.getState().setEquippedTools(state.equipped);
     };
 
+    const npcSystem = new NPCSystem();
+    npcSystem.setInitialLocation("island");
+    npcSystem.setCurrentSeason(store.season);
+    npcSystem.init(this);
+    npcSystem.setPlayerSprite(this.player.sprite);
+    this.npcSystem = npcSystem;
+
     eventBus.on("inventory:equipped", syncInventory);
 
     this.setupCollision(map);
@@ -67,6 +80,8 @@ export class BeachScene extends Phaser.Scene {
         inventory: [...inventory.getSlots()],
       });
       inventory.destroy();
+      this.npcSystem?.destroy();
+      this.npcSystem = null;
       eventBus.off("inventory:equipped", syncInventory);
       this.keyboardInput.destroy();
       this.touchInput.destroy();
@@ -89,6 +104,7 @@ export class BeachScene extends Phaser.Scene {
     }
 
     this.player.update(this.inputManager.getState());
+    this.npcSystem?.update(this, this.time.now, 0);
     this.emitPosition(this.player.sprite, this.time.now);
 
     this.checkPortal();
@@ -102,31 +118,21 @@ export class BeachScene extends Phaser.Scene {
     const tileX = Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE);
     const tileY = Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE);
 
+    // Return to beach
     if (tileY <= 0 && tileX >= 12 && tileX <= 13) {
       this.isTransitioning = true;
-      this.scene.start("RiverScene", { spawnX: 12, spawnY: 28 });
-    }
-
-    // Portal to island (right edge, requires shipwreck quest completed)
-    const store = useGameStore.getState();
-    if (
-      tileX >= 28 &&
-      tileY >= 14 &&
-      tileY <= 16 &&
-      store.completedQuests.includes("main-shipwreck-discovery")
-    ) {
-      this.isTransitioning = true;
-      this.scene.start("IslandScene", { spawnX: 12, spawnY: 1 });
+      this.scene.start("BeachScene", { spawnX: 12, spawnY: 28 });
     }
   }
 
   private createTilesetTexture(): void {
-    if (this.textures.exists("tileset-beach")) return;
+    if (this.textures.exists("tileset-island")) return;
     const size = GAME_CONSTANTS.TILE_SIZE;
-    const colors = [0x228b22, 0xf4d03f, 0x1e88e5, 0xa0887a];
+    // island colors: sand, tropical green, ocean blue, rock
+    const colors = [0xf4d03f, 0x2ecc71, 0x1e88e5, 0x8d6e63];
 
     const canvas = this.textures.createCanvas(
-      "tileset-beach",
+      "tileset-island",
       size * 2,
       size * 2,
     );
@@ -144,9 +150,9 @@ export class BeachScene extends Phaser.Scene {
   }
 
   private loadTilemap(): Phaser.Tilemaps.Tilemap {
-    const map = this.make.tilemap({ key: "beach-map" });
-    const tileset = map.addTilesetImage("beach-tiles", "tileset-beach");
-    if (!tileset) throw new Error("Failed to load beach tileset");
+    const map = this.make.tilemap({ key: "island-map" });
+    const tileset = map.addTilesetImage("island-tiles", "tileset-island");
+    if (!tileset) throw new Error("Failed to load island tileset");
 
     map.createLayer("ground", tileset)?.setDepth(0);
     map.createLayer("path", tileset)?.setDepth(1);

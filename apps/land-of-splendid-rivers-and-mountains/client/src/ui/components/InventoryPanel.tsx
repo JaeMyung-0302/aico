@@ -104,6 +104,7 @@ const InventoryPanel = memo(({ open }: Props) => {
                   slot &&
                   (def?.type === "tool" ||
                     def?.type === "seed" ||
+                    def?.type === "food" ||
                     slot.itemId === "fertilizer")
                     ? "pointer"
                     : "default",

@@ -366,6 +366,7 @@ export class CombatSystem implements IGameSystem {
     eventBus.emit("combat:defeated", { monsterId: def.id, drops });
 
     this.scene.time.delayedCall(300, () => {
+      if (!this.monsters.has(instanceId)) return;
       if (this.monsterPool) {
         this.monsterPool.release(monster);
       } else {

@@ -45,6 +45,7 @@ interface GameState {
   readonly activePanel: "inventory" | "journal" | "menu" | null;
   readonly dialogOpen: boolean;
   readonly reputation: number;
+  readonly unlockedIsland: boolean;
 }
 
 interface GameActions {
@@ -86,6 +87,7 @@ interface GameActions {
   setPlayerPosition: (scene: string, tileX: number, tileY: number) => void;
   setDialogOpen: (open: boolean) => void;
   setReputation: (reputation: number) => void;
+  setUnlockedIsland: (unlocked: boolean) => void;
   reset: () => void;
 }
 
@@ -120,6 +122,7 @@ const initialState: GameState = {
   activePanel: null,
   dialogOpen: false,
   reputation: 0,
+  unlockedIsland: false,
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -172,6 +175,8 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setDialogOpen: (dialogOpen) => set({ dialogOpen }),
 
   setReputation: (reputation) => set({ reputation }),
+
+  setUnlockedIsland: (unlockedIsland) => set({ unlockedIsland }),
 
   reset: () => set(initialState),
 }));

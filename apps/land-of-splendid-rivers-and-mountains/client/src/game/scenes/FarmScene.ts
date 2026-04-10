@@ -631,13 +631,14 @@ export class FarmScene extends Phaser.Scene {
       return;
     }
 
+    if (this.fishingSystem.isActive()) {
+      this.player.sprite.setVelocity(0, 0);
+      return;
+    }
+
     this.player.update(inputState);
     this.emitPosition(this.player.sprite, _time);
     this.updateTileCursor();
-
-    if (this.fishingSystem.isActive()) {
-      return;
-    }
 
     const actionPressed = inputState.action && !this.prevAction;
     this.prevAction = inputState.action;

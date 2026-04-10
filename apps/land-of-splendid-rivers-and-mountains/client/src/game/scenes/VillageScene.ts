@@ -287,6 +287,8 @@ export class VillageScene extends Phaser.Scene {
     syncInventory();
 
     let cachedFarmPlots: ReadonlyArray<FarmPlotState> = [];
+    let cachedCompletedEvents: ReadonlyArray<string> = [];
+    let cachedActiveEventId: string | null = null;
 
     saveManager.setup(
       () => {
@@ -314,8 +316,8 @@ export class VillageScene extends Phaser.Scene {
           playerMaxHp: combatSystem.getMaxHp(),
           playerAttack: combatSystem.getAttack(),
           playerDefense: combatSystem.getDefense(),
-          completedEvents: [],
-          activeEventId: null,
+          completedEvents: cachedCompletedEvents,
+          activeEventId: cachedActiveEventId,
         };
       },
       (data) => {
@@ -329,6 +331,8 @@ export class VillageScene extends Phaser.Scene {
         inventory.loadState(data.inventory, data.equippedTools);
         energySystem.setState(data.energy, data.maxEnergy);
         cachedFarmPlots = data.farmPlots ?? [];
+        cachedCompletedEvents = data.completedEvents ?? [];
+        cachedActiveEventId = data.activeEventId ?? null;
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);

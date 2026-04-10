@@ -6,7 +6,7 @@ export const GAME_CONSTANTS = {
   DAY_START_MINUTE: 360,
   DAY_END_MINUTE: 1440,
   DAYS_PER_SEASON: 28,
-  SEASONS: ['spring', 'summer', 'autumn', 'winter'] as const,
+  SEASONS: ["spring", "summer", "autumn", "winter"] as const,
   MAX_ENERGY_BASE: 100,
   ENERGY_COST: {
     TILL: 8,
@@ -18,15 +18,15 @@ export const GAME_CONSTANTS = {
     COMBAT: 2,
   },
   SAVE_AUTOSAVE_INTERVAL_MS: 300_000,
-  SAVE_VERSION: 8,
+  SAVE_VERSION: 9,
   MAX_SAVE_SLOTS: 3,
   INVENTORY_SIZE: 36,
   NPC_RELATION_MAX: 10,
   NPC_RELATION_MIN: -2,
-} as const
+} as const;
 
 export const PORT = {
   CLIENT: 5175,
   SERVER: 4003,
   DB: 5434,
-} as const
+} as const;

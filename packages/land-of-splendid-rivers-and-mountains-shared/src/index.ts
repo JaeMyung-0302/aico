@@ -10,7 +10,7 @@ export type {
   BuildingState,
   DecorationState,
   CombatStats,
-} from './types/save.js'
+} from "./types/save.js";
 
 export type {
   CropDefinition,
@@ -24,8 +24,9 @@ export type {
   FishDefinition,
   EventDefinition,
   QuestDefinition,
-} from './types/game-data.js'
+  NpcScheduleEntry,
+} from "./types/game-data.js";
 
-export type { GameEvents } from './types/event-bus.js'
+export type { GameEvents } from "./types/event-bus.js";
 
-export { GAME_CONSTANTS, PORT } from './constants.js'
+export { GAME_CONSTANTS, PORT } from "./constants.js";

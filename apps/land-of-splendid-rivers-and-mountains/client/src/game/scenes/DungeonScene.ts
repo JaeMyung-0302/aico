@@ -96,6 +96,7 @@ export class DungeonScene extends Phaser.Scene {
   private floorCleared = false;
   private isTransitioning = false;
   private isWinterDungeon = false;
+  private prevAction = false;
 
   constructor() {
     super({ key: "DungeonScene" });
@@ -274,9 +275,11 @@ export class DungeonScene extends Phaser.Scene {
     this.player.update(inputState);
     this.emitPosition(this.player.sprite, _time);
 
-    if (inputState.action && this.combatSystem.isAlive()) {
-      const cost = this.combatSystem.getEquippedWeaponEnergyCost();
-      if (this.energySystem.consume("COMBAT") || cost === 0) {
+    const actionPressed = inputState.action && !this.prevAction;
+    this.prevAction = inputState.action;
+
+    if (actionPressed && this.combatSystem.isAlive()) {
+      if (this.energySystem.consume("COMBAT")) {
         const dir = this.player.getDirection();
         const dirMap = {
           up: { x: 0, y: -1 },

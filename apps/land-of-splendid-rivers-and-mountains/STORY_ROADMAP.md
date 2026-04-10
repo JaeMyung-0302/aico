@@ -58,9 +58,10 @@
 
 ---
 
-## Chapter 4: 바다 너머 (Ocean Expansion)
+## Chapter 4: 바다 너머 (Ocean Expansion) — DONE ✅
 
 **테마**: 해안가 너머 새로운 섬을 발견하고 교역을 시작한다
+**상태**: ✅ 구현 완료
 
 ### 메인 스토리
 - 난파선 발견 → 배 수리 퀘스트

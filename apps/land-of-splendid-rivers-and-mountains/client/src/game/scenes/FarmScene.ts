@@ -449,7 +449,11 @@ export class FarmScene extends Phaser.Scene {
     const onUseFood = ({ itemId }: { itemId: string }) => {
       if (!inventory.hasItem(itemId)) return;
       inventory.removeItem(itemId);
-      const energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      let energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      if (itemId.startsWith("crop-")) {
+        const cropDef = cropMap.get(itemId.replace("crop-", ""));
+        if (cropDef) energyAmount = cropDef.energyRestore;
+      }
       energySystem.recover(energyAmount);
       syncInventory();
     };

@@ -11,6 +11,12 @@ import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { useGameStore } from "@/stores/useGameStore";
 import { saveManager } from "@/lib/save-manager";
+import type { CropDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
+import cropsData from "../data/crops.json";
+
+const cropMap = new Map<string, CropDefinition>(
+  (cropsData as ReadonlyArray<CropDefinition>).map((c) => [c.id, c]),
+);
 
 const PLAYER_SPAWN_X = 9;
 const PLAYER_SPAWN_Y = 23;
@@ -207,7 +213,11 @@ export class DungeonScene extends Phaser.Scene {
     const onUseFood = ({ itemId }: { itemId: string }) => {
       if (!this.inventory.hasItem(itemId)) return;
       this.inventory.removeItem(itemId);
-      const energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      let energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      if (itemId.startsWith("crop-")) {
+        const cropDef = cropMap.get(itemId.replace("crop-", ""));
+        if (cropDef) energyAmount = cropDef.energyRestore;
+      }
       this.energySystem.recover(energyAmount);
       syncInventory();
     };

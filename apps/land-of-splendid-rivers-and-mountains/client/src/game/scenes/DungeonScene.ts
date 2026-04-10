@@ -375,6 +375,8 @@ export class DungeonScene extends Phaser.Scene {
     saveManager.patchSave({
       playerHp: this.combatSystem.getHp(),
       playerMaxHp: this.combatSystem.getMaxHp(),
+      energy: this.energySystem.getCurrent(),
+      maxEnergy: this.energySystem.getMax(),
       inventory: invState.slots,
       equippedTools: invState.equipped,
       gold: useGameStore.getState().gold,

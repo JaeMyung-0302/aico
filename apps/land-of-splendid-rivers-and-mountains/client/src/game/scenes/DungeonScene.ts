@@ -114,6 +114,7 @@ export class DungeonScene extends Phaser.Scene {
     this.currentFloor = 0;
     this.floorCleared = false;
     this.isTransitioning = false;
+    this.prevAction = false;
     this.isWinterDungeon = useGameStore.getState().season === "winter";
 
     const map = this.loadTilemap();

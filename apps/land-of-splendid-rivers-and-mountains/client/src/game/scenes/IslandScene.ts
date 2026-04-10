@@ -37,6 +37,7 @@ export class IslandScene extends Phaser.Scene {
 
   create(): void {
     this.isTransitioning = false;
+    this.prevAction = false;
     const map = this.loadTilemap();
 
     this.inputManager = new InputManager();

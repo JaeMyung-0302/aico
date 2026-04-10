@@ -7,6 +7,7 @@ import { TouchInput } from "../input/touch-input";
 import { CombatSystem } from "../systems/combat";
 import { EnergySystem } from "../systems/energy";
 import { InventorySystem } from "../systems/inventory";
+import { QuestSystem } from "../systems/quest";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { useGameStore } from "@/stores/useGameStore";
@@ -89,6 +90,7 @@ export class DungeonScene extends Phaser.Scene {
   private combatSystem!: CombatSystem;
   private energySystem!: EnergySystem;
   private inventory!: InventorySystem;
+  private questSystem!: QuestSystem;
 
   private readonly emitPosition = createPositionEmitter("DungeonScene");
   private currentFloor = 0;
@@ -135,12 +137,19 @@ export class DungeonScene extends Phaser.Scene {
     this.combatSystem = new CombatSystem();
     this.energySystem = new EnergySystem();
     this.inventory = new InventorySystem();
+    this.questSystem = new QuestSystem();
     this.combatSystem.init(this);
     this.energySystem.init(this);
+    this.questSystem.init(this);
     this.combatSystem.setPlayerSprite(this.player.sprite);
 
     const store = useGameStore.getState();
     this.energySystem.setState(store.energy, store.maxEnergy);
+    this.questSystem.loadState(
+      store.activeQuests,
+      store.completedQuests,
+      store.questProgress,
+    );
     this.combatSystem.setStats(
       store.playerHp,
       store.playerMaxHp,
@@ -250,6 +259,7 @@ export class DungeonScene extends Phaser.Scene {
       this.inventory.destroy();
       this.combatSystem.destroy();
       this.energySystem.destroy();
+      this.questSystem.destroy();
       this.keyboardInput.destroy();
       this.touchInput.destroy();
       this.player.destroy();
@@ -386,6 +396,7 @@ export class DungeonScene extends Phaser.Scene {
     useGameStore.getState().setDungeonFloor(0);
 
     const invState = this.inventory.getState();
+    const questState = this.questSystem.getState();
     saveManager.patchSave({
       playerHp: this.combatSystem.getHp(),
       playerMaxHp: this.combatSystem.getMaxHp(),
@@ -394,6 +405,9 @@ export class DungeonScene extends Phaser.Scene {
       inventory: invState.slots,
       equippedTools: invState.equipped,
       gold: useGameStore.getState().gold,
+      activeQuests: questState.active,
+      completedQuests: questState.completed,
+      questProgress: questState.progress,
     });
 
     this.scene.start("VillageScene", { spawnX: 14, spawnY: 1 });

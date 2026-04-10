@@ -426,6 +426,8 @@ export class VillageScene extends Phaser.Scene {
           store.setNpcRelation(npcId, value);
         }
         reputationSystem.loadState(data.reputation ?? 0);
+        npcSystem.setCurrentSeason(data.season);
+        npcSystem.setLocation("village", this);
         syncInventory();
         syncFermentation();
         syncBuildings();

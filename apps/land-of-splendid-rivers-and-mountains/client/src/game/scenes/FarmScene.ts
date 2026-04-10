@@ -555,6 +555,8 @@ export class FarmScene extends Phaser.Scene {
           store.setNpcRelation(npcId, value);
         }
         reputationSystem.loadState(data.reputation ?? 0);
+        npcSystem.setCurrentSeason(data.season);
+        npcSystem.setLocation("farm", this);
         store.setUnlockedIsland(data.unlockedIsland ?? false);
         syncInventory();
         syncFermentation();

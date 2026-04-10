@@ -397,9 +397,9 @@ export class VillageScene extends Phaser.Scene {
           activeEventId: cachedActiveEventId,
           reputation: cachedReputation,
           unlockedIsland: cachedUnlockedIsland,
-          activeQuests: cachedActiveQuests,
-          completedQuests: cachedCompletedQuests,
-          questProgress: cachedQuestProgress,
+          activeQuests: questSystem.getState().active,
+          completedQuests: questSystem.getState().completed,
+          questProgress: questSystem.getState().progress,
         };
       },
       (data) => {

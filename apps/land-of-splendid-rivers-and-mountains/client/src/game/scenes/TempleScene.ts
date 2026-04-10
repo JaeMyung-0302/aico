@@ -21,6 +21,7 @@ export class TempleScene extends Phaser.Scene {
   private touchInput!: TouchInput;
   private readonly emitPosition = createPositionEmitter("TempleScene");
   private npcSystem: NPCSystem | null = null;
+  private prevAction = false;
 
   constructor() {
     super({ key: "TempleScene" });
@@ -117,9 +118,23 @@ export class TempleScene extends Phaser.Scene {
       return;
     }
 
-    this.player.update(this.inputManager.getState());
+    const inputState = this.inputManager.getState();
+    this.player.update(inputState);
     this.npcSystem?.update(this, this.time.now, 0);
     this.emitPosition(this.player.sprite, this.time.now);
+
+    const actionPressed = inputState.action && !this.prevAction;
+    this.prevAction = inputState.action;
+    if (actionPressed && this.npcSystem) {
+      const nearbyNpcs = this.npcSystem.getNpcsInRange(
+        this.player.sprite.x,
+        this.player.sprite.y,
+        GAME_CONSTANTS.TILE_SIZE * 2,
+      );
+      if (nearbyNpcs.length > 0) {
+        this.npcSystem.talk(nearbyNpcs[0]!.getDefinition().id);
+      }
+    }
 
     this.checkPortal();
   }

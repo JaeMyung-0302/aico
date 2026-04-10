@@ -53,6 +53,24 @@ const FLOOR_MONSTERS: ReadonlyArray<
     { id: "octopus", x: 10, y: 12 },
   ],
   [{ id: "mermaid", x: 10, y: 8 }],
+  // Final dungeon: 이무기의 소굴 (floors 9-12)
+  [
+    { id: "darkDokkaebi", x: 5, y: 5 },
+    { id: "darkDokkaebi", x: 14, y: 5 },
+    { id: "darkDokkaebi", x: 10, y: 15 },
+  ],
+  [
+    { id: "shadowGumiho", x: 5, y: 8 },
+    { id: "shadowGumiho", x: 14, y: 8 },
+    { id: "darkDokkaebi", x: 5, y: 15 },
+    { id: "darkDokkaebi", x: 14, y: 15 },
+  ],
+  [
+    { id: "stormImugi", x: 5, y: 8 },
+    { id: "stormImugi", x: 14, y: 8 },
+    { id: "shadowGumiho", x: 10, y: 12 },
+  ],
+  [{ id: "millenniumImugi", x: 10, y: 8 }],
 ];
 
 const MAX_FLOORS = FLOOR_MONSTERS.length;

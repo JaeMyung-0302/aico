@@ -382,5 +382,79 @@
     ],
     "goldReward": 5000,
     "prerequisite": "main-island-exploration"
+  },
+  {
+    "id": "main-spring-guardian",
+    "nameKey": "quest.main.springGuardian",
+    "descKey": "quest.main.springGuardian.desc",
+    "type": "main",
+    "npcId": "sanshinryeong",
+    "requirements": [
+      { "type": "harvest", "target": "strawberry", "quantity": 10 },
+      { "type": "harvest", "target": "ginseng", "quantity": 3 }
+    ],
+    "rewards": [{ "itemId": "drop-spiritOrb", "quantity": 3 }],
+    "goldReward": 2000,
+    "prerequisite": "main-pirate-king-defeat"
+  },
+  {
+    "id": "main-summer-guardian",
+    "nameKey": "quest.main.summerGuardian",
+    "descKey": "quest.main.summerGuardian.desc",
+    "type": "main",
+    "npcId": "sanshinryeong",
+    "requirements": [
+      { "type": "fish", "target": "tuna", "quantity": 3 },
+      { "type": "harvest", "target": "watermelon", "quantity": 10 }
+    ],
+    "rewards": [{ "itemId": "drop-spiritOrb", "quantity": 3 }],
+    "goldReward": 2000,
+    "prerequisite": "main-spring-guardian"
+  },
+  {
+    "id": "main-autumn-guardian",
+    "nameKey": "quest.main.autumnGuardian",
+    "descKey": "quest.main.autumnGuardian.desc",
+    "type": "main",
+    "npcId": "sanshinryeong",
+    "requirements": [
+      { "type": "cook", "target": "kimchi", "quantity": 10 },
+      { "type": "harvest", "target": "persimmon", "quantity": 10 }
+    ],
+    "rewards": [{ "itemId": "drop-spiritOrb", "quantity": 3 }],
+    "goldReward": 2000,
+    "prerequisite": "main-summer-guardian"
+  },
+  {
+    "id": "main-winter-guardian",
+    "nameKey": "quest.main.winterGuardian",
+    "descKey": "quest.main.winterGuardian.desc",
+    "type": "main",
+    "npcId": "sanshinryeong",
+    "requirements": [
+      { "type": "combat", "target": "dungeon-floor-3", "quantity": 3 },
+      { "type": "harvest", "target": "yuzu", "quantity": 10 }
+    ],
+    "rewards": [{ "itemId": "drop-spiritOrb", "quantity": 3 }],
+    "goldReward": 2000,
+    "prerequisite": "main-autumn-guardian"
+  },
+  {
+    "id": "main-millennium-imugi",
+    "nameKey": "quest.main.millenniumImugi",
+    "descKey": "quest.main.millenniumImugi.desc",
+    "type": "main",
+    "npcId": "sanshinryeong",
+    "requirements": [
+      { "type": "combat", "target": "millenniumImugi", "quantity": 1 },
+      { "type": "combat", "target": "dungeon-floor-12", "quantity": 1 }
+    ],
+    "rewards": [
+      { "itemId": "drop-dragonOrb", "quantity": 1 },
+      { "itemId": "drop-dragonScale", "quantity": 10 },
+      { "itemId": "iron", "quantity": 50 }
+    ],
+    "goldReward": 10000,
+    "prerequisite": "main-winter-guardian"
   }
 ]

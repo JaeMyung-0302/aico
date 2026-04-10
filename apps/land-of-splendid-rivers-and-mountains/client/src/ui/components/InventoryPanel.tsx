@@ -62,8 +62,8 @@ const InventoryPanel = memo(({ open }: Props) => {
     (itemId: string, isEquipped: boolean, def: ItemDefinition | undefined) => {
       if (!def) return;
 
-      // Food consumption — request scene to handle energy recovery
-      if (def.type === "food") {
+      // Food/crop consumption — request scene to handle energy recovery
+      if (def.type === "food" || def.type === "crop") {
         eventBus.emit("inventory:useFood", { itemId });
         return;
       }
@@ -105,6 +105,7 @@ const InventoryPanel = memo(({ open }: Props) => {
                   (def?.type === "tool" ||
                     def?.type === "seed" ||
                     def?.type === "food" ||
+                    def?.type === "crop" ||
                     slot.itemId === "fertilizer")
                     ? "pointer"
                     : "default",

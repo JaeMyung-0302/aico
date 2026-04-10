@@ -434,6 +434,15 @@ export class FarmScene extends Phaser.Scene {
       syncInventory();
     };
 
+    const onUseFood = ({ itemId }: { itemId: string }) => {
+      if (!inventory.hasItem(itemId)) return;
+      inventory.removeItem(itemId);
+      const energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      energySystem.recover(energyAmount);
+      syncInventory();
+    };
+
+    eventBus.on("inventory:useFood", onUseFood);
     eventBus.on("event:reward", onEventReward);
     eventBus.on("fishing:caught", onFishCaught);
     eventBus.on("combat:defeated", onCombatDefeated);
@@ -485,6 +494,9 @@ export class FarmScene extends Phaser.Scene {
           playerDefense: combatSystem.getDefense(),
           completedEvents: eventSystem.getCompletedEvents(),
           activeEventId: eventSystem.getActiveEvent()?.id ?? null,
+          reputation: useGameStore.getState().reputation,
+          completedSeasonalQuests: [],
+          unlockedIsland: useGameStore.getState().unlockedIsland ?? false,
         };
       },
       (data) => {
@@ -524,6 +536,8 @@ export class FarmScene extends Phaser.Scene {
         for (const [npcId, value] of Object.entries(relations)) {
           store.setNpcRelation(npcId, value);
         }
+        store.setReputation(data.reputation ?? 0);
+        store.setUnlockedIsland(data.unlockedIsland ?? false);
         syncInventory();
         syncFermentation();
         syncBuildings();
@@ -551,6 +565,7 @@ export class FarmScene extends Phaser.Scene {
       saveManager.save();
       saveManager.destroy();
       inventory.destroy();
+      eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:changed", syncInventory);
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("shop:buy", onShopBuy);

@@ -15,6 +15,7 @@ export interface GameEvents {
   };
   "reputation:changed": { reputation: number };
   "reputation:thresholdReached": { threshold: number };
+  "inventory:useFood": { itemId: string };
   "farm:planted": { x: number; y: number; cropId: string };
   "farm:watered": { x: number; y: number };
   "farm:harvested": { x: number; y: number; cropId: string; quantity: number };

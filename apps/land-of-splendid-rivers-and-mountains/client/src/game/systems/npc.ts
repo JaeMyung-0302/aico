@@ -7,6 +7,7 @@ import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
 import { eventBus } from "@/lib/event-bus";
 import { NPC } from "../entities/NPC";
 import type { IGameSystem } from "./system-manager";
+import { useGameStore } from "@/stores/useGameStore";
 import npcsData from "../data/npcs.json";
 
 type GiftReaction = "loved" | "liked" | "neutral" | "disliked";
@@ -44,6 +45,7 @@ export class NPCSystem implements IGameSystem {
     this.currentScene = scene;
     eventBus.on("time:dayEnd", this.onDayEnd);
     eventBus.on("time:seasonChange", this.onSeasonChange);
+    eventBus.on("npc:choiceSelected", this.onChoiceSelected);
     this.spawnNpcsForLocation(scene, this.currentLocation);
   }
 
@@ -66,6 +68,7 @@ export class NPCSystem implements IGameSystem {
   destroy(): void {
     eventBus.off("time:dayEnd", this.onDayEnd);
     eventBus.off("time:seasonChange", this.onSeasonChange);
+    eventBus.off("npc:choiceSelected", this.onChoiceSelected);
     for (const [, npc] of this.npcs) {
       npc.destroy();
     }
@@ -164,6 +167,12 @@ export class NPCSystem implements IGameSystem {
 
       if (effectiveLocation !== location) continue;
 
+      if (def.id === "sanshinryeong") {
+        const { reputation } = useGameStore.getState();
+        if (reputation < GAME_CONSTANTS.REPUTATION_SANSHINRYEONG_THRESHOLD)
+          continue;
+      }
+
       const spawnX = scheduleEntry ? scheduleEntry.spawnTileX : def.spawnTileX;
       const spawnY = scheduleEntry ? scheduleEntry.spawnTileY : def.spawnTileY;
 
@@ -203,5 +212,30 @@ export class NPCSystem implements IGameSystem {
 
   private readonly onDayEnd = (): void => {
     this.talkedToday.clear();
+  };
+
+  handleChoice(npcId: string, choiceId: string): boolean {
+    const npc = this.npcs.get(npcId);
+    if (!npc) return false;
+
+    const def = npc.getDefinition();
+    const choice = def.dialogChoices?.find((c) => c.id === choiceId);
+    if (!choice) return false;
+
+    if (choice.relationChange !== 0) {
+      this.changeRelation(npcId, choice.relationChange);
+    }
+    return true;
+  }
+
+  private readonly onChoiceSelected = ({
+    npcId,
+    choiceId,
+  }: {
+    npcId: string;
+    choiceId: string;
+    relationChange: number;
+  }): void => {
+    this.handleChoice(npcId, choiceId);
   };
 }

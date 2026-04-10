@@ -456,5 +456,56 @@
     ],
     "goldReward": 10000,
     "prerequisite": "main-winter-guardian"
+  },
+  {
+    "id": "side-legendary-farmer",
+    "nameKey": "quest.side.legendaryFarmer",
+    "descKey": "quest.side.legendaryFarmer.desc",
+    "type": "side",
+    "npcId": "kimSundeok",
+    "requirements": [
+      { "type": "harvest", "target": "ginseng", "quantity": 10 },
+      { "type": "harvest", "target": "strawberry", "quantity": 20 },
+      { "type": "harvest", "target": "watermelon", "quantity": 20 },
+      { "type": "harvest", "target": "persimmon", "quantity": 20 },
+      { "type": "harvest", "target": "yuzu", "quantity": 20 }
+    ],
+    "rewards": [{ "itemId": "seed-ginseng", "quantity": 10 }],
+    "goldReward": 5000,
+    "prerequisite": "main-millennium-imugi"
+  },
+  {
+    "id": "side-village-hero",
+    "nameKey": "quest.side.villageHero",
+    "descKey": "quest.side.villageHero.desc",
+    "type": "side",
+    "npcId": "parkJeongsu",
+    "requirements": [
+      { "type": "gift", "target": "parkJeongsu", "quantity": 10 },
+      { "type": "gift", "target": "kimSundeok", "quantity": 10 }
+    ],
+    "rewards": [
+      { "itemId": "drop-dragonScale", "quantity": 5 },
+      { "itemId": "drop-spiritOrb", "quantity": 5 }
+    ],
+    "goldReward": 8000,
+    "prerequisite": "main-millennium-imugi"
+  },
+  {
+    "id": "side-ocean-master",
+    "nameKey": "quest.side.oceanMaster",
+    "descKey": "quest.side.oceanMaster.desc",
+    "type": "side",
+    "npcId": "captainHaeryong",
+    "requirements": [
+      { "type": "fish", "target": "dragonSeahorse", "quantity": 1 },
+      { "type": "fish", "target": "tuna", "quantity": 5 }
+    ],
+    "rewards": [
+      { "itemId": "drop-mermaidScale", "quantity": 5 },
+      { "itemId": "iron", "quantity": 30 }
+    ],
+    "goldReward": 6000,
+    "prerequisite": "main-millennium-imugi"
   }
 ]

@@ -153,14 +153,14 @@ export class FarmSystem implements IGameSystem {
     const crop = this.crops.get(key);
     if (!crop || crop.isDestroyed()) return false;
     if (!crop.isFullyGrown()) return false;
+    if (this.inventory.isFull()) return false;
+
     if (this.energySystem && !this.energySystem.consume("HARVEST"))
       return false;
 
     const definition = crop.getDefinition();
     const harvestItemId = `crop-${definition.id}`;
     const quantity = 1;
-
-    if (this.inventory.isFull()) return false;
 
     this.inventory.addItem(harvestItemId, quantity);
     crop.destroy();

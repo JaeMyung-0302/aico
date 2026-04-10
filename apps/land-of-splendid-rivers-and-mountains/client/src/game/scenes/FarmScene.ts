@@ -443,9 +443,7 @@ export class FarmScene extends Phaser.Scene {
         eventBus.emit("gold:changed", { amount: goldReward, total: newGold });
       }
       for (const item of items) {
-        if (!inventory.isFull()) {
-          inventory.addItem(item.itemId, item.quantity);
-        }
+        inventory.addItem(item.itemId, item.quantity);
       }
       syncInventory();
     };

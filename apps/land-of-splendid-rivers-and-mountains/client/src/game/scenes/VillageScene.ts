@@ -310,7 +310,6 @@ export class VillageScene extends Phaser.Scene {
     };
 
     const onAnimalCollect = ({ animalId }: { animalId: string }) => {
-      if (inventory.isFull()) return;
       const produceItemId = animalSystem.collectProduce(animalId);
       if (produceItemId) {
         inventory.addItem(produceItemId);

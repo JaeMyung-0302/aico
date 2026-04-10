@@ -192,9 +192,7 @@ export class FarmScene extends Phaser.Scene {
 
       const store = useGameStore.getState();
       if (store.gold < cropDef.seedPrice) return;
-      if (inventory.isFull()) return;
-
-      inventory.addItem(itemId);
+      if (!inventory.addItem(itemId)) return;
       const newGold = store.gold - cropDef.seedPrice;
       eventBus.emit("gold:changed", {
         amount: -cropDef.seedPrice,

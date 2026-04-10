@@ -8,6 +8,13 @@ export interface GameEvents {
   "season:transitionEnd": { season: Season; year: number };
   "farm:withered": { count: number };
   "event:jangmaEnd": undefined;
+  "npc:choiceSelected": {
+    npcId: string;
+    choiceId: string;
+    relationChange: number;
+  };
+  "reputation:changed": { reputation: number };
+  "reputation:thresholdReached": { threshold: number };
   "farm:planted": { x: number; y: number; cropId: string };
   "farm:watered": { x: number; y: number };
   "farm:harvested": { x: number; y: number; cropId: string; quantity: number };

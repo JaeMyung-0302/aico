@@ -1,5 +1,11 @@
 import type { Season } from "./save.js";
 
+export interface DialogChoice {
+  readonly id: string;
+  readonly textKey: string;
+  readonly relationChange: number;
+}
+
 export interface CropDefinition {
   readonly id: string;
   readonly nameKey: string;
@@ -38,6 +44,7 @@ export interface NpcDefinition {
   readonly likedGifts: ReadonlyArray<string>;
   readonly dislikedGifts: ReadonlyArray<string>;
   readonly schedule?: ReadonlyArray<NpcScheduleEntry>;
+  readonly dialogChoices?: ReadonlyArray<DialogChoice>;
 }
 
 export interface ItemDefinition {
@@ -117,7 +124,7 @@ export interface QuestDefinition {
   readonly id: string;
   readonly nameKey: string;
   readonly descKey: string;
-  readonly type: "main" | "side";
+  readonly type: "main" | "side" | "personal";
   readonly npcId: string | null;
   readonly requirements: ReadonlyArray<
     Readonly<{
@@ -131,6 +138,7 @@ export interface QuestDefinition {
   >;
   readonly goldReward: number;
   readonly prerequisite: string | null;
+  readonly unlockRelation?: number;
 }
 
 export interface EventDefinition {

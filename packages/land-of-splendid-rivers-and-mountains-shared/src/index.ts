@@ -25,6 +25,7 @@ export type {
   EventDefinition,
   QuestDefinition,
   NpcScheduleEntry,
+  DialogChoice,
 } from "./types/game-data.js";
 
 export type { GameEvents } from "./types/event-bus.js";

@@ -138,6 +138,7 @@ export class FarmSystem implements IGameSystem {
     const key = tileKey(tileX, tileY);
     const crop = this.crops.get(key);
     if (!crop || crop.isDestroyed()) return false;
+    if (crop.isFertilized()) return false;
 
     if (!this.inventory.hasItem("fertilizer")) return false;
     this.inventory.removeItem("fertilizer");

@@ -4,7 +4,7 @@
     "nameKey": "quest.main.firstHarvest",
     "descKey": "quest.main.firstHarvest.desc",
     "type": "main",
-    "npcId": "kimSundeok",
+    "npcId": "kim-sundeok",
     "requirements": [{ "type": "harvest", "target": "rice", "quantity": 3 }],
     "rewards": [{ "itemId": "seed-cabbage", "quantity": 5 }],
     "goldReward": 300,
@@ -15,7 +15,7 @@
     "nameKey": "quest.main.villageVisit",
     "descKey": "quest.main.villageVisit.desc",
     "type": "main",
-    "npcId": "parkJeongsu",
+    "npcId": "park-jeongsu",
     "requirements": [{ "type": "explore", "target": "village", "quantity": 1 }],
     "rewards": [{ "itemId": "tool-fishingRod", "quantity": 1 }],
     "goldReward": 200,
@@ -26,7 +26,7 @@
     "nameKey": "quest.main.firstRecipe",
     "descKey": "quest.main.firstRecipe.desc",
     "type": "main",
-    "npcId": "jungMisuk",
+    "npcId": "jung-misuk",
     "requirements": [{ "type": "cook", "target": "bibimbap", "quantity": 1 }],
     "rewards": [{ "itemId": "food-kimchi", "quantity": 3 }],
     "goldReward": 400,
@@ -37,7 +37,7 @@
     "nameKey": "quest.main.dungeonClear",
     "descKey": "quest.main.dungeonClear.desc",
     "type": "main",
-    "npcId": "kangTaepung",
+    "npcId": "kang-taepung",
     "requirements": [
       { "type": "combat", "target": "dungeon-floor-3", "quantity": 1 }
     ],
@@ -50,7 +50,7 @@
     "nameKey": "quest.main.masterFarmer",
     "descKey": "quest.main.masterFarmer.desc",
     "type": "main",
-    "npcId": "kimSundeok",
+    "npcId": "kim-sundeok",
     "requirements": [
       { "type": "harvest", "target": "ginseng", "quantity": 1 },
       { "type": "cook", "target": "ginsengWine", "quantity": 1 }
@@ -64,7 +64,7 @@
     "nameKey": "quest.side.freshCatch",
     "descKey": "quest.side.freshCatch.desc",
     "type": "side",
-    "npcId": "ohKyungho",
+    "npcId": "oh-kyungho",
     "requirements": [
       { "type": "fish", "target": "crucianCarp", "quantity": 3 }
     ],
@@ -77,7 +77,7 @@
     "nameKey": "quest.side.kimchiMaster",
     "descKey": "quest.side.kimchiMaster.desc",
     "type": "side",
-    "npcId": "jungMisuk",
+    "npcId": "jung-misuk",
     "requirements": [{ "type": "cook", "target": "kimchi", "quantity": 3 }],
     "rewards": [{ "itemId": "food-kimchiJjigae", "quantity": 2 }],
     "goldReward": 300,
@@ -88,9 +88,9 @@
     "nameKey": "quest.side.friendlyNeighbor",
     "descKey": "quest.side.friendlyNeighbor.desc",
     "type": "side",
-    "npcId": "hanSeoyoung",
+    "npcId": "han-seoyoung",
     "requirements": [
-      { "type": "gift", "target": "hanSeoyoung", "quantity": 3 }
+      { "type": "gift", "target": "han-seoyoung", "quantity": 3 }
     ],
     "rewards": [{ "itemId": "seed-perilla", "quantity": 5 }],
     "goldReward": 200,
@@ -101,7 +101,7 @@
     "nameKey": "quest.side.monsterHunter",
     "descKey": "quest.side.monsterHunter.desc",
     "type": "side",
-    "npcId": "kangTaepung",
+    "npcId": "kang-taepung",
     "requirements": [{ "type": "combat", "target": "dokkaebi", "quantity": 5 }],
     "rewards": [{ "itemId": "iron", "quantity": 5 }],
     "goldReward": 500,
@@ -112,7 +112,7 @@
     "nameKey": "quest.side.rareFish",
     "descKey": "quest.side.rareFish.desc",
     "type": "side",
-    "npcId": "ohKyungho",
+    "npcId": "oh-kyungho",
     "requirements": [
       { "type": "fish", "target": "goldenMandarin", "quantity": 1 }
     ],
@@ -125,7 +125,7 @@
     "nameKey": "quest.main.springBloom",
     "descKey": "quest.main.springBloom.desc",
     "type": "main",
-    "npcId": "kimSundeok",
+    "npcId": "kim-sundeok",
     "requirements": [
       { "type": "harvest", "target": "strawberry", "quantity": 5 }
     ],
@@ -138,7 +138,7 @@
     "nameKey": "quest.main.summerHarvest",
     "descKey": "quest.main.summerHarvest.desc",
     "type": "main",
-    "npcId": "songNarae",
+    "npcId": "song-narae",
     "requirements": [
       { "type": "harvest", "target": "watermelon", "quantity": 3 }
     ],
@@ -151,7 +151,7 @@
     "nameKey": "quest.main.autumnBounty",
     "descKey": "quest.main.autumnBounty.desc",
     "type": "main",
-    "npcId": "jungMisuk",
+    "npcId": "jung-misuk",
     "requirements": [
       { "type": "harvest", "target": "persimmon", "quantity": 5 },
       { "type": "cook", "target": "kimchi", "quantity": 3 }
@@ -165,7 +165,7 @@
     "nameKey": "quest.main.winterTrial",
     "descKey": "quest.main.winterTrial.desc",
     "type": "main",
-    "npcId": "kangTaepung",
+    "npcId": "kang-taepung",
     "requirements": [
       { "type": "combat", "target": "dungeon-floor-3", "quantity": 1 },
       { "type": "harvest", "target": "yuzu", "quantity": 3 }
@@ -182,7 +182,7 @@
     "nameKey": "quest.personal.kimSundeok",
     "descKey": "quest.personal.kimSundeok.desc",
     "type": "personal",
-    "npcId": "kimSundeok",
+    "npcId": "kim-sundeok",
     "requirements": [{ "type": "harvest", "target": "rice", "quantity": 10 }],
     "rewards": [{ "itemId": "seed-ginseng", "quantity": 2 }],
     "goldReward": 500,
@@ -194,7 +194,7 @@
     "nameKey": "quest.personal.parkJeongsu",
     "descKey": "quest.personal.parkJeongsu.desc",
     "type": "personal",
-    "npcId": "parkJeongsu",
+    "npcId": "park-jeongsu",
     "requirements": [{ "type": "explore", "target": "village", "quantity": 3 }],
     "rewards": [{ "itemId": "food-samgyetang", "quantity": 2 }],
     "goldReward": 400,
@@ -206,7 +206,7 @@
     "nameKey": "quest.personal.choiCheolsu",
     "descKey": "quest.personal.choiCheolsu.desc",
     "type": "personal",
-    "npcId": "choiCheolsu",
+    "npcId": "choi-cheolsu",
     "requirements": [
       { "type": "combat", "target": "dokkaebi", "quantity": 10 }
     ],
@@ -220,7 +220,7 @@
     "nameKey": "quest.personal.hanSeoyoung",
     "descKey": "quest.personal.hanSeoyoung.desc",
     "type": "personal",
-    "npcId": "hanSeoyoung",
+    "npcId": "han-seoyoung",
     "requirements": [
       { "type": "gift", "target": "han-seoyoung", "quantity": 5 }
     ],
@@ -234,7 +234,7 @@
     "nameKey": "quest.personal.kangTaepung",
     "descKey": "quest.personal.kangTaepung.desc",
     "type": "personal",
-    "npcId": "kangTaepung",
+    "npcId": "kang-taepung",
     "requirements": [
       { "type": "combat", "target": "dungeon-floor-3", "quantity": 2 }
     ],
@@ -248,7 +248,7 @@
     "nameKey": "quest.personal.leeDohyun",
     "descKey": "quest.personal.leeDohyun.desc",
     "type": "personal",
-    "npcId": "leeDohyun",
+    "npcId": "lee-dohyun",
     "requirements": [{ "type": "harvest", "target": "wood", "quantity": 20 }],
     "rewards": [{ "itemId": "wood", "quantity": 10 }],
     "goldReward": 400,
@@ -260,7 +260,7 @@
     "nameKey": "quest.personal.songNarae",
     "descKey": "quest.personal.songNarae.desc",
     "type": "personal",
-    "npcId": "songNarae",
+    "npcId": "song-narae",
     "requirements": [{ "type": "harvest", "target": "sesame", "quantity": 5 }],
     "rewards": [{ "itemId": "seed-perilla", "quantity": 5 }],
     "goldReward": 350,
@@ -272,7 +272,7 @@
     "nameKey": "quest.personal.jungMisuk",
     "descKey": "quest.personal.jungMisuk.desc",
     "type": "personal",
-    "npcId": "jungMisuk",
+    "npcId": "jung-misuk",
     "requirements": [{ "type": "cook", "target": "kimchi", "quantity": 5 }],
     "rewards": [{ "itemId": "food-pajeon", "quantity": 5 }],
     "goldReward": 500,
@@ -284,7 +284,7 @@
     "nameKey": "quest.personal.ohKyungho",
     "descKey": "quest.personal.ohKyungho.desc",
     "type": "personal",
-    "npcId": "ohKyungho",
+    "npcId": "oh-kyungho",
     "requirements": [
       { "type": "fish", "target": "crucianCarp", "quantity": 10 }
     ],
@@ -298,7 +298,7 @@
     "nameKey": "quest.personal.yoonHaneul",
     "descKey": "quest.personal.yoonHaneul.desc",
     "type": "personal",
-    "npcId": "yoonHaneul",
+    "npcId": "yoon-haneul",
     "requirements": [
       { "type": "harvest", "target": "sweetPotato", "quantity": 8 }
     ],
@@ -312,9 +312,9 @@
     "nameKey": "quest.main.villageCouncil",
     "descKey": "quest.main.villageCouncil.desc",
     "type": "main",
-    "npcId": "parkJeongsu",
+    "npcId": "park-jeongsu",
     "requirements": [
-      { "type": "gift", "target": "parkJeongsu", "quantity": 1 },
+      { "type": "gift", "target": "park-jeongsu", "quantity": 1 },
       { "type": "explore", "target": "village", "quantity": 1 }
     ],
     "rewards": [{ "itemId": "food-kimchiJjigae", "quantity": 3 }],
@@ -462,7 +462,7 @@
     "nameKey": "quest.side.legendaryFarmer",
     "descKey": "quest.side.legendaryFarmer.desc",
     "type": "side",
-    "npcId": "kimSundeok",
+    "npcId": "kim-sundeok",
     "requirements": [
       { "type": "harvest", "target": "ginseng", "quantity": 10 },
       { "type": "harvest", "target": "strawberry", "quantity": 20 },
@@ -479,10 +479,10 @@
     "nameKey": "quest.side.villageHero",
     "descKey": "quest.side.villageHero.desc",
     "type": "side",
-    "npcId": "parkJeongsu",
+    "npcId": "park-jeongsu",
     "requirements": [
-      { "type": "gift", "target": "parkJeongsu", "quantity": 10 },
-      { "type": "gift", "target": "kimSundeok", "quantity": 10 }
+      { "type": "gift", "target": "park-jeongsu", "quantity": 10 },
+      { "type": "gift", "target": "kim-sundeok", "quantity": 10 }
     ],
     "rewards": [
       { "itemId": "drop-dragonScale", "quantity": 5 },

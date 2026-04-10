@@ -31,6 +31,7 @@ export class QuestSystem implements IGameSystem {
     eventBus.on("player:moved", this.onPlayerMoved);
     eventBus.on("combat:defeated", this.onCombatDefeated);
     eventBus.on("dungeon:cleared", this.onDungeonCleared);
+    eventBus.on("npc:relationChanged", this.onRelationChanged);
 
     this.checkAvailableQuests();
   }
@@ -48,6 +49,7 @@ export class QuestSystem implements IGameSystem {
     eventBus.off("player:moved", this.onPlayerMoved);
     eventBus.off("combat:defeated", this.onCombatDefeated);
     eventBus.off("dungeon:cleared", this.onDungeonCleared);
+    eventBus.off("npc:relationChanged", this.onRelationChanged);
   }
 
   getState(): {
@@ -266,5 +268,9 @@ export class QuestSystem implements IGameSystem {
 
   private readonly onDungeonCleared = ({ floor }: { floor: number }): void => {
     this.advanceRequirement("combat", `dungeon-floor-${floor}`);
+  };
+
+  private readonly onRelationChanged = (): void => {
+    this.checkAvailableQuests();
   };
 }

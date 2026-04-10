@@ -253,11 +253,15 @@ export class QuestSystem implements IGameSystem {
 
   private readonly onCombatDefeated = ({
     monsterId,
+    drops,
   }: {
     monsterId: string;
     drops: ReadonlyArray<{ itemId: string; quantity: number }>;
   }): void => {
     this.advanceRequirement("combat", monsterId);
+    for (const drop of drops) {
+      this.advanceRequirement("harvest", drop.itemId);
+    }
   };
 
   private readonly onDungeonCleared = ({ floor }: { floor: number }): void => {

@@ -289,6 +289,8 @@ export class VillageScene extends Phaser.Scene {
     let cachedFarmPlots: ReadonlyArray<FarmPlotState> = [];
     let cachedCompletedEvents: ReadonlyArray<string> = [];
     let cachedActiveEventId: string | null = null;
+    let cachedReputation = 0;
+    let cachedUnlockedIsland = false;
 
     saveManager.setup(
       () => {
@@ -318,6 +320,8 @@ export class VillageScene extends Phaser.Scene {
           playerDefense: combatSystem.getDefense(),
           completedEvents: cachedCompletedEvents,
           activeEventId: cachedActiveEventId,
+          reputation: cachedReputation,
+          unlockedIsland: cachedUnlockedIsland,
         };
       },
       (data) => {
@@ -333,6 +337,8 @@ export class VillageScene extends Phaser.Scene {
         cachedFarmPlots = data.farmPlots ?? [];
         cachedCompletedEvents = data.completedEvents ?? [];
         cachedActiveEventId = data.activeEventId ?? null;
+        cachedReputation = data.reputation ?? 0;
+        cachedUnlockedIsland = data.unlockedIsland ?? false;
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);

@@ -21,6 +21,7 @@ import { CombatSystem } from "../systems/combat";
 import { FishingSystem } from "../systems/fishing";
 import { EventSystem } from "../systems/event";
 import { AudioSystem } from "../systems/audio";
+import { ReputationSystem } from "../systems/reputation";
 import { LodSystem } from "../systems/lod";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -151,6 +152,7 @@ export class FarmScene extends Phaser.Scene {
     this.systemManager.register(fishingSystem);
     this.systemManager.register(eventSystem);
     this.systemManager.register(new AudioSystem());
+    this.systemManager.register(new ReputationSystem());
     this.systemManager.initAll(this);
 
     combatSystem.setPlayerSprite(this.player.sprite);

@@ -14,6 +14,7 @@ import { FermentationSystem, getRecipe } from "../systems/fermentation";
 import { BuildingSystem } from "../systems/building";
 import { AnimalSystem, getAnimalDef } from "../systems/animal";
 import { CombatSystem } from "../systems/combat";
+import { ReputationSystem } from "../systems/reputation";
 import { LodSystem } from "../systems/lod";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -95,6 +96,7 @@ export class VillageScene extends Phaser.Scene {
     this.systemManager.register(buildingSystem);
     this.systemManager.register(animalSystem);
     this.systemManager.register(combatSystem);
+    this.systemManager.register(new ReputationSystem());
     this.systemManager.initAll(this);
 
     npcSystem.setPlayerSprite(this.player.sprite);

@@ -56,6 +56,26 @@ const DialogBox = () => {
   const npcName = t(npcDef.nameKey);
   const relation = npcRelations[activeNpcId] ?? 0;
 
+  const getGreeting = (): string => {
+    const npcGreetKey = `npc.${activeNpcId}.greeting` as never;
+    const npcGreet = t(npcGreetKey);
+    if (npcGreet && npcGreet !== npcGreetKey) return npcGreet;
+
+    if (relation >= 10)
+      return (
+        t("ui.dialog.greeting.best" as never) ||
+        "정말 반가워요! 오늘도 좋은 하루 보내세요!"
+      );
+    if (relation >= 5)
+      return (
+        t("ui.dialog.greeting.good" as never) || "어서 오세요! 보고 싶었어요."
+      );
+    if (relation >= 1) return t("ui.dialog.greeting" as never) || "안녕하세요.";
+    if (relation <= -1)
+      return t("ui.dialog.greeting.bad" as never) || "...뭐 볼일 있나요?";
+    return t("ui.dialog.greeting" as never) || "안녕하세요.";
+  };
+
   const giftableItems = inventory.filter((slot) => {
     if (!slot) return false;
     return (
@@ -118,7 +138,7 @@ const DialogBox = () => {
           ) : giftReaction ? (
             t(`npc.gift.${giftReaction}`)
           ) : (
-            t("ui.dialog.greeting")
+            getGreeting()
           )}
         </div>
         {!giftReaction &&

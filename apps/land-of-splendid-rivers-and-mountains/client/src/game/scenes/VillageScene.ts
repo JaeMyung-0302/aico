@@ -270,6 +270,15 @@ export class VillageScene extends Phaser.Scene {
       syncAnimals();
     };
 
+    const onUseFood = ({ itemId }: { itemId: string }) => {
+      if (!inventory.hasItem(itemId)) return;
+      inventory.removeItem(itemId);
+      const energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      energySystem.recover(energyAmount);
+      syncInventory();
+    };
+
+    eventBus.on("inventory:useFood", onUseFood);
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
@@ -385,6 +394,7 @@ export class VillageScene extends Phaser.Scene {
       saveManager.save();
       saveManager.destroy();
       inventory.destroy();
+      eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:changed", syncInventory);
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);

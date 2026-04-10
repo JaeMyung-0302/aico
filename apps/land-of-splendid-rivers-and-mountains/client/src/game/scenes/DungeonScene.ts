@@ -194,6 +194,15 @@ export class DungeonScene extends Phaser.Scene {
       }
     };
 
+    const onUseFood = ({ itemId }: { itemId: string }) => {
+      if (!this.inventory.hasItem(itemId)) return;
+      this.inventory.removeItem(itemId);
+      const energyAmount = itemId.startsWith("food-") ? 20 : 10;
+      this.energySystem.recover(energyAmount);
+      syncInventory();
+    };
+
+    eventBus.on("inventory:useFood", onUseFood);
     eventBus.on("combat:defeated", onCombatDefeated);
     eventBus.on("combat:playerHit", onCombatPlayerHit);
     eventBus.on("combat:playerDied", onCombatPlayerDied);
@@ -208,6 +217,7 @@ export class DungeonScene extends Phaser.Scene {
     this.setupCamera(map);
 
     this.events.once("shutdown", () => {
+      eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("combat:defeated", onCombatDefeated);
       eventBus.off("combat:playerHit", onCombatPlayerHit);
       eventBus.off("combat:playerDied", onCombatPlayerDied);

@@ -171,9 +171,7 @@ export class DungeonScene extends Phaser.Scene {
     }) => {
       this.monstersAlive--;
       for (const drop of drops) {
-        if (!this.inventory.isFull()) {
-          this.inventory.addItem(drop.itemId, drop.quantity);
-        }
+        this.inventory.addItem(drop.itemId, drop.quantity);
       }
       syncInventory();
       if (this.monstersAlive <= 0) {

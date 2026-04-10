@@ -406,9 +406,7 @@ export class FarmScene extends Phaser.Scene {
       drops: ReadonlyArray<{ itemId: string; quantity: number }>;
     }) => {
       for (const drop of drops) {
-        if (!inventory.isFull()) {
-          inventory.addItem(drop.itemId, drop.quantity);
-        }
+        inventory.addItem(drop.itemId, drop.quantity);
       }
       syncInventory();
     };

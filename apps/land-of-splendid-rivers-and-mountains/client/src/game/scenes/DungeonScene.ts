@@ -132,6 +132,7 @@ export class DungeonScene extends Phaser.Scene {
     this.combatSystem.setPlayerSprite(this.player.sprite);
 
     const store = useGameStore.getState();
+    this.energySystem.setState(store.energy, store.maxEnergy);
     this.combatSystem.setStats(
       store.playerHp,
       store.playerMaxHp,

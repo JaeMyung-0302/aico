@@ -63,6 +63,7 @@ export class TempleScene extends Phaser.Scene {
     const npcSystem = new NPCSystem();
     npcSystem.setInitialLocation("temple");
     npcSystem.setCurrentSeason(store.season);
+    npcSystem.loadRelationsState(store.npcRelations);
     npcSystem.init(this);
     npcSystem.setPlayerSprite(this.player.sprite);
     this.npcSystem = npcSystem;

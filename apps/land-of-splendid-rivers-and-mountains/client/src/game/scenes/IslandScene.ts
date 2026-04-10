@@ -64,6 +64,7 @@ export class IslandScene extends Phaser.Scene {
     const npcSystem = new NPCSystem();
     npcSystem.setInitialLocation("island");
     npcSystem.setCurrentSeason(store.season);
+    npcSystem.loadRelationsState(store.npcRelations);
     npcSystem.init(this);
     npcSystem.setPlayerSprite(this.player.sprite);
     this.npcSystem = npcSystem;

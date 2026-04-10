@@ -51,7 +51,10 @@
     "triggerDay": 15,
     "durationDays": 3,
     "type": "festival",
-    "rewards": [{ "itemId": "food-japchae", "quantity": 3 }, { "itemId": "food-gimbap", "quantity": 3 }],
+    "rewards": [
+      { "itemId": "food-japchae", "quantity": 3 },
+      { "itemId": "food-gimbap", "quantity": 3 }
+    ],
     "goldReward": 500
   },
   {
@@ -62,7 +65,10 @@
     "triggerDay": 25,
     "durationDays": 2,
     "type": "harvest",
-    "rewards": [{ "itemId": "food-kimchi", "quantity": 5 }, { "itemId": "food-kkakdugi", "quantity": 3 }],
+    "rewards": [
+      { "itemId": "food-kimchi", "quantity": 5 },
+      { "itemId": "food-kkakdugi", "quantity": 3 }
+    ],
     "goldReward": 400
   },
   {
@@ -86,5 +92,52 @@
     "type": "seasonal",
     "rewards": [{ "itemId": "food-bibimbap", "quantity": 2 }],
     "goldReward": 200
+  },
+  {
+    "id": "springFestival",
+    "nameKey": "event.springFestival",
+    "descKey": "event.springFestival.desc",
+    "season": "spring",
+    "triggerDay": 10,
+    "durationDays": 3,
+    "type": "festival",
+    "rewards": [{ "itemId": "seed-strawberry", "quantity": 3 }],
+    "goldReward": 350
+  },
+  {
+    "id": "jangma",
+    "nameKey": "event.jangma",
+    "descKey": "event.jangma.desc",
+    "season": "summer",
+    "triggerDay": 20,
+    "durationDays": 5,
+    "type": "seasonal",
+    "rewards": [{ "itemId": "food-pajeon", "quantity": 3 }],
+    "goldReward": 200
+  },
+  {
+    "id": "pungnyeonje",
+    "nameKey": "event.pungnyeonje",
+    "descKey": "event.pungnyeonje.desc",
+    "season": "autumn",
+    "triggerDay": 10,
+    "durationDays": 3,
+    "type": "festival",
+    "rewards": [
+      { "itemId": "crop-persimmon", "quantity": 5 },
+      { "itemId": "food-sikhye", "quantity": 3 }
+    ],
+    "goldReward": 450
+  },
+  {
+    "id": "winterDungeon",
+    "nameKey": "event.winterDungeon",
+    "descKey": "event.winterDungeon.desc",
+    "season": "winter",
+    "triggerDay": 20,
+    "durationDays": 5,
+    "type": "dungeon",
+    "rewards": [{ "itemId": "food-kimchi", "quantity": 10 }],
+    "goldReward": 600
   }
 ]

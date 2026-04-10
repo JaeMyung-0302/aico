@@ -38,7 +38,9 @@
     "descKey": "quest.main.dungeonClear.desc",
     "type": "main",
     "npcId": "kangTaepung",
-    "requirements": [{ "type": "combat", "target": "dungeon-floor-3", "quantity": 1 }],
+    "requirements": [
+      { "type": "combat", "target": "dungeon-floor-3", "quantity": 1 }
+    ],
     "rewards": [{ "itemId": "iron", "quantity": 10 }],
     "goldReward": 1000,
     "prerequisite": "main-first-recipe"
@@ -63,7 +65,9 @@
     "descKey": "quest.side.freshCatch.desc",
     "type": "side",
     "npcId": "ohKyungho",
-    "requirements": [{ "type": "fish", "target": "crucianCarp", "quantity": 3 }],
+    "requirements": [
+      { "type": "fish", "target": "crucianCarp", "quantity": 3 }
+    ],
     "rewards": [{ "itemId": "food-pajeon", "quantity": 2 }],
     "goldReward": 150,
     "prerequisite": null
@@ -85,7 +89,9 @@
     "descKey": "quest.side.friendlyNeighbor.desc",
     "type": "side",
     "npcId": "hanSeoyoung",
-    "requirements": [{ "type": "gift", "target": "hanSeoyoung", "quantity": 3 }],
+    "requirements": [
+      { "type": "gift", "target": "hanSeoyoung", "quantity": 3 }
+    ],
     "rewards": [{ "itemId": "seed-perilla", "quantity": 5 }],
     "goldReward": 200,
     "prerequisite": null
@@ -107,9 +113,68 @@
     "descKey": "quest.side.rareFish.desc",
     "type": "side",
     "npcId": "ohKyungho",
-    "requirements": [{ "type": "fish", "target": "goldenMandarin", "quantity": 1 }],
+    "requirements": [
+      { "type": "fish", "target": "goldenMandarin", "quantity": 1 }
+    ],
     "rewards": [{ "itemId": "food-samgyetang", "quantity": 3 }],
     "goldReward": 1000,
     "prerequisite": "side-fresh-catch"
+  },
+  {
+    "id": "main-spring-bloom",
+    "nameKey": "quest.main.springBloom",
+    "descKey": "quest.main.springBloom.desc",
+    "type": "main",
+    "npcId": "kimSundeok",
+    "requirements": [
+      { "type": "harvest", "target": "strawberry", "quantity": 5 }
+    ],
+    "rewards": [{ "itemId": "seed-watermelon", "quantity": 3 }],
+    "goldReward": 500,
+    "prerequisite": "main-master-farmer"
+  },
+  {
+    "id": "main-summer-harvest",
+    "nameKey": "quest.main.summerHarvest",
+    "descKey": "quest.main.summerHarvest.desc",
+    "type": "main",
+    "npcId": "songNarae",
+    "requirements": [
+      { "type": "harvest", "target": "watermelon", "quantity": 3 }
+    ],
+    "rewards": [{ "itemId": "seed-persimmon", "quantity": 3 }],
+    "goldReward": 600,
+    "prerequisite": "main-spring-bloom"
+  },
+  {
+    "id": "main-autumn-bounty",
+    "nameKey": "quest.main.autumnBounty",
+    "descKey": "quest.main.autumnBounty.desc",
+    "type": "main",
+    "npcId": "jungMisuk",
+    "requirements": [
+      { "type": "harvest", "target": "persimmon", "quantity": 5 },
+      { "type": "cook", "target": "kimchi", "quantity": 3 }
+    ],
+    "rewards": [{ "itemId": "seed-yuzu", "quantity": 3 }],
+    "goldReward": 800,
+    "prerequisite": "main-summer-harvest"
+  },
+  {
+    "id": "main-winter-trial",
+    "nameKey": "quest.main.winterTrial",
+    "descKey": "quest.main.winterTrial.desc",
+    "type": "main",
+    "npcId": "kangTaepung",
+    "requirements": [
+      { "type": "combat", "target": "dungeon-floor-3", "quantity": 1 },
+      { "type": "harvest", "target": "yuzu", "quantity": 3 }
+    ],
+    "rewards": [
+      { "itemId": "food-samgyetang", "quantity": 5 },
+      { "itemId": "iron", "quantity": 15 }
+    ],
+    "goldReward": 1500,
+    "prerequisite": "main-autumn-bounty"
   }
 ]

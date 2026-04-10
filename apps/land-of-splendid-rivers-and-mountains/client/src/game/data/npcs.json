@@ -7,7 +7,33 @@
     "spawnTileY": 5,
     "lovedGifts": ["crop-rice", "crop-cabbage"],
     "likedGifts": ["crop-radish", "crop-greenOnion"],
-    "dislikedGifts": ["stone"]
+    "dislikedGifts": ["stone"],
+    "schedule": [
+      {
+        "season": "spring",
+        "location": "farm",
+        "spawnTileX": 18,
+        "spawnTileY": 5
+      },
+      {
+        "season": "summer",
+        "location": "farm",
+        "spawnTileX": 18,
+        "spawnTileY": 5
+      },
+      {
+        "season": "autumn",
+        "location": "village",
+        "spawnTileX": 12,
+        "spawnTileY": 10
+      },
+      {
+        "season": "winter",
+        "location": "village",
+        "spawnTileX": 10,
+        "spawnTileY": 12
+      }
+    ]
   },
   {
     "id": "park-jeongsu",
@@ -37,7 +63,33 @@
     "spawnTileY": 15,
     "lovedGifts": ["crop-ginseng", "crop-perilla"],
     "likedGifts": ["crop-garlic", "crop-pepper"],
-    "dislikedGifts": ["stone"]
+    "dislikedGifts": ["stone"],
+    "schedule": [
+      {
+        "season": "spring",
+        "location": "village",
+        "spawnTileX": 8,
+        "spawnTileY": 15
+      },
+      {
+        "season": "summer",
+        "location": "farm",
+        "spawnTileX": 15,
+        "spawnTileY": 5
+      },
+      {
+        "season": "autumn",
+        "location": "village",
+        "spawnTileX": 8,
+        "spawnTileY": 15
+      },
+      {
+        "season": "winter",
+        "location": "village",
+        "spawnTileX": 8,
+        "spawnTileY": 15
+      }
+    ]
   },
   {
     "id": "kang-taepung",
@@ -67,7 +119,33 @@
     "spawnTileY": 3,
     "lovedGifts": ["crop-sesame"],
     "likedGifts": ["crop-sweetPotato", "crop-perilla"],
-    "dislikedGifts": ["iron"]
+    "dislikedGifts": ["iron"],
+    "schedule": [
+      {
+        "season": "spring",
+        "location": "farm",
+        "spawnTileX": 25,
+        "spawnTileY": 3
+      },
+      {
+        "season": "summer",
+        "location": "farm",
+        "spawnTileX": 25,
+        "spawnTileY": 3
+      },
+      {
+        "season": "autumn",
+        "location": "farm",
+        "spawnTileX": 20,
+        "spawnTileY": 8
+      },
+      {
+        "season": "winter",
+        "location": "village",
+        "spawnTileX": 16,
+        "spawnTileY": 10
+      }
+    ]
   },
   {
     "id": "jung-misuk",
@@ -87,7 +165,33 @@
     "spawnTileY": 6,
     "lovedGifts": [],
     "likedGifts": ["wood", "iron"],
-    "dislikedGifts": ["crop-sweetPotato"]
+    "dislikedGifts": ["crop-sweetPotato"],
+    "schedule": [
+      {
+        "season": "spring",
+        "location": "village",
+        "spawnTileX": 20,
+        "spawnTileY": 6
+      },
+      {
+        "season": "summer",
+        "location": "village",
+        "spawnTileX": 20,
+        "spawnTileY": 6
+      },
+      {
+        "season": "autumn",
+        "location": "village",
+        "spawnTileX": 20,
+        "spawnTileY": 6
+      },
+      {
+        "season": "winter",
+        "location": "farm",
+        "spawnTileX": 22,
+        "spawnTileY": 12
+      }
+    ]
   },
   {
     "id": "yoon-haneul",

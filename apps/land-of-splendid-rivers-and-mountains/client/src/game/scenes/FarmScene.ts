@@ -878,7 +878,7 @@ export class FarmScene extends Phaser.Scene {
     }
 
     if (equipped === "tool-fishingRod" && this.isNearWater()) {
-      if (!this.inventorySystem.isFull() && this.energySystem.consume("FISH")) {
+      if (this.energySystem.consume("FISH")) {
         this.fishingSystem.startFishing();
       }
     }

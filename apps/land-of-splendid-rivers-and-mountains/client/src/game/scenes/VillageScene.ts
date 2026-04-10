@@ -100,6 +100,7 @@ export class VillageScene extends Phaser.Scene {
       "building",
       "animal",
       "combat",
+      "reputation",
     ]);
     this.systemManager.register(new LodSystem());
     this.systemManager.register(timeWeather);

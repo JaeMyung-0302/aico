@@ -139,6 +139,7 @@ export class FarmScene extends Phaser.Scene {
       "fishing",
       "event",
       "audio",
+      "reputation",
     ]);
     this.systemManager.register(new LodSystem());
     this.systemManager.register(timeWeather);

@@ -36,6 +36,7 @@ interface GameState {
   readonly playerLevel: number;
   readonly playerExp: number;
   readonly dungeonFloor: number;
+  readonly maxDungeonFloor: number;
   readonly fishingState: "idle" | "casting" | "waiting" | "reeling";
   readonly fishingDifficulty: number;
   readonly activeQuests: ReadonlyArray<string>;
@@ -80,7 +81,7 @@ interface GameActions {
     defense?: number,
   ) => void;
   setPlayerLevel: (level: number, exp: number) => void;
-  setDungeonFloor: (floor: number) => void;
+  setDungeonFloor: (floor: number, maxFloor?: number) => void;
   setFishingState: (
     state: "idle" | "casting" | "waiting" | "reeling",
     difficulty?: number,
@@ -120,6 +121,7 @@ const initialState: GameState = {
   playerLevel: 1,
   playerExp: 0,
   dungeonFloor: 0,
+  maxDungeonFloor: 0,
   fishingState: "idle",
   fishingDifficulty: 0,
   activeQuests: [],
@@ -171,7 +173,11 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
 
   setPlayerLevel: (playerLevel, playerExp) => set({ playerLevel, playerExp }),
 
-  setDungeonFloor: (dungeonFloor) => set({ dungeonFloor }),
+  setDungeonFloor: (dungeonFloor, maxDungeonFloor?) =>
+    set((state) => ({
+      dungeonFloor,
+      ...(maxDungeonFloor !== undefined ? { maxDungeonFloor } : {}),
+    })),
 
   setFishingState: (fishingState, fishingDifficulty = 0) =>
     set({ fishingState, fishingDifficulty }),

@@ -199,7 +199,7 @@ export class DungeonScene extends Phaser.Scene {
     eventBus.on("combat:playerDied", onCombatPlayerDied);
     eventBus.on("energy:fainted", onFainted);
 
-    useGameStore.getState().setDungeonFloor(1);
+    useGameStore.getState().setDungeonFloor(1, MAX_FLOORS);
     eventBus.emit("dungeon:entered", { floor: 1 });
     this.spawnFloorMonsters();
     syncCombatHp();

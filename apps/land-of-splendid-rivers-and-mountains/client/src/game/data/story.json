@@ -334,5 +334,53 @@
     ],
     "goldReward": 3000,
     "prerequisite": "main-village-council"
+  },
+  {
+    "id": "main-shipwreck-discovery",
+    "nameKey": "quest.main.shipwreckDiscovery",
+    "descKey": "quest.main.shipwreckDiscovery.desc",
+    "type": "main",
+    "npcId": "captainHaeryong",
+    "requirements": [
+      { "type": "explore", "target": "beach", "quantity": 1 },
+      { "type": "harvest", "target": "wood", "quantity": 15 }
+    ],
+    "rewards": [{ "itemId": "drop-seaCoral", "quantity": 5 }],
+    "goldReward": 800,
+    "prerequisite": "main-sanshinryeong-encounter"
+  },
+  {
+    "id": "main-island-exploration",
+    "nameKey": "quest.main.islandExploration",
+    "descKey": "quest.main.islandExploration.desc",
+    "type": "main",
+    "npcId": "islanderNari",
+    "requirements": [
+      { "type": "explore", "target": "island", "quantity": 1 },
+      { "type": "fish", "target": "seaBream", "quantity": 3 }
+    ],
+    "rewards": [
+      { "itemId": "drop-mermaidScale", "quantity": 2 },
+      { "itemId": "drop-seaCoral", "quantity": 5 }
+    ],
+    "goldReward": 1500,
+    "prerequisite": "main-shipwreck-discovery"
+  },
+  {
+    "id": "main-pirate-king-defeat",
+    "nameKey": "quest.main.pirateKingDefeat",
+    "descKey": "quest.main.pirateKingDefeat.desc",
+    "type": "main",
+    "npcId": "pirateGeomwang",
+    "requirements": [
+      { "type": "combat", "target": "mermaid", "quantity": 1 },
+      { "type": "combat", "target": "dungeon-floor-5", "quantity": 1 }
+    ],
+    "rewards": [
+      { "itemId": "drop-mermaidScale", "quantity": 5 },
+      { "itemId": "iron", "quantity": 30 }
+    ],
+    "goldReward": 5000,
+    "prerequisite": "main-island-exploration"
   }
 ]

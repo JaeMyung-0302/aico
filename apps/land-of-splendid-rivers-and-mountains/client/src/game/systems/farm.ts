@@ -247,6 +247,8 @@ export class FarmSystem implements IGameSystem {
       }
       if (!skipGrowth) {
         crop.advanceDay();
+      } else {
+        crop.resetDaily();
       }
     }
     for (const key of toRemove) {

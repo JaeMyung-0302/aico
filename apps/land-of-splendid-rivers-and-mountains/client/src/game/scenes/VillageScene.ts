@@ -96,7 +96,8 @@ export class VillageScene extends Phaser.Scene {
     this.systemManager.register(buildingSystem);
     this.systemManager.register(animalSystem);
     this.systemManager.register(combatSystem);
-    this.systemManager.register(new ReputationSystem());
+    const reputationSystem = new ReputationSystem();
+    this.systemManager.register(reputationSystem);
     this.systemManager.initAll(this);
 
     npcSystem.setPlayerSprite(this.player.sprite);
@@ -368,6 +369,7 @@ export class VillageScene extends Phaser.Scene {
         for (const [npcId, value] of Object.entries(relations)) {
           store.setNpcRelation(npcId, value);
         }
+        reputationSystem.loadState(data.reputation ?? 0);
         syncInventory();
         syncFermentation();
         syncBuildings();

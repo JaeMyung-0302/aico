@@ -93,6 +93,7 @@ export class IslandScene extends Phaser.Scene {
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
+        npcRelations: useGameStore.getState().npcRelations,
       });
       inventory.destroy();
       this.npcSystem?.destroy();

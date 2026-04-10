@@ -421,10 +421,8 @@ export class FarmScene extends Phaser.Scene {
     };
 
     const onFishCaught = ({ fishId }: { fishId: string }) => {
-      if (!inventory.isFull()) {
-        inventory.addItem(fishId);
-        syncInventory();
-      }
+      inventory.addItem(fishId);
+      syncInventory();
     };
 
     const onEventReward = ({

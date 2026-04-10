@@ -31,6 +31,8 @@ interface GameState {
   readonly animals: ReadonlyArray<AnimalState>;
   readonly playerHp: number;
   readonly playerMaxHp: number;
+  readonly playerAttack: number;
+  readonly playerDefense: number;
   readonly playerLevel: number;
   readonly playerExp: number;
   readonly dungeonFloor: number;
@@ -71,7 +73,12 @@ interface GameActions {
   ) => void;
   setBuildings: (buildings: ReadonlyArray<BuildingState>) => void;
   setAnimals: (animals: ReadonlyArray<AnimalState>) => void;
-  setPlayerHp: (hp: number, maxHp: number) => void;
+  setPlayerHp: (
+    hp: number,
+    maxHp: number,
+    attack?: number,
+    defense?: number,
+  ) => void;
   setPlayerLevel: (level: number, exp: number) => void;
   setDungeonFloor: (floor: number) => void;
   setFishingState: (
@@ -108,6 +115,8 @@ const initialState: GameState = {
   animals: [],
   playerHp: 50,
   playerMaxHp: 50,
+  playerAttack: 5,
+  playerDefense: 2,
   playerLevel: 1,
   playerExp: 0,
   dungeonFloor: 0,
@@ -152,7 +161,13 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
 
   setAnimals: (animals) => set({ animals }),
 
-  setPlayerHp: (playerHp, playerMaxHp) => set({ playerHp, playerMaxHp }),
+  setPlayerHp: (playerHp, playerMaxHp, playerAttack?, playerDefense?) =>
+    set((state) => ({
+      playerHp,
+      playerMaxHp,
+      ...(playerAttack !== undefined ? { playerAttack } : {}),
+      ...(playerDefense !== undefined ? { playerDefense } : {}),
+    })),
 
   setPlayerLevel: (playerLevel, playerExp) => set({ playerLevel, playerExp }),
 

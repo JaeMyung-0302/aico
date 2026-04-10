@@ -365,7 +365,12 @@ export class VillageScene extends Phaser.Scene {
         syncAnimals();
         useGameStore
           .getState()
-          .setPlayerHp(combatSystem.getHp(), combatSystem.getMaxHp());
+          .setPlayerHp(
+            combatSystem.getHp(),
+            combatSystem.getMaxHp(),
+            combatSystem.getAttack(),
+            combatSystem.getDefense(),
+          );
       },
     );
 

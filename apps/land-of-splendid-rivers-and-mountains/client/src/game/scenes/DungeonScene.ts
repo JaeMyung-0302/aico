@@ -223,6 +223,7 @@ export class DungeonScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:useFood", onUseFood);
+    eventBus.on("inventory:equipped", syncInventory);
     eventBus.on("combat:defeated", onCombatDefeated);
     eventBus.on("combat:playerHit", onCombatPlayerHit);
     eventBus.on("combat:playerDied", onCombatPlayerDied);
@@ -238,6 +239,7 @@ export class DungeonScene extends Phaser.Scene {
 
     this.events.once("shutdown", () => {
       eventBus.off("inventory:useFood", onUseFood);
+      eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("combat:defeated", onCombatDefeated);
       eventBus.off("combat:playerHit", onCombatPlayerHit);
       eventBus.off("combat:playerDied", onCombatPlayerDied);

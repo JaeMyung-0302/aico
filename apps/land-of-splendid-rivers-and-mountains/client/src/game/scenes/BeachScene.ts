@@ -112,13 +112,12 @@ export class BeachScene extends Phaser.Scene {
       this.scene.start("RiverScene", { spawnX: 12, spawnY: 28 });
     }
 
-    // Portal to island (right edge, requires shipwreck quest completed)
-    const store = useGameStore.getState();
+    // Portal to island (right edge, requires reputation threshold)
     if (
       tileX >= 28 &&
       tileY >= 14 &&
       tileY <= 16 &&
-      store.completedQuests.includes("main-shipwreck-discovery")
+      useGameStore.getState().unlockedIsland
     ) {
       this.isTransitioning = true;
       this.scene.start("IslandScene", { spawnX: 12, spawnY: 1 });

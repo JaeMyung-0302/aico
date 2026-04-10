@@ -442,5 +442,18 @@
   "weapon.thunderHammer": "Thunder Hammer",
   "weapon.guardianStaff": "Guardian Staff",
 
-  "ui.npc.reputation": "Village Reputation"
+  "ui.npc.reputation": "Village Reputation",
+
+  "item.drop.jellyEssence": "Jelly Essence",
+  "item.drop.sharkTooth": "Shark Tooth",
+  "item.drop.seaCoral": "Sea Coral",
+  "item.drop.inkSac": "Ink Sac",
+  "item.drop.mermaidScale": "Mermaid Scale",
+  "item.drop.darkEssence": "Dark Essence",
+  "item.drop.dragonOrb": "Dragon Orb",
+  "item.fish.seaBream": "Sea Bream",
+  "item.fish.tuna": "Tuna",
+  "item.fish.blowfish": "Blowfish",
+  "item.fish.anglerfish": "Anglerfish",
+  "item.fish.dragonSeahorse": "Dragon Seahorse"
 }

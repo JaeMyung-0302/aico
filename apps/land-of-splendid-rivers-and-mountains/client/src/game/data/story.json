@@ -340,7 +340,7 @@
     "nameKey": "quest.main.shipwreckDiscovery",
     "descKey": "quest.main.shipwreckDiscovery.desc",
     "type": "main",
-    "npcId": "captainHaeryong",
+    "npcId": "captain-haeryong",
     "requirements": [
       { "type": "explore", "target": "beach", "quantity": 1 },
       { "type": "harvest", "target": "wood", "quantity": 15 }
@@ -354,7 +354,7 @@
     "nameKey": "quest.main.islandExploration",
     "descKey": "quest.main.islandExploration.desc",
     "type": "main",
-    "npcId": "islanderNari",
+    "npcId": "islander-nari",
     "requirements": [
       { "type": "explore", "target": "island", "quantity": 1 },
       { "type": "fish", "target": "seaBream", "quantity": 3 }
@@ -371,7 +371,7 @@
     "nameKey": "quest.main.pirateKingDefeat",
     "descKey": "quest.main.pirateKingDefeat.desc",
     "type": "main",
-    "npcId": "pirateGeomwang",
+    "npcId": "pirate-geomwang",
     "requirements": [
       { "type": "combat", "target": "mermaid", "quantity": 1 },
       { "type": "combat", "target": "dungeon-floor-5", "quantity": 1 }
@@ -496,7 +496,7 @@
     "nameKey": "quest.side.oceanMaster",
     "descKey": "quest.side.oceanMaster.desc",
     "type": "side",
-    "npcId": "captainHaeryong",
+    "npcId": "captain-haeryong",
     "requirements": [
       { "type": "fish", "target": "dragonSeahorse", "quantity": 1 },
       { "type": "fish", "target": "tuna", "quantity": 5 }

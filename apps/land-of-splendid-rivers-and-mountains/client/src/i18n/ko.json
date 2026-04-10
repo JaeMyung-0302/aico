@@ -442,5 +442,18 @@
   "weapon.thunderHammer": "뇌신망치",
   "weapon.guardianStaff": "수호지팡이",
 
-  "ui.npc.reputation": "마을 평판"
+  "ui.npc.reputation": "마을 평판",
+
+  "item.drop.jellyEssence": "해파리 정수",
+  "item.drop.sharkTooth": "상어 이빨",
+  "item.drop.seaCoral": "바다 산호",
+  "item.drop.inkSac": "먹물 주머니",
+  "item.drop.mermaidScale": "인어 비늘",
+  "item.drop.darkEssence": "어둠의 정수",
+  "item.drop.dragonOrb": "용의 구슬",
+  "item.fish.seaBream": "도미",
+  "item.fish.tuna": "참치",
+  "item.fish.blowfish": "복어",
+  "item.fish.anglerfish": "아귀",
+  "item.fish.dragonSeahorse": "해룡"
 }

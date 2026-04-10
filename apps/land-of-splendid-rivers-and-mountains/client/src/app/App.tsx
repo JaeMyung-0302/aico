@@ -103,6 +103,18 @@ const App = () => {
     setActiveTab(tab);
   }, []);
 
+  useEffect(() => {
+    const onUiToggle = ({ panel }: { panel: string }) => {
+      if (panel === "inventory") {
+        setActiveTab((prev) => (prev === "inventory" ? null : "inventory"));
+      }
+    };
+    eventBus.on("ui:toggle", onUiToggle);
+    return () => {
+      eventBus.off("ui:toggle", onUiToggle);
+    };
+  }, []);
+
   const backdropStyle: React.CSSProperties = {
     position: "absolute",
     inset: 0,

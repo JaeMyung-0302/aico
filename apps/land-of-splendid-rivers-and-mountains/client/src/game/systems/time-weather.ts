@@ -78,6 +78,16 @@ const BRIGHTNESS_CURVE: ReadonlyArray<TimePoint> = [
   { minute: 1440, alpha: 0.55, r: 10, g: 10, b: 40 }, // 자정 (짙은 남색)
 ];
 
+type QualityLevel = "high" | "medium" | "low";
+
+const QUALITY_PARTICLE_SCALE: Readonly<
+  Record<QualityLevel, { rain: number; snow: number }>
+> = {
+  high: { rain: 1, snow: 1 },
+  medium: { rain: 0.5, snow: 0.5 },
+  low: { rain: 0.25, snow: 0.25 },
+};
+
 export class TimeWeatherSystem implements IGameSystem {
   readonly id = "time-weather";
 
@@ -88,6 +98,7 @@ export class TimeWeatherSystem implements IGameSystem {
   private weather: Weather = "clear";
   private overlay: Phaser.GameObjects.Rectangle | null = null;
   private tickAccumulator = 0;
+  private qualityLevel: QualityLevel = "high";
   private rainEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null =
     null;
   private snowEmitter: Phaser.GameObjects.Particles.ParticleEmitter | null =
@@ -107,6 +118,7 @@ export class TimeWeatherSystem implements IGameSystem {
     this.createWeatherParticles(scene);
     this.updateBrightness();
     this.updateWeatherParticles();
+    eventBus.on("quality:changed", this.onQualityChanged);
   }
 
   update(_scene: Phaser.Scene, _time: number, delta: number): void {
@@ -129,6 +141,7 @@ export class TimeWeatherSystem implements IGameSystem {
   }
 
   destroy(): void {
+    eventBus.off("quality:changed", this.onQualityChanged);
     this.overlay?.destroy();
     this.overlay = null;
     this.rainEmitter?.destroy();
@@ -366,22 +379,35 @@ export class TimeWeatherSystem implements IGameSystem {
     this.snowEmitter.setScrollFactor(0).setDepth(790);
   }
 
+  private readonly onQualityChanged = ({
+    level,
+  }: {
+    level: QualityLevel;
+  }): void => {
+    this.qualityLevel = level;
+    this.updateWeatherParticles();
+  };
+
   private updateWeatherParticles(): void {
     if (!this.rainEmitter || !this.snowEmitter) return;
 
     const isRain = this.weather === "rain";
     const isStorm = this.weather === "storm";
     const isSnow = this.weather === "snow";
+    const scale = QUALITY_PARTICLE_SCALE[this.qualityLevel];
 
     this.rainEmitter.emitting = isRain || isStorm;
     if (isStorm) {
-      this.rainEmitter.quantity = 6;
-      this.rainEmitter.frequency = 10;
+      this.rainEmitter.quantity = Math.max(1, Math.round(6 * scale.rain));
+      this.rainEmitter.frequency = Math.round(10 / scale.rain);
     } else if (isRain) {
-      this.rainEmitter.quantity = 3;
-      this.rainEmitter.frequency = 20;
+      this.rainEmitter.quantity = Math.max(1, Math.round(3 * scale.rain));
+      this.rainEmitter.frequency = Math.round(20 / scale.rain);
     }
 
     this.snowEmitter.emitting = isSnow;
+    if (isSnow) {
+      this.snowEmitter.quantity = Math.max(1, Math.round(1 * scale.snow));
+    }
   }
 }

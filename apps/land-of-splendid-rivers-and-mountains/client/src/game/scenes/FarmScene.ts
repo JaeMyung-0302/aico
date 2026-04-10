@@ -251,14 +251,18 @@ export class FarmScene extends Phaser.Scene {
     const onCook = ({ recipeId }: { recipeId: string }) => {
       const recipe = getRecipe(recipeId);
       if (!recipe || recipe.type !== "cooking") return;
-      if (inventory.isFull()) return;
       for (const ing of recipe.ingredients) {
         if (!inventory.hasItem(ing.itemId, ing.quantity)) return;
       }
       for (const ing of recipe.ingredients) {
         inventory.removeItem(ing.itemId, ing.quantity);
       }
-      inventory.addItem(recipe.resultItemId);
+      if (!inventory.addItem(recipe.resultItemId)) {
+        for (const ing of recipe.ingredients) {
+          inventory.addItem(ing.itemId, ing.quantity);
+        }
+        return;
+      }
       syncInventory();
     };
 

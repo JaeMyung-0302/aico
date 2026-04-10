@@ -58,7 +58,21 @@ export class TempleScene extends Phaser.Scene {
       useGameStore.getState().setEquippedTools(state.equipped);
     };
 
+    const onGiftRequested = ({
+      npcId,
+      itemId,
+    }: {
+      npcId: string;
+      itemId: string;
+    }) => {
+      if (!inventory.hasItem(itemId, 1)) return;
+      inventory.removeItem(itemId, 1);
+      npcSystem.giveGift(npcId, itemId);
+      syncInventory();
+    };
+
     eventBus.on("inventory:equipped", syncInventory);
+    eventBus.on("npc:giftRequested", onGiftRequested);
 
     const npcSystem = new NPCSystem();
     npcSystem.setInitialLocation("temple");
@@ -81,6 +95,7 @@ export class TempleScene extends Phaser.Scene {
       this.npcSystem?.destroy();
       this.npcSystem = null;
       eventBus.off("inventory:equipped", syncInventory);
+      eventBus.off("npc:giftRequested", onGiftRequested);
       this.keyboardInput.destroy();
       this.touchInput.destroy();
       this.player.destroy();

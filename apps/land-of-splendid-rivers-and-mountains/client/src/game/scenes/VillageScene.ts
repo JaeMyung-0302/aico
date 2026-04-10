@@ -217,7 +217,6 @@ export class VillageScene extends Phaser.Scene {
     };
 
     const onCollect = ({ slotIndex }: { slotIndex: number }) => {
-      if (inventory.isFull()) return;
       const resultItemId = fermentSystem.collectSlot(slotIndex);
       if (!resultItemId) return;
       inventory.addItem(resultItemId);

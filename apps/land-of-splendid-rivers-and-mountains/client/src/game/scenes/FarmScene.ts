@@ -528,6 +528,8 @@ export class FarmScene extends Phaser.Scene {
         eventSystem.setState(
           data.completedEvents ?? [],
           data.activeEventId ?? null,
+          data.day,
+          data.season,
         );
         const store = useGameStore.getState();
         store.setGold(data.gold);

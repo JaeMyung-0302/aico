@@ -81,9 +81,14 @@ export class EventSystem implements IGameSystem {
   setState(
     completedEvents: ReadonlyArray<string>,
     activeEventId: string | null,
+    day?: number,
+    season?: Season,
   ): void {
     this.completedEvents = new Set(completedEvents);
     this.activeEventId = activeEventId;
+    if (day !== undefined) this.currentDay = day;
+    if (season !== undefined) this.currentSeason = season;
+    this.checkEvents();
   }
 
   private checkEvents(): void {

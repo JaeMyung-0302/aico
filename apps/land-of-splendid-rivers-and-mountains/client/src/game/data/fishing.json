@@ -78,5 +78,45 @@
     "difficulty": 85,
     "basePrice": 800,
     "rarity": "legendary"
+  },
+  {
+    "id": "seaBream",
+    "nameKey": "fish.seaBream",
+    "seasons": ["spring", "summer", "autumn", "winter"],
+    "difficulty": 45,
+    "basePrice": 150,
+    "rarity": "common"
+  },
+  {
+    "id": "tuna",
+    "nameKey": "fish.tuna",
+    "seasons": ["summer", "autumn"],
+    "difficulty": 70,
+    "basePrice": 400,
+    "rarity": "rare"
+  },
+  {
+    "id": "blowfish",
+    "nameKey": "fish.blowfish",
+    "seasons": ["winter", "spring"],
+    "difficulty": 60,
+    "basePrice": 500,
+    "rarity": "rare"
+  },
+  {
+    "id": "anglerfish",
+    "nameKey": "fish.anglerfish",
+    "seasons": ["winter"],
+    "difficulty": 80,
+    "basePrice": 600,
+    "rarity": "rare"
+  },
+  {
+    "id": "dragonSeahorse",
+    "nameKey": "fish.dragonSeahorse",
+    "seasons": ["spring", "summer", "autumn", "winter"],
+    "difficulty": 95,
+    "basePrice": 1200,
+    "rarity": "legendary"
   }
 ]

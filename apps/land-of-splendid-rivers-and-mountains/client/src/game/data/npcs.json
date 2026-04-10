@@ -399,5 +399,86 @@
         "relationChange": -1
       }
     ]
+  },
+  {
+    "id": "captain-haeryong",
+    "nameKey": "npc.captainHaeryong",
+    "location": "beach",
+    "spawnTileX": 8,
+    "spawnTileY": 20,
+    "lovedGifts": ["drop-sharkTooth"],
+    "likedGifts": ["wood", "iron"],
+    "dislikedGifts": ["crop-cabbage"],
+    "dialogChoices": [
+      {
+        "id": "ask-voyage",
+        "textKey": "npc.captainHaeryong.choice.voyage",
+        "relationChange": 2
+      },
+      {
+        "id": "trade-talk",
+        "textKey": "npc.captainHaeryong.choice.trade",
+        "relationChange": 1
+      },
+      {
+        "id": "doubt-skill",
+        "textKey": "npc.captainHaeryong.choice.doubt",
+        "relationChange": -1
+      }
+    ]
+  },
+  {
+    "id": "islander-nari",
+    "nameKey": "npc.islanderNari",
+    "location": "island",
+    "spawnTileX": 10,
+    "spawnTileY": 12,
+    "lovedGifts": ["drop-seaCoral", "drop-mermaidScale"],
+    "likedGifts": ["food-samgyetang"],
+    "dislikedGifts": ["stone"],
+    "dialogChoices": [
+      {
+        "id": "share-story",
+        "textKey": "npc.islanderNari.choice.story",
+        "relationChange": 2
+      },
+      {
+        "id": "ask-island",
+        "textKey": "npc.islanderNari.choice.island",
+        "relationChange": 1
+      },
+      {
+        "id": "demand-treasure",
+        "textKey": "npc.islanderNari.choice.demand",
+        "relationChange": -1
+      }
+    ]
+  },
+  {
+    "id": "pirate-geomwang",
+    "nameKey": "npc.pirateGeomwang",
+    "location": "island",
+    "spawnTileX": 20,
+    "spawnTileY": 8,
+    "lovedGifts": ["iron"],
+    "likedGifts": ["drop-sharkTooth", "drop-inkSac"],
+    "dislikedGifts": ["crop-rice"],
+    "dialogChoices": [
+      {
+        "id": "challenge-duel",
+        "textKey": "npc.pirateGeomwang.choice.duel",
+        "relationChange": 2
+      },
+      {
+        "id": "negotiate",
+        "textKey": "npc.pirateGeomwang.choice.negotiate",
+        "relationChange": 1
+      },
+      {
+        "id": "flee-coward",
+        "textKey": "npc.pirateGeomwang.choice.flee",
+        "relationChange": -1
+      }
+    ]
   }
 ]

@@ -140,6 +140,16 @@ export class DungeonScene extends Phaser.Scene {
     );
     this.inventory.loadState([...store.inventory], { ...store.equippedTools });
 
+    const syncWeapon = (toolId: string | null) => {
+      if (toolId) {
+        const weaponId = toolId.replace("tool-", "weapon-");
+        this.combatSystem.equipWeapon(weaponId);
+      } else {
+        this.combatSystem.equipWeapon("weapon-fist");
+      }
+    };
+    syncWeapon(store.equippedTools.current);
+
     const syncCombatHp = () => {
       useGameStore
         .getState()
@@ -150,6 +160,7 @@ export class DungeonScene extends Phaser.Scene {
       const state = this.inventory.getState();
       useGameStore.getState().setInventory(state.slots);
       useGameStore.getState().setEquippedTools(state.equipped);
+      syncWeapon(state.equipped.current);
     };
 
     const onCombatDefeated = ({

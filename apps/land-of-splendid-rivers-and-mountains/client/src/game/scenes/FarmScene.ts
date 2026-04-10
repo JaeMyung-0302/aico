@@ -166,10 +166,21 @@ export class FarmScene extends Phaser.Scene {
     this.inventorySystem = inventory;
     this.npcSystem = npcSystem;
 
+    const syncWeapon = (toolId: string | null) => {
+      if (toolId) {
+        const weaponId = toolId.replace("tool-", "weapon-");
+        combatSystem.equipWeapon(weaponId);
+      } else {
+        combatSystem.equipWeapon("weapon-fist");
+      }
+    };
+    syncWeapon(useGameStore.getState().equippedTools.current);
+
     const syncInventory = () => {
       const state = inventory.getState();
       useGameStore.getState().setInventory(state.slots);
       useGameStore.getState().setEquippedTools(state.equipped);
+      syncWeapon(state.equipped.current);
     };
     this.syncInventoryFn = syncInventory;
 

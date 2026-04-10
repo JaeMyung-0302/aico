@@ -1,7 +1,83 @@
 [
-  { "id": "weapon-fist", "nameKey": "weapon.fist", "damage": 3, "range": 24, "cooldownMs": 600, "knockback": 80, "energyCost": 1 },
-  { "id": "weapon-hoe", "nameKey": "item.tool.hoe", "damage": 5, "range": 28, "cooldownMs": 700, "knockback": 100, "energyCost": 2 },
-  { "id": "weapon-axe", "nameKey": "item.tool.axe", "damage": 8, "range": 28, "cooldownMs": 800, "knockback": 120, "energyCost": 2 },
-  { "id": "weapon-pickaxe", "nameKey": "item.tool.pickaxe", "damage": 7, "range": 26, "cooldownMs": 750, "knockback": 110, "energyCost": 2 },
-  { "id": "weapon-sword", "nameKey": "item.tool.sword", "damage": 12, "range": 32, "cooldownMs": 500, "knockback": 140, "energyCost": 2 }
+  {
+    "id": "weapon-fist",
+    "nameKey": "weapon.fist",
+    "damage": 3,
+    "range": 24,
+    "cooldownMs": 600,
+    "knockback": 80,
+    "energyCost": 1
+  },
+  {
+    "id": "weapon-hoe",
+    "nameKey": "item.tool.hoe",
+    "damage": 5,
+    "range": 28,
+    "cooldownMs": 700,
+    "knockback": 100,
+    "energyCost": 2
+  },
+  {
+    "id": "weapon-axe",
+    "nameKey": "item.tool.axe",
+    "damage": 8,
+    "range": 28,
+    "cooldownMs": 800,
+    "knockback": 120,
+    "energyCost": 2
+  },
+  {
+    "id": "weapon-pickaxe",
+    "nameKey": "item.tool.pickaxe",
+    "damage": 7,
+    "range": 26,
+    "cooldownMs": 750,
+    "knockback": 110,
+    "energyCost": 2
+  },
+  {
+    "id": "weapon-sword",
+    "nameKey": "item.tool.sword",
+    "damage": 12,
+    "range": 32,
+    "cooldownMs": 500,
+    "knockback": 140,
+    "energyCost": 2
+  },
+  {
+    "id": "weapon-dragonBlade",
+    "nameKey": "weapon.dragonBlade",
+    "damage": 25,
+    "range": 36,
+    "cooldownMs": 400,
+    "knockback": 180,
+    "energyCost": 3
+  },
+  {
+    "id": "weapon-spiritBow",
+    "nameKey": "weapon.spiritBow",
+    "damage": 18,
+    "range": 64,
+    "cooldownMs": 600,
+    "knockback": 60,
+    "energyCost": 3
+  },
+  {
+    "id": "weapon-thunderHammer",
+    "nameKey": "weapon.thunderHammer",
+    "damage": 30,
+    "range": 30,
+    "cooldownMs": 900,
+    "knockback": 250,
+    "energyCost": 4
+  },
+  {
+    "id": "weapon-guardianStaff",
+    "nameKey": "weapon.guardianStaff",
+    "damage": 15,
+    "range": 48,
+    "cooldownMs": 500,
+    "knockback": 100,
+    "energyCost": 2
+  }
 ]

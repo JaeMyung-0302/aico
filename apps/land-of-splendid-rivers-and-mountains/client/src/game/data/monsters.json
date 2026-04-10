@@ -184,5 +184,57 @@
       { "itemId": "drop-spiritOrb", "chance": 0.3 }
     ],
     "expReward": 100
+  },
+  {
+    "id": "darkDokkaebi",
+    "nameKey": "monster.darkDokkaebi",
+    "hp": 80,
+    "attack": 18,
+    "defense": 5,
+    "speed": 70,
+    "drops": [
+      { "itemId": "drop-darkEssence", "chance": 0.4 },
+      { "itemId": "iron", "chance": 0.5 }
+    ],
+    "expReward": 45
+  },
+  {
+    "id": "shadowGumiho",
+    "nameKey": "monster.shadowGumiho",
+    "hp": 120,
+    "attack": 25,
+    "defense": 6,
+    "speed": 95,
+    "drops": [
+      { "itemId": "drop-darkEssence", "chance": 0.3 },
+      { "itemId": "drop-foxTail", "chance": 0.4 }
+    ],
+    "expReward": 70
+  },
+  {
+    "id": "stormImugi",
+    "nameKey": "monster.stormImugi",
+    "hp": 200,
+    "attack": 35,
+    "defense": 10,
+    "speed": 80,
+    "drops": [
+      { "itemId": "drop-dragonScale", "chance": 0.3 },
+      { "itemId": "drop-darkEssence", "chance": 0.5 }
+    ],
+    "expReward": 120
+  },
+  {
+    "id": "millenniumImugi",
+    "nameKey": "monster.millenniumImugi",
+    "hp": 500,
+    "attack": 50,
+    "defense": 15,
+    "speed": 60,
+    "drops": [
+      { "itemId": "drop-dragonOrb", "chance": 1.0 },
+      { "itemId": "drop-dragonScale", "chance": 1.0 }
+    ],
+    "expReward": 500
   }
 ]

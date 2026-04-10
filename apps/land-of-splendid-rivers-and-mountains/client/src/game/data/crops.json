@@ -88,5 +88,41 @@
     "sellPrice": 300,
     "seedPrice": 100,
     "energyRestore": 20
+  },
+  {
+    "id": "strawberry",
+    "nameKey": "crop.strawberry",
+    "seasons": ["spring"],
+    "growthDays": 6,
+    "sellPrice": 110,
+    "seedPrice": 45,
+    "energyRestore": 7
+  },
+  {
+    "id": "watermelon",
+    "nameKey": "crop.watermelon",
+    "seasons": ["summer"],
+    "growthDays": 10,
+    "sellPrice": 200,
+    "seedPrice": 60,
+    "energyRestore": 15
+  },
+  {
+    "id": "persimmon",
+    "nameKey": "crop.persimmon",
+    "seasons": ["autumn"],
+    "growthDays": 8,
+    "sellPrice": 130,
+    "seedPrice": 40,
+    "energyRestore": 10
+  },
+  {
+    "id": "yuzu",
+    "nameKey": "crop.yuzu",
+    "seasons": ["winter"],
+    "growthDays": 12,
+    "sellPrice": 180,
+    "seedPrice": 55,
+    "energyRestore": 12
   }
 ]

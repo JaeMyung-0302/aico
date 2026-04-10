@@ -1,70 +1,81 @@
-import type Phaser from 'phaser'
-import type { CropDefinition, Season, Weather, FarmPlotState } from '@land-of-splendid-rivers-and-mountains/shared'
-import { GAME_CONSTANTS } from '@land-of-splendid-rivers-and-mountains/shared'
-import { eventBus } from '@/lib/event-bus'
-import { Crop } from '../entities/Crop'
-import type { InventorySystem } from './inventory'
-import type { EnergySystem } from './energy'
-import type { IGameSystem } from './system-manager'
-import cropsData from '../data/crops.json'
+import type Phaser from "phaser";
+import type {
+  CropDefinition,
+  Season,
+  Weather,
+  FarmPlotState,
+} from "@land-of-splendid-rivers-and-mountains/shared";
+import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
+import { eventBus } from "@/lib/event-bus";
+import { Crop } from "../entities/Crop";
+import type { InventorySystem } from "./inventory";
+import type { EnergySystem } from "./energy";
+import type { IGameSystem } from "./system-manager";
+import cropsData from "../data/crops.json";
 
 const cropMap = new Map<string, CropDefinition>(
   (cropsData as ReadonlyArray<CropDefinition>).map((crop) => [crop.id, crop]),
-)
+);
 
-const tileKey = (x: number, y: number): string => `${x},${y}`
+const tileKey = (x: number, y: number): string => `${x},${y}`;
 
-export const FARM_ZONES: ReadonlyArray<{ x1: number; y1: number; x2: number; y2: number }> = [
+export const FARM_ZONES: ReadonlyArray<{
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}> = [
   { x1: 3, y1: 9, x2: 11, y2: 11 },
   { x1: 18, y1: 9, x2: 26, y2: 11 },
   { x1: 3, y1: 19, x2: 11, y2: 24 },
   { x1: 18, y1: 19, x2: 26, y2: 24 },
-]
+];
 
-const farmTileSet = new Set<string>()
+const farmTileSet = new Set<string>();
 for (const z of FARM_ZONES) {
   for (let y = z.y1; y <= z.y2; y++) {
     for (let x = z.x1; x <= z.x2; x++) {
-      farmTileSet.add(`${x},${y}`)
+      farmTileSet.add(`${x},${y}`);
     }
   }
 }
 
 export const isFarmTile = (tx: number, ty: number): boolean =>
-  farmTileSet.has(`${tx},${ty}`)
+  farmTileSet.has(`${tx},${ty}`);
 
 export class FarmSystem implements IGameSystem {
-  readonly id = 'farm'
+  readonly id = "farm";
 
-  private scene: Phaser.Scene | null = null
-  private readonly crops = new Map<string, Crop>()
-  private inventory: InventorySystem | null = null
-  private energySystem: EnergySystem | null = null
-  private currentSeason: Season = 'spring'
-  private currentWeather: Weather = 'clear'
+  private scene: Phaser.Scene | null = null;
+  private readonly crops = new Map<string, Crop>();
+  private inventory: InventorySystem | null = null;
+  private energySystem: EnergySystem | null = null;
+  private currentSeason: Season = "spring";
+  private currentWeather: Weather = "clear";
 
   setInventory(inv: InventorySystem): void {
-    this.inventory = inv
+    this.inventory = inv;
   }
 
   setEnergySystem(energy: EnergySystem): void {
-    this.energySystem = energy
+    this.energySystem = energy;
   }
 
   setSeason(season: Season): void {
-    this.currentSeason = season
+    this.currentSeason = season;
   }
 
   setWeather(weather: Weather): void {
-    this.currentWeather = weather
+    this.currentWeather = weather;
   }
 
   init(scene: Phaser.Scene): void {
-    this.scene = scene
+    this.scene = scene;
 
-    eventBus.on('time:dayEnd', this.onDayEnd)
-    eventBus.on('time:seasonChange', this.onSeasonChange)
-    eventBus.on('weather:changed', this.onWeatherChanged)
+    eventBus.on("time:dayEnd", this.onDayEnd);
+    eventBus.on("time:seasonChange", this.onSeasonChange);
+    eventBus.on("weather:changed", this.onWeatherChanged);
+    eventBus.on("event:jangmaEnd", this.onJangmaEnd);
   }
 
   update(_scene: Phaser.Scene, _time: number, _delta: number): void {
@@ -72,109 +83,111 @@ export class FarmSystem implements IGameSystem {
   }
 
   destroy(): void {
-    eventBus.off('time:dayEnd', this.onDayEnd)
-    eventBus.off('time:seasonChange', this.onSeasonChange)
-    eventBus.off('weather:changed', this.onWeatherChanged)
+    eventBus.off("time:dayEnd", this.onDayEnd);
+    eventBus.off("time:seasonChange", this.onSeasonChange);
+    eventBus.off("event:jangmaEnd", this.onJangmaEnd);
+    eventBus.off("weather:changed", this.onWeatherChanged);
 
     for (const [, crop] of this.crops) {
-      crop.destroy()
+      crop.destroy();
     }
-    this.crops.clear()
-    this.scene = null
+    this.crops.clear();
+    this.scene = null;
   }
 
   plant(tileX: number, tileY: number, seedItemId: string): boolean {
-    if (!this.scene || !this.inventory) return false
-    if (!isFarmTile(tileX, tileY)) return false
+    if (!this.scene || !this.inventory) return false;
+    if (!isFarmTile(tileX, tileY)) return false;
 
-    const key = tileKey(tileX, tileY)
-    if (this.crops.has(key)) return false
+    const key = tileKey(tileX, tileY);
+    if (this.crops.has(key)) return false;
 
-    const cropId = seedItemId.replace('seed-', '')
-    const definition = cropMap.get(cropId)
-    if (!definition) return false
+    const cropId = seedItemId.replace("seed-", "");
+    const definition = cropMap.get(cropId);
+    if (!definition) return false;
 
-    if (!definition.seasons.includes(this.currentSeason)) return false
-    if (!this.inventory.hasItem(seedItemId)) return false
-    if (this.energySystem && !this.energySystem.consume('TILL')) return false
+    if (!definition.seasons.includes(this.currentSeason)) return false;
+    if (!this.inventory.hasItem(seedItemId)) return false;
+    if (this.energySystem && !this.energySystem.consume("TILL")) return false;
 
-    this.inventory.removeItem(seedItemId)
+    this.inventory.removeItem(seedItemId);
 
-    const crop = new Crop(this.scene, tileX, tileY, definition)
-    this.crops.set(key, crop)
+    const crop = new Crop(this.scene, tileX, tileY, definition);
+    this.crops.set(key, crop);
 
-    eventBus.emit('farm:planted', { x: tileX, y: tileY, cropId })
+    eventBus.emit("farm:planted", { x: tileX, y: tileY, cropId });
 
-    return true
+    return true;
   }
 
   waterTile(tileX: number, tileY: number): boolean {
-    const key = tileKey(tileX, tileY)
-    const crop = this.crops.get(key)
-    if (!crop || crop.isDestroyed()) return false
-    if (this.energySystem && !this.energySystem.consume('WATER')) return false
+    const key = tileKey(tileX, tileY);
+    const crop = this.crops.get(key);
+    if (!crop || crop.isDestroyed()) return false;
+    if (this.energySystem && !this.energySystem.consume("WATER")) return false;
 
-    crop.water()
-    eventBus.emit('farm:watered', { x: tileX, y: tileY })
+    crop.water();
+    eventBus.emit("farm:watered", { x: tileX, y: tileY });
 
-    return true
+    return true;
   }
 
   fertilizeTile(tileX: number, tileY: number): boolean {
-    if (!this.inventory) return false
+    if (!this.inventory) return false;
 
-    const key = tileKey(tileX, tileY)
-    const crop = this.crops.get(key)
-    if (!crop || crop.isDestroyed()) return false
+    const key = tileKey(tileX, tileY);
+    const crop = this.crops.get(key);
+    if (!crop || crop.isDestroyed()) return false;
 
-    if (!this.inventory.hasItem('fertilizer')) return false
-    this.inventory.removeItem('fertilizer')
+    if (!this.inventory.hasItem("fertilizer")) return false;
+    this.inventory.removeItem("fertilizer");
 
-    crop.fertilize()
-    return true
+    crop.fertilize();
+    return true;
   }
 
   harvest(tileX: number, tileY: number): boolean {
-    if (!this.inventory) return false
+    if (!this.inventory) return false;
 
-    const key = tileKey(tileX, tileY)
-    const crop = this.crops.get(key)
-    if (!crop || crop.isDestroyed()) return false
-    if (!crop.isFullyGrown()) return false
-    if (this.energySystem && !this.energySystem.consume('HARVEST')) return false
+    const key = tileKey(tileX, tileY);
+    const crop = this.crops.get(key);
+    if (!crop || crop.isDestroyed()) return false;
+    if (!crop.isFullyGrown()) return false;
+    if (this.energySystem && !this.energySystem.consume("HARVEST"))
+      return false;
 
-    const definition = crop.getDefinition()
-    const harvestItemId = `crop-${definition.id}`
-    const quantity = 1
+    const definition = crop.getDefinition();
+    const harvestItemId = `crop-${definition.id}`;
+    const quantity = 1;
 
-    if (this.inventory.isFull()) return false
+    if (this.inventory.isFull()) return false;
 
-    this.inventory.addItem(harvestItemId, quantity)
-    crop.destroy()
-    this.crops.delete(key)
+    this.inventory.addItem(harvestItemId, quantity);
+    crop.destroy();
+    this.crops.delete(key);
 
-    eventBus.emit('farm:harvested', {
+    eventBus.emit("farm:harvested", {
       x: tileX,
       y: tileY,
       cropId: definition.id,
       quantity,
-    })
+    });
 
-    return true
+    return true;
   }
 
   getCropAt(tileX: number, tileY: number): Crop | undefined {
-    return this.crops.get(tileKey(tileX, tileY))
+    return this.crops.get(tileKey(tileX, tileY));
   }
 
   getCropCount(): number {
-    return this.crops.size
+    return this.crops.size;
   }
 
   getState(): ReadonlyArray<FarmPlotState> {
-    const plots: FarmPlotState[] = []
+    const plots: FarmPlotState[] = [];
     for (const [key, crop] of this.crops) {
-      const [xStr, yStr] = key.split(',')
+      const [xStr, yStr] = key.split(",");
       plots.push({
         x: Number(xStr),
         y: Number(yStr),
@@ -182,67 +195,120 @@ export class FarmSystem implements IGameSystem {
         growthDay: crop.getGrowthDay(),
         watered: crop.isWatered(),
         fertilized: crop.isFertilized(),
-      })
+      });
     }
-    return plots
+    return plots;
   }
 
   loadState(plots: ReadonlyArray<FarmPlotState>): void {
-    if (!this.scene) return
+    if (!this.scene) return;
 
     for (const [, crop] of this.crops) {
-      crop.destroy()
+      crop.destroy();
     }
-    this.crops.clear()
+    this.crops.clear();
 
     for (const plot of plots) {
-      if (!plot.cropId) continue
-      const definition = cropMap.get(plot.cropId)
-      if (!definition) continue
+      if (!plot.cropId) continue;
+      const definition = cropMap.get(plot.cropId);
+      if (!definition) continue;
 
-      const crop = new Crop(this.scene, plot.x, plot.y, definition)
-      crop.setGrowthDay(plot.growthDay)
+      const crop = new Crop(this.scene, plot.x, plot.y, definition);
+      crop.setGrowthDay(plot.growthDay);
       if (plot.watered) {
-        crop.water()
+        crop.water();
       }
       if (plot.fertilized) {
-        crop.fertilize()
+        crop.fertilize();
       }
-      this.crops.set(tileKey(plot.x, plot.y), crop)
+      this.crops.set(tileKey(plot.x, plot.y), crop);
     }
   }
 
   static getCropDefinition(cropId: string): CropDefinition | undefined {
-    return cropMap.get(cropId)
+    return cropMap.get(cropId);
   }
 
   private readonly onDayEnd = (): void => {
-    const skipGrowth = this.currentWeather === 'storm' || this.currentWeather === 'snow'
-    const autoWater = this.currentWeather === 'rain' || this.currentWeather === 'storm'
+    const skipGrowth =
+      this.currentWeather === "storm" || this.currentWeather === "snow";
+    const autoWater =
+      this.currentWeather === "rain" || this.currentWeather === "storm";
 
-    const toRemove: string[] = []
+    const toRemove: string[] = [];
     for (const [key, crop] of this.crops) {
       if (crop.isDestroyed()) {
-        toRemove.push(key)
-        continue
+        toRemove.push(key);
+        continue;
       }
       if (autoWater) {
-        crop.water()
+        crop.water();
       }
       if (!skipGrowth) {
-        crop.advanceDay()
+        crop.advanceDay();
       }
     }
     for (const key of toRemove) {
-      this.crops.delete(key)
+      this.crops.delete(key);
+    }
+  };
+
+  private readonly onSeasonChange = ({ season }: { season: Season }): void => {
+    this.currentSeason = season;
+    this.witherOutOfSeasonCrops(season);
+  };
+
+  private witherOutOfSeasonCrops(season: Season): void {
+    const toWither: string[] = [];
+    for (const [key, crop] of this.crops) {
+      if (crop.isDestroyed()) continue;
+      const def = crop.getDefinition();
+      if (!def.seasons.includes(season)) {
+        toWither.push(key);
+      }
+    }
+
+    for (const key of toWither) {
+      const crop = this.crops.get(key);
+      if (crop) {
+        crop.destroy();
+        this.crops.delete(key);
+      }
+    }
+
+    if (toWither.length > 0) {
+      eventBus.emit("farm:withered", { count: toWither.length });
     }
   }
 
-  private readonly onSeasonChange = ({ season }: { season: Season }): void => {
-    this.currentSeason = season
-  }
+  private readonly onJangmaEnd = (): void => {
+    const keys = Array.from(this.crops.keys());
+    const damageCount = Math.floor(keys.length * 0.3);
+    if (damageCount === 0) return;
 
-  private readonly onWeatherChanged = ({ weather }: { weather: Weather }): void => {
-    this.currentWeather = weather
-  }
+    // Fisher-Yates shuffle for random selection
+    for (let i = keys.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [keys[i], keys[j]] = [keys[j]!, keys[i]!];
+    }
+
+    const toDamage = keys.slice(0, damageCount);
+    for (const key of toDamage) {
+      const crop = this.crops.get(key);
+      if (crop) {
+        crop.destroy();
+        this.crops.delete(key);
+      }
+    }
+
+    eventBus.emit("farm:withered", { count: damageCount });
+  };
+
+  private readonly onWeatherChanged = ({
+    weather,
+  }: {
+    weather: Weather;
+  }): void => {
+    this.currentWeather = weather;
+  };
 }

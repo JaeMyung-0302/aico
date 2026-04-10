@@ -176,5 +176,163 @@
     ],
     "goldReward": 1500,
     "prerequisite": "main-autumn-bounty"
+  },
+  {
+    "id": "personal-kim-sundeok",
+    "nameKey": "quest.personal.kimSundeok",
+    "descKey": "quest.personal.kimSundeok.desc",
+    "type": "personal",
+    "npcId": "kimSundeok",
+    "requirements": [{ "type": "harvest", "target": "rice", "quantity": 10 }],
+    "rewards": [{ "itemId": "seed-ginseng", "quantity": 2 }],
+    "goldReward": 500,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-park-jeongsu",
+    "nameKey": "quest.personal.parkJeongsu",
+    "descKey": "quest.personal.parkJeongsu.desc",
+    "type": "personal",
+    "npcId": "parkJeongsu",
+    "requirements": [{ "type": "explore", "target": "village", "quantity": 3 }],
+    "rewards": [{ "itemId": "food-samgyetang", "quantity": 2 }],
+    "goldReward": 400,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-choi-cheolsu",
+    "nameKey": "quest.personal.choiCheolsu",
+    "descKey": "quest.personal.choiCheolsu.desc",
+    "type": "personal",
+    "npcId": "choiCheolsu",
+    "requirements": [
+      { "type": "combat", "target": "dokkaebi", "quantity": 10 }
+    ],
+    "rewards": [{ "itemId": "iron", "quantity": 15 }],
+    "goldReward": 600,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-han-seoyoung",
+    "nameKey": "quest.personal.hanSeoyoung",
+    "descKey": "quest.personal.hanSeoyoung.desc",
+    "type": "personal",
+    "npcId": "hanSeoyoung",
+    "requirements": [
+      { "type": "gift", "target": "han-seoyoung", "quantity": 5 }
+    ],
+    "rewards": [{ "itemId": "crop-ginseng", "quantity": 3 }],
+    "goldReward": 300,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-kang-taepung",
+    "nameKey": "quest.personal.kangTaepung",
+    "descKey": "quest.personal.kangTaepung.desc",
+    "type": "personal",
+    "npcId": "kangTaepung",
+    "requirements": [
+      { "type": "combat", "target": "dungeon-floor-3", "quantity": 2 }
+    ],
+    "rewards": [{ "itemId": "food-kimchiJjigae", "quantity": 5 }],
+    "goldReward": 800,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-lee-dohyun",
+    "nameKey": "quest.personal.leeDohyun",
+    "descKey": "quest.personal.leeDohyun.desc",
+    "type": "personal",
+    "npcId": "leeDohyun",
+    "requirements": [{ "type": "harvest", "target": "wood", "quantity": 20 }],
+    "rewards": [{ "itemId": "wood", "quantity": 10 }],
+    "goldReward": 400,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-song-narae",
+    "nameKey": "quest.personal.songNarae",
+    "descKey": "quest.personal.songNarae.desc",
+    "type": "personal",
+    "npcId": "songNarae",
+    "requirements": [{ "type": "harvest", "target": "sesame", "quantity": 5 }],
+    "rewards": [{ "itemId": "seed-perilla", "quantity": 5 }],
+    "goldReward": 350,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-jung-misuk",
+    "nameKey": "quest.personal.jungMisuk",
+    "descKey": "quest.personal.jungMisuk.desc",
+    "type": "personal",
+    "npcId": "jungMisuk",
+    "requirements": [{ "type": "cook", "target": "kimchi", "quantity": 5 }],
+    "rewards": [{ "itemId": "food-pajeon", "quantity": 5 }],
+    "goldReward": 500,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-oh-kyungho",
+    "nameKey": "quest.personal.ohKyungho",
+    "descKey": "quest.personal.ohKyungho.desc",
+    "type": "personal",
+    "npcId": "ohKyungho",
+    "requirements": [
+      { "type": "fish", "target": "crucianCarp", "quantity": 10 }
+    ],
+    "rewards": [{ "itemId": "food-samgyetang", "quantity": 3 }],
+    "goldReward": 600,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "personal-yoon-haneul",
+    "nameKey": "quest.personal.yoonHaneul",
+    "descKey": "quest.personal.yoonHaneul.desc",
+    "type": "personal",
+    "npcId": "yoonHaneul",
+    "requirements": [
+      { "type": "harvest", "target": "sweetPotato", "quantity": 8 }
+    ],
+    "rewards": [{ "itemId": "seed-strawberry", "quantity": 5 }],
+    "goldReward": 400,
+    "prerequisite": null,
+    "unlockRelation": 5
+  },
+  {
+    "id": "main-village-council",
+    "nameKey": "quest.main.villageCouncil",
+    "descKey": "quest.main.villageCouncil.desc",
+    "type": "main",
+    "npcId": "parkJeongsu",
+    "requirements": [
+      { "type": "gift", "target": "parkJeongsu", "quantity": 1 },
+      { "type": "explore", "target": "village", "quantity": 1 }
+    ],
+    "rewards": [{ "itemId": "food-kimchiJjigae", "quantity": 3 }],
+    "goldReward": 1000,
+    "prerequisite": "main-winter-trial"
+  },
+  {
+    "id": "main-sanshinryeong-encounter",
+    "nameKey": "quest.main.sanshinryeongEncounter",
+    "descKey": "quest.main.sanshinryeongEncounter.desc",
+    "type": "main",
+    "npcId": "sanshinryeong",
+    "requirements": [{ "type": "explore", "target": "temple", "quantity": 1 }],
+    "rewards": [
+      { "itemId": "crop-ginseng", "quantity": 5 },
+      { "itemId": "iron", "quantity": 20 }
+    ],
+    "goldReward": 3000,
+    "prerequisite": "main-village-council"
   }
 ]

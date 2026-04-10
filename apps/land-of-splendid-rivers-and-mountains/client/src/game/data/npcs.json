@@ -8,6 +8,23 @@
     "lovedGifts": ["crop-rice", "crop-cabbage"],
     "likedGifts": ["crop-radish", "crop-greenOnion"],
     "dislikedGifts": ["stone"],
+    "dialogChoices": [
+      {
+        "id": "kind-words",
+        "textKey": "npc.kimSundeok.choice.kind",
+        "relationChange": 2
+      },
+      {
+        "id": "neutral-talk",
+        "textKey": "npc.kimSundeok.choice.neutral",
+        "relationChange": 1
+      },
+      {
+        "id": "cold-reply",
+        "textKey": "npc.kimSundeok.choice.cold",
+        "relationChange": -1
+      }
+    ],
     "schedule": [
       {
         "season": "spring",
@@ -43,7 +60,24 @@
     "spawnTileY": 12,
     "lovedGifts": ["crop-ginseng"],
     "likedGifts": ["crop-perilla", "crop-sesame"],
-    "dislikedGifts": ["iron"]
+    "dislikedGifts": ["iron"],
+    "dialogChoices": [
+      {
+        "id": "respect",
+        "textKey": "npc.parkJeongsu.choice.respect",
+        "relationChange": 2
+      },
+      {
+        "id": "casual",
+        "textKey": "npc.parkJeongsu.choice.casual",
+        "relationChange": 1
+      },
+      {
+        "id": "dismiss",
+        "textKey": "npc.parkJeongsu.choice.dismiss",
+        "relationChange": -1
+      }
+    ]
   },
   {
     "id": "choi-cheolsu",
@@ -53,7 +87,24 @@
     "spawnTileY": 8,
     "lovedGifts": ["iron"],
     "likedGifts": ["stone", "wood"],
-    "dislikedGifts": ["crop-cabbage"]
+    "dislikedGifts": ["crop-cabbage"],
+    "dialogChoices": [
+      {
+        "id": "admire-craft",
+        "textKey": "npc.choiCheolsu.choice.admire",
+        "relationChange": 2
+      },
+      {
+        "id": "ask-work",
+        "textKey": "npc.choiCheolsu.choice.ask",
+        "relationChange": 1
+      },
+      {
+        "id": "ignore",
+        "textKey": "npc.choiCheolsu.choice.ignore",
+        "relationChange": -1
+      }
+    ]
   },
   {
     "id": "han-seoyoung",
@@ -64,6 +115,23 @@
     "lovedGifts": ["crop-ginseng", "crop-perilla"],
     "likedGifts": ["crop-garlic", "crop-pepper"],
     "dislikedGifts": ["stone"],
+    "dialogChoices": [
+      {
+        "id": "compliment",
+        "textKey": "npc.hanSeoyoung.choice.compliment",
+        "relationChange": 2
+      },
+      {
+        "id": "chat",
+        "textKey": "npc.hanSeoyoung.choice.chat",
+        "relationChange": 1
+      },
+      {
+        "id": "rush",
+        "textKey": "npc.hanSeoyoung.choice.rush",
+        "relationChange": -1
+      }
+    ],
     "schedule": [
       {
         "season": "spring",
@@ -99,7 +167,24 @@
     "spawnTileY": 15,
     "lovedGifts": [],
     "likedGifts": ["wood"],
-    "dislikedGifts": ["crop-rice"]
+    "dislikedGifts": ["crop-rice"],
+    "dialogChoices": [
+      {
+        "id": "challenge",
+        "textKey": "npc.kangTaepung.choice.challenge",
+        "relationChange": 2
+      },
+      {
+        "id": "train",
+        "textKey": "npc.kangTaepung.choice.train",
+        "relationChange": 1
+      },
+      {
+        "id": "flee",
+        "textKey": "npc.kangTaepung.choice.flee",
+        "relationChange": -1
+      }
+    ]
   },
   {
     "id": "lee-dohyun",
@@ -109,7 +194,24 @@
     "spawnTileY": 10,
     "lovedGifts": ["wood"],
     "likedGifts": ["stone", "iron"],
-    "dislikedGifts": ["crop-pepper"]
+    "dislikedGifts": ["crop-pepper"],
+    "dialogChoices": [
+      {
+        "id": "help-build",
+        "textKey": "npc.leeDohyun.choice.help",
+        "relationChange": 2
+      },
+      {
+        "id": "ask-tools",
+        "textKey": "npc.leeDohyun.choice.ask",
+        "relationChange": 1
+      },
+      {
+        "id": "bother",
+        "textKey": "npc.leeDohyun.choice.bother",
+        "relationChange": -1
+      }
+    ]
   },
   {
     "id": "song-narae",
@@ -120,6 +222,23 @@
     "lovedGifts": ["crop-sesame"],
     "likedGifts": ["crop-sweetPotato", "crop-perilla"],
     "dislikedGifts": ["iron"],
+    "dialogChoices": [
+      {
+        "id": "praise-farm",
+        "textKey": "npc.songNarae.choice.praise",
+        "relationChange": 2
+      },
+      {
+        "id": "share-tip",
+        "textKey": "npc.songNarae.choice.share",
+        "relationChange": 1
+      },
+      {
+        "id": "criticize",
+        "textKey": "npc.songNarae.choice.criticize",
+        "relationChange": -1
+      }
+    ],
     "schedule": [
       {
         "season": "spring",
@@ -155,7 +274,24 @@
     "spawnTileY": 14,
     "lovedGifts": ["crop-pepper", "crop-garlic"],
     "likedGifts": ["crop-cabbage", "crop-radish"],
-    "dislikedGifts": ["stone"]
+    "dislikedGifts": ["stone"],
+    "dialogChoices": [
+      {
+        "id": "taste-food",
+        "textKey": "npc.jungMisuk.choice.taste",
+        "relationChange": 2
+      },
+      {
+        "id": "ask-recipe",
+        "textKey": "npc.jungMisuk.choice.recipe",
+        "relationChange": 1
+      },
+      {
+        "id": "refuse-food",
+        "textKey": "npc.jungMisuk.choice.refuse",
+        "relationChange": -1
+      }
+    ]
   },
   {
     "id": "oh-kyungho",
@@ -166,6 +302,23 @@
     "lovedGifts": [],
     "likedGifts": ["wood", "iron"],
     "dislikedGifts": ["crop-sweetPotato"],
+    "dialogChoices": [
+      {
+        "id": "fish-story",
+        "textKey": "npc.ohKyungho.choice.fish",
+        "relationChange": 2
+      },
+      {
+        "id": "ask-catch",
+        "textKey": "npc.ohKyungho.choice.catch",
+        "relationChange": 1
+      },
+      {
+        "id": "mock-fish",
+        "textKey": "npc.ohKyungho.choice.mock",
+        "relationChange": -1
+      }
+    ],
     "schedule": [
       {
         "season": "spring",
@@ -201,6 +354,50 @@
     "spawnTileY": 12,
     "lovedGifts": ["crop-sweetPotato", "crop-radish"],
     "likedGifts": ["crop-rice", "crop-greenOnion"],
-    "dislikedGifts": ["iron"]
+    "dislikedGifts": ["iron"],
+    "dialogChoices": [
+      {
+        "id": "encourage",
+        "textKey": "npc.yoonHaneul.choice.encourage",
+        "relationChange": 2
+      },
+      {
+        "id": "ask-dream",
+        "textKey": "npc.yoonHaneul.choice.dream",
+        "relationChange": 1
+      },
+      {
+        "id": "dismiss-dream",
+        "textKey": "npc.yoonHaneul.choice.dismiss",
+        "relationChange": -1
+      }
+    ]
+  },
+  {
+    "id": "sanshinryeong",
+    "nameKey": "npc.sanshinryeong",
+    "location": "temple",
+    "spawnTileX": 12,
+    "spawnTileY": 10,
+    "lovedGifts": ["crop-ginseng"],
+    "likedGifts": ["food-samgyetang"],
+    "dislikedGifts": [],
+    "dialogChoices": [
+      {
+        "id": "reverence",
+        "textKey": "npc.sanshinryeong.choice.reverence",
+        "relationChange": 2
+      },
+      {
+        "id": "curiosity",
+        "textKey": "npc.sanshinryeong.choice.curiosity",
+        "relationChange": 1
+      },
+      {
+        "id": "demand",
+        "textKey": "npc.sanshinryeong.choice.demand",
+        "relationChange": -1
+      }
+    ]
   }
 ]

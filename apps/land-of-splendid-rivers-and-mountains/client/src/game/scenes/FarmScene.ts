@@ -152,7 +152,8 @@ export class FarmScene extends Phaser.Scene {
     this.systemManager.register(fishingSystem);
     this.systemManager.register(eventSystem);
     this.systemManager.register(new AudioSystem());
-    this.systemManager.register(new ReputationSystem());
+    const reputationSystem = new ReputationSystem();
+    this.systemManager.register(reputationSystem);
     this.systemManager.initAll(this);
 
     combatSystem.setPlayerSprite(this.player.sprite);
@@ -538,7 +539,7 @@ export class FarmScene extends Phaser.Scene {
         for (const [npcId, value] of Object.entries(relations)) {
           store.setNpcRelation(npcId, value);
         }
-        store.setReputation(data.reputation ?? 0);
+        reputationSystem.loadState(data.reputation ?? 0);
         store.setUnlockedIsland(data.unlockedIsland ?? false);
         syncInventory();
         syncFermentation();

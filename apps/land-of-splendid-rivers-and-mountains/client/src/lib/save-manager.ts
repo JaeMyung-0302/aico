@@ -13,7 +13,7 @@ import { api, getUserId } from "./api";
 
 const SAVE_KEY = "land-of-splendid-rivers-and-mountains:save";
 const SYNC_DEBOUNCE_MS = 2000;
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 export interface SaveData {
   readonly version: number;
@@ -41,6 +41,7 @@ export interface SaveData {
   readonly activeEventId: string | null;
   readonly completedSeasonalQuests?: ReadonlyArray<string>;
   readonly reputation?: number;
+  readonly unlockedIsland?: boolean;
 }
 
 const REQUIRED_SAVE_FIELDS = [
@@ -245,6 +246,13 @@ export class SaveManager {
         ...migrated,
         reputation: 0,
         version: 10,
+      };
+    }
+    if (migrated.version === 10) {
+      migrated = {
+        ...migrated,
+        unlockedIsland: false,
+        version: 11,
       };
     }
     return migrated;

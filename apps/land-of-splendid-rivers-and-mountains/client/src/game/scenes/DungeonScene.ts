@@ -35,6 +35,24 @@ const FLOOR_MONSTERS: ReadonlyArray<
     { id: "jangsan", x: 10, y: 12 },
   ],
   [{ id: "imugi", x: 10, y: 8 }],
+  // Ocean dungeon floors (5-8)
+  [
+    { id: "jellyfish", x: 5, y: 5 },
+    { id: "jellyfish", x: 14, y: 5 },
+    { id: "seahorse", x: 10, y: 12 },
+  ],
+  [
+    { id: "octopus", x: 5, y: 8 },
+    { id: "octopus", x: 14, y: 8 },
+    { id: "jellyfish", x: 5, y: 15 },
+    { id: "jellyfish", x: 14, y: 15 },
+  ],
+  [
+    { id: "shark", x: 5, y: 8 },
+    { id: "shark", x: 14, y: 8 },
+    { id: "octopus", x: 10, y: 12 },
+  ],
+  [{ id: "mermaid", x: 10, y: 8 }],
 ];
 
 const MAX_FLOORS = FLOOR_MONSTERS.length;

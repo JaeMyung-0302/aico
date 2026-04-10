@@ -33,9 +33,10 @@
 
 ---
 
-## Chapter 3: 인연의 실 (Relationship Deepening)
+## Chapter 3: 인연의 실 (Relationship Deepening) — DONE ✅
 
 **테마**: NPC들과의 관계가 깊어지며 마을의 비밀이 드러난다
+**상태**: ✅ 구현 완료
 
 ### 메인 스토리
 - NPC별 개인 퀘스트 라인 (3단계씩)

@@ -327,6 +327,7 @@ export class DungeonScene extends Phaser.Scene {
 
   private onFloorCleared(): void {
     this.floorCleared = true;
+    eventBus.emit("dungeon:cleared", { floor: this.currentFloor + 1 });
     if (this.currentFloor >= MAX_FLOORS - 1) {
       this.time.delayedCall(1000, () => {
         this.completeDungeon();
@@ -364,8 +365,6 @@ export class DungeonScene extends Phaser.Scene {
   private completeDungeon(): void {
     if (this.isTransitioning) return;
     this.isTransitioning = true;
-
-    eventBus.emit("dungeon:cleared", { floor: this.currentFloor + 1 });
 
     const store = useGameStore.getState();
     const reward = this.isWinterDungeon ? 600 : 500;

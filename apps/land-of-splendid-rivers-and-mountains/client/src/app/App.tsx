@@ -109,11 +109,24 @@ const App = () => {
         setActiveTab((prev) => (prev === "inventory" ? null : "inventory"));
       }
     };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (settingsOpen) {
+          setSettingsOpen(false);
+        } else if (saveLoadOpen) {
+          setSaveLoadOpen(false);
+        } else if (activeTab !== null) {
+          setActiveTab(null);
+        }
+      }
+    };
     eventBus.on("ui:toggle", onUiToggle);
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       eventBus.off("ui:toggle", onUiToggle);
+      window.removeEventListener("keydown", onKeyDown);
     };
-  }, []);
+  }, [settingsOpen, saveLoadOpen, activeTab]);
 
   const backdropStyle: React.CSSProperties = {
     position: "absolute",

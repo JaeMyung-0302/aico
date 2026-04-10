@@ -48,6 +48,19 @@ const DialogBox = () => {
     };
   }, [onNpcTalked, onNpcGifted]);
 
+  useEffect(() => {
+    if (!activeNpcId) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveNpcId(null);
+        setGiftReaction(null);
+        useGameStore.getState().setDialogOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeNpcId]);
+
   if (!activeNpcId) return null;
 
   const npcDef = npcMap.get(activeNpcId);

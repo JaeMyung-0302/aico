@@ -22,6 +22,7 @@ import { FishingSystem } from "../systems/fishing";
 import { EventSystem } from "../systems/event";
 import { AudioSystem } from "../systems/audio";
 import { ReputationSystem } from "../systems/reputation";
+import { QuestSystem } from "../systems/quest";
 import { LodSystem } from "../systems/lod";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -141,6 +142,7 @@ export class FarmScene extends Phaser.Scene {
       "event",
       "audio",
       "reputation",
+      "quest",
     ]);
     this.systemManager.register(new LodSystem());
     this.systemManager.register(timeWeather);
@@ -155,7 +157,9 @@ export class FarmScene extends Phaser.Scene {
     this.systemManager.register(eventSystem);
     this.systemManager.register(new AudioSystem());
     const reputationSystem = new ReputationSystem();
+    const questSystem = new QuestSystem();
     this.systemManager.register(reputationSystem);
+    this.systemManager.register(questSystem);
     this.systemManager.initAll(this);
 
     combatSystem.setPlayerSprite(this.player.sprite);
@@ -514,6 +518,9 @@ export class FarmScene extends Phaser.Scene {
           reputation: useGameStore.getState().reputation,
           completedSeasonalQuests: [],
           unlockedIsland: useGameStore.getState().unlockedIsland ?? false,
+          activeQuests: questSystem.getState().active,
+          completedQuests: questSystem.getState().completed,
+          questProgress: questSystem.getState().progress,
         };
       },
       (data) => {
@@ -559,6 +566,11 @@ export class FarmScene extends Phaser.Scene {
         npcSystem.setCurrentSeason(data.season);
         npcSystem.setLocation("farm", this);
         store.setUnlockedIsland(data.unlockedIsland ?? false);
+        questSystem.loadState(
+          data.activeQuests ?? [],
+          data.completedQuests ?? [],
+          data.questProgress ?? {},
+        );
         syncInventory();
         syncFermentation();
         syncBuildings();

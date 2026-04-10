@@ -15,6 +15,7 @@ import { BuildingSystem } from "../systems/building";
 import { AnimalSystem, getAnimalDef } from "../systems/animal";
 import { CombatSystem } from "../systems/combat";
 import { ReputationSystem } from "../systems/reputation";
+import { QuestSystem } from "../systems/quest";
 import { LodSystem } from "../systems/lod";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -102,6 +103,7 @@ export class VillageScene extends Phaser.Scene {
       "animal",
       "combat",
       "reputation",
+      "quest",
     ]);
     this.systemManager.register(new LodSystem());
     this.systemManager.register(timeWeather);
@@ -112,7 +114,9 @@ export class VillageScene extends Phaser.Scene {
     this.systemManager.register(animalSystem);
     this.systemManager.register(combatSystem);
     const reputationSystem = new ReputationSystem();
+    const questSystem = new QuestSystem();
     this.systemManager.register(reputationSystem);
+    this.systemManager.register(questSystem);
     this.systemManager.initAll(this);
 
     npcSystem.setPlayerSprite(this.player.sprite);
@@ -358,6 +362,10 @@ export class VillageScene extends Phaser.Scene {
     let cachedActiveEventId: string | null = null;
     let cachedReputation = 0;
     let cachedUnlockedIsland = false;
+    let cachedActiveQuests: ReadonlyArray<string> = [];
+    let cachedCompletedQuests: ReadonlyArray<string> = [];
+    let cachedQuestProgress: Readonly<Record<string, ReadonlyArray<number>>> =
+      {};
 
     saveManager.setup(
       () => {
@@ -389,6 +397,9 @@ export class VillageScene extends Phaser.Scene {
           activeEventId: cachedActiveEventId,
           reputation: cachedReputation,
           unlockedIsland: cachedUnlockedIsland,
+          activeQuests: cachedActiveQuests,
+          completedQuests: cachedCompletedQuests,
+          questProgress: cachedQuestProgress,
         };
       },
       (data) => {
@@ -406,6 +417,9 @@ export class VillageScene extends Phaser.Scene {
         cachedActiveEventId = data.activeEventId ?? null;
         cachedReputation = data.reputation ?? 0;
         cachedUnlockedIsland = data.unlockedIsland ?? false;
+        cachedActiveQuests = data.activeQuests ?? [];
+        cachedCompletedQuests = data.completedQuests ?? [];
+        cachedQuestProgress = data.questProgress ?? {};
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);
@@ -429,6 +443,11 @@ export class VillageScene extends Phaser.Scene {
         reputationSystem.loadState(data.reputation ?? 0);
         npcSystem.setCurrentSeason(data.season);
         npcSystem.setLocation("village", this);
+        questSystem.loadState(
+          data.activeQuests ?? [],
+          data.completedQuests ?? [],
+          data.questProgress ?? {},
+        );
         syncInventory();
         syncFermentation();
         syncBuildings();

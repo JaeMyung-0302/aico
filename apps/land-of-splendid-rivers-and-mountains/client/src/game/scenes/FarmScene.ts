@@ -550,6 +550,9 @@ export class FarmScene extends Phaser.Scene {
       saveManager.load();
     } else {
       syncInventory();
+      syncFermentation();
+      syncBuildings();
+      syncAnimals();
       syncCombatHp();
     }
 

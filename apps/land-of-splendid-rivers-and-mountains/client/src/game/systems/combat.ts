@@ -173,19 +173,23 @@ export class CombatSystem implements IGameSystem {
         if (dot < 0) continue;
       }
 
+      const actualDamage = Math.max(
+        1,
+        totalDamage - monster.definition.defense,
+      );
       const defeated = monster.takeDamage(
         totalDamage,
         dx,
         dy,
         weapon.knockback,
       );
-      eventBus.emit("combat:hit", { targetId: id, damage: totalDamage });
+      eventBus.emit("combat:hit", { targetId: id, damage: actualDamage });
 
       // Damage number popup
       const dmgText = this.scene.add.text(
         monster.sprite.x,
         monster.sprite.y - 16,
-        `-${totalDamage}`,
+        `-${actualDamage}`,
         {
           fontSize: "12px",
           color: "#ff4444",

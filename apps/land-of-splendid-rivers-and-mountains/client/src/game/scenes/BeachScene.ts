@@ -38,10 +38,15 @@ export class BeachScene extends Phaser.Scene {
     this.keyboardInput.init(this);
     this.touchInput.init(this);
 
+    const data = this.scene.settings.data as
+      | { spawnX?: number; spawnY?: number }
+      | undefined;
+    const tileSpawnX = data?.spawnX ?? PLAYER_SPAWN_X;
+    const tileSpawnY = data?.spawnY ?? PLAYER_SPAWN_Y;
     const spawnX =
-      PLAYER_SPAWN_X * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
+      tileSpawnX * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
     const spawnY =
-      PLAYER_SPAWN_Y * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
+      tileSpawnY * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
     this.player = new Player(this, spawnX, spawnY);
     this.player.sprite.setDepth(10);
 

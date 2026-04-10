@@ -9,14 +9,26 @@ const npcMap = new Map<string, NpcDefinition>(
   (npcsData as ReadonlyArray<NpcDefinition>).map((npc) => [npc.id, npc]),
 );
 
+const RELATION_LABELS: Readonly<Record<string, string>> = {
+  "+2": "♥♥ 매우 좋아합니다!",
+  "+1": "♥ 좋아합니다.",
+  "0": "보통입니다.",
+  "-1": "싫어합니다...",
+};
+
 const DialogBox = () => {
   const [activeNpcId, setActiveNpcId] = useState<string | null>(null);
   const [giftReaction, setGiftReaction] = useState<string | null>(null);
+  const [choiceResponse, setChoiceResponse] = useState<{
+    textKey: string;
+    change: number;
+  } | null>(null);
   const { npcRelations, inventory } = useGameStore();
 
   const onNpcTalked = useCallback(({ npcId }: { npcId: string }) => {
     setActiveNpcId(npcId);
     setGiftReaction(null);
+    setChoiceResponse(null);
     useGameStore.getState().setDialogOpen(true);
   }, []);
 
@@ -78,11 +90,39 @@ const DialogBox = () => {
           </div>
         </div>
         <div style={styles.textArea}>
-          {giftReaction
-            ? t(`npc.gift.${giftReaction}`)
-            : t("ui.dialog.greeting")}
+          {choiceResponse ? (
+            <>
+              <div>
+                {t(choiceResponse.textKey as never) || choiceResponse.textKey}
+              </div>
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 11,
+                  color:
+                    choiceResponse.change > 0
+                      ? "#4ade80"
+                      : choiceResponse.change < 0
+                        ? "#ef4444"
+                        : "#888",
+                }}
+              >
+                {RELATION_LABELS[
+                  choiceResponse.change > 0
+                    ? `+${choiceResponse.change}`
+                    : `${choiceResponse.change}`
+                ] ??
+                  `호감도 ${choiceResponse.change > 0 ? "+" : ""}${choiceResponse.change}`}
+              </div>
+            </>
+          ) : giftReaction ? (
+            t(`npc.gift.${giftReaction}`)
+          ) : (
+            t("ui.dialog.greeting")
+          )}
         </div>
         {!giftReaction &&
+          !choiceResponse &&
           npcDef.dialogChoices &&
           npcDef.dialogChoices.length > 0 && (
             <div style={styles.choiceSection}>
@@ -96,7 +136,10 @@ const DialogBox = () => {
                       choiceId: choice.id,
                       relationChange: choice.relationChange,
                     });
-                    handleClose();
+                    setChoiceResponse({
+                      textKey: choice.textKey,
+                      change: choice.relationChange,
+                    });
                   }}
                 >
                   {t(choice.textKey as never) || choice.id}

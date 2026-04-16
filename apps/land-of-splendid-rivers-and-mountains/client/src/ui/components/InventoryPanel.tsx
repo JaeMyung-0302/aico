@@ -221,4 +221,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
+InventoryPanel.displayName = "InventoryPanel";
+
 export default InventoryPanel;

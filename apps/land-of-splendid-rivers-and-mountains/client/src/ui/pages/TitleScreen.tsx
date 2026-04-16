@@ -11,7 +11,7 @@ interface Props {
 
 const TitleScreen = ({ onStart, onOpenSaveLoad, onOpenSettings }: Props) => {
   const [fading, setFading] = useState(false);
-  const [loadError, setLoadError] = useState(false);
+  const [loadError, _setLoadError] = useState(false);
 
   const hasSave = saveManager.hasSave();
 

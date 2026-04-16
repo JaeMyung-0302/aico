@@ -7,7 +7,6 @@ import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
 import { NPCSystem } from "../systems/npc";
 import { FishingSystem } from "../systems/fishing";
-import { ReputationSystem } from "../systems/reputation";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { saveManager } from "@/lib/save-manager";

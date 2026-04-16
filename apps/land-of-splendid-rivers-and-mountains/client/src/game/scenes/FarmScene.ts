@@ -15,7 +15,7 @@ import { InventorySystem } from "../systems/inventory";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
-import { BuildingSystem, getBuildingDef } from "../systems/building";
+import { BuildingSystem } from "../systems/building";
 import { AnimalSystem, getAnimalDef } from "../systems/animal";
 import { CombatSystem } from "../systems/combat";
 import { FishingSystem } from "../systems/fishing";
@@ -986,7 +986,6 @@ export class FarmScene extends Phaser.Scene {
 
     this.groundLayer = map.createLayer("ground", tileset);
     this.groundLayer?.setDepth(0);
-    const groundLayer = this.groundLayer;
 
     const pathLayer = map.createLayer("path", tileset);
     pathLayer?.setDepth(1);

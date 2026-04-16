@@ -164,7 +164,7 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setAnimals: (animals) => set({ animals }),
 
   setPlayerHp: (playerHp, playerMaxHp, playerAttack?, playerDefense?) =>
-    set((state) => ({
+    set((_state) => ({
       playerHp,
       playerMaxHp,
       ...(playerAttack !== undefined ? { playerAttack } : {}),
@@ -174,7 +174,7 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setPlayerLevel: (playerLevel, playerExp) => set({ playerLevel, playerExp }),
 
   setDungeonFloor: (dungeonFloor, maxDungeonFloor?) =>
-    set((state) => ({
+    set((_state) => ({
       dungeonFloor,
       ...(maxDungeonFloor !== undefined ? { maxDungeonFloor } : {}),
     })),

@@ -325,7 +325,6 @@ export class TimeWeatherSystem implements IGameSystem {
 
   private createWeatherParticles(scene: Phaser.Scene): void {
     const gw = GAME_CONSTANTS.GAME_WIDTH;
-    const gh = GAME_CONSTANTS.GAME_HEIGHT;
 
     if (!scene.textures.exists("_rain_drop")) {
       const rainCanvas = scene.textures.createCanvas("_rain_drop", 2, 6);

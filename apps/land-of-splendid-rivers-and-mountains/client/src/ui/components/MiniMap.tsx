@@ -164,4 +164,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
+MiniMap.displayName = "MiniMap";
+
 export default MiniMap;

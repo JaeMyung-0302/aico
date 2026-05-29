@@ -362,10 +362,6 @@ export class VillageScene extends Phaser.Scene {
     let cachedActiveEventId: string | null = null;
     let cachedReputation = 0;
     let cachedUnlockedIsland = false;
-    let cachedActiveQuests: ReadonlyArray<string> = [];
-    let cachedCompletedQuests: ReadonlyArray<string> = [];
-    let cachedQuestProgress: Readonly<Record<string, ReadonlyArray<number>>> =
-      {};
 
     saveManager.setup(
       () => {
@@ -417,9 +413,6 @@ export class VillageScene extends Phaser.Scene {
         cachedActiveEventId = data.activeEventId ?? null;
         cachedReputation = data.reputation ?? 0;
         cachedUnlockedIsland = data.unlockedIsland ?? false;
-        cachedActiveQuests = data.activeQuests ?? [];
-        cachedCompletedQuests = data.completedQuests ?? [];
-        cachedQuestProgress = data.questProgress ?? {};
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);

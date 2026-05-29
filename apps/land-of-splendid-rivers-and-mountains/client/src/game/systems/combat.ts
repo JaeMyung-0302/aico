@@ -6,6 +6,7 @@ import type {
 import type { IGameSystem } from "./system-manager";
 import { Monster } from "../entities/Monster";
 import { ObjectPool } from "./object-pool";
+import { getFallbackMonsterDef } from "./monster-defs";
 import { eventBus } from "@/lib/event-bus";
 import monstersData from "../data/monsters.json";
 import weaponsData from "../data/weapons.json";
@@ -51,7 +52,7 @@ export class CombatSystem implements IGameSystem {
     this.scene = scene;
     this.monsterPool = new ObjectPool<Monster>(
       () => {
-        const placeholder = monsterDefs.values().next().value!;
+        const placeholder = getFallbackMonsterDef(monsterDefs);
         return new Monster(scene, -999, -999, placeholder, "");
       },
       (m) => m.deactivate(),

@@ -15,6 +15,7 @@ namespace EchoesOfMaple.Gameplay
     {
         [Header("이동")]
         [SerializeField] private float _moveSpeed = 2.5f;
+        [SerializeField] private float _aggroRange = 8f; // 이 거리 안에서만 추격(밖이면 멈춤 → 마을까지 안 따라옴)
 
         [Header("접촉 피해")]
         [SerializeField] private int _contactDamage = 5;
@@ -40,11 +41,19 @@ namespace EchoesOfMaple.Gameplay
         {
             if (_player == null) return;
 
-            // 플레이어 쪽으로 수평 이동 (수직은 중력이 관리)
-            float dir = Mathf.Sign(_player.position.x - transform.position.x);
+            float dx = _player.position.x - transform.position.x;
+
+            // 추격 범위 밖이면 멈춤 (자기 구역 유지)
+            if (Mathf.Abs(dx) > _aggroRange)
+            {
+                _rb.linearVelocity = new Vector2(0f, _rb.linearVelocity.y);
+                return;
+            }
+
+            // 범위 안 → 플레이어 쪽으로 수평 이동
+            float dir = Mathf.Sign(dx);
             _rb.linearVelocity = new Vector2(dir * _moveSpeed, _rb.linearVelocity.y);
 
-            // 이동 방향 따라 뒤집기
             if (_sprite != null && dir != 0f)
                 _sprite.flipX = dir < 0f;
         }

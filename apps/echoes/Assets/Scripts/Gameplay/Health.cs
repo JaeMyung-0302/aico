@@ -46,5 +46,14 @@ namespace EchoesOfMaple.Gameplay
             Current = _maxHealth;
             OnHealthChanged?.Invoke(Current, _maxHealth);
         }
+
+        /// <summary>업그레이드: 최대 체력 증가 + 증가분만큼 즉시 회복</summary>
+        public void AddMaxHealth(int amount)
+        {
+            if (amount <= 0) return;
+            _maxHealth += amount;
+            Current += amount;
+            OnHealthChanged?.Invoke(Current, _maxHealth);
+        }
     }
 }

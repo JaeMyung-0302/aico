@@ -33,6 +33,9 @@ namespace EchoesOfMaple.Gameplay
         public bool IsGrounded => _isGrounded;
         public bool IsMovingInput => Mathf.Abs(_moveInput) > 0.01f;
 
+        // 업그레이드: 이동 속도 증가
+        public void AddMoveSpeed(float amount) => _moveSpeed += amount;
+
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();

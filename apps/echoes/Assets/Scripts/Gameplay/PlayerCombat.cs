@@ -4,8 +4,8 @@ using UnityEngine.InputSystem;
 namespace EchoesOfMaple.Gameplay
 {
     /// <summary>
-    /// 플레이어 근접 공격 (메이플식). J 또는 X 키 → 주변 범위 내 적 타격 + 공격 애니 재생.
-    /// 방향성 없이 우선 주변 원형(omnidirectional) — 방향 공격은 후속.
+    /// 플레이어 근접 공격 (메이플식). J/X → 주변 범위 내 적 타격 + 공격 애니. 흡혈 지원.
+    /// 업그레이드용 강화 메서드 제공.
     /// ⚠️ Unity에서 컴파일/플레이 검증 전 초안.
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
@@ -17,11 +17,14 @@ namespace EchoesOfMaple.Gameplay
         [SerializeField] private float _cooldown = 0.4f;
 
         private float _lastAttackTime = -999f;
+        private int _lifesteal = 0;
         private PlayerAnimator _animator;
+        private Health _health;
 
         private void Awake()
         {
             _animator = GetComponent<PlayerAnimator>();
+            _health = GetComponent<Health>();
         }
 
         private void Update()
@@ -37,7 +40,7 @@ namespace EchoesOfMaple.Gameplay
         private void Attack()
         {
             _lastAttackTime = Time.time;
-            _animator?.PlayAttack(); // 공격 애니 1회 재생 (있으면)
+            _animator?.PlayAttack();
 
             var hits = Physics2D.OverlapCircleAll(transform.position, _range);
             int hitCount = 0;
@@ -47,10 +50,19 @@ namespace EchoesOfMaple.Gameplay
                 col.GetComponent<Health>()?.TakeDamage(_damage);
                 hitCount++;
             }
+
+            if (hitCount > 0 && _lifesteal > 0)
+                _health?.Heal(_lifesteal * hitCount); // 흡혈
+
             Debug.Log($"공격! 적 {hitCount}체 타격");
         }
 
-        // Scene 뷰에서 공격 범위 시각화 (선택 시)
+        // ── 업그레이드 강화 메서드 ──
+        public void AddDamage(int amount) => _damage += amount;
+        public void MultiplyCooldown(float factor) => _cooldown *= factor; // 0.8 = 20% 빨라짐
+        public void AddRange(float amount) => _range += amount;
+        public void AddLifesteal(int amount) => _lifesteal += amount;
+
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.red;

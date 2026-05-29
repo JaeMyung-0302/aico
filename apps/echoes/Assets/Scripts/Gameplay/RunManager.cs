@@ -24,6 +24,9 @@ namespace EchoesOfMaple.Gameplay
         [Header("재시작")]
         [SerializeField] private float _restartDelay = 2f;
 
+        [Header("업그레이드")]
+        [SerializeField] private UpgradeManager _upgrades;
+
         [Header("디버그")]
         [SerializeField] private int _startSeed = 0;            // 0이면 랜덤
 
@@ -116,6 +119,10 @@ namespace EchoesOfMaple.Gameplay
                         yield return null;
                     }
                     Debug.Log($"방 {room.Index} ({room.Type}) 클리어");
+
+                    // 전투 방 클리어 → 업그레이드 3개 중 선택
+                    if (_upgrades != null)
+                        yield return _upgrades.OfferRoutine();
                     break;
                 }
                 case RoomType.Treasure:

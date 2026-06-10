@@ -453,5 +453,13 @@
   "item.special.weddingRing": "결혼반지",
   "ui.dialog.propose": "청혼하기",
   "ui.dialog.engaged": "약혼한 사이입니다. 곧 결혼식이 열립니다!",
-  "ui.dialog.married": "당신의 배우자입니다."
+  "ui.dialog.married": "당신의 배우자입니다.",
+  "item.trade.silkCloth": "비단",
+  "item.trade.coconut": "코코넛",
+  "item.trade.rum": "럼주",
+  "ui.trade.title": "교역",
+  "ui.trade.buy": "매수",
+  "ui.trade.sell": "매도",
+  "ui.trade.noPort": "이곳에는 교역소가 없습니다. 장터나 섬에서 교역하세요.",
+  "ui.trade.owned": "보유"
 }

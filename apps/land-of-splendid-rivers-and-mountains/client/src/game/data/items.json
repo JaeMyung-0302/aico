@@ -702,5 +702,29 @@
     "stackable": false,
     "maxStack": 1,
     "sellPrice": 0
+  },
+  {
+    "id": "item-silk-cloth",
+    "nameKey": "item.trade.silkCloth",
+    "type": "material",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 0
+  },
+  {
+    "id": "item-coconut",
+    "nameKey": "item.trade.coconut",
+    "type": "material",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 0
+  },
+  {
+    "id": "item-rum",
+    "nameKey": "item.trade.rum",
+    "type": "material",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 0
   }
 ]

@@ -453,5 +453,13 @@
   "item.special.weddingRing": "Wedding Ring",
   "ui.dialog.propose": "Propose",
   "ui.dialog.engaged": "You are engaged! The wedding is coming soon.",
-  "ui.dialog.married": "Your spouse."
+  "ui.dialog.married": "Your spouse.",
+  "item.trade.silkCloth": "Silk Cloth",
+  "item.trade.coconut": "Coconut",
+  "item.trade.rum": "Rum",
+  "ui.trade.title": "Trade",
+  "ui.trade.buy": "Buy",
+  "ui.trade.sell": "Sell",
+  "ui.trade.noPort": "No trading post here. Trade at the Market or Island.",
+  "ui.trade.owned": "Owned"
 }

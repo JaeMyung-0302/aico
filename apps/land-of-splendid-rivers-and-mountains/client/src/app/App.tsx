@@ -10,6 +10,7 @@ import InventoryPanel from "@/ui/components/InventoryPanel";
 import ShopPanel from "@/ui/components/ShopPanel";
 import TradePanel from "@/ui/components/TradePanel";
 import GuardianPanel from "@/ui/components/GuardianPanel";
+import DefensePanel from "@/ui/components/DefensePanel";
 import DialogBox from "@/ui/components/DialogBox";
 import NPCPanel from "@/ui/components/NPCPanel";
 import CraftingPanel from "@/ui/components/CraftingPanel";
@@ -180,6 +181,7 @@ const App = () => {
             <ShopPanel open={activeTab === "shop"} />
             <TradePanel open={activeTab === "trade"} />
             <GuardianPanel open={activeTab === "guardian"} />
+            <DefensePanel open={activeTab === "defense"} />
             <CraftingPanel open={activeTab === "crafting"} />
             <BuildingPanel open={activeTab === "building"} />
             <AnimalPanel open={activeTab === "animal"} />

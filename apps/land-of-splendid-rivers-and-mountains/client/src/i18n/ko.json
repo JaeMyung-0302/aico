@@ -479,5 +479,17 @@
   "ui.guardian.missing.minYear": "연차 부족",
   "ui.guardian.missing.minReputation": "평판 부족",
   "ui.guardian.missing.requiredItemId": "부적 필요",
-  "ui.guardian.missing.requiredBossDefeat": "보스 미처치"
+  "ui.guardian.missing.requiredBossDefeat": "보스 미처치",
+  "ui.defense.title": "방어전",
+  "ui.defense.noVillage": "마을 방어전은 마을에서만 시작할 수 있습니다.",
+  "ui.defense.wave": "웨이브",
+  "ui.defense.build": "타워 건설...",
+  "ui.defense.start": "방어전 시작!",
+  "ui.defense.won": "마을을 지켜냈다!",
+  "ui.defense.lost": "마을이 습격당했다...",
+  "ui.defense.retry": "다시 도전",
+  "tower.archer": "궁수탑",
+  "tower.cannon": "대포탑",
+  "tower.spirit": "정령탑",
+  "tower.healer": "치유탑"
 }

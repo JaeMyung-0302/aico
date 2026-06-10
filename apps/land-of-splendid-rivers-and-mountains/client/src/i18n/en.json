@@ -479,5 +479,17 @@
   "ui.guardian.missing.minYear": "Year too low",
   "ui.guardian.missing.minReputation": "Reputation too low",
   "ui.guardian.missing.requiredItemId": "Talisman required",
-  "ui.guardian.missing.requiredBossDefeat": "Boss not defeated"
+  "ui.guardian.missing.requiredBossDefeat": "Boss not defeated",
+  "ui.defense.title": "Defense",
+  "ui.defense.noVillage": "Village defense can only start in the village.",
+  "ui.defense.wave": "Wave",
+  "ui.defense.build": "Build tower...",
+  "ui.defense.start": "Start Defense!",
+  "ui.defense.won": "The village is safe!",
+  "ui.defense.lost": "The village was raided...",
+  "ui.defense.retry": "Retry",
+  "tower.archer": "Archer Tower",
+  "tower.cannon": "Cannon Tower",
+  "tower.spirit": "Spirit Tower",
+  "tower.healer": "Healer Tower"
 }

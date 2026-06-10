@@ -8,6 +8,7 @@ import { InventorySystem } from "../systems/inventory";
 import { QuestSystem } from "../systems/quest";
 import { setupRewardHandler } from "../systems/reward";
 import { setupShopHandlers } from "../systems/shop";
+import { setupTradeHandler } from "../systems/trade-runtime";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { saveManager } from "@/lib/save-manager";
@@ -74,6 +75,7 @@ export class MarketScene extends Phaser.Scene {
       store.questProgress,
     );
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupTrade = setupTradeHandler(inventory, syncInventory, "village");
 
     this.setupCollision(map);
     this.setupCamera(map);
@@ -89,6 +91,7 @@ export class MarketScene extends Phaser.Scene {
       });
       inventory.destroy();
       cleanupShop();
+      cleanupTrade();
       questSystem.destroy();
       cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
@@ -129,7 +132,9 @@ export class MarketScene extends Phaser.Scene {
     // 좌 → River
     if (tileX <= 0 && tileY >= 14 && tileY <= 15) {
       this.isTransitioning = true;
-      this.scene.start("RiverScene", { spawnX: 28, spawnY: 14 });
+      // 강변 맵은 폭 25(x0~24)에 x19+는 강물 — spawnX 28은 맵 밖 좌표로
+      // 플레이어가 경계에 갇혀 고립됐음. 서쪽 기슭 물가에 스폰.
+      this.scene.start("RiverScene", { spawnX: 17, spawnY: 14 });
     }
 
     // 하 → Farm

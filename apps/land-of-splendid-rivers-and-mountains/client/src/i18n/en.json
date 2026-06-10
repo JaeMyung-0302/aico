@@ -463,5 +463,21 @@
   "ui.trade.noPort": "No trading post here. Trade at the Market or Island.",
   "ui.trade.owned": "Owned",
   "monster.pirateKing": "Pirate King Blackbeard",
-  "item.drop.pirateGold": "Pirate Gold"
+  "item.drop.pirateGold": "Pirate Gold",
+  "item.talisman.spring": "Spring Talisman",
+  "item.talisman.summer": "Summer Talisman",
+  "item.talisman.autumn": "Autumn Talisman",
+  "item.talisman.winter": "Winter Talisman",
+  "guardian.spring.name": "Azure Dragon (Spring)",
+  "guardian.summer.name": "Vermilion Bird (Summer)",
+  "guardian.autumn.name": "White Tiger (Autumn)",
+  "guardian.winter.name": "Black Tortoise (Winter)",
+  "ui.guardian.title": "Guardians",
+  "ui.guardian.summon": "Summon",
+  "ui.guardian.summoned": "Summoned",
+  "ui.guardian.noTemple": "Guardians can only be summoned at the Temple.",
+  "ui.guardian.missing.minYear": "Year too low",
+  "ui.guardian.missing.minReputation": "Reputation too low",
+  "ui.guardian.missing.requiredItemId": "Talisman required",
+  "ui.guardian.missing.requiredBossDefeat": "Boss not defeated"
 }

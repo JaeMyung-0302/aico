@@ -463,5 +463,21 @@
   "ui.trade.noPort": "이곳에는 교역소가 없습니다. 장터나 섬에서 교역하세요.",
   "ui.trade.owned": "보유",
   "monster.pirateKing": "해적왕 검은수염",
-  "item.drop.pirateGold": "해적의 금화"
+  "item.drop.pirateGold": "해적의 금화",
+  "item.talisman.spring": "봄의 부적",
+  "item.talisman.summer": "여름의 부적",
+  "item.talisman.autumn": "가을의 부적",
+  "item.talisman.winter": "겨울의 부적",
+  "guardian.spring.name": "청룡 (봄의 수호신)",
+  "guardian.summer.name": "주작 (여름의 수호신)",
+  "guardian.autumn.name": "백호 (가을의 수호신)",
+  "guardian.winter.name": "현무 (겨울의 수호신)",
+  "ui.guardian.title": "수호신",
+  "ui.guardian.summon": "소환",
+  "ui.guardian.summoned": "소환됨",
+  "ui.guardian.noTemple": "수호신은 사찰에서만 소환할 수 있습니다.",
+  "ui.guardian.missing.minYear": "연차 부족",
+  "ui.guardian.missing.minReputation": "평판 부족",
+  "ui.guardian.missing.requiredItemId": "부적 필요",
+  "ui.guardian.missing.requiredBossDefeat": "보스 미처치"
 }

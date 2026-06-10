@@ -362,6 +362,7 @@ export class VillageScene extends Phaser.Scene {
           marriagePartnerId: useGameStore.getState().marriagePartnerId,
           engagedAtDay: useGameStore.getState().engagedAtDay,
           marriedAtDay: useGameStore.getState().marriedAtDay,
+          summonedGuardians: [...useGameStore.getState().summonedGuardians],
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -393,6 +394,9 @@ export class VillageScene extends Phaser.Scene {
             data.engagedAtDay ?? null,
             data.marriedAtDay ?? null,
           );
+        useGameStore
+          .getState()
+          .setSummonedGuardians(data.summonedGuardians ?? []);
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);

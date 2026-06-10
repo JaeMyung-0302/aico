@@ -7,6 +7,7 @@ import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
 import { QuestSystem } from "../systems/quest";
 import { setupRewardHandler } from "../systems/reward";
+import { setupGuardianHandler } from "../systems/guardian-runtime";
 import { NPCSystem } from "../systems/npc";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -76,6 +77,7 @@ export class TempleScene extends Phaser.Scene {
 
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
+    const cleanupGuardian = setupGuardianHandler(inventory, syncInventory);
 
     const questSystem = new QuestSystem();
     questSystem.init(this);
@@ -102,6 +104,11 @@ export class TempleScene extends Phaser.Scene {
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
+        summonedGuardians: [...useGameStore.getState().summonedGuardians],
+        playerHp: useGameStore.getState().playerHp,
+        playerMaxHp: useGameStore.getState().playerMaxHp,
+        playerAttack: useGameStore.getState().playerAttack,
+        playerDefense: useGameStore.getState().playerDefense,
         activeQuests: [...questSystem.getState().active],
         completedQuests: [...questSystem.getState().completed],
         questProgress: questSystem.getState().progress,
@@ -111,6 +118,7 @@ export class TempleScene extends Phaser.Scene {
       this.npcSystem?.destroy();
       this.npcSystem = null;
       questSystem.destroy();
+      cleanupGuardian();
       cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);

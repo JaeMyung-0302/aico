@@ -9,6 +9,7 @@ import HUD from "@/ui/components/HUD";
 import InventoryPanel from "@/ui/components/InventoryPanel";
 import ShopPanel from "@/ui/components/ShopPanel";
 import TradePanel from "@/ui/components/TradePanel";
+import GuardianPanel from "@/ui/components/GuardianPanel";
 import DialogBox from "@/ui/components/DialogBox";
 import NPCPanel from "@/ui/components/NPCPanel";
 import CraftingPanel from "@/ui/components/CraftingPanel";
@@ -178,6 +179,7 @@ const App = () => {
             <InventoryPanel open={activeTab === "inventory"} />
             <ShopPanel open={activeTab === "shop"} />
             <TradePanel open={activeTab === "trade"} />
+            <GuardianPanel open={activeTab === "guardian"} />
             <CraftingPanel open={activeTab === "crafting"} />
             <BuildingPanel open={activeTab === "building"} />
             <AnimalPanel open={activeTab === "animal"} />

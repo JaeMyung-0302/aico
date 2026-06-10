@@ -44,7 +44,7 @@ export interface NpcDefinition {
   readonly likedGifts: ReadonlyArray<string>;
   readonly dislikedGifts: ReadonlyArray<string>;
   readonly schedule?: ReadonlyArray<NpcScheduleEntry>;
-  readonly dialogChoices?: ReadonlyArray<DialogChoice>;
+  readonly dialogChoices?: ReadonlyArray<DialogChoice>;  readonly marriageable?: boolean;
 }
 
 export interface ItemDefinition {

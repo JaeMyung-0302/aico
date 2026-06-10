@@ -34,6 +34,12 @@ export interface GameEvents {
   };
   "combat:playerDied": undefined;
   "combat:levelUp": { level: number };
+  "npc:proposed": { npcId: string };
+  "marriage:event": {
+    type: "engagement" | "wedding";
+    partnerId: string;
+    day: number;
+  };
   "energy:changed": { current: number; max: number };
   "energy:depleted": undefined;
   "energy:fainted": { goldPenaltyRate: number };

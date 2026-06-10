@@ -33,6 +33,7 @@ export interface GameEvents {
     drops: ReadonlyArray<{ itemId: string; quantity: number }>;
   };
   "combat:playerDied": undefined;
+  "combat:levelUp": { level: number };
   "energy:changed": { current: number; max: number };
   "energy:depleted": undefined;
   "energy:fainted": { goldPenaltyRate: number };

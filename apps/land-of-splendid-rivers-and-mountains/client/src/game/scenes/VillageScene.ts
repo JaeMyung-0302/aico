@@ -8,6 +8,7 @@ import { TouchInput } from "../input/touch-input";
 import { SystemManager } from "../systems/system-manager";
 import { TimeWeatherSystem } from "../systems/time-weather";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -341,6 +342,7 @@ export class VillageScene extends Phaser.Scene {
     eventBus.on("inventory:useFood", onUseFood);
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
     eventBus.on("shop:buy", onShopBuy);
     eventBus.on("shop:sell", onShopSell);
     eventBus.on("npc:giftRequested", onGiftRequested);
@@ -473,6 +475,7 @@ export class VillageScene extends Phaser.Scene {
       inventory.destroy();
       eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:changed", syncInventory);
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("shop:buy", onShopBuy);
       eventBus.off("shop:sell", onShopSell);

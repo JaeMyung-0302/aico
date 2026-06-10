@@ -491,5 +491,13 @@
   "tower.archer": "궁수탑",
   "tower.cannon": "대포탑",
   "tower.spirit": "정령탑",
-  "tower.healer": "치유탑"
+  "tower.healer": "치유탑",
+  "ending.peace.title": "평화 엔딩 — 고요한 금수강산",
+  "ending.peace.body": "천년이무기가 잠들고, 마을에는 다시 평화가 찾아왔습니다.",
+  "ending.ascension.title": "승천 엔딩 — 용이 된 이무기",
+  "ending.ascension.body": "사신수의 가호 아래, 이무기는 한을 풀고 용이 되어 승천했습니다. 금수강산에 영원한 번영이 깃듭니다.",
+  "ending.war.title": "전쟁 엔딩 — 불타는 산하",
+  "ending.war.body": "끝나지 않는 싸움이 산하를 삼켰습니다...",
+  "ui.ending.credits": "금수강산 — 만든 사람들",
+  "ui.ending.continue": "계속하기 (포스트게임)"
 }

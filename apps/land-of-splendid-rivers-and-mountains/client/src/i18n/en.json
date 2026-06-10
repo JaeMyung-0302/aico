@@ -491,5 +491,13 @@
   "tower.archer": "Archer Tower",
   "tower.cannon": "Cannon Tower",
   "tower.spirit": "Spirit Tower",
-  "tower.healer": "Healer Tower"
+  "tower.healer": "Healer Tower",
+  "ending.peace.title": "Peace Ending",
+  "ending.peace.body": "The Imoogi sleeps, and peace returns.",
+  "ending.ascension.title": "Ascension Ending",
+  "ending.ascension.body": "Blessed by the four guardians, the Imoogi ascends as a dragon.",
+  "ending.war.title": "War Ending",
+  "ending.war.body": "Endless war consumed the land...",
+  "ui.ending.credits": "Credits",
+  "ui.ending.continue": "Continue (Post-game)"
 }

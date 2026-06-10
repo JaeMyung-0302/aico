@@ -9,8 +9,14 @@ interface Props {
 }
 
 const GuardianPanel = ({ open }: Props) => {
-  const { currentScene, year, reputation, inventory, summonedGuardians } =
-    useGameStore();
+  const {
+    currentScene,
+    year,
+    reputation,
+    inventory,
+    summonedGuardians,
+    defeatedBosses,
+  } = useGameStore();
 
   if (!open) return null;
 
@@ -32,7 +38,7 @@ const GuardianPanel = ({ open }: Props) => {
               year,
               reputation,
               inventory: itemIds,
-              defeatedBosses: [],
+              defeatedBosses: [...defeatedBosses],
             });
             const bonus = GUARDIAN_BONUSES[def.id];
             return (

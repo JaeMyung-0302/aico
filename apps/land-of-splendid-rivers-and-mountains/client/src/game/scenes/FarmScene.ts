@@ -486,6 +486,8 @@ export class FarmScene extends Phaser.Scene {
           engagedAtDay: useGameStore.getState().engagedAtDay,
           marriedAtDay: useGameStore.getState().marriedAtDay,
           summonedGuardians: [...useGameStore.getState().summonedGuardians],
+          defeatedBosses: [...useGameStore.getState().defeatedBosses],
+          endingReached: useGameStore.getState().endingReached,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -541,6 +543,8 @@ export class FarmScene extends Phaser.Scene {
           data.marriedAtDay ?? null,
         );
         store.setSummonedGuardians(data.summonedGuardians ?? []);
+        store.setDefeatedBosses(data.defeatedBosses ?? []);
+        store.setEndingReached(data.endingReached ?? null);
         questSystem.loadState(
           data.activeQuests ?? [],
           data.completedQuests ?? [],

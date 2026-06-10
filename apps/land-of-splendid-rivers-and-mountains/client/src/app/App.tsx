@@ -11,6 +11,7 @@ import ShopPanel from "@/ui/components/ShopPanel";
 import TradePanel from "@/ui/components/TradePanel";
 import GuardianPanel from "@/ui/components/GuardianPanel";
 import DefensePanel from "@/ui/components/DefensePanel";
+import EndingOverlay from "@/ui/components/EndingOverlay";
 import DialogBox from "@/ui/components/DialogBox";
 import NPCPanel from "@/ui/components/NPCPanel";
 import CraftingPanel from "@/ui/components/CraftingPanel";
@@ -190,6 +191,7 @@ const App = () => {
             <FishingMiniGame />
             <EventUI />
             <SeasonTransitionOverlay />
+            <EndingOverlay />
             <JournalPanel
               open={activeTab === "journal"}
               onClose={() => setActiveTab(null)}

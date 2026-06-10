@@ -436,6 +436,8 @@ export class FarmScene extends Phaser.Scene {
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
     eventBus.on("crafting:ferment", onFerment);
+    // 자정마다 발효 진행도를 store에 반영 (UI 진행표시·수확 버튼 갱신)
+    eventBus.on("time:dayEnd", syncFermentation);
     eventBus.on("crafting:collect", onCollect);
     eventBus.on("building:build", onBuildingBuild);
     eventBus.on("building:upgrade", onBuildingUpgrade);
@@ -568,6 +570,7 @@ export class FarmScene extends Phaser.Scene {
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);
       eventBus.off("crafting:ferment", onFerment);
+      eventBus.off("time:dayEnd", syncFermentation);
       eventBus.off("crafting:collect", onCollect);
       eventBus.off("building:build", onBuildingBuild);
       eventBus.off("building:upgrade", onBuildingUpgrade);

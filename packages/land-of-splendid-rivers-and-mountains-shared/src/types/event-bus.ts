@@ -45,6 +45,8 @@ export interface GameEvents {
   "energy:fainted": { goldPenaltyRate: number };
   "gold:changed": { amount: number; total: number };
   "shop:buy": { itemId: string };
+  "trade:buy": { itemId: string };
+  "trade:sell": { itemId: string };
   "shop:sell": { itemId: string; quantity: number };
   "crafting:cook": { recipeId: string };
   "crafting:ferment": { recipeId: string };

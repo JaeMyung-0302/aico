@@ -9,6 +9,12 @@ import { EnergySystem } from "../systems/energy";
 import { InventorySystem } from "../systems/inventory";
 import { setupRewardHandler } from "../systems/reward";
 import { setupShopHandlers } from "../systems/shop";
+import {
+  createInitialState,
+  tickImoogi,
+  type ImoogiState,
+} from "../systems/imoogi-boss";
+import { determineEnding } from "../systems/ending";
 import { QuestSystem } from "../systems/quest";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -93,6 +99,8 @@ export class DungeonScene extends Phaser.Scene {
   private energySystem!: EnergySystem;
   private inventory!: InventorySystem;
   private questSystem!: QuestSystem;
+  private imoogiState: ImoogiState = createInitialState();
+  private imoogiInstanceId: string | null = null;
 
   private readonly emitPosition = createPositionEmitter("DungeonScene");
   private currentFloor = 0;
@@ -184,6 +192,7 @@ export class DungeonScene extends Phaser.Scene {
     };
 
     const onCombatDefeated = ({
+      monsterId,
       drops,
     }: {
       monsterId: string;
@@ -194,6 +203,17 @@ export class DungeonScene extends Phaser.Scene {
         this.inventory.addItem(drop.itemId, drop.quantity);
       }
       syncInventory();
+      if (monsterId === "millenniumImugi") {
+        const st = useGameStore.getState();
+        const endingId = determineEnding({
+          imoogiDefeated: true,
+          guardiansSummoned: st.summonedGuardians.length,
+          villageReputation: st.reputation,
+          choseWar: false,
+        });
+        st.setEndingReached(endingId);
+        eventBus.emit("ending:reached", { endingId });
+      }
       if (this.monstersAlive <= 0) {
         this.onFloorCleared();
       }
@@ -274,6 +294,7 @@ export class DungeonScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     this.combatSystem.update(this, _time, delta);
+    this.tickImoogiBoss(delta);
 
     const pointer = this.input.activePointer;
     const isTouchActive = pointer.isDown && pointer.wasTouch;
@@ -331,6 +352,12 @@ export class DungeonScene extends Phaser.Scene {
       const y =
         spawn.y * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
       const monster = this.combatSystem.spawnMonster(spawn.id, x, y);
+      if (spawn.id === "imugi" || spawn.id === "millenniumImugi") {
+        for (const [iid, m] of this.combatSystem.getMonsters()) {
+          if (m === monster) this.imoogiInstanceId = iid;
+        }
+        this.imoogiState = createInitialState();
+      }
       if (monster) {
         if (this.isWinterDungeon) {
           monster.applyModifier(1.2, 1.2);
@@ -376,6 +403,30 @@ export class DungeonScene extends Phaser.Scene {
 
     this.spawnFloorMonsters();
     this.isTransitioning = false;
+  }
+
+  /** 이무기 보스 AI: 순수 틱 머신(imoogi-boss.ts) 연결 — enrage 시 1회 부하 소환 */
+  private imoogiAddSpawned = false;
+
+  private tickImoogiBoss(delta: number): void {
+    if (!this.imoogiInstanceId) return;
+    const boss = this.combatSystem.getMonsters().get(this.imoogiInstanceId);
+    if (!boss || boss.getHp() <= 0) return;
+    const def = boss.definition;
+    const dx = this.player.sprite.x - boss.sprite.x;
+    const dy = this.player.sprite.y - boss.sprite.y;
+    const result = tickImoogi(this.imoogiState, {
+      hpRatio: boss.getHp() / def.hp,
+      playerDistance: Math.sqrt(dx * dx + dy * dy),
+      deltaMs: delta,
+    });
+    this.imoogiState = result.state;
+    if (result.action === "enrage_roar" && !this.imoogiAddSpawned) {
+      this.imoogiAddSpawned = true;
+      const size = GAME_CONSTANTS.TILE_SIZE;
+      this.combatSystem.spawnMonster("gwishin", 5 * size, 5 * size);
+      this.combatSystem.spawnMonster("gwishin", 14 * size, 5 * size);
+    }
   }
 
   private completeDungeon(): void {

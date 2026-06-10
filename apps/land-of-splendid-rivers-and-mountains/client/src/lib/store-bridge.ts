@@ -88,6 +88,16 @@ const onUiToggle = ({ panel }: { panel: "inventory" | "journal" | "menu" }) => {
   useGameStore.getState().togglePanel(panel);
 };
 
+const BOSS_IDS = new Set(["imugi", "pirateKing", "millenniumImugi"]);
+
+const onCombatDefeatedGlobal = ({ monsterId }: { monsterId: string }) => {
+  if (!BOSS_IDS.has(monsterId)) return;
+  const state = useGameStore.getState();
+  if (!state.defeatedBosses.includes(monsterId)) {
+    state.setDefeatedBosses([...state.defeatedBosses, monsterId]);
+  }
+};
+
 const onReputationThreshold = () => {
   const state = useGameStore.getState();
   if (!state.unlockedIsland) state.setUnlockedIsland(true);
@@ -106,8 +116,10 @@ export const initStoreBridge = (): void => {
   eventBus.on("player:moved", onPlayerMoved);
   eventBus.on("ui:toggle", onUiToggle);
   eventBus.on("reputation:thresholdReached", onReputationThreshold);
+  eventBus.on("combat:defeated", onCombatDefeatedGlobal);
 
   cleanup = () => {
+    eventBus.off("combat:defeated", onCombatDefeatedGlobal);
     eventBus.off("time:tick", onTick);
     eventBus.off("time:dayEnd", onDayEnd);
     eventBus.off("time:seasonChange", onSeasonChange);

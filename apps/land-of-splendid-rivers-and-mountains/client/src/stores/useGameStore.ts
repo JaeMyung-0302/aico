@@ -54,6 +54,8 @@ interface GameState {
   readonly engagedAtDay: number | null;
   readonly marriedAtDay: number | null;
   readonly summonedGuardians: ReadonlyArray<string>;
+  readonly defeatedBosses: ReadonlyArray<string>;
+  readonly endingReached: string | null;
 }
 
 interface GameActions {
@@ -108,6 +110,8 @@ interface GameActions {
     marriedAtDay: number | null,
   ) => void;
   setSummonedGuardians: (ids: ReadonlyArray<string>) => void;
+  setDefeatedBosses: (ids: ReadonlyArray<string>) => void;
+  setEndingReached: (endingId: string | null) => void;
   reset: () => void;
 }
 
@@ -151,6 +155,8 @@ const initialState: GameState = {
   engagedAtDay: null,
   marriedAtDay: null,
   summonedGuardians: [],
+  defeatedBosses: [],
+  endingReached: null,
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -218,6 +224,8 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setMarriage: (marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay) =>
     set({ marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay }),
   setSummonedGuardians: (summonedGuardians) => set({ summonedGuardians }),
+  setDefeatedBosses: (defeatedBosses) => set({ defeatedBosses }),
+  setEndingReached: (endingReached) => set({ endingReached }),
 
   reset: () => set(initialState),
 }));

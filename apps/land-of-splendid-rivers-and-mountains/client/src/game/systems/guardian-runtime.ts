@@ -30,7 +30,7 @@ export const setupGuardianHandler = (
       year: s.year,
       reputation: s.reputation,
       inventory: itemIds,
-      defeatedBosses: [], // 보스 처치 추적은 후속 통합(이무기) 시 연결
+      defeatedBosses: [...s.defeatedBosses],
     });
     if (!check.canSummon) return;
 

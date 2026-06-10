@@ -50,6 +50,8 @@ export interface SaveData {
   readonly engagedAtDay?: number | null;
   readonly marriedAtDay?: number | null;
   readonly summonedGuardians?: ReadonlyArray<string>;
+  readonly defeatedBosses?: ReadonlyArray<string>;
+  readonly endingReached?: string | null;
 }
 
 const REQUIRED_SAVE_FIELDS = [

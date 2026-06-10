@@ -184,9 +184,10 @@ export class BeachScene extends Phaser.Scene {
       this.scene.start("RiverScene", { spawnX: 12, spawnY: 28 });
     }
 
-    // Portal to island (right edge, requires reputation threshold)
+    // Portal to island (배 선착장 — 우측 물가, requires reputation threshold).
+    // 해변 맵은 가로 25타일로 통행 한계가 x=19 — x>=28은 도달 불가 좌표였음.
     if (
-      tileX >= 28 &&
+      tileX >= 19 &&
       tileY >= 14 &&
       tileY <= 16 &&
       useGameStore.getState().unlockedIsland

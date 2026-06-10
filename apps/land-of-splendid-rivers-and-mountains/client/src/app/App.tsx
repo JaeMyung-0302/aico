@@ -184,7 +184,10 @@ const App = () => {
             <FishingMiniGame />
             <EventUI />
             <SeasonTransitionOverlay />
-            <JournalPanel />
+            <JournalPanel
+              open={activeTab === "journal"}
+              onClose={() => setActiveTab(null)}
+            />
             {!dialogOpen && <TouchControls />}
             {!dialogOpen && (
               <GameTabBar activeTab={activeTab} onTabChange={handleTabChange} />

@@ -9,6 +9,7 @@ import { SystemManager } from "../systems/system-manager";
 import { TimeWeatherSystem } from "../systems/time-weather";
 import { InventorySystem } from "../systems/inventory";
 import { setupShopHandlers } from "../systems/shop";
+import { setupMarriageHandler } from "../systems/marriage-runtime";
 import { setupRewardHandler } from "../systems/reward";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
@@ -306,6 +307,7 @@ export class VillageScene extends Phaser.Scene {
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupMarriage = setupMarriageHandler(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
@@ -358,6 +360,10 @@ export class VillageScene extends Phaser.Scene {
           activeEventId: cachedActiveEventId,
           reputation: cachedReputation,
           unlockedIsland: cachedUnlockedIsland,
+          marriageStatus: useGameStore.getState().marriageStatus,
+          marriagePartnerId: useGameStore.getState().marriagePartnerId,
+          engagedAtDay: useGameStore.getState().engagedAtDay,
+          marriedAtDay: useGameStore.getState().marriedAtDay,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -378,6 +384,14 @@ export class VillageScene extends Phaser.Scene {
         cachedActiveEventId = data.activeEventId ?? null;
         cachedReputation = data.reputation ?? 0;
         cachedUnlockedIsland = data.unlockedIsland ?? false;
+        useGameStore
+          .getState()
+          .setMarriage(
+            data.marriageStatus ?? "single",
+            data.marriagePartnerId ?? null,
+            data.engagedAtDay ?? null,
+            data.marriedAtDay ?? null,
+          );
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);
@@ -441,6 +455,7 @@ export class VillageScene extends Phaser.Scene {
       cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       cleanupShop();
+      cleanupMarriage();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);

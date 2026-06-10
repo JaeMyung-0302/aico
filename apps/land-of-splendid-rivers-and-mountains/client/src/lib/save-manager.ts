@@ -45,6 +45,10 @@ export interface SaveData {
   readonly activeQuests?: ReadonlyArray<string>;
   readonly completedQuests?: ReadonlyArray<string>;
   readonly questProgress?: Readonly<Record<string, ReadonlyArray<number>>>;
+  readonly marriageStatus?: "single" | "dating" | "engaged" | "married";
+  readonly marriagePartnerId?: string | null;
+  readonly engagedAtDay?: number | null;
+  readonly marriedAtDay?: number | null;
 }
 
 const REQUIRED_SAVE_FIELDS = [

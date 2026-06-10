@@ -3,6 +3,10 @@ import { useGameStore } from "@/stores/useGameStore";
 import { eventBus } from "@/lib/event-bus";
 import { t } from "@/i18n";
 import npcsData from "@/game/data/npcs.json";
+import {
+  MIN_RELATION_TO_PROPOSE,
+  WEDDING_RING_ITEM_ID,
+} from "@/game/systems/marriage";
 import type { NpcDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 
 const npcMap = new Map<string, NpcDefinition>(
@@ -23,7 +27,8 @@ const DialogBox = () => {
     textKey: string;
     change: number;
   } | null>(null);
-  const { npcRelations, inventory } = useGameStore();
+  const { npcRelations, inventory, marriageStatus, marriagePartnerId } =
+    useGameStore();
 
   const onNpcTalked = useCallback(({ npcId }: { npcId: string }) => {
     setActiveNpcId(npcId);
@@ -199,6 +204,26 @@ const DialogBox = () => {
             </div>
           </div>
         )}
+        {npcDef.marriageable &&
+          marriageStatus === "single" &&
+          relation >= MIN_RELATION_TO_PROPOSE &&
+          inventory.some((slot) => slot?.itemId === WEDDING_RING_ITEM_ID) && (
+            <button
+              style={styles.proposeBtn}
+              onClick={() => {
+                eventBus.emit("npc:proposed", { npcId: activeNpcId });
+                setGiftReaction("propose");
+              }}
+            >
+              💍 {t("ui.dialog.propose")}
+            </button>
+          )}
+        {marriagePartnerId === activeNpcId && marriageStatus === "engaged" && (
+          <div style={styles.marriageBadge}>💐 {t("ui.dialog.engaged")}</div>
+        )}
+        {marriagePartnerId === activeNpcId && marriageStatus === "married" && (
+          <div style={styles.marriageBadge}>💍 {t("ui.dialog.married")}</div>
+        )}
         <button style={styles.talkBtn} onClick={handleClose}>
           {t("ui.dialog.close")}
         </button>
@@ -208,6 +233,25 @@ const DialogBox = () => {
 };
 
 const styles: Record<string, React.CSSProperties> = {
+  proposeBtn: {
+    padding: "8px 14px",
+    background: "linear-gradient(135deg, #e91e63, #f06292)",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 700,
+    marginTop: 6,
+  },
+  marriageBadge: {
+    marginTop: 6,
+    padding: "6px 10px",
+    background: "rgba(233, 30, 99, 0.15)",
+    color: "#f48fb1",
+    borderRadius: 8,
+    fontSize: 13,
+    textAlign: "center",
+  },
   overlay: {
     position: "absolute",
     top: 0,

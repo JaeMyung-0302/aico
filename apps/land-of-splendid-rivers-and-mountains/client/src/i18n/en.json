@@ -327,12 +327,10 @@
   "ui.saveload.deleteFailed": "Failed to delete save data",
   "ui.title.loadFailed": "Unable to load save data",
   "ui.hint.talk": "Talk",
-
   "npc.sanshinryeong": "Mountain Spirit",
   "npc.captainHaeryong": "Captain Haeryong",
   "npc.islanderNari": "Islander Nari",
   "npc.pirateGeomwang": "Pirate King Geomwang",
-
   "npc.kimSundeok.choice.kind": "Your farming is amazing! Great work!",
   "npc.kimSundeok.choice.neutral": "Hello, Mrs. Kim.",
   "npc.kimSundeok.choice.cold": "I'm busy, let's keep it short.",
@@ -375,7 +373,6 @@
   "npc.pirateGeomwang.choice.duel": "Let's duel!",
   "npc.pirateGeomwang.choice.negotiate": "We can help each other.",
   "npc.pirateGeomwang.choice.flee": "You're scary, I should run!",
-
   "quest.personal.kimSundeok": "Sundeok's Rice Story",
   "quest.personal.kimSundeok.desc": "Bring 10 rice to Kim Sundeok",
   "quest.personal.parkJeongsu": "Village History",
@@ -396,7 +393,6 @@
   "quest.personal.ohKyungho.desc": "Catch 10 crucian carp",
   "quest.personal.yoonHaneul": "Haneul's Sweet Potato Field",
   "quest.personal.yoonHaneul.desc": "Harvest 8 sweet potatoes",
-
   "quest.main.villageCouncil": "Village Council",
   "quest.main.villageCouncil.desc": "Gift Park Jeongsu and visit the village",
   "quest.main.sanshinryeongEncounter": "Meeting the Mountain Spirit",
@@ -423,7 +419,6 @@
   "quest.side.villageHero.desc": "Gift Park Jeongsu and Kim Sundeok 10 times each",
   "quest.side.oceanMaster": "Master of the Sea",
   "quest.side.oceanMaster.desc": "Catch a dragon seahorse and 5 tuna",
-
   "monster.jellyfish": "Jellyfish",
   "monster.shark": "Shark",
   "monster.seahorse": "Seahorse",
@@ -433,20 +428,16 @@
   "monster.shadowGumiho": "Shadow Gumiho",
   "monster.stormImugi": "Storm Imugi",
   "monster.millenniumImugi": "Millennium Imugi",
-
   "fish.seaBream": "Sea Bream",
   "fish.tuna": "Tuna",
   "fish.blowfish": "Blowfish",
   "fish.anglerfish": "Anglerfish",
   "fish.dragonSeahorse": "Dragon Seahorse",
-
   "weapon.dragonBlade": "Dragon Blade",
   "weapon.spiritBow": "Spirit Bow",
   "weapon.thunderHammer": "Thunder Hammer",
   "weapon.guardianStaff": "Guardian Staff",
-
   "ui.npc.reputation": "Village Reputation",
-
   "item.drop.jellyEssence": "Jelly Essence",
   "item.drop.sharkTooth": "Shark Tooth",
   "item.drop.seaCoral": "Sea Coral",
@@ -458,5 +449,9 @@
   "item.fish.tuna": "Tuna",
   "item.fish.blowfish": "Blowfish",
   "item.fish.anglerfish": "Anglerfish",
-  "item.fish.dragonSeahorse": "Dragon Seahorse"
+  "item.fish.dragonSeahorse": "Dragon Seahorse",
+  "item.special.weddingRing": "Wedding Ring",
+  "ui.dialog.propose": "Propose",
+  "ui.dialog.engaged": "You are engaged! The wedding is coming soon.",
+  "ui.dialog.married": "Your spouse."
 }

@@ -327,12 +327,10 @@
   "ui.saveload.deleteFailed": "삭제에 실패했습니다",
   "ui.title.loadFailed": "세이브 데이터를 불러올 수 없습니다",
   "ui.hint.talk": "대화하기",
-
   "npc.sanshinryeong": "산신령",
   "npc.captainHaeryong": "선장 해룡",
   "npc.islanderNari": "섬주민 나리",
   "npc.pirateGeomwang": "해적 검왕",
-
   "npc.kimSundeok.choice.kind": "오늘도 농사 잘 되셨나요? 정말 대단하세요!",
   "npc.kimSundeok.choice.neutral": "안녕하세요, 순덕 어머니.",
   "npc.kimSundeok.choice.cold": "바쁘니까 짧게 얘기하죠.",
@@ -375,7 +373,6 @@
   "npc.pirateGeomwang.choice.duel": "한 판 겨뤄봅시다!",
   "npc.pirateGeomwang.choice.negotiate": "서로 도움이 될 수 있을 거요.",
   "npc.pirateGeomwang.choice.flee": "무섭네요, 도망쳐야겠어요.",
-
   "quest.personal.kimSundeok": "순덕의 벼 이야기",
   "quest.personal.kimSundeok.desc": "김순덕에게 벼를 10개 가져가세요",
   "quest.personal.parkJeongsu": "마을의 역사",
@@ -396,7 +393,6 @@
   "quest.personal.ohKyungho.desc": "붕어를 10마리 잡아오세요",
   "quest.personal.yoonHaneul": "하늘의 고구마밭",
   "quest.personal.yoonHaneul.desc": "고구마를 8개 수확하세요",
-
   "quest.main.villageCouncil": "마을 의회 결성",
   "quest.main.villageCouncil.desc": "박정수에게 선물하고 마을을 방문하세요",
   "quest.main.sanshinryeongEncounter": "산신령과의 만남",
@@ -423,7 +419,6 @@
   "quest.side.villageHero.desc": "박정수와 김순덕에게 선물을 10번씩 하세요",
   "quest.side.oceanMaster": "바다의 달인",
   "quest.side.oceanMaster.desc": "전설의 해룡을 잡고 참치 5마리를 낚으세요",
-
   "monster.jellyfish": "해파리",
   "monster.shark": "상어",
   "monster.seahorse": "해마",
@@ -433,20 +428,16 @@
   "monster.shadowGumiho": "그림자 구미호",
   "monster.stormImugi": "폭풍 이무기",
   "monster.millenniumImugi": "천년 이무기",
-
   "fish.seaBream": "도미",
   "fish.tuna": "참치",
   "fish.blowfish": "복어",
   "fish.anglerfish": "아귀",
   "fish.dragonSeahorse": "해룡",
-
   "weapon.dragonBlade": "용검",
   "weapon.spiritBow": "영혼궁",
   "weapon.thunderHammer": "뇌신망치",
   "weapon.guardianStaff": "수호지팡이",
-
   "ui.npc.reputation": "마을 평판",
-
   "item.drop.jellyEssence": "해파리 정수",
   "item.drop.sharkTooth": "상어 이빨",
   "item.drop.seaCoral": "바다 산호",
@@ -458,5 +449,9 @@
   "item.fish.tuna": "참치",
   "item.fish.blowfish": "복어",
   "item.fish.anglerfish": "아귀",
-  "item.fish.dragonSeahorse": "해룡"
+  "item.fish.dragonSeahorse": "해룡",
+  "item.special.weddingRing": "결혼반지",
+  "ui.dialog.propose": "청혼하기",
+  "ui.dialog.engaged": "약혼한 사이입니다. 곧 결혼식이 열립니다!",
+  "ui.dialog.married": "당신의 배우자입니다."
 }

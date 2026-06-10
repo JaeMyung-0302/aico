@@ -10,6 +10,7 @@ import { TimeWeatherSystem } from "../systems/time-weather";
 import { FarmSystem, isFarmTile, FARM_ZONES } from "../systems/farm";
 import { InventorySystem } from "../systems/inventory";
 import { setupShopHandlers } from "../systems/shop";
+import { setupMarriageHandler } from "../systems/marriage-runtime";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -432,6 +433,7 @@ export class FarmScene extends Phaser.Scene {
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupMarriage = setupMarriageHandler(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
@@ -479,6 +481,10 @@ export class FarmScene extends Phaser.Scene {
           reputation: useGameStore.getState().reputation,
           completedSeasonalQuests: [],
           unlockedIsland: useGameStore.getState().unlockedIsland ?? false,
+          marriageStatus: useGameStore.getState().marriageStatus,
+          marriagePartnerId: useGameStore.getState().marriagePartnerId,
+          engagedAtDay: useGameStore.getState().engagedAtDay,
+          marriedAtDay: useGameStore.getState().marriedAtDay,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -527,6 +533,12 @@ export class FarmScene extends Phaser.Scene {
         npcSystem.setCurrentSeason(data.season);
         npcSystem.setLocation("farm", this);
         store.setUnlockedIsland(data.unlockedIsland ?? false);
+        store.setMarriage(
+          data.marriageStatus ?? "single",
+          data.marriagePartnerId ?? null,
+          data.engagedAtDay ?? null,
+          data.marriedAtDay ?? null,
+        );
         questSystem.loadState(
           data.activeQuests ?? [],
           data.completedQuests ?? [],
@@ -566,6 +578,7 @@ export class FarmScene extends Phaser.Scene {
       eventBus.off("inventory:changed", syncInventory);
       eventBus.off("inventory:equipped", syncInventory);
       cleanupShop();
+      cleanupMarriage();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);

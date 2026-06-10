@@ -9,6 +9,7 @@ import { QuestSystem } from "../systems/quest";
 import { EnergySystem } from "../systems/energy";
 import { setupRewardHandler } from "../systems/reward";
 import { setupShopHandlers } from "../systems/shop";
+import { setupMarriageHandler } from "../systems/marriage-runtime";
 import { NPCSystem } from "../systems/npc";
 import { FishingSystem } from "../systems/fishing";
 import { createPositionEmitter } from "../utils/position-emitter";
@@ -116,6 +117,7 @@ export class IslandScene extends Phaser.Scene {
     };
     eventBus.on("fishing:caught", onFishCaught);
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupMarriage = setupMarriageHandler(inventory, syncInventory);
 
     this.setupCollision(map);
     this.setupCamera(map);
@@ -134,6 +136,7 @@ export class IslandScene extends Phaser.Scene {
       this.npcSystem?.destroy();
       this.npcSystem = null;
       cleanupShop();
+      cleanupMarriage();
       questSystem.destroy();
       cleanupReward();
       this.fishingSystem?.destroy();

@@ -1,5 +1,5 @@
 import type Phaser from 'phaser'
-import type { FishDefinition, Season } from '@land-of-splendid-rivers-and-mountains/shared'
+import type { FishDefinition, FishLocation, Season } from '@land-of-splendid-rivers-and-mountains/shared'
 import { eventBus } from '@/lib/event-bus'
 import { useGameStore } from '@/stores/useGameStore'
 import type { IGameSystem } from './system-manager'
@@ -14,8 +14,11 @@ const REEL_DURATION_MS = 3000
 
 const allFish = fishData as ReadonlyArray<FishDefinition>
 
-const getSeasonalFish = (season: Season): ReadonlyArray<FishDefinition> =>
-  allFish.filter((f) => f.seasons.includes(season))
+export const getFishPool = (
+  season: Season,
+  location: FishLocation,
+): ReadonlyArray<FishDefinition> =>
+  allFish.filter((f) => f.seasons.includes(season) && f.location === location)
 
 const pickRandomFish = (candidates: ReadonlyArray<FishDefinition>): FishDefinition | null => {
   if (candidates.length === 0) return null
@@ -47,6 +50,11 @@ export class FishingSystem implements IGameSystem {
   private currentFish: FishDefinition | null = null
   private reelingProgress = 0
   private reelingTarget = 0
+  private location: FishLocation = 'river'
+
+  setLocation(location: FishLocation): void {
+    this.location = location
+  }
 
   init(_scene: Phaser.Scene): void {
     eventBus.on('fishing:reeling', this.onReelingResult)
@@ -75,7 +83,7 @@ export class FishingSystem implements IGameSystem {
     if (this.phase !== 'idle') return false
 
     const season = useGameStore.getState().season
-    const candidates = getSeasonalFish(season)
+    const candidates = getFishPool(season, this.location)
     if (candidates.length === 0) return false
 
     this.currentFish = pickRandomFish(candidates)

@@ -22,6 +22,7 @@ export type {
   MonsterDefinition,
   WeaponDefinition,
   FishDefinition,
+  FishLocation,
   EventDefinition,
   QuestDefinition,
   NpcScheduleEntry,

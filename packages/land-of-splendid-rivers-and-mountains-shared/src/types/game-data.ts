@@ -111,6 +111,8 @@ export interface WeaponDefinition {
   readonly energyCost: number;
 }
 
+export type FishLocation = "river" | "ocean";
+
 export interface FishDefinition {
   readonly id: string;
   readonly nameKey: string;
@@ -118,6 +120,7 @@ export interface FishDefinition {
   readonly difficulty: number;
   readonly basePrice: number;
   readonly rarity: "common" | "uncommon" | "rare" | "legendary";
+  readonly location: FishLocation;
 }
 
 export interface QuestDefinition {

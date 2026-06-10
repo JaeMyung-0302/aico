@@ -5,6 +5,7 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { QuestSystem } from "../systems/quest";
 import { FishingSystem } from "../systems/fishing";
 import { EnergySystem } from "../systems/energy";
 import { setupRewardHandler } from "../systems/reward";
@@ -70,6 +71,14 @@ export class RiverScene extends Phaser.Scene {
 
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
+
+    const questSystem = new QuestSystem();
+    questSystem.init(this);
+    questSystem.loadState(
+      store.activeQuests,
+      store.completedQuests,
+      store.questProgress,
+    );
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
 
     const energySystem = new EnergySystem();
@@ -94,9 +103,13 @@ export class RiverScene extends Phaser.Scene {
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
+        activeQuests: [...questSystem.getState().active],
+        completedQuests: [...questSystem.getState().completed],
+        questProgress: questSystem.getState().progress,
       });
       inventory.destroy();
       cleanupShop();
+      questSystem.destroy();
       cleanupReward();
       this.fishingSystem.destroy();
       eventBus.off("fishing:caught", onFishCaught);

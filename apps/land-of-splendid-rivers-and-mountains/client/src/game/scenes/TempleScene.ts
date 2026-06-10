@@ -5,6 +5,7 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { QuestSystem } from "../systems/quest";
 import { setupRewardHandler } from "../systems/reward";
 import { NPCSystem } from "../systems/npc";
 import { createPositionEmitter } from "../utils/position-emitter";
@@ -75,6 +76,14 @@ export class TempleScene extends Phaser.Scene {
 
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
+
+    const questSystem = new QuestSystem();
+    questSystem.init(this);
+    questSystem.loadState(
+      store.activeQuests,
+      store.completedQuests,
+      store.questProgress,
+    );
     eventBus.on("npc:giftRequested", onGiftRequested);
 
     const npcSystem = new NPCSystem();
@@ -93,11 +102,15 @@ export class TempleScene extends Phaser.Scene {
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
+        activeQuests: [...questSystem.getState().active],
+        completedQuests: [...questSystem.getState().completed],
+        questProgress: questSystem.getState().progress,
         npcRelations: useGameStore.getState().npcRelations,
       });
       inventory.destroy();
       this.npcSystem?.destroy();
       this.npcSystem = null;
+      questSystem.destroy();
       cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);

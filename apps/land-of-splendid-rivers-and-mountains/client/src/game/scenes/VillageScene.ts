@@ -8,6 +8,7 @@ import { TouchInput } from "../input/touch-input";
 import { SystemManager } from "../systems/system-manager";
 import { TimeWeatherSystem } from "../systems/time-weather";
 import { InventorySystem } from "../systems/inventory";
+import { setupShopHandlers } from "../systems/shop";
 import { setupRewardHandler } from "../systems/reward";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
@@ -22,18 +23,11 @@ import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { useGameStore } from "@/stores/useGameStore";
 import { saveManager, SAVE_VERSION } from "@/lib/save-manager";
-import type {
-  CropDefinition,
-  ItemDefinition,
-} from "@land-of-splendid-rivers-and-mountains/shared";
+import type { CropDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 import cropsData from "../data/crops.json";
-import itemsData from "../data/items.json";
 
 const cropMap = new Map<string, CropDefinition>(
   (cropsData as ReadonlyArray<CropDefinition>).map((c) => [c.id, c]),
-);
-const itemMap = new Map<string, ItemDefinition>(
-  (itemsData as ReadonlyArray<ItemDefinition>).map((item) => [item.id, item]),
 );
 
 const PLAYER_SPAWN_X = 14;
@@ -141,39 +135,7 @@ export class VillageScene extends Phaser.Scene {
       syncInventory();
     };
 
-    const onShopBuy = ({ itemId }: { itemId: string }) => {
-      if (!itemId.startsWith("seed-")) return;
-      const cropId = itemId.slice(5);
-      const cropDef = cropMap.get(cropId);
-      if (!cropDef) return;
-      const store = useGameStore.getState();
-      if (store.gold < cropDef.seedPrice) return;
-      if (!inventory.addItem(itemId)) return;
-      const newGold = store.gold - cropDef.seedPrice;
-      eventBus.emit("gold:changed", {
-        amount: -cropDef.seedPrice,
-        total: newGold,
-      });
-      syncInventory();
-    };
 
-    const onShopSell = ({
-      itemId,
-      quantity,
-    }: {
-      itemId: string;
-      quantity: number;
-    }) => {
-      const def = itemMap.get(itemId);
-      if (!def || def.sellPrice <= 0) return;
-      if (!inventory.hasItem(itemId, quantity)) return;
-      inventory.removeItem(itemId, quantity);
-      const earnings = def.sellPrice * quantity;
-      const store = useGameStore.getState();
-      const newGold = store.gold + earnings;
-      eventBus.emit("gold:changed", { amount: earnings, total: newGold });
-      syncInventory();
-    };
 
     const syncFermentation = () => {
       const slots: {
@@ -343,8 +305,7 @@ export class VillageScene extends Phaser.Scene {
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
-    eventBus.on("shop:buy", onShopBuy);
-    eventBus.on("shop:sell", onShopSell);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
@@ -477,8 +438,7 @@ export class VillageScene extends Phaser.Scene {
       eventBus.off("inventory:changed", syncInventory);
       cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
-      eventBus.off("shop:buy", onShopBuy);
-      eventBus.off("shop:sell", onShopSell);
+      cleanupShop();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);

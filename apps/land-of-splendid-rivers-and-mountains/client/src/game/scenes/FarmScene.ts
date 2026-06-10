@@ -1,9 +1,6 @@
 import Phaser from "phaser";
 import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
-import type {
-  CropDefinition,
-  ItemDefinition,
-} from "@land-of-splendid-rivers-and-mountains/shared";
+import type { CropDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 import { Player } from "../entities/Player";
 import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
@@ -12,6 +9,7 @@ import { SystemManager } from "../systems/system-manager";
 import { TimeWeatherSystem } from "../systems/time-weather";
 import { FarmSystem, isFarmTile, FARM_ZONES } from "../systems/farm";
 import { InventorySystem } from "../systems/inventory";
+import { setupShopHandlers } from "../systems/shop";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -29,13 +27,9 @@ import { eventBus } from "@/lib/event-bus";
 import { useGameStore } from "@/stores/useGameStore";
 import { saveManager, SAVE_VERSION } from "@/lib/save-manager";
 import cropsData from "../data/crops.json";
-import itemsData from "../data/items.json";
 
 const cropMap = new Map<string, CropDefinition>(
   (cropsData as ReadonlyArray<CropDefinition>).map((c) => [c.id, c]),
-);
-const itemMap = new Map<string, ItemDefinition>(
-  (itemsData as ReadonlyArray<ItemDefinition>).map((item) => [item.id, item]),
 );
 
 const PLAYER_SPAWN_X = 22;
@@ -190,41 +184,7 @@ export class FarmScene extends Phaser.Scene {
     };
     this.syncInventoryFn = syncInventory;
 
-    const onShopBuy = ({ itemId }: { itemId: string }) => {
-      if (!itemId.startsWith("seed-")) return;
-      const cropId = itemId.slice(5);
-      const cropDef = cropMap.get(cropId);
-      if (!cropDef) return;
 
-      const store = useGameStore.getState();
-      if (store.gold < cropDef.seedPrice) return;
-      if (!inventory.addItem(itemId)) return;
-      const newGold = store.gold - cropDef.seedPrice;
-      eventBus.emit("gold:changed", {
-        amount: -cropDef.seedPrice,
-        total: newGold,
-      });
-      syncInventory();
-    };
-
-    const onShopSell = ({
-      itemId,
-      quantity,
-    }: {
-      itemId: string;
-      quantity: number;
-    }) => {
-      const def = itemMap.get(itemId);
-      if (!def || def.sellPrice <= 0) return;
-      if (!inventory.hasItem(itemId, quantity)) return;
-
-      inventory.removeItem(itemId, quantity);
-      const earnings = def.sellPrice * quantity;
-      const store = useGameStore.getState();
-      const newGold = store.gold + earnings;
-      eventBus.emit("gold:changed", { amount: earnings, total: newGold });
-      syncInventory();
-    };
 
     const onGiftRequested = ({
       npcId,
@@ -471,8 +431,7 @@ export class FarmScene extends Phaser.Scene {
     eventBus.on("combat:playerDied", onCombatPlayerDied);
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
-    eventBus.on("shop:buy", onShopBuy);
-    eventBus.on("shop:sell", onShopSell);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
@@ -604,8 +563,7 @@ export class FarmScene extends Phaser.Scene {
       eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:changed", syncInventory);
       eventBus.off("inventory:equipped", syncInventory);
-      eventBus.off("shop:buy", onShopBuy);
-      eventBus.off("shop:sell", onShopSell);
+      cleanupShop();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);

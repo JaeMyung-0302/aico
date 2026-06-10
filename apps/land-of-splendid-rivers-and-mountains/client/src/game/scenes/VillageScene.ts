@@ -458,6 +458,10 @@ export class VillageScene extends Phaser.Scene {
 
     if (saveManager.hasSave()) {
       saveManager.load();
+    } else {
+      // 새 게임 시작 키트: 물뿌리개 없이는 작물이 성장하지 않아 첫 수확 퀘스트 진행 불가
+      inventory.addItem("tool-wateringCan");
+      syncInventory();
     }
 
     this.setupCollision(map);

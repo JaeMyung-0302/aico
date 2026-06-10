@@ -7,8 +7,14 @@
     "defense": 2,
     "speed": 60,
     "drops": [
-      { "itemId": "iron", "chance": 0.3 },
-      { "itemId": "stone", "chance": 0.5 }
+      {
+        "itemId": "iron",
+        "chance": 0.3
+      },
+      {
+        "itemId": "stone",
+        "chance": 0.5
+      }
     ],
     "expReward": 15
   },
@@ -20,8 +26,14 @@
     "defense": 3,
     "speed": 90,
     "drops": [
-      { "itemId": "drop-foxTail", "chance": 0.2 },
-      { "itemId": "crop-ginseng", "chance": 0.15 }
+      {
+        "itemId": "drop-foxTail",
+        "chance": 0.2
+      },
+      {
+        "itemId": "crop-ginseng",
+        "chance": 0.15
+      }
     ],
     "expReward": 35
   },
@@ -33,8 +45,14 @@
     "defense": 8,
     "speed": 40,
     "drops": [
-      { "itemId": "iron", "chance": 0.6 },
-      { "itemId": "drop-monsterHide", "chance": 0.3 }
+      {
+        "itemId": "iron",
+        "chance": 0.6
+      },
+      {
+        "itemId": "drop-monsterHide",
+        "chance": 0.3
+      }
     ],
     "expReward": 50
   },
@@ -46,8 +64,14 @@
     "defense": 6,
     "speed": 70,
     "drops": [
-      { "itemId": "drop-dragonScale", "chance": 0.15 },
-      { "itemId": "drop-monsterHide", "chance": 0.4 }
+      {
+        "itemId": "drop-dragonScale",
+        "chance": 0.15
+      },
+      {
+        "itemId": "drop-monsterHide",
+        "chance": 0.4
+      }
     ],
     "expReward": 80
   },
@@ -59,8 +83,14 @@
     "defense": 5,
     "speed": 50,
     "drops": [
-      { "itemId": "stone", "chance": 0.5 },
-      { "itemId": "drop-spiritOrb", "chance": 0.1 }
+      {
+        "itemId": "stone",
+        "chance": 0.5
+      },
+      {
+        "itemId": "drop-spiritOrb",
+        "chance": 0.1
+      }
     ],
     "expReward": 25
   },
@@ -72,8 +102,14 @@
     "defense": 1,
     "speed": 45,
     "drops": [
-      { "itemId": "wood", "chance": 0.4 },
-      { "itemId": "fertilizer", "chance": 0.3 }
+      {
+        "itemId": "wood",
+        "chance": 0.4
+      },
+      {
+        "itemId": "fertilizer",
+        "chance": 0.3
+      }
     ],
     "expReward": 10
   },
@@ -85,8 +121,14 @@
     "defense": 3,
     "speed": 80,
     "drops": [
-      { "itemId": "drop-foxTail", "chance": 0.15 },
-      { "itemId": "wood", "chance": 0.4 }
+      {
+        "itemId": "drop-foxTail",
+        "chance": 0.15
+      },
+      {
+        "itemId": "wood",
+        "chance": 0.4
+      }
     ],
     "expReward": 20
   },
@@ -98,8 +140,14 @@
     "defense": 2,
     "speed": 75,
     "drops": [
-      { "itemId": "drop-monsterHide", "chance": 0.25 },
-      { "itemId": "drop-spiritOrb", "chance": 0.1 }
+      {
+        "itemId": "drop-monsterHide",
+        "chance": 0.25
+      },
+      {
+        "itemId": "drop-spiritOrb",
+        "chance": 0.1
+      }
     ],
     "expReward": 30
   },
@@ -110,7 +158,12 @@
     "attack": 11,
     "defense": 0,
     "speed": 65,
-    "drops": [{ "itemId": "drop-spiritOrb", "chance": 0.25 }],
+    "drops": [
+      {
+        "itemId": "drop-spiritOrb",
+        "chance": 0.25
+      }
+    ],
     "expReward": 20
   },
   {
@@ -121,8 +174,14 @@
     "defense": 1,
     "speed": 55,
     "drops": [
-      { "itemId": "animal-egg", "chance": 0.3 },
-      { "itemId": "stone", "chance": 0.4 }
+      {
+        "itemId": "animal-egg",
+        "chance": 0.3
+      },
+      {
+        "itemId": "stone",
+        "chance": 0.4
+      }
     ],
     "expReward": 8
   },
@@ -133,7 +192,12 @@
     "attack": 10,
     "defense": 1,
     "speed": 70,
-    "drops": [{ "itemId": "drop-jellyEssence", "chance": 0.4 }],
+    "drops": [
+      {
+        "itemId": "drop-jellyEssence",
+        "chance": 0.4
+      }
+    ],
     "expReward": 18
   },
   {
@@ -144,8 +208,14 @@
     "defense": 5,
     "speed": 85,
     "drops": [
-      { "itemId": "drop-sharkTooth", "chance": 0.3 },
-      { "itemId": "drop-monsterHide", "chance": 0.5 }
+      {
+        "itemId": "drop-sharkTooth",
+        "chance": 0.3
+      },
+      {
+        "itemId": "drop-monsterHide",
+        "chance": 0.5
+      }
     ],
     "expReward": 60
   },
@@ -156,7 +226,12 @@
     "attack": 7,
     "defense": 3,
     "speed": 50,
-    "drops": [{ "itemId": "drop-seaCoral", "chance": 0.5 }],
+    "drops": [
+      {
+        "itemId": "drop-seaCoral",
+        "chance": 0.5
+      }
+    ],
     "expReward": 12
   },
   {
@@ -167,8 +242,14 @@
     "defense": 4,
     "speed": 65,
     "drops": [
-      { "itemId": "drop-inkSac", "chance": 0.4 },
-      { "itemId": "drop-seaCoral", "chance": 0.2 }
+      {
+        "itemId": "drop-inkSac",
+        "chance": 0.4
+      },
+      {
+        "itemId": "drop-seaCoral",
+        "chance": 0.2
+      }
     ],
     "expReward": 40
   },
@@ -180,8 +261,14 @@
     "defense": 8,
     "speed": 75,
     "drops": [
-      { "itemId": "drop-mermaidScale", "chance": 0.2 },
-      { "itemId": "drop-spiritOrb", "chance": 0.3 }
+      {
+        "itemId": "drop-mermaidScale",
+        "chance": 0.2
+      },
+      {
+        "itemId": "drop-spiritOrb",
+        "chance": 0.3
+      }
     ],
     "expReward": 100
   },
@@ -193,8 +280,14 @@
     "defense": 5,
     "speed": 70,
     "drops": [
-      { "itemId": "drop-darkEssence", "chance": 0.4 },
-      { "itemId": "iron", "chance": 0.5 }
+      {
+        "itemId": "drop-darkEssence",
+        "chance": 0.4
+      },
+      {
+        "itemId": "iron",
+        "chance": 0.5
+      }
     ],
     "expReward": 45
   },
@@ -206,8 +299,14 @@
     "defense": 6,
     "speed": 95,
     "drops": [
-      { "itemId": "drop-darkEssence", "chance": 0.3 },
-      { "itemId": "drop-foxTail", "chance": 0.4 }
+      {
+        "itemId": "drop-darkEssence",
+        "chance": 0.3
+      },
+      {
+        "itemId": "drop-foxTail",
+        "chance": 0.4
+      }
     ],
     "expReward": 70
   },
@@ -219,8 +318,14 @@
     "defense": 10,
     "speed": 80,
     "drops": [
-      { "itemId": "drop-dragonScale", "chance": 0.3 },
-      { "itemId": "drop-darkEssence", "chance": 0.5 }
+      {
+        "itemId": "drop-dragonScale",
+        "chance": 0.3
+      },
+      {
+        "itemId": "drop-darkEssence",
+        "chance": 0.5
+      }
     ],
     "expReward": 120
   },
@@ -232,9 +337,34 @@
     "defense": 15,
     "speed": 60,
     "drops": [
-      { "itemId": "drop-dragonOrb", "chance": 1.0 },
-      { "itemId": "drop-dragonScale", "chance": 1.0 }
+      {
+        "itemId": "drop-dragonOrb",
+        "chance": 1.0
+      },
+      {
+        "itemId": "drop-dragonScale",
+        "chance": 1.0
+      }
     ],
     "expReward": 500
+  },
+  {
+    "id": "pirateKing",
+    "nameKey": "monster.pirateKing",
+    "hp": 200,
+    "attack": 20,
+    "defense": 6,
+    "speed": 60,
+    "drops": [
+      {
+        "itemId": "drop-pirateGold",
+        "chance": 1.0
+      },
+      {
+        "itemId": "iron",
+        "chance": 0.8
+      }
+    ],
+    "expReward": 120
   }
 ]

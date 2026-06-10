@@ -461,5 +461,7 @@
   "ui.trade.buy": "매수",
   "ui.trade.sell": "매도",
   "ui.trade.noPort": "이곳에는 교역소가 없습니다. 장터나 섬에서 교역하세요.",
-  "ui.trade.owned": "보유"
+  "ui.trade.owned": "보유",
+  "monster.pirateKing": "해적왕 검은수염",
+  "item.drop.pirateGold": "해적의 금화"
 }

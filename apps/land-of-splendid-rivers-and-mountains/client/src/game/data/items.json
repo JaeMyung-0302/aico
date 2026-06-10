@@ -726,5 +726,13 @@
     "stackable": true,
     "maxStack": 99,
     "sellPrice": 0
+  },
+  {
+    "id": "drop-pirateGold",
+    "nameKey": "item.drop.pirateGold",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 500
   }
 ]

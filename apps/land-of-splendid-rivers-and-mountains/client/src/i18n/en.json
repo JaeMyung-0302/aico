@@ -461,5 +461,7 @@
   "ui.trade.buy": "Buy",
   "ui.trade.sell": "Sell",
   "ui.trade.noPort": "No trading post here. Trade at the Market or Island.",
-  "ui.trade.owned": "Owned"
+  "ui.trade.owned": "Owned",
+  "monster.pirateKing": "Pirate King Blackbeard",
+  "item.drop.pirateGold": "Pirate Gold"
 }

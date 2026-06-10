@@ -229,6 +229,12 @@ export class IslandScene extends Phaser.Scene {
       this.isTransitioning = true;
       this.scene.start("BeachScene", { spawnX: 12, spawnY: 28 });
     }
+
+    // 해적 소굴 입구 (남서쪽 동굴)
+    if (tileY >= 28 && tileX <= 3) {
+      this.isTransitioning = true;
+      this.scene.start("PirateScene");
+    }
   }
 
   private createTilesetTexture(): void {

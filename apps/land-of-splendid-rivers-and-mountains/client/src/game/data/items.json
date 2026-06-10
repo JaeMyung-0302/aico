@@ -535,7 +535,6 @@
     "maxStack": 99,
     "sellPrice": 800
   },
-
   {
     "id": "seed-strawberry",
     "nameKey": "item.seed.strawberry",
@@ -600,7 +599,6 @@
     "maxStack": 99,
     "sellPrice": 180
   },
-
   {
     "id": "drop-jellyEssence",
     "nameKey": "item.drop.jellyEssence",
@@ -657,7 +655,6 @@
     "maxStack": 1,
     "sellPrice": 5000
   },
-
   {
     "id": "fish-seaBream",
     "nameKey": "item.fish.seaBream",
@@ -697,5 +694,13 @@
     "stackable": true,
     "maxStack": 99,
     "sellPrice": 1200
+  },
+  {
+    "id": "item-wedding-ring",
+    "nameKey": "item.special.weddingRing",
+    "type": "material",
+    "stackable": false,
+    "maxStack": 1,
+    "sellPrice": 0
   }
 ]

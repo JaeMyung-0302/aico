@@ -49,6 +49,10 @@ interface GameState {
   readonly dialogOpen: boolean;
   readonly reputation: number;
   readonly unlockedIsland: boolean;
+  readonly marriageStatus: "single" | "dating" | "engaged" | "married";
+  readonly marriagePartnerId: string | null;
+  readonly engagedAtDay: number | null;
+  readonly marriedAtDay: number | null;
 }
 
 interface GameActions {
@@ -96,6 +100,12 @@ interface GameActions {
   setDialogOpen: (open: boolean) => void;
   setReputation: (reputation: number) => void;
   setUnlockedIsland: (unlocked: boolean) => void;
+  setMarriage: (
+    status: "single" | "dating" | "engaged" | "married",
+    partnerId: string | null,
+    engagedAtDay: number | null,
+    marriedAtDay: number | null,
+  ) => void;
   reset: () => void;
 }
 
@@ -134,6 +144,10 @@ const initialState: GameState = {
   dialogOpen: false,
   reputation: 0,
   unlockedIsland: false,
+  marriageStatus: "single",
+  marriagePartnerId: null,
+  engagedAtDay: null,
+  marriedAtDay: null,
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -198,6 +212,8 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setReputation: (reputation) => set({ reputation }),
 
   setUnlockedIsland: (unlockedIsland) => set({ unlockedIsland }),
+  setMarriage: (marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay) =>
+    set({ marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay }),
 
   reset: () => set(initialState),
 }));

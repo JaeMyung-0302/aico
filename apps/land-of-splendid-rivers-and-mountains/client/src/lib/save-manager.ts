@@ -49,6 +49,7 @@ export interface SaveData {
   readonly marriagePartnerId?: string | null;
   readonly engagedAtDay?: number | null;
   readonly marriedAtDay?: number | null;
+  readonly summonedGuardians?: ReadonlyArray<string>;
 }
 
 const REQUIRED_SAVE_FIELDS = [

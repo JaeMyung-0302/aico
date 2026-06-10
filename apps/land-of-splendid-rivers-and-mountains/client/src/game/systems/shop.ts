@@ -26,6 +26,11 @@ export const TOOL_PRICES: Readonly<Record<string, number>> = {
   "tool-fishingRod": 400,
   // 특수 비스택 상품 — 결혼반지 (Ch.3 청혼 필수품)
   "item-wedding-ring": 5000,
+  // 수호신 부적 (Ch.5 소환 재료)
+  "talisman-spring": 1000,
+  "talisman-summer": 2000,
+  "talisman-autumn": 3500,
+  "talisman-winter": 5000,
 };
 
 /**

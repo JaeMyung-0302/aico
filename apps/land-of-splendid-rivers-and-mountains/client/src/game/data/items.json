@@ -734,5 +734,37 @@
     "stackable": true,
     "maxStack": 99,
     "sellPrice": 500
+  },
+  {
+    "id": "talisman-spring",
+    "nameKey": "item.talisman.spring",
+    "type": "material",
+    "stackable": false,
+    "maxStack": 1,
+    "sellPrice": 0
+  },
+  {
+    "id": "talisman-summer",
+    "nameKey": "item.talisman.summer",
+    "type": "material",
+    "stackable": false,
+    "maxStack": 1,
+    "sellPrice": 0
+  },
+  {
+    "id": "talisman-autumn",
+    "nameKey": "item.talisman.autumn",
+    "type": "material",
+    "stackable": false,
+    "maxStack": 1,
+    "sellPrice": 0
+  },
+  {
+    "id": "talisman-winter",
+    "nameKey": "item.talisman.winter",
+    "type": "material",
+    "stackable": false,
+    "maxStack": 1,
+    "sellPrice": 0
   }
 ]

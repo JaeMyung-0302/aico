@@ -136,8 +136,6 @@ export class VillageScene extends Phaser.Scene {
       syncInventory();
     };
 
-
-
     const syncFermentation = () => {
       const slots: {
         slotIndex: number;
@@ -384,6 +382,9 @@ export class VillageScene extends Phaser.Scene {
         cachedActiveEventId = data.activeEventId ?? null;
         cachedReputation = data.reputation ?? 0;
         cachedUnlockedIsland = data.unlockedIsland ?? false;
+        // Farm 복원기와 달리 store 반영이 누락되어 마을에서 이어하기 시
+        // 섬 해금이 풀리던 버그 — 변수 캐시와 함께 store에도 반영.
+        useGameStore.getState().setUnlockedIsland(cachedUnlockedIsland);
         useGameStore
           .getState()
           .setMarriage(

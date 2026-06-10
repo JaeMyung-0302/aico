@@ -7,6 +7,7 @@ import { TouchInput } from "../input/touch-input";
 import { CombatSystem } from "../systems/combat";
 import { EnergySystem } from "../systems/energy";
 import { InventorySystem } from "../systems/inventory";
+import { setupShopHandlers } from "../systems/shop";
 import { QuestSystem } from "../systems/quest";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -239,6 +240,7 @@ export class DungeonScene extends Phaser.Scene {
     eventBus.on("combat:playerHit", onCombatPlayerHit);
     eventBus.on("combat:playerDied", onCombatPlayerDied);
     eventBus.on("energy:fainted", onFainted);
+    const cleanupShop = setupShopHandlers(this.inventory, syncInventory);
 
     useGameStore.getState().setDungeonFloor(1, MAX_FLOORS);
     eventBus.emit("dungeon:entered", { floor: 1 });
@@ -249,6 +251,7 @@ export class DungeonScene extends Phaser.Scene {
     this.setupCamera(map);
 
     this.events.once("shutdown", () => {
+      cleanupShop();
       eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("combat:defeated", onCombatDefeated);

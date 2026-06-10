@@ -7,7 +7,9 @@ import type { IGameSystem } from "./system-manager";
 import { Monster } from "../entities/Monster";
 import { ObjectPool } from "./object-pool";
 import { getFallbackMonsterDef } from "./monster-defs";
+import { applyExp, LEVEL_UP_BONUS } from "./leveling";
 import { eventBus } from "@/lib/event-bus";
+import { useGameStore } from "@/stores/useGameStore";
 import monstersData from "../data/monsters.json";
 import weaponsData from "../data/weapons.json";
 
@@ -41,6 +43,8 @@ export class CombatSystem implements IGameSystem {
   private maxHp = PLAYER_MAX_HP_BASE;
   private attack = 5;
   private defense = 2;
+  private level = useGameStore.getState().playerLevel;
+  private exp = useGameStore.getState().playerExp;
 
   private readonly monsters: Map<string, Monster> = new Map();
   private monsterPool: ObjectPool<Monster> | null = null;
@@ -354,6 +358,21 @@ export class CombatSystem implements IGameSystem {
     eventBus.emit("energy:fainted", { goldPenaltyRate: 0.1 });
   }
 
+  private gainExp(amount: number): void {
+    const result = applyExp(this.level, this.exp, amount);
+    if (result.levelsGained > 0) {
+      this.maxHp += LEVEL_UP_BONUS.maxHp * result.levelsGained;
+      this.attack += LEVEL_UP_BONUS.attack * result.levelsGained;
+      this.defense += LEVEL_UP_BONUS.defense * result.levelsGained;
+      this.hp = this.maxHp; // 레벨업 시 완전 회복
+      eventBus.emit("combat:levelUp", { level: result.level });
+      this.emitPlayerHp();
+    }
+    this.level = result.level;
+    this.exp = result.exp;
+    useGameStore.getState().setPlayerLevel(this.level, this.exp);
+  }
+
   private onMonsterDefeated(instanceId: string, monster: Monster): void {
     const def = monster.definition;
     const drops: { itemId: string; quantity: number }[] = [];
@@ -365,6 +384,7 @@ export class CombatSystem implements IGameSystem {
     }
 
     eventBus.emit("combat:defeated", { monsterId: def.id, drops });
+    this.gainExp(def.expReward);
 
     this.scene.time.delayedCall(300, () => {
       if (!this.monsters.has(instanceId)) return;

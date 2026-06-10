@@ -5,6 +5,7 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { saveManager } from "@/lib/save-manager";
@@ -61,6 +62,7 @@ export class BeachScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
 
     this.setupCollision(map);
     this.setupCamera(map);
@@ -72,6 +74,7 @@ export class BeachScene extends Phaser.Scene {
         inventory: [...inventory.getSlots()],
       });
       inventory.destroy();
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       this.keyboardInput.destroy();
       this.touchInput.destroy();

@@ -5,6 +5,7 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
 import { setupShopHandlers } from "../systems/shop";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -62,6 +63,7 @@ export class RiverScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
 
     this.setupCollision(map);
@@ -75,6 +77,7 @@ export class RiverScene extends Phaser.Scene {
       });
       inventory.destroy();
       cleanupShop();
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       this.keyboardInput.destroy();
       this.touchInput.destroy();

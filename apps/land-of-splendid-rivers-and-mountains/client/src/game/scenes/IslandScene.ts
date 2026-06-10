@@ -5,6 +5,7 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
 import { setupShopHandlers } from "../systems/shop";
 import { NPCSystem } from "../systems/npc";
 import { FishingSystem } from "../systems/fishing";
@@ -85,6 +86,7 @@ export class IslandScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     const cleanupShop = setupShopHandlers(inventory, syncInventory);
 
@@ -102,6 +104,7 @@ export class IslandScene extends Phaser.Scene {
       this.npcSystem?.destroy();
       this.npcSystem = null;
       cleanupShop();
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);
       this.keyboardInput.destroy();

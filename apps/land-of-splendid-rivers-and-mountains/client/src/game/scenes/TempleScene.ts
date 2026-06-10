@@ -5,6 +5,7 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
 import { NPCSystem } from "../systems/npc";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
@@ -73,6 +74,7 @@ export class TempleScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
 
     const npcSystem = new NPCSystem();
@@ -96,6 +98,7 @@ export class TempleScene extends Phaser.Scene {
       inventory.destroy();
       this.npcSystem?.destroy();
       this.npcSystem = null;
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);
       this.keyboardInput.destroy();

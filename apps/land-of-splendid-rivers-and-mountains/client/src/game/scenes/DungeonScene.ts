@@ -7,6 +7,7 @@ import { TouchInput } from "../input/touch-input";
 import { CombatSystem } from "../systems/combat";
 import { EnergySystem } from "../systems/energy";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
 import { setupShopHandlers } from "../systems/shop";
 import { QuestSystem } from "../systems/quest";
 import { createPositionEmitter } from "../utils/position-emitter";
@@ -236,6 +237,7 @@ export class DungeonScene extends Phaser.Scene {
 
     eventBus.on("inventory:useFood", onUseFood);
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(this.inventory, syncInventory);
     eventBus.on("combat:defeated", onCombatDefeated);
     eventBus.on("combat:playerHit", onCombatPlayerHit);
     eventBus.on("combat:playerDied", onCombatPlayerDied);
@@ -253,6 +255,7 @@ export class DungeonScene extends Phaser.Scene {
     this.events.once("shutdown", () => {
       cleanupShop();
       eventBus.off("inventory:useFood", onUseFood);
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("combat:defeated", onCombatDefeated);
       eventBus.off("combat:playerHit", onCombatPlayerHit);

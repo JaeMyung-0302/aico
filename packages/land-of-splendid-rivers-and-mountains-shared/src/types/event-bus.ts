@@ -46,6 +46,8 @@ export interface GameEvents {
   "gold:changed": { amount: number; total: number };
   "shop:buy": { itemId: string };
   "trade:buy": { itemId: string };
+  "guardian:summon": { guardianId: string };
+  "guardian:summoned": { guardianId: string };
   "trade:sell": { itemId: string };
   "shop:sell": { itemId: string; quantity: number };
   "crafting:cook": { recipeId: string };

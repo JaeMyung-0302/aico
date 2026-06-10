@@ -15,6 +15,17 @@ const itemMap = new Map<string, ItemDefinition>(
   (itemsData as ReadonlyArray<ItemDefinition>).map((i) => [i.id, i]),
 );
 
+// 도구 판매가 (대장간). 도구는 비스택형 — 미보유 시에만 구매 가능.
+// 물뿌리개는 시작 지급, 낚싯대는 퀘스트 보상이므로 분실 대비 저가 재구매용.
+export const TOOL_PRICES: Readonly<Record<string, number>> = {
+  "tool-hoe": 300,
+  "tool-axe": 500,
+  "tool-pickaxe": 500,
+  "tool-sword": 800,
+  "tool-wateringCan": 100,
+  "tool-fishingRod": 400,
+};
+
 /**
  * 씬 공용 상점 구매/판매 핸들러 등록.
  * ShopPanel은 어느 씬에서나 열 수 있으므로, InventorySystem을 가진 씬은
@@ -26,16 +37,24 @@ export const setupShopHandlers = (
   syncInventory: () => void,
 ): (() => void) => {
   const onShopBuy = ({ itemId }: { itemId: string }) => {
-    if (!itemId.startsWith("seed-")) return;
-    const cropDef = cropMap.get(itemId.slice(5));
-    if (!cropDef) return;
+    let price: number;
+    if (itemId.startsWith("seed-")) {
+      const cropDef = cropMap.get(itemId.slice(5));
+      if (!cropDef) return;
+      price = cropDef.seedPrice;
+    } else if (TOOL_PRICES[itemId] !== undefined) {
+      if (inventory.hasItem(itemId)) return;
+      price = TOOL_PRICES[itemId];
+    } else {
+      return;
+    }
 
     const store = useGameStore.getState();
-    if (store.gold < cropDef.seedPrice) return;
+    if (store.gold < price) return;
     if (!inventory.addItem(itemId)) return;
     eventBus.emit("gold:changed", {
-      amount: -cropDef.seedPrice,
-      total: store.gold - cropDef.seedPrice,
+      amount: -price,
+      total: store.gold - price,
     });
     syncInventory();
   };

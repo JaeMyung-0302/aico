@@ -54,6 +54,8 @@ export interface SaveData {
   readonly defeatedBosses?: ReadonlyArray<string>;
   readonly endingReached?: string | null;
   readonly farmDecorations?: ReadonlyArray<FarmDecorationState>;
+  readonly dexDiscovered?: Readonly<Record<string, ReadonlyArray<string>>>;
+  readonly dexMilestonesGranted?: ReadonlyArray<number>;
 }
 
 const REQUIRED_SAVE_FIELDS = [

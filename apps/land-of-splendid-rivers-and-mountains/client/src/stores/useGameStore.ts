@@ -57,6 +57,8 @@ interface GameState {
   readonly defeatedBosses: ReadonlyArray<string>;
   readonly endingReached: string | null;
   readonly farmDecorations: ReadonlyArray<FarmDecorationState>;
+  readonly dexDiscovered: Readonly<Record<string, ReadonlyArray<string>>>;
+  readonly dexMilestonesGranted: ReadonlyArray<number>;
 }
 
 export interface FarmDecorationState {
@@ -123,6 +125,10 @@ interface GameActions {
   setDefeatedBosses: (ids: ReadonlyArray<string>) => void;
   setEndingReached: (endingId: string | null) => void;
   setFarmDecorations: (decorations: ReadonlyArray<FarmDecorationState>) => void;
+  setDexDiscovered: (
+    discovered: Readonly<Record<string, ReadonlyArray<string>>>,
+  ) => void;
+  setDexMilestonesGranted: (percents: ReadonlyArray<number>) => void;
   reset: () => void;
 }
 
@@ -169,6 +175,8 @@ const initialState: GameState = {
   defeatedBosses: [],
   endingReached: null,
   farmDecorations: [],
+  dexDiscovered: {},
+  dexMilestonesGranted: [],
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -243,6 +251,9 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setDefeatedBosses: (defeatedBosses) => set({ defeatedBosses }),
   setEndingReached: (endingReached) => set({ endingReached }),
   setFarmDecorations: (farmDecorations) => set({ farmDecorations }),
+  setDexDiscovered: (dexDiscovered) => set({ dexDiscovered }),
+  setDexMilestonesGranted: (dexMilestonesGranted) =>
+    set({ dexMilestonesGranted }),
 
   reset: () => set(initialState),
 }));

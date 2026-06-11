@@ -511,5 +511,6 @@
   "dungeon.milestone.10": "10층 돌파!",
   "dungeon.milestone.25": "25층 돌파!",
   "dungeon.milestone.50": "50층 돌파!",
-  "dungeon.milestone.100": "100층 정복!"
+  "dungeon.milestone.100": "100층 정복!",
+  "ui.ending.newGamePlus": "뉴게임+ 시작 (2회차)"
 }

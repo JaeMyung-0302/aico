@@ -10,6 +10,7 @@ import { TimeWeatherSystem } from "../systems/time-weather";
 import { InventorySystem } from "../systems/inventory";
 import { setupShopHandlers } from "../systems/shop";
 import { setupMarriageHandler } from "../systems/marriage-runtime";
+import { ngPlusStartingPerks } from "../systems/new-game-plus-runtime";
 import { setupRewardHandler } from "../systems/reward";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
@@ -449,6 +450,15 @@ export class VillageScene extends Phaser.Scene {
     } else {
       // 새 게임 시작 키트: 물뿌리개 없이는 작물이 성장하지 않아 첫 수확 퀘스트 진행 불가
       inventory.addItem("tool-wateringCan");
+      // 뉴게임+ 회차 보너스 (Ch.6)
+      const perks = ngPlusStartingPerks();
+      if (perks.gold > 0) {
+        const g = useGameStore.getState().gold;
+        eventBus.emit("gold:changed", { amount: perks.gold, total: g + perks.gold });
+      }
+      for (const item of perks.items) {
+        inventory.addItem(item.itemId, item.quantity);
+      }
       syncInventory();
     }
 

@@ -511,5 +511,6 @@
   "dungeon.milestone.10": "Floor 10!",
   "dungeon.milestone.25": "Floor 25!",
   "dungeon.milestone.50": "Floor 50!",
-  "dungeon.milestone.100": "Floor 100 Conquered!"
+  "dungeon.milestone.100": "Floor 100 Conquered!",
+  "ui.ending.newGamePlus": "Start New Game+"
 }

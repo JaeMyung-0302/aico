@@ -488,6 +488,10 @@ export class FarmScene extends Phaser.Scene {
           defeatedBosses: [...useGameStore.getState().defeatedBosses],
           endingReached: useGameStore.getState().endingReached,
           farmDecorations: [...useGameStore.getState().farmDecorations],
+          dexDiscovered: useGameStore.getState().dexDiscovered,
+          dexMilestonesGranted: [
+            ...useGameStore.getState().dexMilestonesGranted,
+          ],
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -546,6 +550,8 @@ export class FarmScene extends Phaser.Scene {
         store.setDefeatedBosses(data.defeatedBosses ?? []);
         store.setEndingReached(data.endingReached ?? null);
         store.setFarmDecorations(data.farmDecorations ?? []);
+        store.setDexDiscovered(data.dexDiscovered ?? {});
+        store.setDexMilestonesGranted(data.dexMilestonesGranted ?? []);
         questSystem.loadState(
           data.activeQuests ?? [],
           data.completedQuests ?? [],

@@ -367,6 +367,10 @@ export class VillageScene extends Phaser.Scene {
           defeatedBosses: [...useGameStore.getState().defeatedBosses],
           endingReached: useGameStore.getState().endingReached,
           farmDecorations: [...useGameStore.getState().farmDecorations],
+          dexDiscovered: useGameStore.getState().dexDiscovered,
+          dexMilestonesGranted: [
+            ...useGameStore.getState().dexMilestonesGranted,
+          ],
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -404,6 +408,10 @@ export class VillageScene extends Phaser.Scene {
         useGameStore.getState().setDefeatedBosses(data.defeatedBosses ?? []);
         useGameStore.getState().setEndingReached(data.endingReached ?? null);
         useGameStore.getState().setFarmDecorations(data.farmDecorations ?? []);
+        useGameStore.getState().setDexDiscovered(data.dexDiscovered ?? {});
+        useGameStore
+          .getState()
+          .setDexMilestonesGranted(data.dexMilestonesGranted ?? []);
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);

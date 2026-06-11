@@ -57,6 +57,8 @@ export interface GameEvents {
     tileY: number;
   };
   "decoration:remove": { instanceId: string };
+  "family:requestChild": { partnerId: string };
+  "family:childBorn": { childId: string; name: string; birthDay: number };
   "trade:sell": { itemId: string };
   "shop:sell": { itemId: string; quantity: number };
   "crafting:cook": { recipeId: string };

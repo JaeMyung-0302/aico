@@ -59,6 +59,14 @@ interface GameState {
   readonly farmDecorations: ReadonlyArray<FarmDecorationState>;
   readonly dexDiscovered: Readonly<Record<string, ReadonlyArray<string>>>;
   readonly dexMilestonesGranted: ReadonlyArray<number>;
+  readonly familyChildren: ReadonlyArray<FamilyChildState>;
+  readonly lastChildBornDay: number | null;
+}
+
+export interface FamilyChildState {
+  readonly id: string;
+  readonly name: string;
+  readonly birthDay: number;
 }
 
 export interface FarmDecorationState {
@@ -129,6 +137,10 @@ interface GameActions {
     discovered: Readonly<Record<string, ReadonlyArray<string>>>,
   ) => void;
   setDexMilestonesGranted: (percents: ReadonlyArray<number>) => void;
+  setFamily: (
+    children: ReadonlyArray<FamilyChildState>,
+    lastChildBornDay: number | null,
+  ) => void;
   reset: () => void;
 }
 
@@ -177,6 +189,8 @@ const initialState: GameState = {
   farmDecorations: [],
   dexDiscovered: {},
   dexMilestonesGranted: [],
+  familyChildren: [],
+  lastChildBornDay: null,
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -254,6 +268,8 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setDexDiscovered: (dexDiscovered) => set({ dexDiscovered }),
   setDexMilestonesGranted: (dexMilestonesGranted) =>
     set({ dexMilestonesGranted }),
+  setFamily: (familyChildren, lastChildBornDay) =>
+    set({ familyChildren, lastChildBornDay }),
 
   reset: () => set(initialState),
 }));

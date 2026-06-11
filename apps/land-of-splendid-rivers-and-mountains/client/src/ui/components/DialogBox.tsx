@@ -8,6 +8,7 @@ import {
   WEDDING_RING_ITEM_ID,
 } from "@/game/systems/marriage";
 import { canHaveAnotherChild, getChildAgeInDays } from "@/game/systems/family";
+import { getItemType } from "@/ui/item-names";
 import { toAbsoluteDay } from "@/game/systems/marriage-runtime";
 import type { NpcDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 
@@ -105,11 +106,12 @@ const DialogBox = () => {
     return t("ui.dialog.greeting" as never) || "안녕하세요.";
   };
 
+  // NPC 선호 선물에 food/drop/재료(stone 등 무접두사 id)도 있으므로
+  // id 프리픽스가 아닌 아이템 타입으로 판정 (도구·씨앗만 제외)
   const giftableItems = inventory.filter((slot) => {
     if (!slot) return false;
-    return (
-      slot.itemId.startsWith("crop-") || slot.itemId.startsWith("material-")
-    );
+    const type = getItemType(slot.itemId);
+    return type !== null && type !== "tool" && type !== "seed";
   });
 
   const handleGift = (itemId: string) => {

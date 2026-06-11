@@ -4,6 +4,7 @@ import { gameConfig } from "@/game/config";
 import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
 import { initStoreBridge, destroyStoreBridge } from "@/lib/store-bridge";
 import { initDexBridge, destroyDexBridge } from "@/lib/dex-bridge";
+import { initFamilyBridge, destroyFamilyBridge } from "@/lib/family-bridge";
 import { eventBus } from "@/lib/event-bus";
 import { useLocale } from "@/i18n/useLocale";
 import HUD from "@/ui/components/HUD";
@@ -77,6 +78,7 @@ const App = () => {
 
     initStoreBridge();
     initDexBridge();
+    initFamilyBridge();
     gameRef.current = new Phaser.Game(gameConfig);
 
     const onTitleReady = () => {
@@ -93,6 +95,7 @@ const App = () => {
     return () => {
       clearTimeout(fallbackTimer);
       eventBus.off("title:ready", onTitleReady);
+      destroyFamilyBridge();
       destroyDexBridge();
       destroyStoreBridge();
       gameRef.current?.destroy(true);

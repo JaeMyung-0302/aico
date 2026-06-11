@@ -492,6 +492,8 @@ export class FarmScene extends Phaser.Scene {
           dexMilestonesGranted: [
             ...useGameStore.getState().dexMilestonesGranted,
           ],
+          familyChildren: [...useGameStore.getState().familyChildren],
+          lastChildBornDay: useGameStore.getState().lastChildBornDay,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -552,6 +554,10 @@ export class FarmScene extends Phaser.Scene {
         store.setFarmDecorations(data.farmDecorations ?? []);
         store.setDexDiscovered(data.dexDiscovered ?? {});
         store.setDexMilestonesGranted(data.dexMilestonesGranted ?? []);
+        store.setFamily(
+          data.familyChildren ?? [],
+          data.lastChildBornDay ?? null,
+        );
         questSystem.loadState(
           data.activeQuests ?? [],
           data.completedQuests ?? [],

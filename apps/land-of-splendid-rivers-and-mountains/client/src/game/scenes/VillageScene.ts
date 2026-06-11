@@ -371,6 +371,8 @@ export class VillageScene extends Phaser.Scene {
           dexMilestonesGranted: [
             ...useGameStore.getState().dexMilestonesGranted,
           ],
+          familyChildren: [...useGameStore.getState().familyChildren],
+          lastChildBornDay: useGameStore.getState().lastChildBornDay,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -412,6 +414,9 @@ export class VillageScene extends Phaser.Scene {
         useGameStore
           .getState()
           .setDexMilestonesGranted(data.dexMilestonesGranted ?? []);
+        useGameStore
+          .getState()
+          .setFamily(data.familyChildren ?? [], data.lastChildBornDay ?? null);
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);

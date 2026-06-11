@@ -11,6 +11,7 @@ import { FarmSystem, isFarmTile, FARM_ZONES } from "../systems/farm";
 import { InventorySystem } from "../systems/inventory";
 import { setupShopHandlers } from "../systems/shop";
 import { setupMarriageHandler } from "../systems/marriage-runtime";
+import { setupFarmDecorations } from "../systems/farm-decoration-runtime";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -184,8 +185,6 @@ export class FarmScene extends Phaser.Scene {
       syncWeapon(state.equipped.current);
     };
     this.syncInventoryFn = syncInventory;
-
-
 
     const onGiftRequested = ({
       npcId,
@@ -488,6 +487,7 @@ export class FarmScene extends Phaser.Scene {
           summonedGuardians: [...useGameStore.getState().summonedGuardians],
           defeatedBosses: [...useGameStore.getState().defeatedBosses],
           endingReached: useGameStore.getState().endingReached,
+          farmDecorations: [...useGameStore.getState().farmDecorations],
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -545,6 +545,7 @@ export class FarmScene extends Phaser.Scene {
         store.setSummonedGuardians(data.summonedGuardians ?? []);
         store.setDefeatedBosses(data.defeatedBosses ?? []);
         store.setEndingReached(data.endingReached ?? null);
+        store.setFarmDecorations(data.farmDecorations ?? []);
         questSystem.loadState(
           data.activeQuests ?? [],
           data.completedQuests ?? [],
@@ -576,6 +577,19 @@ export class FarmScene extends Phaser.Scene {
     this.setupCollision(map);
     this.setupCamera(map);
 
+    const cleanupDecorations = setupFarmDecorations(this, {
+      mapWidth: map.width,
+      mapHeight: map.height,
+      getPlayerTile: () => ({
+        x: Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE),
+        y: Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE),
+      }),
+      isTileBlocked: (tileX, tileY) => {
+        const tile = this.collisionLayer?.getTileAt(tileX, tileY);
+        return tile !== null && tile !== undefined && tile.index > 0;
+      },
+    });
+
     this.events.once("shutdown", () => {
       saveManager.save();
       saveManager.destroy();
@@ -585,6 +599,7 @@ export class FarmScene extends Phaser.Scene {
       eventBus.off("inventory:equipped", syncInventory);
       cleanupShop();
       cleanupMarriage();
+      cleanupDecorations();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);

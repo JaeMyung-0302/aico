@@ -7,6 +7,8 @@ import {
   MIN_RELATION_TO_PROPOSE,
   WEDDING_RING_ITEM_ID,
 } from "@/game/systems/marriage";
+import { canHaveAnotherChild, getChildAgeInDays } from "@/game/systems/family";
+import { toAbsoluteDay } from "@/game/systems/marriage-runtime";
 import type { NpcDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 
 const npcMap = new Map<string, NpcDefinition>(
@@ -27,8 +29,17 @@ const DialogBox = () => {
     textKey: string;
     change: number;
   } | null>(null);
-  const { npcRelations, inventory, marriageStatus, marriagePartnerId } =
-    useGameStore();
+  const {
+    npcRelations,
+    inventory,
+    marriageStatus,
+    marriagePartnerId,
+    familyChildren,
+    lastChildBornDay,
+    day,
+    season,
+    year,
+  } = useGameStore();
 
   const onNpcTalked = useCallback(({ npcId }: { npcId: string }) => {
     setActiveNpcId(npcId);
@@ -222,7 +233,36 @@ const DialogBox = () => {
           <div style={styles.marriageBadge}>💐 {t("ui.dialog.engaged")}</div>
         )}
         {marriagePartnerId === activeNpcId && marriageStatus === "married" && (
-          <div style={styles.marriageBadge}>💍 {t("ui.dialog.married")}</div>
+          <>
+            <div style={styles.marriageBadge}>💍 {t("ui.dialog.married")}</div>
+            {familyChildren.length > 0 && (
+              <div style={styles.marriageBadge}>
+                👶 {t("ui.dialog.children")}:{" "}
+                {familyChildren
+                  .map(
+                    (c) =>
+                      `${c.name} (${getChildAgeInDays(c, toAbsoluteDay(day, season, year))}${t("ui.dialog.daysOld")})`,
+                  )
+                  .join(", ")}
+              </div>
+            )}
+            {canHaveAnotherChild(
+              { status: marriageStatus },
+              { children: familyChildren, lastChildBornDay },
+              toAbsoluteDay(day, season, year),
+            ).ok && (
+              <button
+                style={styles.proposeBtn}
+                onClick={() =>
+                  eventBus.emit("family:requestChild", {
+                    partnerId: activeNpcId,
+                  })
+                }
+              >
+                👶 {t("ui.dialog.haveChild")}
+              </button>
+            )}
+          </>
         )}
         <button style={styles.talkBtn} onClick={handleClose}>
           {t("ui.dialog.close")}

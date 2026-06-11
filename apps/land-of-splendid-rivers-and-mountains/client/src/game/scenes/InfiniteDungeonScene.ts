@@ -7,6 +7,8 @@ import { TouchInput } from "../input/touch-input";
 import { CombatSystem } from "../systems/combat";
 import { EnergySystem } from "../systems/energy";
 import { InventorySystem } from "../systems/inventory";
+import { setupRewardHandler } from "../systems/reward";
+import { setupShopHandlers } from "../systems/shop";
 import {
   generateFloor,
   type DungeonFloor,
@@ -161,8 +163,13 @@ export class InfiniteDungeonScene extends Phaser.Scene {
     eventBus.on("combat:defeated", onCombatDefeated);
     eventBus.on("combat:playerHit", onCombatPlayerHit);
     eventBus.on("combat:playerDied", onCombatPlayerDied);
+    // 도감 마일스톤 등 event:reward가 이 씬에서도 유실되지 않도록 등록
+    const cleanupReward = setupRewardHandler(this.inventory, syncInventory);
+    const cleanupShop = setupShopHandlers(this.inventory, syncInventory);
 
     this.events.once("shutdown", () => {
+      cleanupReward();
+      cleanupShop();
       eventBus.off("combat:defeated", onCombatDefeated);
       eventBus.off("combat:playerHit", onCombatPlayerHit);
       eventBus.off("combat:playerDied", onCombatPlayerDied);

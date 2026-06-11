@@ -7,6 +7,7 @@ import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
 import { QuestSystem } from "../systems/quest";
 import { setupRewardHandler } from "../systems/reward";
+import { setupShopHandlers } from "../systems/shop";
 import { setupGuardianHandler } from "../systems/guardian-runtime";
 import { NPCSystem } from "../systems/npc";
 import { createPositionEmitter } from "../utils/position-emitter";
@@ -78,6 +79,7 @@ export class TempleScene extends Phaser.Scene {
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
     const cleanupGuardian = setupGuardianHandler(inventory, syncInventory);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
 
     const questSystem = new QuestSystem();
     questSystem.init(this);
@@ -120,6 +122,7 @@ export class TempleScene extends Phaser.Scene {
       questSystem.destroy();
       cleanupGuardian();
       cleanupReward();
+      cleanupShop();
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);
       this.keyboardInput.destroy();

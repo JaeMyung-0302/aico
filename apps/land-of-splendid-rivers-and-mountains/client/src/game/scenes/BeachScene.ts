@@ -9,6 +9,7 @@ import { QuestSystem } from "../systems/quest";
 import { FishingSystem } from "../systems/fishing";
 import { EnergySystem } from "../systems/energy";
 import { setupRewardHandler } from "../systems/reward";
+import { setupShopHandlers } from "../systems/shop";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { saveManager } from "@/lib/save-manager";
@@ -70,6 +71,7 @@ export class BeachScene extends Phaser.Scene {
 
     eventBus.on("inventory:equipped", syncInventory);
     const cleanupReward = setupRewardHandler(inventory, syncInventory);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
 
     const questSystem = new QuestSystem();
     questSystem.init(this);
@@ -109,6 +111,7 @@ export class BeachScene extends Phaser.Scene {
       inventory.destroy();
       questSystem.destroy();
       cleanupReward();
+      cleanupShop();
       this.fishingSystem.destroy();
       eventBus.off("fishing:caught", onFishCaught);
       eventBus.off("inventory:equipped", syncInventory);

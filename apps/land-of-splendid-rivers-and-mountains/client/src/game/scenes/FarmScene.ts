@@ -12,6 +12,7 @@ import { InventorySystem } from "../systems/inventory";
 import { setupShopHandlers } from "../systems/shop";
 import { setupMarriageHandler } from "../systems/marriage-runtime";
 import { setupFarmDecorations } from "../systems/farm-decoration-runtime";
+import { setupFamilyRendering } from "../systems/family-scene";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -602,7 +603,13 @@ export class FarmScene extends Phaser.Scene {
       },
     });
 
+    const cleanupFamily = setupFamilyRendering(this, {
+      homeTileX: PLAYER_SPAWN_X - 2,
+      homeTileY: PLAYER_SPAWN_Y - 1,
+    });
+
     this.events.once("shutdown", () => {
+      cleanupFamily();
       saveManager.save();
       saveManager.destroy();
       inventory.destroy();

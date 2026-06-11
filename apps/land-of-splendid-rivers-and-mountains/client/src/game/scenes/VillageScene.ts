@@ -366,6 +366,7 @@ export class VillageScene extends Phaser.Scene {
           summonedGuardians: [...useGameStore.getState().summonedGuardians],
           defeatedBosses: [...useGameStore.getState().defeatedBosses],
           endingReached: useGameStore.getState().endingReached,
+          farmDecorations: [...useGameStore.getState().farmDecorations],
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -402,6 +403,7 @@ export class VillageScene extends Phaser.Scene {
           .setSummonedGuardians(data.summonedGuardians ?? []);
         useGameStore.getState().setDefeatedBosses(data.defeatedBosses ?? []);
         useGameStore.getState().setEndingReached(data.endingReached ?? null);
+        useGameStore.getState().setFarmDecorations(data.farmDecorations ?? []);
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);
@@ -454,7 +456,10 @@ export class VillageScene extends Phaser.Scene {
       const perks = ngPlusStartingPerks();
       if (perks.gold > 0) {
         const g = useGameStore.getState().gold;
-        eventBus.emit("gold:changed", { amount: perks.gold, total: g + perks.gold });
+        eventBus.emit("gold:changed", {
+          amount: perks.gold,
+          total: g + perks.gold,
+        });
       }
       for (const item of perks.items) {
         inventory.addItem(item.itemId, item.quantity);

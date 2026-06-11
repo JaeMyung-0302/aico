@@ -63,6 +63,8 @@ export interface GameEvents {
   "shop:sell": { itemId: string; quantity: number };
   "crafting:cook": { recipeId: string };
   "crafting:ferment": { recipeId: string };
+  "crafting:cooked": { recipeId: string };
+  "crafting:fermented": { recipeId: string };
   "crafting:collect": { slotIndex: number };
   "building:build": { buildingId: string };
   "building:upgrade": { buildingId: string };

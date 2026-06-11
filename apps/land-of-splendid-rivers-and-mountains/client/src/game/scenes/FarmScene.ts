@@ -230,6 +230,7 @@ export class FarmScene extends Phaser.Scene {
         return;
       }
       syncInventory();
+      eventBus.emit("crafting:cooked", { recipeId });
     };
 
     const onFerment = ({ recipeId }: { recipeId: string }) => {
@@ -245,6 +246,7 @@ export class FarmScene extends Phaser.Scene {
       }
       syncInventory();
       syncFermentation();
+      eventBus.emit("crafting:fermented", { recipeId });
     };
 
     const onCollect = ({ slotIndex }: { slotIndex: number }) => {

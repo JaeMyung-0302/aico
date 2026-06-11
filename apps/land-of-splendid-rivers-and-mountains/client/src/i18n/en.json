@@ -499,5 +499,17 @@
   "ending.war.title": "War Ending",
   "ending.war.body": "Endless war consumed the land...",
   "ui.ending.credits": "Credits",
-  "ui.ending.continue": "Continue (Post-game)"
+  "ui.ending.continue": "Continue (Post-game)",
+  "item.dungeonToken.bronze": "Bronze Dungeon Token",
+  "item.dungeonToken.silver": "Silver Dungeon Token",
+  "item.dungeonToken.gold": "Gold Dungeon Token",
+  "item.dungeonToken.trophy": "Dungeon Champion Trophy",
+  "item.drop.wildHerb": "Wild Herb",
+  "item.drop.rareShard": "Rare Shard",
+  "item.drop.bossCore": "Boss Core",
+  "item.drop.goldPouch": "Gold Pouch",
+  "dungeon.milestone.10": "Floor 10!",
+  "dungeon.milestone.25": "Floor 25!",
+  "dungeon.milestone.50": "Floor 50!",
+  "dungeon.milestone.100": "Floor 100 Conquered!"
 }

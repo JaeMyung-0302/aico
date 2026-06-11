@@ -10,6 +10,7 @@ import { MarketScene } from "./scenes/MarketScene";
 import { TempleScene } from "./scenes/TempleScene";
 import { BeachScene } from "./scenes/BeachScene";
 import { PirateScene } from "./scenes/PirateScene";
+import { InfiniteDungeonScene } from "./scenes/InfiniteDungeonScene";
 import { IslandScene } from "./scenes/IslandScene";
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -50,5 +51,6 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     BeachScene,
     IslandScene,
     PirateScene,
+    InfiniteDungeonScene,
   ],
 };

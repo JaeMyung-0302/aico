@@ -178,7 +178,7 @@
   "item.animal.milk": "우유",
   "item.animal.wool": "양털",
   "item.drop.foxTail": "여우 꼬리",
-  "item.drop.monsterHide": "괴물 가죽",
+  "item.drop.monsterHide": "마물 가죽",
   "item.drop.dragonScale": "용의 비늘",
   "item.drop.spiritOrb": "혼의 구슬",
   "ui.combat.hp": "HP",
@@ -499,5 +499,17 @@
   "ending.war.title": "전쟁 엔딩 — 불타는 산하",
   "ending.war.body": "끝나지 않는 싸움이 산하를 삼켰습니다...",
   "ui.ending.credits": "금수강산 — 만든 사람들",
-  "ui.ending.continue": "계속하기 (포스트게임)"
+  "ui.ending.continue": "계속하기 (포스트게임)",
+  "item.dungeonToken.bronze": "청동 던전 증표",
+  "item.dungeonToken.silver": "은 던전 증표",
+  "item.dungeonToken.gold": "금 던전 증표",
+  "item.dungeonToken.trophy": "던전 챔피언 트로피",
+  "item.drop.wildHerb": "야생 약초",
+  "item.drop.rareShard": "희귀 파편",
+  "item.drop.bossCore": "보스의 핵",
+  "item.drop.goldPouch": "금화 주머니",
+  "dungeon.milestone.10": "10층 돌파!",
+  "dungeon.milestone.25": "25층 돌파!",
+  "dungeon.milestone.50": "50층 돌파!",
+  "dungeon.milestone.100": "100층 정복!"
 }

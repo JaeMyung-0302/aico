@@ -539,11 +539,15 @@ export class VillageScene extends Phaser.Scene {
       this.scene.start("FarmScene", { spawnX: 28, spawnY: 14 });
     }
 
-    // 상 → Dungeon
+    // 상 → Dungeon (엔딩 후에는 무한던전 — Ch.6 포스트게임)
     if (tileY <= 0 && tileX >= 14 && tileX <= 15) {
       this.isTransitioning = true;
       saveManager.save();
-      this.scene.start("DungeonScene");
+      if (useGameStore.getState().endingReached) {
+        this.scene.start("InfiniteDungeonScene");
+      } else {
+        this.scene.start("DungeonScene");
+      }
     }
 
     // 우 → River

@@ -766,5 +766,77 @@
     "stackable": false,
     "maxStack": 1,
     "sellPrice": 0
+  },
+  {
+    "id": "item-dungeon-token-bronze",
+    "nameKey": "item.dungeonToken.bronze",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 300
+  },
+  {
+    "id": "item-dungeon-token-silver",
+    "nameKey": "item.dungeonToken.silver",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 800
+  },
+  {
+    "id": "item-dungeon-token-gold",
+    "nameKey": "item.dungeonToken.gold",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 2000
+  },
+  {
+    "id": "item-dungeon-champion-trophy",
+    "nameKey": "item.dungeonToken.trophy",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 10000
+  },
+  {
+    "id": "drop-wild-herb",
+    "nameKey": "item.drop.wildHerb",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 25
+  },
+  {
+    "id": "drop-monster-hide",
+    "nameKey": "item.drop.monsterHide",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 40
+  },
+  {
+    "id": "drop-rare-shard",
+    "nameKey": "item.drop.rareShard",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 150
+  },
+  {
+    "id": "drop-boss-core",
+    "nameKey": "item.drop.bossCore",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 400
+  },
+  {
+    "id": "gold-pouch",
+    "nameKey": "item.drop.goldPouch",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 100
   }
 ]

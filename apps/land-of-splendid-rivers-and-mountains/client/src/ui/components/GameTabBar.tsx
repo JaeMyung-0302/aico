@@ -13,6 +13,7 @@ export type TabId =
   | "guardian"
   | "defense"
   | "decoration"
+  | "dex"
   | null;
 
 interface Props {
@@ -36,6 +37,7 @@ const TABS: ReadonlyArray<{
   { id: "guardian", labelKey: "ui.guardian.title", icon: "\uD83D\uDED5" },
   { id: "defense", labelKey: "ui.defense.title", icon: "\uD83D\uDEE1\uFE0F" },
   { id: "decoration", labelKey: "ui.decoration.title", icon: "\uD83E\uDEB4" },
+  { id: "dex", labelKey: "ui.dex.title", icon: "\uD83D\uDCD6" },
 ];
 
 const GameTabBar = memo(({ activeTab, onTabChange }: Props) => {

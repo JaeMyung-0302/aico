@@ -56,6 +56,16 @@ interface GameState {
   readonly summonedGuardians: ReadonlyArray<string>;
   readonly defeatedBosses: ReadonlyArray<string>;
   readonly endingReached: string | null;
+  readonly farmDecorations: ReadonlyArray<FarmDecorationState>;
+}
+
+export interface FarmDecorationState {
+  readonly instanceId: string;
+  readonly itemId: string;
+  readonly tileX: number;
+  readonly tileY: number;
+  readonly w: number;
+  readonly h: number;
 }
 
 interface GameActions {
@@ -112,6 +122,7 @@ interface GameActions {
   setSummonedGuardians: (ids: ReadonlyArray<string>) => void;
   setDefeatedBosses: (ids: ReadonlyArray<string>) => void;
   setEndingReached: (endingId: string | null) => void;
+  setFarmDecorations: (decorations: ReadonlyArray<FarmDecorationState>) => void;
   reset: () => void;
 }
 
@@ -157,6 +168,7 @@ const initialState: GameState = {
   summonedGuardians: [],
   defeatedBosses: [],
   endingReached: null,
+  farmDecorations: [],
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -221,11 +233,16 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setReputation: (reputation) => set({ reputation }),
 
   setUnlockedIsland: (unlockedIsland) => set({ unlockedIsland }),
-  setMarriage: (marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay) =>
-    set({ marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay }),
+  setMarriage: (
+    marriageStatus,
+    marriagePartnerId,
+    engagedAtDay,
+    marriedAtDay,
+  ) => set({ marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay }),
   setSummonedGuardians: (summonedGuardians) => set({ summonedGuardians }),
   setDefeatedBosses: (defeatedBosses) => set({ defeatedBosses }),
   setEndingReached: (endingReached) => set({ endingReached }),
+  setFarmDecorations: (farmDecorations) => set({ farmDecorations }),
 
   reset: () => set(initialState),
 }));

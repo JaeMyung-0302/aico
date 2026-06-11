@@ -10,6 +10,7 @@ import type {
 } from "@land-of-splendid-rivers-and-mountains/shared";
 import { eventBus } from "./event-bus";
 import { api, getUserId } from "./api";
+import type { FarmDecorationState } from "@/stores/useGameStore";
 
 const SAVE_KEY = "land-of-splendid-rivers-and-mountains:save";
 const SYNC_DEBOUNCE_MS = 2000;
@@ -52,6 +53,7 @@ export interface SaveData {
   readonly summonedGuardians?: ReadonlyArray<string>;
   readonly defeatedBosses?: ReadonlyArray<string>;
   readonly endingReached?: string | null;
+  readonly farmDecorations?: ReadonlyArray<FarmDecorationState>;
 }
 
 const REQUIRED_SAVE_FIELDS = [

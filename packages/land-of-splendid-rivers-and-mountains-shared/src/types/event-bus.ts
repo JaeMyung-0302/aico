@@ -49,6 +49,14 @@ export interface GameEvents {
   "guardian:summon": { guardianId: string };
   "guardian:summoned": { guardianId: string };
   "ending:reached": { endingId: string };
+  "decoration:place": { itemId: string };
+  "decoration:placed": {
+    instanceId: string;
+    itemId: string;
+    tileX: number;
+    tileY: number;
+  };
+  "decoration:remove": { instanceId: string };
   "trade:sell": { itemId: string };
   "shop:sell": { itemId: string; quantity: number };
   "crafting:cook": { recipeId: string };

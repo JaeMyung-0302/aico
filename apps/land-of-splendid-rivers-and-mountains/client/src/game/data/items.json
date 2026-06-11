@@ -838,5 +838,37 @@
     "stackable": true,
     "maxStack": 99,
     "sellPrice": 100
+  },
+  {
+    "id": "item-dex-badge-bronze",
+    "nameKey": "item.dexBadge.bronze",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 500
+  },
+  {
+    "id": "item-dex-badge-silver",
+    "nameKey": "item.dexBadge.silver",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 1500
+  },
+  {
+    "id": "item-dex-badge-gold",
+    "nameKey": "item.dexBadge.gold",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 4000
+  },
+  {
+    "id": "item-dex-trophy",
+    "nameKey": "item.dexBadge.trophy",
+    "type": "drop",
+    "stackable": true,
+    "maxStack": 99,
+    "sellPrice": 10000
   }
 ]

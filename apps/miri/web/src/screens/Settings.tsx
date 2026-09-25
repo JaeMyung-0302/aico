@@ -1,21 +1,107 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   deleteMe,
-  fetchToday,
+  fetchMe,
   UnknownUserError,
   updateMe,
   type Settings as SettingsData,
+  type TrackPatch,
 } from "../api.ts";
 import Button from "../components/Button.tsx";
 import Canvas from "../components/Canvas.tsx";
 import { LoggerHeader } from "../components/Header.tsx";
 import { ErrorNote, Question } from "../components/Prompt.tsx";
-import SlotPicker from "../components/SlotPicker.tsx";
-import type { NotifySlot } from "../domain.ts";
-import { describeSlot } from "./options.ts";
+import TimePicker from "../components/TimePicker.tsx";
+import Toggle from "../components/Toggle.tsx";
+import {
+  TRACKS,
+  WEEKDAY_LABELS,
+  type TrackSettings,
+} from "../domain.ts";
+import { describeTime } from "./options.ts";
 import styles from "./Settings.module.scss";
 
-/** 설정은 셋뿐이다. 알림 시간대, 잠시 멈춤, 데이터 지우기. */
+/** 쉬는 요일. 켜진 칩이 쉬는 날이다. */
+function OffDays({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: number[];
+  onChange: (days: number[]) => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className={styles.days} role="group" aria-label="쉬는 요일">
+      {WEEKDAY_LABELS.map((label, day) => {
+        const off = value.includes(day);
+        return (
+          <button
+            key={label}
+            type="button"
+            aria-pressed={off}
+            className={`${styles.day} ${off ? styles.dayOff : ""}`}
+            disabled={disabled}
+            onClick={() =>
+              onChange(off ? value.filter((d) => d !== day) : [...value, day].sort())
+            }
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TrackCard({
+  settings,
+  busy,
+  onPatch,
+}: {
+  settings: TrackSettings;
+  busy: boolean;
+  onPatch: (patch: Omit<TrackPatch, "track">) => void;
+}) {
+  const track = TRACKS[settings.track];
+  return (
+    <section className={`${styles.card} ${settings.enabled ? "" : styles.cardOff}`}>
+      <Toggle
+        label={track.name}
+        hint={settings.enabled ? describeTime(settings.notifyAt) : "묻지 않아요"}
+        checked={settings.enabled}
+        disabled={busy}
+        onChange={(enabled) => onPatch({ enabled })}
+      />
+      {settings.enabled ? (
+        <div className={styles.cardBody}>
+          <TimePicker
+            value={settings.notifyAt}
+            onChange={(notifyAt) => onPatch({ notifyAt })}
+            disabled={busy}
+          />
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>쉬는 요일</span>
+            <OffDays
+              value={settings.offDays}
+              onChange={(offDays) => onPatch({ offDays })}
+              disabled={busy}
+            />
+          </div>
+          <Toggle
+            label="90분 뒤 한 번 더"
+            hint="답이 없으면 한 번만 다시 알려요"
+            checked={settings.remind}
+            disabled={busy}
+            onChange={(remind) => onPatch({ remind })}
+          />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** 설정. 전체 멈춤, 트랙마다 켬과 시각과 쉬는 요일과 재알림, 데이터 지우기. */
 export default function Settings({
   userId,
   onExpired,
@@ -43,9 +129,9 @@ export default function Settings({
 
   useEffect(() => {
     let cancelled = false;
-    fetchToday(userId)
-      .then((today) => {
-        if (!cancelled) setSettings(today.settings);
+    fetchMe(userId)
+      .then((result) => {
+        if (!cancelled) setSettings(result);
       })
       .catch((cause: unknown) => {
         if (!cancelled) fail(cause, "설정을 불러오지 못했어요");
@@ -55,7 +141,7 @@ export default function Settings({
     };
   }, [userId, fail]);
 
-  const patch = async (change: { notifyAt?: NotifySlot; paused?: boolean }) => {
+  const patch = async (change: { paused?: boolean; tracks?: TrackPatch[] }) => {
     setBusy(true);
     setError(null);
     try {
@@ -82,10 +168,13 @@ export default function Settings({
     }
   };
 
+  const enabledCount = settings?.tracks.filter((item) => item.enabled).length ?? 0;
   const summary = settings
     ? settings.paused
       ? "알림이 멈춰 있어요"
-      : `매일 ${describeSlot(settings.notifyAt)}에 물어봐요`
+      : enabledCount === 0
+        ? "물어볼 것이 없어요"
+        : `${enabledCount}가지를 물어봐요`
     : null;
 
   return (
@@ -126,25 +215,21 @@ export default function Settings({
       {summary ? <Question>{summary}</Question> : null}
       {settings ? (
         <>
-          <section className={styles.section}>
-            <h3 className={styles.caption}>알림 시간</h3>
-            <SlotPicker
-              value={settings.notifyAt}
-              onChange={(slot) => void patch({ notifyAt: slot })}
-              disabled={busy}
+          <Toggle
+            label="알림 전체 멈춤"
+            hint="켜 두면 아무것도 묻지 않아요"
+            checked={settings.paused}
+            disabled={busy}
+            onChange={(paused) => void patch({ paused })}
+          />
+          {settings.tracks.map((item) => (
+            <TrackCard
+              key={item.track}
+              settings={item}
+              busy={busy}
+              onPatch={(change) => void patch({ tracks: [{ track: item.track, ...change }] })}
             />
-          </section>
-          <section className={styles.section}>
-            <h3 className={styles.caption}>알림</h3>
-            <Button
-              variant="ghost"
-              onClick={() => void patch({ paused: !settings.paused })}
-              disabled={busy}
-              aria-pressed={settings.paused}
-            >
-              {settings.paused ? "다시 물어봐 주세요" : "잠시 멈추기"}
-            </Button>
-          </section>
+          ))}
         </>
       ) : null}
     </Canvas>

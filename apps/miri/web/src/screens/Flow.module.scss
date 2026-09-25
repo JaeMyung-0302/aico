@@ -1,15 +1,43 @@
-/* 종류 색은 차트 전용 토큰을 쓴다. UI 토큰보다 어둡게 맞춰 CVD 와 배경 대비를 검증한 값. */
-[data-kind="gym"] {
-  --mark: var(--chart-gym);
+/* 색조는 차트 전용 토큰을 쓴다. UI 톤보다 어둡게 맞춰 CVD 와 배경 대비를 검증한 값. */
+[data-tone="blue"] {
+  --mark: var(--chart-blue);
 }
-[data-kind="cardio"] {
-  --mark: var(--chart-cardio);
+[data-tone="teal"] {
+  --mark: var(--chart-teal);
 }
-[data-kind="light"] {
-  --mark: var(--chart-light);
+[data-tone="amber"] {
+  --mark: var(--chart-amber);
 }
-[data-kind="rest"] {
-  --mark: var(--chart-rest);
+[data-tone="violet"] {
+  --mark: var(--chart-violet);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tab {
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.tabOn {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 .section {
@@ -49,7 +77,7 @@
   font-size: var(--text-sm);
 }
 
-/* --mark 은 data-kind 가 정한다. 여기서 기본값을 주면 같은 요소의 선언이라 그걸 덮어쓴다. */
+/* --mark 은 data-tone 이 정한다. 여기서 기본값을 주면 같은 요소의 선언이라 그걸 덮어쓴다. */
 .dot {
   width: var(--space-4);
   height: var(--space-4);
@@ -119,66 +147,70 @@
   background: var(--mark, var(--text-3));
 }
 
-/* 부위 고리 */
-.rings {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ring {
-  position: relative;
+/* 분포 막대 */
+.dist {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: var(--space-5);
+}
+
+.distStep {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
 }
 
-.ringSvg {
-  width: 100%;
-  max-width: var(--orb-lg);
-  transform: rotate(-90deg);
-}
-
-.ringTrack,
-.ringFill {
-  fill: none;
-  stroke-width: 3;
-}
-
-.ringTrack {
-  stroke: var(--surface-active);
-}
-
-.ringFill {
-  stroke: var(--chart-gym);
-  stroke-linecap: round;
-  transition: stroke-dashoffset var(--dur-slow) var(--ease-out);
-}
-
-.ringValue {
-  position: absolute;
-  top: calc(var(--orb-lg) / 2);
-  transform: translateY(-50%);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: var(--tracking-tight);
-}
-
-.ringLabel {
+.distTitle {
   color: var(--text-2);
   font-size: var(--text-sm);
   font-weight: 600;
 }
 
-.footnote {
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   margin: 0;
-  color: var(--text-3);
+  padding: 0;
+  list-style: none;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.barLabel {
+  color: var(--text-2);
   font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-active);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: var(--radius-pill);
+  background: var(--mark, var(--accent));
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.barValue {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 @keyframes rise {

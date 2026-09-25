@@ -1,11 +1,12 @@
+import type { Tone } from "../domain.ts";
 import styles from "./ChoiceGrid.module.scss";
 
 export type Choice<T extends string> = {
   value: T;
   label: string;
-  /** 마커 색조. 종류 버튼에 쓴다. */
-  tone?: "gym" | "cardio" | "light" | "rest";
-  /** 마커 길이. 강도 버튼에 쓴다(1–3). */
+  /** 마커 색조. 첫 단계 선택지가 갖고, 뒤 단계는 물려받는다. */
+  tone?: Tone;
+  /** 마커 길이. 정도를 나타내는 단계에 쓴다(1–3). */
   level?: 1 | 2 | 3;
 };
 

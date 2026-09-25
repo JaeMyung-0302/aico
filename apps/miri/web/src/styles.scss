@@ -28,16 +28,16 @@
   --pupil: #0a1220;
 
   /* color: kind tones (버튼 마커) */
-  --tone-gym: #7db0ff;
-  --tone-cardio: #5fd3c4;
-  --tone-light: #f2c77b;
-  --tone-rest: #c7b6ff;
+  --tone-blue: #7db0ff;
+  --tone-teal: #5fd3c4;
+  --tone-amber: #f2c77b;
+  --tone-violet: #c7b6ff;
 
   /* color: chart tones (흐름 화면 전용. UI 톤보다 어둡게 맞춰 CVD·대비 검증을 통과한 값) */
-  --chart-gym: #4a86f0;
-  --chart-cardio: #1ba392;
-  --chart-light: #b8852a;
-  --chart-rest: #9a7cf5;
+  --chart-blue: #4a86f0;
+  --chart-teal: #1ba392;
+  --chart-amber: #b8852a;
+  --chart-violet: #9a7cf5;
 
   /* color: semantic */
   --danger: #ff8080;
@@ -134,15 +134,15 @@
     --orb-highlight: #ffffff;
     --pupil: #0f1a33;
 
-    --tone-gym: #2f6fed;
-    --tone-cardio: #149c8c;
-    --tone-light: #d99a1e;
-    --tone-rest: #7c5cf0;
+    --tone-blue: #2f6fed;
+    --tone-teal: #149c8c;
+    --tone-amber: #d99a1e;
+    --tone-violet: #7c5cf0;
 
-    --chart-gym: #2f6fed;
-    --chart-cardio: #149c8c;
-    --chart-light: #c48a15;
-    --chart-rest: #7c5cf0;
+    --chart-blue: #2f6fed;
+    --chart-teal: #149c8c;
+    --chart-amber: #c48a15;
+    --chart-violet: #7c5cf0;
 
     --danger: #d93d3d;
     --danger-soft: rgba(217, 61, 61, 0.1);

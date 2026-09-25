@@ -1,5 +1,4 @@
-import { fetchVapidKey, subscribe } from './api.ts'
-import type { NotifySlot } from './domain.ts'
+import { fetchVapidKey, subscribe, type TrackPatch } from './api.ts'
 
 const USER_ID_KEY = 'miri.userId'
 
@@ -40,7 +39,7 @@ export function isIos(): boolean {
 }
 
 /** 알림 권한을 받고 푸시를 구독한 뒤 서버에 등록한다. 성공하면 userId 를 돌려준다. */
-export async function enableNotifications(notifyAt: NotifySlot): Promise<string> {
+export async function enableNotifications(tracks: TrackPatch[]): Promise<string> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     throw new Error('이 브라우저는 웹 푸시를 지원하지 않습니다')
   }
@@ -62,7 +61,7 @@ export async function enableNotifications(notifyAt: NotifySlot): Promise<string>
     endpoint: pushSubscription.endpoint,
     p256dh: encodeKey(pushSubscription.getKey('p256dh')),
     auth: encodeKey(pushSubscription.getKey('auth')),
-    notifyAt,
+    tracks,
   })
 
   localStorage.setItem(USER_ID_KEY, userId)

@@ -1,10 +1,17 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 .row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-2);
 }
 
 .chip {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -55,4 +62,33 @@
   .on & {
     color: var(--accent);
   }
+}
+
+/* 직접: 시각 입력을 칩 전체에 투명하게 깔아, 칩을 누르면 기기 휠이 뜬다. */
+.custom {
+  cursor: pointer;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: var(--text-base);
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
+.custom:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }

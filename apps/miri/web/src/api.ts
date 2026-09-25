@@ -1,24 +1,32 @@
-import type { Entry, Kind, NotifySlot, Part } from './domain.ts'
+import type { Answer, TrackId, TrackSettings } from './domain.ts'
 
-export type Settings = { userId: string; notifyAt: NotifySlot; paused: boolean }
+export type Settings = { userId: string; paused: boolean; tracks: TrackSettings[] }
 
-export type Today = {
-  loggedOn: string
-  log: Entry | null
+export type TodayTrack = {
+  track: TrackId
+  notifyAt: string
+  log: Answer | null
   questionId: string | null
-  prediction: Entry | null
-  settings: Settings
+  questionText: string | null
+  prediction: Answer | null
+  /** 오늘 포함 최근 7일 중 기록한 날 수 */
+  weekDays: number
 }
 
-export type HistoryLog = Entry & { loggedOn: string }
+export type Today = { loggedOn: string; paused: boolean; tracks: TodayTrack[] }
 
-export type Week = {
-  kindCounts: Record<Kind, number>
-  partCounts: Record<Part, number>
-  text: string
+export type HistoryLog = { loggedOn: string; answer: Answer }
+
+export type History = {
+  today: string
+  days: number
+  track: TrackId
+  logs: HistoryLog[]
+  /** 이 트랙의 지난 7일 요약 */
+  weekText: string
+  /** 켜진 트랙 전부의 요약, 줄바꿈 구분 */
+  allText: string
 }
-
-export type History = { today: string; days: number; logs: HistoryLog[]; week: Week }
 
 /** 어떻게 답했는지. 예측 수락, 직접 선택, 알림 버튼. */
 export type LogVia = 'predict' | 'pick' | 'action'
@@ -50,6 +58,8 @@ function withUser(path: string, userId: string): string {
   return `${path}?userId=${encodeURIComponent(userId)}`
 }
 
+export type TrackPatch = { track: TrackId } & Partial<Omit<TrackSettings, 'track'>>
+
 export function fetchVapidKey(): Promise<{ vapidPublicKey: string }> {
   return request('/api/config')
 }
@@ -58,18 +68,17 @@ export function subscribe(subscription: {
   endpoint: string
   p256dh: string
   auth: string
-  notifyAt: NotifySlot
+  tracks: TrackPatch[]
 }): Promise<Settings> {
   return request('/api/subscribe', { method: 'POST', body: JSON.stringify(subscription) })
 }
 
 export function writeLog(entry: {
   userId: string
-  kind: Kind
-  parts: Part[]
-  intensity: Entry['intensity']
+  track: TrackId
+  answer: Answer
   via: LogVia
-}): Promise<{ ok: true; loggedOn: string; log: Entry }> {
+}): Promise<{ ok: true; loggedOn: string; track: TrackId; answer: Answer; weekDays: number }> {
   return request('/api/log', { method: 'POST', body: JSON.stringify(entry) })
 }
 
@@ -81,13 +90,17 @@ export function fetchToday(userId: string): Promise<Today> {
   return request(withUser('/api/today', userId))
 }
 
-export function fetchHistory(userId: string, days: number): Promise<History> {
-  return request(`${withUser('/api/history', userId)}&days=${days}`)
+export function fetchHistory(userId: string, track: TrackId, days: number): Promise<History> {
+  return request(`${withUser('/api/history', userId)}&track=${track}&days=${days}`)
+}
+
+export function fetchMe(userId: string): Promise<Settings> {
+  return request(withUser('/api/me', userId))
 }
 
 export function updateMe(
   userId: string,
-  patch: { notifyAt?: NotifySlot; paused?: boolean },
+  patch: { paused?: boolean; tracks?: TrackPatch[] },
 ): Promise<Settings> {
   return request('/api/me', { method: 'PATCH', body: JSON.stringify({ userId, ...patch }) })
 }

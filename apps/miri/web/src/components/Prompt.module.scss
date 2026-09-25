@@ -56,17 +56,17 @@ $compact-height: 640px;
   font-weight: 600;
   letter-spacing: var(--tracking-tight);
 
-  &[data-tone="gym"] {
-    --marker: var(--tone-gym);
+  &[data-tone="blue"] {
+    --marker: var(--tone-blue);
   }
-  &[data-tone="cardio"] {
-    --marker: var(--tone-cardio);
+  &[data-tone="teal"] {
+    --marker: var(--tone-teal);
   }
-  &[data-tone="light"] {
-    --marker: var(--tone-light);
+  &[data-tone="amber"] {
+    --marker: var(--tone-amber);
   }
-  &[data-tone="rest"] {
-    --marker: var(--tone-rest);
+  &[data-tone="violet"] {
+    --marker: var(--tone-violet);
   }
 }
 

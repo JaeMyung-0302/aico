@@ -2,7 +2,8 @@
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
-  overflow: hidden;
+  /* 후광은 가로로만 잘라내고, 설정처럼 긴 화면은 세로로 스크롤한다. */
+  overflow-x: clip;
   background: radial-gradient(
     120% 80% at 50% 0%,
     var(--bg-1) 0%,

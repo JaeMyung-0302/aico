@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
-import { describeEntry, type Entry } from './domain.ts'
+import { describeAnswer, isTrackId, TRACKS, type Answer } from './domain.ts'
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Parameters<typeof precacheAndRoute>[0]
@@ -22,11 +22,18 @@ type InboxNotification = {
   title: string
   body: string
   url: string
-  prediction: Entry | null
+  track: string | null
+  prediction: Answer | null
+  quick: Answer | null
   actions: { action: string; title: string }[]
 }
 
-type NotificationData = { url: string; prediction: Entry | null }
+type NotificationData = {
+  url: string
+  track: string | null
+  prediction: Answer | null
+  quick: Answer | null
+}
 
 // 알림 버튼(actions)은 서비스워커 알림에서만 쓰이고 lib.dom 타입에는 빠져 있다.
 type ActionNotificationOptions = NotificationOptions & {
@@ -35,19 +42,17 @@ type ActionNotificationOptions = NotificationOptions & {
 
 const ICON = '/icon-192.png'
 const DEFAULT_URL = '/?from=push'
-const REST: Entry = { kind: 'rest', parts: [], intensity: null }
 
 // 서버가 죽었거나 구독이 지워졌을 때도 빈손으로 끝내지 않는다.
 const FALLBACK: InboxNotification = {
   tag: 'miri-daily',
-  title: '오늘 몸 어떻게 썼어요?',
+  title: '오늘 어땠어요?',
   body: '3초면 끝나요',
   url: DEFAULT_URL,
+  track: null,
   prediction: null,
-  actions: [
-    { action: 'rest', title: '쉼' },
-    { action: 'open', title: '기록하기' },
-  ],
+  quick: null,
+  actions: [{ action: 'open', title: '기록하기' }],
 }
 
 async function endpoint(): Promise<string | null> {
@@ -69,7 +74,12 @@ async function fetchInbox(): Promise<InboxNotification[]> {
 }
 
 function show(notification: InboxNotification): Promise<void> {
-  const data: NotificationData = { url: notification.url, prediction: notification.prediction }
+  const data: NotificationData = {
+    url: notification.url,
+    track: notification.track,
+    prediction: notification.prediction,
+    quick: notification.quick,
+  }
   const options: ActionNotificationOptions = {
     body: notification.body,
     icon: ICON,
@@ -95,23 +105,23 @@ self.addEventListener('push', (event) => {
 })
 
 /** 알림 버튼으로 바로 답한다. 앱을 열지 않고 끝나는 가장 짧은 경로. */
-async function answer(entry: Entry): Promise<void> {
+async function answer(track: string, value: Answer): Promise<void> {
   const current = await endpoint()
-  if (!current) throw new Error('no subscription')
+  if (!current || !isTrackId(track)) throw new Error('cannot answer')
 
   const response = await fetch('/api/log', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ endpoint: current, ...entry, via: 'action' }),
+    body: JSON.stringify({ endpoint: current, track, answer: value, via: 'action' }),
   })
   if (!response.ok) throw new Error(`log failed with ${response.status}`)
 
-  const data: NotificationData = { url: DEFAULT_URL, prediction: null }
+  const data: NotificationData = { url: DEFAULT_URL, track, prediction: null, quick: null }
   await self.registration.showNotification('기록했어요', {
-    body: describeEntry(entry),
+    body: `${TRACKS[track].name}: ${describeAnswer(TRACKS[track], value)}`,
     icon: ICON,
     badge: ICON,
-    tag: 'miri-daily',
+    tag: `miri-${track}`,
     data,
   })
 }
@@ -136,10 +146,12 @@ self.addEventListener('notificationclick', (event) => {
   const quick =
     event.action === 'accept' && data?.prediction
       ? data.prediction
-      : event.action === 'rest'
-        ? REST
+      : event.action === 'quick' && data?.quick
+        ? data.quick
         : null
 
   // 버튼 답이 실패하면 앱을 열어 직접 고르게 한다.
-  event.waitUntil(quick ? answer(quick).catch(() => focusOrOpen(url)) : focusOrOpen(url))
+  event.waitUntil(
+    quick && data?.track ? answer(data.track, quick).catch(() => focusOrOpen(url)) : focusOrOpen(url),
+  )
 })

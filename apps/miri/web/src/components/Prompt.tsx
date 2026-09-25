@@ -1,10 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  INTENSITY_LABEL,
-  KIND_LABEL,
-  PART_LABEL,
-  type Entry,
-} from "../domain.ts";
+import { toneOf, type Answer, type TrackDef } from "../domain.ts";
 import styles from "./Prompt.module.scss";
 
 /** 크고 자신감 있는 질문. 화면당 하나. */
@@ -27,20 +22,35 @@ export function Trace({ items }: { items: string[] }) {
   );
 }
 
-/** 기록 한 건을 칩으로. 종류 칩은 색조 마커를 단다. 예측 카드와 완료 화면이 같이 쓴다. */
-export function EntryChips({ entry }: { entry: Entry }) {
-  const rest = [
-    ...entry.parts.map((part) => PART_LABEL[part]),
-    ...(entry.intensity ? [INTENSITY_LABEL[entry.intensity]] : []),
-  ];
+/** 답 한 건을 칩으로. 첫 칩은 하루의 색조 마커를 단다. 예측 카드와 완료 화면이 같이 쓴다. */
+export function AnswerChips({
+  track,
+  answer,
+}: {
+  track: TrackDef;
+  answer: Answer;
+}) {
+  const labels: string[] = [];
+  for (const step of track.steps) {
+    const value = answer[step.key];
+    if (value === undefined) continue;
+    const labelOf = (v: string) =>
+      step.choices.find((choice) => choice.value === v)?.label ?? v;
+    labels.push(
+      Array.isArray(value) ? value.map(labelOf).join(" ") : labelOf(value),
+    );
+  }
+  const tone = toneOf(track, answer);
+
   return (
     <ul className={styles.chips} aria-label="기록 내용">
-      <li className={styles.chip} data-tone={entry.kind}>
-        <span className={styles.chipMarker} />
-        {KIND_LABEL[entry.kind]}
-      </li>
-      {rest.map((label) => (
-        <li key={label} className={styles.chip}>
+      {labels.map((label, index) => (
+        <li
+          key={label}
+          className={styles.chip}
+          data-tone={index === 0 ? tone ?? undefined : undefined}
+        >
+          {index === 0 && tone ? <span className={styles.chipMarker} /> : null}
           {label}
         </li>
       ))}

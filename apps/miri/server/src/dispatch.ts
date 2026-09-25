@@ -131,8 +131,11 @@ async function sendDaily(ctx: Ctx): Promise<Tally> {
       dayIndex: dayIndexOf(ctx.today),
       salt: saltOf(user.id),
     }
-    // AI 가 실패해도 알림은 나가야 하므로 템플릿으로 떨어진다.
-    const text = await ctx.compose.daily(context).catch(() => templateComposers.daily(context))
+    // AI 가 실패해도 알림은 나가야 하므로 템플릿으로 떨어진다. 사유는 로그로만 남긴다.
+    const text = await ctx.compose.daily(context).catch((cause: unknown) => {
+      console.warn('ai daily fallback', track, String(cause))
+      return templateComposers.daily(context)
+    })
 
     await insertQuestion(ctx.db, {
       userId: user.id,
@@ -193,7 +196,10 @@ export async function weeklyText(
   compose: Composers = templateComposers,
 ): Promise<string> {
   const context: WeeklyContext = { userId, lines: await weeklyLines(db, userId, today) }
-  return compose.weekly(context).catch(() => templateComposers.weekly(context))
+  return compose.weekly(context).catch((cause: unknown) => {
+    console.warn('ai weekly fallback', String(cause))
+    return templateComposers.weekly(context)
+  })
 }
 
 async function sendWeekly(ctx: Ctx): Promise<Tally> {

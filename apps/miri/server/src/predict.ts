@@ -1,28 +1,29 @@
-import { describeEntry, type Entry } from './domain.ts'
+import type { Answer } from './tracks.ts'
 
 /**
- * 오늘 값을 미리 채워 두는 규칙. LLM 없이 "같은 요일에 가장 자주 한 조합" 만 본다.
+ * 오늘 답을 미리 채워 두는 규칙. LLM 없이 "같은 요일에 가장 자주 한 답" 만 본다.
  * 근거가 2번 미만이면 예측하지 않는다. 틀린 예측은 없는 예측보다 나쁘다.
  */
 
 export const PREDICTION_MIN_SUPPORT = 2
 
-export type HistoryLog = Entry & { loggedOn: string }
+export type HistoryLog = { loggedOn: string; answer: Answer }
 
-function comboKey(entry: Entry): string {
-  return [entry.kind, entry.parts.join('+'), entry.intensity ?? ''].join('|')
+/** 정규화된 답은 키 순서와 배열 순서가 고정이라 JSON 문자열이 곧 조합 키다. */
+function comboKey(answer: Answer): string {
+  return JSON.stringify(answer)
 }
 
-/** 같은 요일 기록(최신순)을 받아 최빈 조합을 돌려준다. 동률이면 더 최근 것. */
-export function predictFromHistory(sameWeekdayLogs: HistoryLog[]): Entry | null {
+/** 같은 요일 기록(최신순)을 받아 최빈 답을 돌려준다. 동률이면 더 최근 것. */
+export function predictFromHistory(sameWeekdayLogs: HistoryLog[]): Answer | null {
   if (sameWeekdayLogs.length < PREDICTION_MIN_SUPPORT) return null
 
-  const counts = new Map<string, { entry: Entry; count: number; latest: string }>()
+  const counts = new Map<string, { answer: Answer; count: number; latest: string }>()
   for (const log of sameWeekdayLogs) {
-    const key = comboKey(log)
+    const key = comboKey(log.answer)
     const current = counts.get(key)
     counts.set(key, {
-      entry: { kind: log.kind, parts: log.parts, intensity: log.intensity },
+      answer: log.answer,
       count: (current?.count ?? 0) + 1,
       latest: current && current.latest > log.loggedOn ? current.latest : log.loggedOn,
     })
@@ -32,11 +33,5 @@ export function predictFromHistory(sameWeekdayLogs: HistoryLog[]): Entry | null 
     (a, b) => b.count - a.count || (b.latest > a.latest ? 1 : -1),
   )[0]
   if (!best || best.count < PREDICTION_MIN_SUPPORT) return null
-  return best.entry
-}
-
-/** 예측이 있으면 확인형, 없으면 열린 질문. */
-export function dailyQuestionText(prediction: Entry | null): string {
-  if (!prediction) return '오늘 몸 어떻게 썼어요?'
-  return `오늘도 ${describeEntry(prediction)}?`
+  return best.answer
 }

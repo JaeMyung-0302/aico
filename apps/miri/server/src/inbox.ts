@@ -1,5 +1,5 @@
 import { parsePrediction, type QuestionRow } from './db.ts'
-import type { Entry } from './domain.ts'
+import { isTrackId, TRACKS, type Answer } from './tracks.ts'
 
 /**
  * 서비스워커가 푸시를 받으면 여기서 "오늘 보여줄 알림"을 받아 간다.
@@ -8,47 +8,61 @@ import type { Entry } from './domain.ts'
  */
 
 export type NotificationAction = {
-  action: 'accept' | 'rest' | 'open'
+  action: 'accept' | 'quick' | 'open'
   title: string
 }
 
 export type InboxNotification = {
-  tag: 'miri-daily' | 'miri-weekly'
+  tag: string
   title: string
   body: string
   url: string
   questionId: string
-  prediction: Entry | null
+  track: string | null
+  /** accept 버튼이 저장할 답. */
+  prediction: Answer | null
+  /** quick 버튼이 저장할 답. 한 탭으로 끝나는 트랙에만 있다. */
+  quick: Answer | null
   actions: NotificationAction[]
 }
 
 export const FALLBACK_NOTIFICATION: Omit<InboxNotification, 'questionId'> = {
   tag: 'miri-daily',
-  title: '오늘 몸 어떻게 썼어요?',
+  title: '오늘 어땠어요?',
   body: '3초면 끝나요',
   url: '/?from=push',
+  track: null,
   prediction: null,
-  actions: [
-    { action: 'rest', title: '쉼' },
-    { action: 'open', title: '기록하기' },
-  ],
+  quick: null,
+  actions: [{ action: 'open', title: '기록하기' }],
 }
 
-function dailyNotification(question: QuestionRow): InboxNotification {
-  const prediction = parsePrediction(question.prediction)
+function dailyNotification(question: QuestionRow): InboxNotification | null {
+  if (!isTrackId(question.track)) return null
+  const track = TRACKS[question.track]
+  const prediction = parsePrediction(question.track, question.prediction)
+  const quick = track.quick?.answer ?? null
+
+  const actions: NotificationAction[] = prediction
+    ? [
+        { action: 'accept', title: '그래요' },
+        { action: 'open', title: '다르게' },
+      ]
+    : [
+        ...(track.quick ? [{ action: 'quick' as const, title: track.quick.title }] : []),
+        { action: 'open', title: '기록하기' },
+      ]
+
   return {
-    tag: 'miri-daily',
+    tag: `miri-${question.track}`,
     title: question.text,
-    body: question.reminded ? '아직이에요. 3초면 끝나요' : '3초면 끝나요',
-    url: '/?from=push',
+    body: question.reminded ? `아직이에요. ${track.name}, 3초면 끝나요` : `${track.name}, 3초면 끝나요`,
+    url: `/?from=push&track=${question.track}`,
     questionId: question.id,
+    track: question.track,
     prediction,
-    actions: prediction
-      ? [
-          { action: 'accept', title: '그래요' },
-          { action: 'open', title: '다르게' },
-        ]
-      : FALLBACK_NOTIFICATION.actions,
+    quick: prediction ? null : quick,
+    actions,
   }
 }
 
@@ -59,7 +73,9 @@ function weeklyNotification(question: QuestionRow): InboxNotification {
     body: question.text,
     url: '/?from=push&view=flow',
     questionId: question.id,
+    track: null,
     prediction: null,
+    quick: null,
     actions: [{ action: 'open', title: '흐름 보기' }],
   }
 }
@@ -69,6 +85,7 @@ export function buildInbox(questionsToday: QuestionRow[]): InboxNotification[] {
   return questionsToday.flatMap((question) => {
     if (question.intent === 'weekly') return [weeklyNotification(question)]
     if (question.answered_at) return []
-    return [dailyNotification(question)]
+    const notification = dailyNotification(question)
+    return notification ? [notification] : []
   })
 }

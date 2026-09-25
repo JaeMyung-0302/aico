@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { dailyQuestionText, predictFromHistory, type HistoryLog } from './predict.ts'
+import { predictFromHistory, type HistoryLog } from './predict.ts'
 
 const gymChest = (loggedOn: string): HistoryLog => ({
   loggedOn,
-  kind: 'gym',
-  parts: ['chest'],
-  intensity: 'normal',
+  answer: { kind: 'gym', parts: ['chest'], intensity: 'mid' },
 })
-const rest = (loggedOn: string): HistoryLog => ({ loggedOn, kind: 'rest', parts: [], intensity: null })
+const rest = (loggedOn: string): HistoryLog => ({ loggedOn, answer: { kind: 'rest' } })
 
 describe('predictFromHistory', () => {
   it('returns null with fewer than two same-weekday logs', () => {
@@ -15,36 +13,30 @@ describe('predictFromHistory', () => {
     expect(predictFromHistory([gymChest('2026-09-21')])).toBeNull()
   })
 
-  it('returns the most frequent combo', () => {
+  it('returns the most frequent answer', () => {
     const logs = [gymChest('2026-09-21'), rest('2026-09-14'), gymChest('2026-09-07')]
-    expect(predictFromHistory(logs)).toEqual({ kind: 'gym', parts: ['chest'], intensity: 'normal' })
+    expect(predictFromHistory(logs)).toEqual({ kind: 'gym', parts: ['chest'], intensity: 'mid' })
   })
 
-  it('returns null when no combo repeats', () => {
-    const logs = [gymChest('2026-09-21'), rest('2026-09-14')]
-    expect(predictFromHistory(logs)).toBeNull()
+  it('returns null when no answer repeats', () => {
+    expect(predictFromHistory([gymChest('2026-09-21'), rest('2026-09-14')])).toBeNull()
   })
 
-  it('breaks ties toward the more recent combo', () => {
+  it('breaks ties toward the more recent answer', () => {
     const logs = [rest('2026-09-21'), rest('2026-09-14'), gymChest('2026-09-07'), gymChest('2026-08-31')]
     expect(predictFromHistory(logs)?.kind).toBe('rest')
   })
 
-  it('treats different part sets as different combos', () => {
-    const chestLegs: HistoryLog = { ...gymChest('2026-09-14'), parts: ['chest', 'legs'] }
+  it('treats different part sets as different answers', () => {
+    const chestLegs: HistoryLog = {
+      loggedOn: '2026-09-14',
+      answer: { kind: 'gym', parts: ['chest', 'legs'], intensity: 'mid' },
+    }
     expect(predictFromHistory([gymChest('2026-09-21'), chestLegs])).toBeNull()
   })
-})
 
-describe('dailyQuestionText', () => {
-  it('asks openly without a prediction', () => {
-    expect(dailyQuestionText(null)).toBe('오늘 몸 어떻게 썼어요?')
-  })
-
-  it('asks to confirm the predicted entry', () => {
-    expect(dailyQuestionText({ kind: 'gym', parts: ['chest', 'legs'], intensity: 'hard' })).toBe(
-      '오늘도 헬스, 가슴 하체, 빡셈?',
-    )
-    expect(dailyQuestionText({ kind: 'rest', parts: [], intensity: null })).toBe('오늘도 쉼?')
+  it('works for any track shape', () => {
+    const sleep = (loggedOn: string): HistoryLog => ({ loggedOn, answer: { hours: 'h7to8', fresh: 'high' } })
+    expect(predictFromHistory([sleep('2026-09-21'), sleep('2026-09-14')])).toEqual({ hours: 'h7to8', fresh: 'high' })
   })
 })

@@ -1,3 +1,5 @@
+import { aiComposers } from './ai.ts'
+import { isDispatchAuthorized } from './auth.ts'
 import {
   answerDailyQuestion,
   deleteUser,
@@ -6,23 +8,25 @@ import {
   findUserByEndpoint,
   funnel,
   insertUser,
+  listTracks,
   logsBetween,
   parsePrediction,
   questionsOn,
   recordEvent,
   sameWeekdayLogs,
-  updateUser,
+  setPaused,
   upsertLog,
+  upsertTrack,
+  weekDaysLogged,
   type AnsweredVia,
   type UserRow,
 } from './db.ts'
-import { isDispatchAuthorized } from './auth.ts'
-import { dispatch } from './dispatch.ts'
-import { isNotifySlot, normalizeEntry, NOTIFY_SLOTS } from './domain.ts'
+import { dispatch, templateComposers, weeklyText, type Composers } from './dispatch.ts'
+import { fullTrackSettings, isNotifyTime, isOffDays, type TrackSettings } from './domain.ts'
 import { buildInbox } from './inbox.ts'
 import { kstDate, shiftDate } from './kst.ts'
 import { predictFromHistory } from './predict.ts'
-import { summarizeWeek } from './summary.ts'
+import { isTrackId, normalizeAnswer, summarizeTrackWeek, TRACKS, type TrackId } from './tracks.ts'
 
 export type Env = {
   DB: D1Database
@@ -32,18 +36,27 @@ export type Env = {
   VAPID_PRIVATE_KEY: string
   /** 수동 발송 허용 키. 비어 있으면 /api/dispatch 는 존재하지 않는다. */
   DISPATCH_KEY?: string
+  /** 있으면 질문 문구와 주간 요약을 AI 가 쓴다. 없으면 템플릿. */
+  ANTHROPIC_API_KEY?: string
+  /** 비우면 Opus 5. 규모가 커지면 배포 없이 Sonnet 5 로 내린다. */
+  AI_MODEL?: string
 }
 
-const DEFAULT_NOTIFY_AT = '21:00'
+function composersFrom(env: Env): Composers {
+  if (!env.ANTHROPIC_API_KEY) return templateComposers
+  return aiComposers(env.ANTHROPIC_API_KEY, env.AI_MODEL || undefined)
+}
+
 const HISTORY_DAYS_DEFAULT = 35
 const HISTORY_DAYS_MAX = 120
 const ANSWERED_VIA: AnsweredVia[] = ['predict', 'pick', 'action']
 
 type Identity = { userId?: unknown; endpoint?: unknown }
-type SubscribeBody = { endpoint?: string; p256dh?: string; auth?: string; notifyAt?: unknown }
-type LogBody = Identity & { kind?: unknown; parts?: unknown; intensity?: unknown; via?: unknown }
+type TrackPatch = { track?: unknown; enabled?: unknown; notifyAt?: unknown; remind?: unknown; offDays?: unknown }
+type SubscribeBody = { endpoint?: string; p256dh?: string; auth?: string; tracks?: unknown }
+type LogBody = Identity & { track?: unknown; answer?: unknown; via?: unknown }
 type EventBody = Identity & { type?: unknown }
-type MeBody = Identity & { notifyAt?: unknown; paused?: unknown }
+type MeBody = Identity & { paused?: unknown; tracks?: unknown }
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -90,8 +103,35 @@ function unknownUser(): Response {
   return json({ error: 'unknown_user' }, 404)
 }
 
-function settingsOf(user: UserRow) {
-  return { userId: user.id, notifyAt: user.notify_at, paused: user.paused === 1 }
+/** 트랙 설정 patch 목록을 검증한다. 하나라도 틀리면 사유를 돌려준다. */
+function parseTrackPatches(
+  raw: unknown,
+): { patches: { track: TrackId; patch: Partial<Omit<TrackSettings, 'track'>> }[] } | { error: string } {
+  if (raw === undefined) return { patches: [] }
+  if (!Array.isArray(raw)) return { error: 'tracks must be an array' }
+
+  const patches: { track: TrackId; patch: Partial<Omit<TrackSettings, 'track'>> }[] = []
+  for (const item of raw as TrackPatch[]) {
+    if (!isTrackId(item?.track)) return { error: `track must be one of ${Object.keys(TRACKS).join('|')}` }
+    if (item.notifyAt !== undefined && !isNotifyTime(item.notifyAt)) {
+      return { error: 'notifyAt must be HH:MM in 10 minute steps' }
+    }
+    if (item.enabled !== undefined && typeof item.enabled !== 'boolean') return { error: 'enabled must be boolean' }
+    if (item.remind !== undefined && typeof item.remind !== 'boolean') return { error: 'remind must be boolean' }
+    if (item.offDays !== undefined && !isOffDays(item.offDays)) return { error: 'offDays must be weekday numbers 0-6' }
+
+    const patch: Partial<Omit<TrackSettings, 'track'>> = {}
+    if (isNotifyTime(item.notifyAt)) patch.notifyAt = item.notifyAt
+    if (typeof item.enabled === 'boolean') patch.enabled = item.enabled
+    if (typeof item.remind === 'boolean') patch.remind = item.remind
+    if (isOffDays(item.offDays)) patch.offDays = item.offDays
+    patches.push({ track: item.track, patch })
+  }
+  return { patches }
+}
+
+async function settingsOf(env: Env, user: UserRow) {
+  return { userId: user.id, paused: user.paused === 1, tracks: fullTrackSettings(await listTracks(env.DB, user.id)) }
 }
 
 // ── routes ─────────────────────────────────────────────────────
@@ -101,34 +141,42 @@ async function subscribe(request: Request, env: Env): Promise<Response> {
   if (!body?.endpoint || !body.p256dh || !body.auth) {
     return json({ error: 'endpoint, p256dh, auth are required' }, 400)
   }
-  const notifyAt = isNotifySlot(body.notifyAt) ? body.notifyAt : DEFAULT_NOTIFY_AT
+  const parsed = parseTrackPatches(body.tracks)
+  if ('error' in parsed) return json({ error: parsed.error }, 400)
 
-  // 같은 브라우저가 재구독하면 endpoint 가 같으므로 기존 행을 그대로 쓰고 시간대만 갱신한다.
+  // 같은 브라우저가 재구독하면 endpoint 가 같으므로 기존 행을 그대로 쓴다.
   const existing = await findUserByEndpoint(env.DB, body.endpoint)
-  if (existing) {
-    await updateUser(env.DB, existing.id, { notifyAt })
-    return json(settingsOf({ ...existing, notify_at: notifyAt }))
+  const user: UserRow = existing ?? {
+    id: await insertUser(env.DB, { endpoint: body.endpoint, p256dh: body.p256dh, auth: body.auth }),
+    endpoint: body.endpoint,
+    p256dh: body.p256dh,
+    auth: body.auth,
+    paused: 0,
   }
 
-  const subscription = { endpoint: body.endpoint, p256dh: body.p256dh, auth: body.auth }
-  const id = await insertUser(env.DB, subscription, notifyAt)
-  return json({ userId: id, notifyAt, paused: false }, 201)
+  // 트랙을 안 고르고 온 첫 구독은 운동 하나로 시작한다.
+  const patches = parsed.patches.length > 0 || existing ? parsed.patches : [{ track: 'exercise' as const, patch: {} }]
+  for (const { track, patch } of patches) await upsertTrack(env.DB, user.id, track, { enabled: true, ...patch })
+
+  return json(await settingsOf(env, user), existing ? 200 : 201)
 }
 
 async function writeLog(request: Request, env: Env): Promise<Response> {
   const body = await readBody<LogBody>(request)
-  const entry = body ? normalizeEntry({ kind: body.kind, parts: body.parts, intensity: body.intensity }) : null
-  if (!body || !entry) return json({ error: 'kind (gym|cardio|light|rest) is required' }, 400)
+  if (!body || !isTrackId(body.track)) return json({ error: 'track is required' }, 400)
+  const answer = normalizeAnswer(TRACKS[body.track], body.answer)
+  if (!answer) return json({ error: 'answer does not match the track' }, 400)
 
   const user = await resolveUser(env, body)
   if (!user) return unknownUser()
 
   const via = ANSWERED_VIA.find((value) => value === body.via) ?? 'pick'
   const today = kstDate()
-  await upsertLog(env.DB, user.id, today, entry)
-  await answerDailyQuestion(env.DB, user.id, today, via)
+  await upsertLog(env.DB, user.id, body.track, today, answer)
+  await answerDailyQuestion(env.DB, user.id, body.track, today, via)
   await recordEvent(env.DB, user.id, 'completed', today)
-  return json({ ok: true, loggedOn: today, log: entry })
+  const weekDays = await weekDaysLogged(env.DB, user.id, body.track, today)
+  return json({ ok: true, loggedOn: today, track: body.track, answer, weekDays })
 }
 
 async function writeEvent(request: Request, env: Env): Promise<Response> {
@@ -142,25 +190,35 @@ async function writeEvent(request: Request, env: Env): Promise<Response> {
   return json({ ok: true })
 }
 
-/** 오늘 화면에 필요한 전부. 알림 전에 먼저 열어도 예측은 즉석에서 계산한다. */
+/** 오늘 화면에 필요한 전부. 켜진 트랙마다 기록, 예측, 이번 주 일수. */
 async function today(url: URL, env: Env): Promise<Response> {
   const user = await resolveUser(env, identityFrom(url))
   if (!user) return unknownUser()
 
   const date = kstDate()
-  const log = await findLog(env.DB, user.id, date)
-  const daily = (await questionsOn(env.DB, user.id, date)).find((q) => q.intent === 'daily')
-  const prediction = daily
-    ? parsePrediction(daily.prediction)
-    : predictFromHistory(await sameWeekdayLogs(env.DB, user.id, date))
+  const settings = await settingsOf(env, user)
+  const questions = await questionsOn(env.DB, user.id, date)
 
-  return json({
-    loggedOn: date,
-    log,
-    questionId: daily?.id ?? null,
-    prediction,
-    settings: settingsOf(user),
-  })
+  const tracks = []
+  for (const item of settings.tracks) {
+    if (!item.enabled) continue
+    const log = await findLog(env.DB, user.id, item.track, date)
+    const daily = questions.find((q) => q.intent === 'daily' && q.track === item.track)
+    const prediction = daily
+      ? parsePrediction(item.track, daily.prediction)
+      : predictFromHistory(await sameWeekdayLogs(env.DB, user.id, item.track, date))
+    tracks.push({
+      track: item.track,
+      notifyAt: item.notifyAt,
+      log,
+      questionId: daily?.id ?? null,
+      questionText: daily?.text ?? null,
+      prediction,
+      weekDays: await weekDaysLogged(env.DB, user.id, item.track, date),
+    })
+  }
+
+  return json({ loggedOn: date, paused: settings.paused, tracks })
 }
 
 /** 서비스워커 전용. 푸시를 받은 순간 보여줄 알림 목록. */
@@ -172,53 +230,54 @@ async function inbox(url: URL, env: Env): Promise<Response> {
   return json({ userId: user.id, notifications })
 }
 
-/** 흐름 화면. 최근 N 일 기록과 지난 7일 요약. */
+/** 흐름 화면. 한 트랙의 최근 N 일 기록과 지난 7일 요약. */
 async function history(url: URL, env: Env): Promise<Response> {
   const user = await resolveUser(env, identityFrom(url))
   if (!user) return unknownUser()
+  const track = url.searchParams.get('track') ?? 'exercise'
+  if (!isTrackId(track)) return json({ error: 'unknown track' }, 400)
 
   const requested = Number(url.searchParams.get('days') ?? HISTORY_DAYS_DEFAULT)
   const days = Number.isFinite(requested)
     ? Math.min(Math.max(Math.trunc(requested), 7), HISTORY_DAYS_MAX)
     : HISTORY_DAYS_DEFAULT
   const date = kstDate()
-  const logs = await logsBetween(env.DB, user.id, shiftDate(date, -(days - 1)), date)
+  const logs = await logsBetween(env.DB, user.id, track, shiftDate(date, -(days - 1)), date)
   const weekStart = shiftDate(date, -6)
-  const week = summarizeWeek(logs.filter((log) => log.loggedOn >= weekStart))
+  const weekText = summarizeTrackWeek(
+    TRACKS[track],
+    logs.filter((log) => log.loggedOn >= weekStart).map((log) => log.answer),
+  )
 
-  return json({ today: date, days, logs, week })
+  return json({ today: date, days, track, logs, weekText, allText: await weeklyText(env.DB, user.id, date) })
 }
 
 async function readMe(url: URL, env: Env): Promise<Response> {
   const user = await resolveUser(env, identityFrom(url))
   if (!user) return unknownUser()
-  return json({ ...settingsOf(user), slots: NOTIFY_SLOTS })
+  return json(await settingsOf(env, user))
 }
 
 async function updateMe(request: Request, env: Env): Promise<Response> {
   const body = await readBody<MeBody>(request)
   if (!body) return json({ error: 'body is required' }, 400)
-  if (body.notifyAt !== undefined && !isNotifySlot(body.notifyAt)) {
-    return json({ error: `notifyAt must be one of ${NOTIFY_SLOTS.join('|')}` }, 400)
-  }
   if (body.paused !== undefined && typeof body.paused !== 'boolean') {
     return json({ error: 'paused must be boolean' }, 400)
   }
+  const parsed = parseTrackPatches(body.tracks)
+  if ('error' in parsed) return json({ error: parsed.error }, 400)
 
   const user = await resolveUser(env, body)
   if (!user) return unknownUser()
 
-  const notifyAt = isNotifySlot(body.notifyAt) ? body.notifyAt : undefined
-  const paused = typeof body.paused === 'boolean' ? body.paused : undefined
-  await updateUser(env.DB, user.id, { notifyAt, paused })
-  return json({
-    userId: user.id,
-    notifyAt: notifyAt ?? user.notify_at,
-    paused: paused ?? user.paused === 1,
-  })
+  if (typeof body.paused === 'boolean') await setPaused(env.DB, user.id, body.paused)
+  for (const { track, patch } of parsed.patches) await upsertTrack(env.DB, user.id, track, patch)
+
+  const fresh = (await findUser(env.DB, user.id)) ?? user
+  return json(await settingsOf(env, fresh))
 }
 
-/** 데이터 지우기. 사용자 행이 사라지면 기록, 질문, 이벤트가 같이 사라진다. */
+/** 데이터 지우기. 사용자 행이 사라지면 트랙, 기록, 질문, 이벤트가 같이 사라진다. */
 async function deleteMe(url: URL, env: Env): Promise<Response> {
   const user = await resolveUser(env, identityFrom(url))
   if (!user) return unknownUser()
@@ -256,7 +315,7 @@ const ROUTES: Record<string, (request: Request, url: URL, env: Env) => Promise<R
   'POST /api/dispatch': async (request, url, env) => {
     if (!isDispatchAuthorized(request, env.DISPATCH_KEY)) return json({ error: 'not found' }, 404)
     const at = url.searchParams.get('at')
-    return json(await dispatch(env.DB, vapidFrom(env), at ? new Date(at) : new Date()))
+    return json(await dispatch(env.DB, vapidFrom(env), at ? new Date(at) : new Date(), composersFrom(env)))
   },
 }
 
@@ -271,6 +330,6 @@ export default {
   },
 
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
-    await dispatch(env.DB, vapidFrom(env))
+    await dispatch(env.DB, vapidFrom(env), new Date(), composersFrom(env))
   },
 }

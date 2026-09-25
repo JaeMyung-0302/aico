@@ -1,91 +1,75 @@
-/** 서버와 클라이언트가 공유하는 값 정의. 옵션에 없는 값은 저장하지 않는다. */
-
-export const KINDS = ['gym', 'cardio', 'light', 'rest'] as const
-export const PARTS = ['chest', 'back', 'legs', 'shoulders_arms'] as const
-export const INTENSITIES = ['easy', 'normal', 'hard'] as const
-export const NOTIFY_SLOTS = ['07:30', '12:30', '18:30', '21:00'] as const
-
-export type Kind = (typeof KINDS)[number]
-export type Part = (typeof PARTS)[number]
-export type Intensity = (typeof INTENSITIES)[number]
-export type NotifySlot = (typeof NOTIFY_SLOTS)[number]
-
-/** 하루 기록 한 건. parts 는 헬스일 때만, intensity 는 헬스와 유산소일 때만 채워진다. */
-export type Entry = {
-  kind: Kind
-  parts: Part[]
-  intensity: Intensity | null
-}
-
-export const KIND_LABEL: Record<Kind, string> = {
-  gym: '헬스',
-  cardio: '유산소',
-  light: '가볍게',
-  rest: '쉼',
-}
-
-export const PART_LABEL: Record<Part, string> = {
-  chest: '가슴',
-  back: '등',
-  legs: '하체',
-  shoulders_arms: '어깨팔',
-}
-
-export const INTENSITY_LABEL: Record<Intensity, string> = {
-  easy: '가벼움',
-  normal: '적당',
-  hard: '빡셈',
-}
-
-export function isKind(value: unknown): value is Kind {
-  return typeof value === 'string' && (KINDS as readonly string[]).includes(value)
-}
-
-export function isPart(value: unknown): value is Part {
-  return typeof value === 'string' && (PARTS as readonly string[]).includes(value)
-}
-
-export function isIntensity(value: unknown): value is Intensity {
-  return typeof value === 'string' && (INTENSITIES as readonly string[]).includes(value)
-}
-
-export function isNotifySlot(value: unknown): value is NotifySlot {
-  return typeof value === 'string' && (NOTIFY_SLOTS as readonly string[]).includes(value)
-}
-
-/** 강도를 받는 종류인지. 쉼과 가볍게는 1탭으로 끝난다. */
-export function wantsIntensity(kind: Kind): boolean {
-  return kind === 'gym' || kind === 'cardio'
-}
-
 /**
- * 입력을 저장 가능한 Entry 로 정규화한다. 종류에 맞지 않는 값은 조용히 버린다.
- * 예를 들어 쉼에 강도가 오면 null, 유산소에 부위가 오면 빈 배열.
+ * 서버와 클라이언트가 공유하는 값 정의. 옵션에 없는 값은 저장하지 않는다.
+ * 분야별 선택지는 tracks.ts 카탈로그가 정본이고 여기서는 그대로 내보낸다.
  */
-export function normalizeEntry(input: {
-  kind: unknown
-  parts?: unknown
-  intensity?: unknown
-}): Entry | null {
-  if (!isKind(input.kind)) return null
 
-  const rawParts: unknown[] = Array.isArray(input.parts) ? input.parts : []
-  const parts =
-    input.kind === 'gym' ? [...new Set(rawParts.filter(isPart))].sort(byPartOrder) : []
-  const intensity =
-    wantsIntensity(input.kind) && isIntensity(input.intensity) ? input.intensity : null
+export {
+  TRACK_IDS,
+  TRACKS,
+  TONES,
+  isTrackId,
+  isStepActive,
+  normalizeAnswer,
+  describeAnswer,
+  toneOf,
+  type Answer,
+  type Choice,
+  type StepDef,
+  type Tone,
+  type TrackDef,
+  type TrackId,
+} from './tracks.ts'
+import { TRACK_IDS, TRACKS, type TrackId } from './tracks.ts'
 
-  return { kind: input.kind, parts, intensity }
+/** 빠른 선택 프리셋. 이 밖의 시각은 10분 단위로 직접 고른다. */
+export const NOTIFY_PRESETS = ['07:30', '12:30', '18:30', '21:00'] as const
+export const NOTIFY_STEP_MINUTES = 10
+
+const NOTIFY_TIME = /^([01]\d|2[0-3]):[0-5]0$/
+
+/** HH:MM 이고 분이 10의 배수인가. cron 이 10분마다 돌기 때문이다. */
+export function isNotifyTime(value: unknown): value is string {
+  return typeof value === 'string' && NOTIFY_TIME.test(value)
 }
 
-function byPartOrder(a: Part, b: Part): number {
-  return PARTS.indexOf(a) - PARTS.indexOf(b)
+export const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const
+
+/** 0~6(일~토) 중복 없는 배열인가. */
+export function isOffDays(value: unknown): value is number[] {
+  return (
+    Array.isArray(value) &&
+    value.every((day) => Number.isInteger(day) && day >= 0 && day <= 6) &&
+    new Set(value).size === value.length
+  )
 }
 
-/** "헬스, 가슴 하체, 적당" 처럼 사람이 읽는 한 줄. 알림 문구와 확인 카드가 같이 쓴다. */
-export function describeEntry(entry: Entry): string {
-  const pieces = [KIND_LABEL[entry.kind]]
-  if (entry.parts.length > 0) pieces.push(entry.parts.map((part) => PART_LABEL[part]).join(' '))
-  if (entry.intensity) pieces.push(INTENSITY_LABEL[entry.intensity])
-  return pieces.join(', ')
+export function offDaysToText(days: number[]): string {
+  return [...days].sort((a, b) => a - b).join(',')
+}
+
+export function textToOffDays(text: string): number[] {
+  if (!text) return []
+  return text
+    .split(',')
+    .map(Number)
+    .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+}
+
+/** 사용자의 트랙 설정 한 건. 서버 응답과 클라이언트 상태가 같은 모양을 쓴다. */
+export type TrackSettings = {
+  track: TrackId
+  enabled: boolean
+  notifyAt: string
+  remind: boolean
+  offDays: number[]
+}
+
+/** 아직 설정이 없는 트랙의 기본값. 켜지지 않은 상태로 시작한다. */
+export function defaultTrackSettings(track: TrackId): TrackSettings {
+  return { track, enabled: false, notifyAt: TRACKS[track].defaultNotifyAt, remind: true, offDays: [] }
+}
+
+/** 카탈로그 순서로 5개 전부. 설정이 있는 트랙은 그 값, 없는 트랙은 기본값. */
+export function fullTrackSettings(known: TrackSettings[]): TrackSettings[] {
+  return TRACK_IDS.map((track) => known.find((item) => item.track === track) ?? defaultTrackSettings(track))
 }

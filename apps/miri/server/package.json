@@ -20,5 +20,8 @@
     "typescript": "^5.9.2",
     "vitest": "^4.0.18",
     "wrangler": "^3.107.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0"
   }
 }

@@ -1,0 +1,141 @@
+.orb {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(
+    circle at 32% 30%,
+    var(--orb-highlight) 0%,
+    var(--accent) 30%,
+    var(--accent-strong) 100%
+  );
+  box-shadow:
+    var(--shadow-glow),
+    inset 0 -0.15em 0.4em var(--orb-shade);
+  color: var(--on-accent);
+  animation: breathe var(--dur-ambient) ease-in-out infinite;
+}
+
+.sm {
+  width: var(--orb-sm);
+  height: var(--orb-sm);
+}
+
+.lg {
+  width: var(--orb-lg);
+  height: var(--orb-lg);
+}
+
+/* 동공은 화면 안쪽(왼쪽 아래)을 본다 — 사용자를 먼저 내다보는 느낌. */
+.pupil {
+  position: absolute;
+  top: 46%;
+  left: 40%;
+  width: 34%;
+  height: 34%;
+  border-radius: var(--radius-pill);
+  background: var(--pupil);
+  transform-origin: center;
+  transition: opacity var(--dur-base) var(--ease-out);
+  animation: blink var(--dur-ambient) ease-in-out infinite;
+}
+
+.check {
+  position: absolute;
+  width: 62%;
+  height: 62%;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: draw var(--dur-slow) var(--ease-out) forwards;
+  animation-delay: var(--dur-base);
+}
+
+.done {
+  animation: pop var(--dur-slow) var(--ease-spring) both;
+
+  .pupil {
+    opacity: 0;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: var(--stroke) solid var(--accent);
+    animation: ripple var(--dur-slow) var(--ease-out) forwards;
+    animation-delay: var(--dur-fast);
+  }
+}
+
+/* 묻는 중: 후광 고리가 바깥으로 번진다. 답을 기다린다는 신호. */
+.asking::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--stroke) solid var(--accent);
+  animation: ripple calc(var(--dur-ambient) / 3) var(--ease-out) infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .pupil,
+  .asking::before {
+    animation: none;
+  }
+
+  .asking::before {
+    opacity: 0.5;
+  }
+}

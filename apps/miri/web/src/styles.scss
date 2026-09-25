@@ -1,0 +1,204 @@
+/* ─── Design tokens ─────────────────────────────────────────────
+   다크 우선. 라이트는 아래 media query 에서 같은 이름을 덮어쓴다.
+   컴포넌트 스타일은 이 토큰만 참조한다(하드코딩 금지). */
+:root {
+  color-scheme: dark;
+
+  /* color: canvas & surfaces */
+  --bg-0: #06080d;
+  --bg-1: #0d111a;
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface-active: rgba(255, 255, 255, 0.12);
+  --surface-border: rgba(255, 255, 255, 0.09);
+  --surface-highlight: rgba(255, 255, 255, 0.14);
+
+  /* color: text */
+  --text: #eef2f8;
+  --text-2: #97a1b3;
+  --text-3: #5d6677;
+
+  /* color: accent (아이콘의 파란 원) */
+  --accent: #7db0ff;
+  --accent-strong: #4f8dff;
+  --on-accent: #06080d;
+  --accent-soft: rgba(93, 150, 255, 0.14);
+  --accent-glow: rgba(93, 150, 255, 0.5);
+  --orb-highlight: #dbe9ff;
+  --pupil: #0a1220;
+
+  /* color: kind tones (버튼 마커) */
+  --tone-gym: #7db0ff;
+  --tone-cardio: #5fd3c4;
+  --tone-light: #f2c77b;
+  --tone-rest: #c7b6ff;
+
+  /* color: chart tones (흐름 화면 전용. UI 톤보다 어둡게 맞춰 CVD·대비 검증을 통과한 값) */
+  --chart-gym: #4a86f0;
+  --chart-cardio: #1ba392;
+  --chart-light: #b8852a;
+  --chart-rest: #9a7cf5;
+
+  /* color: semantic */
+  --danger: #ff8080;
+  --danger-soft: rgba(255, 128, 128, 0.14);
+  --success: #7de3b3;
+
+  /* elevation */
+  --shadow-lift: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --orb-shade: rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 32px var(--accent-glow);
+  --glow-sm: 10px;
+  --glow-md: 28px;
+  --hairline: 1px;
+  --stroke: 2px;
+  --blur-step: 6px;
+  --blur-glass: 16px;
+  --blur-halo: 56px;
+
+  /* spacing (4px grid, rem) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* radius: 요소 크기에 비례 */
+  --radius-sm: 0.75rem;
+  --radius-md: 1.25rem;
+  --radius-lg: 1.75rem;
+  --radius-pill: 999px;
+
+  /* typography */
+  --font-sans:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", system-ui, sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
+  --text-3xl: 3rem;
+  --leading-tight: 1.15;
+  --leading-body: 1.55;
+  --tracking-tight: -0.025em;
+
+  /* sizing */
+  --tap-min: 3.5rem;
+  --tile-h: 5.75rem;
+  --cta-h: 3.75rem;
+  --orb-sm: 1.75rem;
+  --orb-lg: 4.5rem;
+  --content-max: 27rem;
+
+  /* motion */
+  --dur-fast: 120ms;
+  --dur-base: 240ms;
+  --dur-slow: 520ms;
+  --dur-ambient: 6s;
+  --stagger: 45ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* z-index scale */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-toast: 50;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --bg-0: #f3f5fa;
+    --bg-1: #ffffff;
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-hover: rgba(255, 255, 255, 0.95);
+    --surface-active: #e4eaf5;
+    --surface-border: rgba(15, 23, 42, 0.08);
+    --surface-highlight: rgba(255, 255, 255, 0.95);
+
+    --text: #0f1524;
+    --text-2: #5a6478;
+    --text-3: #98a2b6;
+
+    --accent: #2f6fed;
+    --accent-strong: #1f5fdf;
+    --on-accent: #ffffff;
+    --accent-soft: rgba(47, 111, 237, 0.1);
+    --accent-glow: rgba(47, 111, 237, 0.32);
+    --orb-highlight: #ffffff;
+    --pupil: #0f1a33;
+
+    --tone-gym: #2f6fed;
+    --tone-cardio: #149c8c;
+    --tone-light: #d99a1e;
+    --tone-rest: #7c5cf0;
+
+    --chart-gym: #2f6fed;
+    --chart-cardio: #149c8c;
+    --chart-light: #c48a15;
+    --chart-rest: #7c5cf0;
+
+    --danger: #d93d3d;
+    --danger-soft: rgba(217, 61, 61, 0.1);
+    --success: #1f9d6a;
+
+    --orb-shade: rgba(15, 23, 42, 0.18);
+    --shadow-lift: 0 16px 40px rgba(15, 23, 42, 0.1);
+  }
+}
+
+/* 모션 축소: 토큰을 0 으로 내리면 모든 transition/animation 이 즉시 끝난다. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --stagger: 0ms;
+  }
+}
+
+/* ─── Base ───────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "miri",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+
+  // 웹앱을 같은 Worker 에서 서빙한다. 동일 출처라 CORS 가 없고
+  // 서비스워커 스코프도 루트로 잡힌다.
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "miri",
+      
+      "database_id": "84b9b8db-4d1b-4a85-a84a-edf1e6708d07",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // 10분마다 돌면서 지금이 알림 시각인 사용자만 골라 보낸다.
+  // 무료 플랜에서 1분 단위까지 허용되므로 사용자별 시간을 열어도 구조가 그대로다.
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

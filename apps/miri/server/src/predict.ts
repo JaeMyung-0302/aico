@@ -1,4 +1,6 @@
-import type { Answer } from './tracks.ts'
+import type { Answer, HistoryLog } from './tracks.ts'
+
+export type { HistoryLog }
 
 /**
  * 오늘 답을 미리 채워 두는 규칙. LLM 없이 "같은 요일에 가장 자주 한 답" 만 본다.
@@ -6,8 +8,6 @@ import type { Answer } from './tracks.ts'
  */
 
 export const PREDICTION_MIN_SUPPORT = 2
-
-export type HistoryLog = { loggedOn: string; answer: Answer }
 
 /** 정규화된 답은 키 순서와 배열 순서가 고정이라 JSON 문자열이 곧 조합 키다. */
 function comboKey(answer: Answer): string {

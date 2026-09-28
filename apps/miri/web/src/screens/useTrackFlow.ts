@@ -6,9 +6,11 @@ import {
   type TodayTrack,
 } from "../api.ts";
 import {
+  isChoiceStep,
   isStepActive,
   TRACKS,
   type Answer,
+  type ChoiceStepDef,
   type StepDef,
   type TrackId,
 } from "../domain.ts";
@@ -101,7 +103,7 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
 
   const handleDeclineClick = () => setPhase("pick");
 
-  const handlePick = (step: StepDef, value: string) => {
+  const handlePick = (step: ChoiceStepDef, value: string) => {
     setError(null);
     if (step.multi) {
       setAnswer((prev) => {
@@ -124,7 +126,7 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
   };
 
   const handleNextClick = () => {
-    if (!current || !current.multi) return;
+    if (!current || !isChoiceStep(current) || !current.multi) return;
     const list = answer[current.key];
     if (!Array.isArray(list) || list.length === 0) return;
     setCommitted((prev) => [...prev, current.key]);
@@ -139,7 +141,9 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
 
   const selectedOf = (step: StepDef): string[] => {
     const value = answer[step.key];
-    return Array.isArray(value) ? value : [];
+    return Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string")
+      : [];
   };
 
   return {

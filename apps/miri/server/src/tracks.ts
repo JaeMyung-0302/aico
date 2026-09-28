@@ -16,20 +16,53 @@ export type Choice = {
   level?: 1 | 2 | 3
 }
 
-export type StepDef = {
+/** 키보드 없이 +/- 로 고르는 수. 범위와 간격 밖의 값은 저장하지 않는다. */
+export type NumberRange = {
+  min: number
+  max: number
+  step: number
+  /** "kg", "회", "분" 처럼 수 뒤에 붙는 단위 */
+  unit: string
+}
+
+type StepBase = {
   key: string
   question: string
+  /** 이전 답이 이 값일 때만 묻는다. { kind: ['gym'] } */
+  when?: Readonly<Record<string, readonly string[]>>
+}
+
+export type ChoiceStepDef = StepBase & {
+  kind?: 'choice'
   choices: readonly Choice[]
   columns: 2 | 3
   /** 여러 개 고르는 단계. 하나 이상 골라야 한다. */
   multi?: boolean
-  /** 이전 답이 이 값일 때만 묻는다. { kind: ['gym'] } */
-  when?: Readonly<Record<string, readonly string[]>>
   /** 이 단계의 색조를 이전 단계 답에서 가져온다. */
   toneFrom?: string
 }
 
-export type Answer = Record<string, string | string[]>
+export type NumberStepDef = StepBase & NumberRange & { kind: 'number' }
+
+/** 묶음 안의 한 칸. 선택지이거나 수다. */
+export type EntryField =
+  | { key: string; label: string; kind: 'choice'; choices: readonly Choice[] }
+  | ({ key: string; label: string; kind: 'number' } & NumberRange)
+
+/** 같은 묶음을 여러 번 쌓는 단계. 운동의 "종목, 무게, 반복, 세트" 한 줄이 한 묶음이다. */
+export type EntriesStepDef = StepBase & {
+  kind: 'entries'
+  fields: readonly EntryField[]
+  maxEntries: number
+}
+
+export type StepDef = ChoiceStepDef | NumberStepDef | EntriesStepDef
+
+export type Entry = Record<string, string | number>
+export type AnswerValue = string | string[] | number | Entry[]
+export type Answer = Record<string, AnswerValue>
+
+export type HistoryLog = { loggedOn: string; answer: Answer }
 
 export type TrackDef = {
   id: TrackId
@@ -46,6 +79,11 @@ export type TrackDef = {
   quick?: { title: string; answer: Answer }
   /** 트랙 고유 주간 요약. 없으면 공통 요약을 쓴다. */
   summarize?: (answers: Answer[]) => string
+  /**
+   * 저장 직후 돌려줄 사실들. 판단은 여기서만 하고 AI 는 문장만 다듬는다.
+   * history 는 오늘을 뺀 최근 기록(날짜 오름차순). 할 말이 없으면 빈 배열.
+   */
+  feedback?: (answer: Answer, history: HistoryLog[]) => string[]
 }
 
 export const TRACK_IDS = ['exercise', 'sleep', 'meals', 'focus', 'mood'] as const
@@ -71,7 +109,9 @@ function summarizeExercise(answers: Answer[]): string {
   for (const answer of answers) {
     if (typeof answer.kind === 'string' && answer.kind in kinds) kinds[answer.kind as keyof typeof kinds] += 1
     if (Array.isArray(answer.parts)) {
-      for (const part of answer.parts) if (part in parts) parts[part as keyof typeof parts] += 1
+      for (const part of answer.parts) {
+        if (typeof part === 'string' && part in parts) parts[part as keyof typeof parts] += 1
+      }
     }
   }
   if (answers.length === 0) return '운동 기록이 없었어요'
@@ -249,6 +289,10 @@ export function isTrackId(value: unknown): value is TrackId {
   return typeof value === 'string' && (TRACK_IDS as readonly string[]).includes(value)
 }
 
+export function isChoiceStep(step: StepDef): step is ChoiceStepDef {
+  return step.kind === undefined || step.kind === 'choice'
+}
+
 /** 이전 답을 보고 이 단계를 물을지 정한다. */
 export function isStepActive(step: StepDef, answer: Answer): boolean {
   if (!step.when) return true
@@ -258,14 +302,71 @@ export function isStepActive(step: StepDef, answer: Answer): boolean {
   })
 }
 
-function choiceValues(step: StepDef): string[] {
-  return step.choices.map((choice) => choice.value)
+function choiceValues(choices: readonly Choice[]): string[] {
+  return choices.map((choice) => choice.value)
+}
+
+function choiceLabel(choices: readonly Choice[], value: string): string {
+  return choices.find((choice) => choice.value === value)?.label ?? value
+}
+
+/** 범위 안이고 간격에 맞으면 그 수, 아니면 null. 2.5kg 간격 같은 소수 간격도 받는다. */
+export function normalizeNumber(range: NumberRange, raw: unknown): number | null {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return null
+  if (raw < range.min || raw > range.max) return null
+  const steps = (raw - range.min) / range.step
+  if (Math.abs(steps - Math.round(steps)) > 1e-6) return null
+  return Number((range.min + Math.round(steps) * range.step).toFixed(3))
+}
+
+/** 묶음 한 줄. 칸이 하나라도 빠지거나 틀리면 버린다. */
+function normalizeEntry(fields: readonly EntryField[], raw: unknown): Entry | null {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null
+  const source = raw as Record<string, unknown>
+  const entry: Entry = {}
+  for (const field of fields) {
+    const value = source[field.key]
+    if (field.kind === 'choice') {
+      if (typeof value !== 'string' || !choiceValues(field.choices).includes(value)) return null
+      entry[field.key] = value
+      continue
+    }
+    const number = normalizeNumber(field, value)
+    if (number === null) return null
+    entry[field.key] = number
+  }
+  return entry
+}
+
+/**
+ * 한 단계의 입력을 저장 가능한 값으로. 쓸 수 없으면 null.
+ * strict 에서는 묶음 중 한 줄만 틀려도 null, lenient 에서는 틀린 줄만 버린다.
+ */
+function normalizeStep(step: StepDef, raw: unknown, mode: 'strict' | 'lenient'): AnswerValue | null {
+  if (step.kind === 'number') return normalizeNumber(step, raw)
+
+  if (step.kind === 'entries') {
+    if (!Array.isArray(raw) || raw.length > step.maxEntries) return null
+    const entries = raw.map((item) => normalizeEntry(step.fields, item))
+    if (mode === 'strict' && entries.includes(null)) return null
+    const kept = entries.filter((entry): entry is Entry => entry !== null)
+    return kept.length > 0 ? kept : null
+  }
+
+  const valid = choiceValues(step.choices)
+  if (step.multi) {
+    const picked = Array.isArray(raw)
+      ? [...new Set(raw.filter((value): value is string => typeof value === 'string' && valid.includes(value)))]
+      : []
+    return picked.length > 0 ? picked.sort((a, b) => valid.indexOf(a) - valid.indexOf(b)) : null
+  }
+  return typeof raw === 'string' && valid.includes(raw) ? raw : null
 }
 
 /**
  * 입력을 저장 가능한 답으로 정규화한다.
  * strict: 물어야 할 단계가 빠지면 null (쓰기). lenient: 빠진 단계는 건너뛴다 (읽기).
- * 어느 쪽이든 선택지 밖 값은 버린다.
+ * 어느 쪽이든 선택지와 범위 밖 값은 버린다.
  */
 export function normalizeAnswer(
   track: TrackDef,
@@ -278,28 +379,46 @@ export function normalizeAnswer(
 
   for (const step of track.steps) {
     if (!isStepActive(step, answer)) continue
-    const valid = choiceValues(step)
-    const raw = source[step.key]
-
-    if (step.multi) {
-      const picked = Array.isArray(raw)
-        ? [...new Set(raw.filter((value): value is string => typeof value === 'string' && valid.includes(value)))]
-        : []
-      if (picked.length === 0) {
-        if (mode === 'strict') return null
-        continue
-      }
-      answer[step.key] = picked.sort((a, b) => valid.indexOf(a) - valid.indexOf(b))
-      continue
-    }
-
-    if (typeof raw !== 'string' || !valid.includes(raw)) {
+    const value = normalizeStep(step, source[step.key], mode)
+    if (value === null) {
       if (mode === 'strict') return null
       continue
     }
-    answer[step.key] = raw
+    answer[step.key] = value
   }
   return answer
+}
+
+function describeEntry(fields: readonly EntryField[], entry: Entry): string {
+  return fields
+    .map((field) => {
+      const value = entry[field.key]
+      if (value === undefined) return ''
+      if (field.kind === 'choice') return choiceLabel(field.choices, String(value))
+      return `${value}${field.unit}`
+    })
+    .filter(Boolean)
+    .join(' ')
+}
+
+/** 한 단계 답을 사람이 읽는 조각으로. "가슴 하체", "40분", "벤치프레스 60kg 5회 / 스쿼트 80kg 5회" */
+export function describeValue(step: StepDef, value: AnswerValue): string {
+  if (step.kind === 'number') return `${value}${step.unit}`
+  if (step.kind === 'entries') {
+    return Array.isArray(value)
+      ? value
+          .filter((item): item is Entry => typeof item === 'object')
+          .map((entry) => describeEntry(step.fields, entry))
+          .join(' / ')
+      : ''
+  }
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => choiceLabel(step.choices, item))
+      .join(' ')
+  }
+  return choiceLabel(step.choices, String(value))
 }
 
 /** "헬스, 가슴 하체, 적당" 처럼 사람이 읽는 한 줄. 알림 문구와 확인 카드가 같이 쓴다. */
@@ -308,15 +427,20 @@ export function describeAnswer(track: TrackDef, answer: Answer): string {
   for (const step of track.steps) {
     const value = answer[step.key]
     if (value === undefined) continue
-    const labelOf = (v: string) => step.choices.find((choice) => choice.value === v)?.label ?? v
-    pieces.push(Array.isArray(value) ? value.map(labelOf).join(' ') : labelOf(value))
+    pieces.push(describeValue(step, value))
   }
   return pieces.join(', ')
 }
 
+/** 하루의 색을 정하는 단계. primary 는 선택지 단계여야 색조가 있다. */
+export function primaryStep(track: TrackDef): ChoiceStepDef | null {
+  const step = track.steps.find((item) => item.key === track.primary)
+  return step && isChoiceStep(step) ? step : null
+}
+
 /** 하루의 색조. 첫 단계 답의 tone. */
 export function toneOf(track: TrackDef, answer: Answer): Tone | null {
-  const step = track.steps.find((item) => item.key === track.primary)
+  const step = primaryStep(track)
   const value = answer[track.primary]
   if (!step || typeof value !== 'string') return null
   return step.choices.find((choice) => choice.value === value)?.tone ?? null
@@ -346,7 +470,7 @@ export function summarizeTrackWeek(track: TrackDef, answers: Answer[]): string {
   if (track.summarize) return track.summarize(answers)
   if (answers.length === 0) return `${track.name} 기록이 없었어요`
 
-  const step = track.steps.find((item) => item.key === track.primary)
+  const step = primaryStep(track)
   const counts = new Map<string, number>()
   for (const answer of answers) {
     const value = answer[track.primary]

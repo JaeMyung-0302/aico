@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import { toneOf, type Answer, type TrackDef } from "../domain.ts";
+import {
+  describeValue,
+  toneOf,
+  type Answer,
+  type TrackDef,
+} from "../domain.ts";
 import styles from "./Prompt.module.scss";
 
 /** 크고 자신감 있는 질문. 화면당 하나. */
@@ -34,11 +39,7 @@ export function AnswerChips({
   for (const step of track.steps) {
     const value = answer[step.key];
     if (value === undefined) continue;
-    const labelOf = (v: string) =>
-      step.choices.find((choice) => choice.value === v)?.label ?? v;
-    labels.push(
-      Array.isArray(value) ? value.map(labelOf).join(" ") : labelOf(value),
-    );
+    labels.push(describeValue(step, value));
   }
   const tone = toneOf(track, answer);
 

@@ -18,7 +18,13 @@ import {
   Trace,
 } from "../components/Prompt.tsx";
 import StepStage from "../components/StepStage.tsx";
-import { TRACKS, type Answer, type TrackId } from "../domain.ts";
+import {
+  describeValue,
+  isChoiceStep,
+  TRACKS,
+  type Answer,
+  type TrackId,
+} from "../domain.ts";
 import { choicesFor, describeTime } from "./options.ts";
 import styles from "./Today.module.scss";
 import { useTrackFlow } from "./useTrackFlow.ts";
@@ -149,10 +155,7 @@ function QuestionStage({ flow }: { flow: Flow }) {
   for (const item of flow.activeSteps) {
     if (item.key === step.key) break;
     const value = flow.answer[item.key];
-    const labelOf = (v: string) =>
-      item.choices.find((choice) => choice.value === v)?.label ?? v;
-    if (Array.isArray(value)) trace.push(value.map(labelOf).join(" "));
-    else if (typeof value === "string") trace.push(labelOf(value));
+    if (value !== undefined) trace.push(describeValue(item, value));
   }
 
   return (
@@ -168,7 +171,8 @@ function QuestionStage({ flow }: { flow: Flow }) {
 /** 하단 도크. 에러 한 줄 + 현재 단계 선택지. 복수 선택은 "다음". */
 function ChoiceDock({ flow }: { flow: Flow }) {
   const step = flow.current;
-  if (!step) return null;
+  // 수와 묶음 단계의 입력 화면은 그 단계를 쓰는 트랙과 함께 붙인다.
+  if (!step || !isChoiceStep(step)) return null;
   const selected = step.multi ? flow.selectedOf(step) : undefined;
   return (
     <>

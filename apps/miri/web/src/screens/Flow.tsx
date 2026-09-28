@@ -10,10 +10,12 @@ import { LoggerHeader } from "../components/Header.tsx";
 import { ErrorNote, Question } from "../components/Prompt.tsx";
 import { shiftDate, weekdayOf } from "../dates.ts";
 import {
+  isChoiceStep,
+  primaryStep,
   toneOf,
   TRACKS,
   type Answer,
-  type StepDef,
+  type ChoiceStepDef,
   type TrackDef,
   type TrackId,
 } from "../domain.ts";
@@ -45,13 +47,13 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function labelOf(step: StepDef, value: string): string {
+function labelOf(step: ChoiceStepDef, value: string): string {
   return step.choices.find((choice) => choice.value === value)?.label ?? value;
 }
 
 function titleOf(track: TrackDef, date: string, answer: Answer | undefined): string {
   if (!answer) return date;
-  const primary = track.steps.find((step) => step.key === track.primary);
+  const primary = primaryStep(track);
   const value = answer[track.primary];
   return primary && typeof value === "string" ? `${date} ${labelOf(primary, value)}` : date;
 }
@@ -102,7 +104,7 @@ function Heatmap({ track, today, byDate }: { track: TrackDef; today: string; byD
 }
 
 function Legend({ track }: { track: TrackDef }) {
-  const primary = track.steps.find((step) => step.key === track.primary);
+  const primary = primaryStep(track);
   if (!primary) return null;
   return (
     <ul className={styles.legend} aria-label={primary.question}>
@@ -120,11 +122,16 @@ function Legend({ track }: { track: TrackDef }) {
 function Distribution({ track, answers }: { track: TrackDef; answers: Answer[] }) {
   return (
     <div className={styles.dist}>
-      {track.steps.map((step) => {
+      {/* 선택지 단계만 분포가 있다. 수와 묶음 단계는 그 트랙의 화면에서 따로 그린다. */}
+      {track.steps.filter(isChoiceStep).map((step) => {
         const counts = new Map<string, number>(step.choices.map((choice) => [choice.value, 0]));
         for (const answer of answers) {
           const value = answer[step.key];
-          const values = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
+          const values = Array.isArray(value)
+            ? value.filter((item): item is string => typeof item === "string")
+            : typeof value === "string"
+              ? [value]
+              : [];
           for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
         }
         const max = Math.max(1, ...counts.values());

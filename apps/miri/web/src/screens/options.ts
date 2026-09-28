@@ -1,8 +1,9 @@
 import type { Choice as GridChoice } from "../components/ChoiceGrid.tsx";
 import {
   NOTIFY_PRESETS,
+  isChoiceStep,
   type Answer,
-  type StepDef,
+  type ChoiceStepDef,
   type TrackDef,
 } from "../domain.ts";
 
@@ -30,12 +31,13 @@ export function describeTime(time: string): string {
 /** 단계의 선택지를 타일용으로. toneFrom 이 있으면 이전 답의 색조를 물려받는다. */
 export function choicesFor(
   track: TrackDef,
-  step: StepDef,
+  step: ChoiceStepDef,
   answer: Answer,
 ): GridChoice<string>[] {
-  const from = step.toneFrom
+  const found = step.toneFrom
     ? track.steps.find((item) => item.key === step.toneFrom)
     : undefined;
+  const from = found && isChoiceStep(found) ? found : undefined;
   const fromValue = step.toneFrom ? answer[step.toneFrom] : undefined;
   const inherited =
     from && typeof fromValue === "string"

@@ -5,11 +5,15 @@ import {
   isStepActive,
   normalizeAnswer,
   openQuestionText,
+  primaryStep,
   summarizeTrackWeek,
   toneOf,
   TRACK_IDS,
   TRACKS,
+  describeValue,
+  normalizeNumber,
   type Answer,
+  type TrackDef,
 } from './tracks.ts'
 
 const exercise = TRACKS.exercise
@@ -29,7 +33,7 @@ describe('catalog', () => {
   it('first-step choices carry a tone so days can be colored', () => {
     for (const id of TRACK_IDS) {
       const track = TRACKS[id]
-      const primary = track.steps.find((step) => step.key === track.primary)
+      const primary = primaryStep(track)
       expect(primary?.choices.every((choice) => choice.tone)).toBe(true)
     }
   })
@@ -136,5 +140,103 @@ describe('summarizeTrackWeek', () => {
     ]
     expect(summarizeTrackWeek(sleep, answers)).toBe('수면 3일, 7~8시간이 2번')
     expect(summarizeTrackWeek(TRACKS.mood, [])).toBe('기분 기록이 없었어요')
+  })
+})
+
+/** 새 단계 종류를 쓰는 트랙이 아직 없어서 테스트 전용으로 만든다. */
+const lifting: TrackDef = {
+  id: 'exercise',
+  name: '웨이트',
+  templates: ['오늘은요?'],
+  confirmTemplates: ['{x}?'],
+  defaultNotifyAt: '21:00',
+  primary: 'kind',
+  steps: [
+    {
+      key: 'kind',
+      question: '뭐 했어요?',
+      columns: 2,
+      choices: [
+        { value: 'gym', label: '헬스', tone: 'blue' },
+        { value: 'run', label: '달리기', tone: 'teal' },
+      ],
+    },
+    {
+      key: 'lifts',
+      question: '종목은요?',
+      kind: 'entries',
+      maxEntries: 3,
+      when: { kind: ['gym'] },
+      fields: [
+        {
+          key: 'exercise',
+          label: '종목',
+          kind: 'choice',
+          choices: [
+            { value: 'bench', label: '벤치프레스' },
+            { value: 'squat', label: '스쿼트' },
+          ],
+        },
+        { key: 'weight', label: '무게', kind: 'number', min: 0, max: 300, step: 2.5, unit: 'kg' },
+        { key: 'reps', label: '반복', kind: 'number', min: 1, max: 30, step: 1, unit: '회' },
+      ],
+    },
+    { key: 'minutes', question: '몇 분이요?', kind: 'number', min: 10, max: 180, step: 5, unit: '분', when: { kind: ['run'] } },
+  ],
+}
+
+describe('normalizeNumber', () => {
+  const kg = { min: 0, max: 300, step: 2.5, unit: 'kg' }
+
+  it('accepts values on the grid, including fractional steps', () => {
+    expect(normalizeNumber(kg, 62.5)).toBe(62.5)
+    expect(normalizeNumber(kg, 0)).toBe(0)
+    expect(normalizeNumber(kg, 300)).toBe(300)
+  })
+
+  it('rejects off-grid, out-of-range, and non-numbers', () => {
+    expect(normalizeNumber(kg, 61)).toBeNull()
+    expect(normalizeNumber(kg, -2.5)).toBeNull()
+    expect(normalizeNumber(kg, 302.5)).toBeNull()
+    expect(normalizeNumber(kg, '60')).toBeNull()
+    expect(normalizeNumber(kg, Number.NaN)).toBeNull()
+  })
+})
+
+describe('number and entries steps', () => {
+  const bench = { exercise: 'bench', weight: 60, reps: 5 }
+  const squat = { exercise: 'squat', weight: 80, reps: 5 }
+
+  it('keeps valid entries and drops unknown fields', () => {
+    expect(normalizeAnswer(lifting, { kind: 'gym', lifts: [{ ...bench, note: 'x' }, squat] })).toEqual({
+      kind: 'gym',
+      lifts: [bench, squat],
+    })
+  })
+
+  it('strict rejects a bad entry, an empty list, or too many entries', () => {
+    expect(normalizeAnswer(lifting, { kind: 'gym', lifts: [bench, { ...squat, weight: 81 }] })).toBeNull()
+    expect(normalizeAnswer(lifting, { kind: 'gym', lifts: [] })).toBeNull()
+    expect(normalizeAnswer(lifting, { kind: 'gym', lifts: [bench, bench, bench, bench] })).toBeNull()
+    expect(normalizeAnswer(lifting, { kind: 'gym', lifts: [{ exercise: 'bench', weight: 60 }] })).toBeNull()
+  })
+
+  it('lenient keeps only the good entries when reading', () => {
+    expect(
+      normalizeAnswer(lifting, { kind: 'gym', lifts: [bench, { ...squat, exercise: 'deadlift' }] }, 'lenient'),
+    ).toEqual({ kind: 'gym', lifts: [bench] })
+  })
+
+  it('validates a number step behind a condition', () => {
+    expect(normalizeAnswer(lifting, { kind: 'run', minutes: 35 })).toEqual({ kind: 'run', minutes: 35 })
+    expect(normalizeAnswer(lifting, { kind: 'run', minutes: 33 })).toBeNull()
+  })
+
+  it('describes numbers with units and entries line by line', () => {
+    expect(describeAnswer(lifting, { kind: 'gym', lifts: [bench, squat] })).toBe(
+      '헬스, 벤치프레스 60kg 5회 / 스쿼트 80kg 5회',
+    )
+    expect(describeValue(lifting.steps[2]!, 35)).toBe('35분')
+    expect(toneOf(lifting, { kind: 'run', minutes: 35 })).toBe('teal')
   })
 })

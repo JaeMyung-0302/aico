@@ -4,6 +4,9 @@
  * AI 가 붙어도 문구만 쓰고 선택지는 여기서만 나온다.
  */
 
+import { labelFor, parseCustom } from './choices.ts'
+import { EXERCISE } from './exercise.ts'
+
 export const TONES = ['blue', 'teal', 'amber', 'violet'] as const
 export type Tone = (typeof TONES)[number]
 
@@ -14,6 +17,8 @@ export type Choice = {
   tone?: Tone
   /** 마커 길이(1~3). 강도처럼 정도를 나타내는 단계에 준다. */
   level?: 1 | 2 | 3
+  /** 앞 단계 답으로 좁힐 때 쓰는 묶음. 종목의 부위처럼. */
+  group?: string
 }
 
 /** 키보드 없이 +/- 로 고르는 수. 범위와 간격 밖의 값은 저장하지 않는다. */
@@ -23,6 +28,12 @@ export type NumberRange = {
   step: number
   /** "kg", "회", "분" 처럼 수 뒤에 붙는 단위 */
   unit: string
+  /** 처음 보여줄 값. 없으면 min. */
+  initial?: number
+  /** 0 을 수 대신 부르는 말. 맨몸 운동의 무게처럼. */
+  zeroLabel?: string
+  /** time: 자정부터의 분을 HH:MM 으로 읽는다. 단위는 쓰지 않는다. */
+  format?: 'time'
 }
 
 type StepBase = {
@@ -30,6 +41,10 @@ type StepBase = {
   question: string
   /** 이전 답이 이 값일 때만 묻는다. { kind: ['gym'] } */
   when?: Readonly<Record<string, readonly string[]>>
+  /** 같은 화면에 묶어 묻는 단계들의 이름. 운동 시각의 "시작"과 "얼마나"처럼. */
+  screen?: string
+  /** 한 화면에 여럿일 때 칸 이름. 없으면 question. */
+  label?: string
 }
 
 export type ChoiceStepDef = StepBase & {
@@ -46,7 +61,16 @@ export type NumberStepDef = StepBase & NumberRange & { kind: 'number' }
 
 /** 묶음 안의 한 칸. 선택지이거나 수다. */
 export type EntryField =
-  | { key: string; label: string; kind: 'choice'; choices: readonly Choice[] }
+  | {
+      key: string
+      label: string
+      kind: 'choice'
+      choices: readonly Choice[]
+      /** 이 단계 답에 든 group 의 선택지만 보여준다. 검증은 전체 선택지로 한다. */
+      groupFrom?: string
+      /** 사용자가 이름을 직접 더할 수 있다. 값은 "custom:<group>:<이름>" 이고 group 은 선택지에 있는 것만. */
+      custom?: { maxLength: number }
+    }
   | ({ key: string; label: string; kind: 'number' } & NumberRange)
 
 /** 같은 묶음을 여러 번 쌓는 단계. 운동의 "종목, 무게, 반복, 세트" 한 줄이 한 묶음이다. */
@@ -81,20 +105,17 @@ export type TrackDef = {
   summarize?: (answers: Answer[]) => string
   /**
    * 저장 직후 돌려줄 사실들. 판단은 여기서만 하고 AI 는 문장만 다듬는다.
-   * history 는 오늘을 뺀 최근 기록(날짜 오름차순). 할 말이 없으면 빈 배열.
+   * history 는 오늘을 뺀 최근 기록(날짜 오름차순), today 는 KST 오늘. 할 말이 없으면 빈 배열.
    */
-  feedback?: (answer: Answer, history: HistoryLog[]) => string[]
+  feedback?: (answer: Answer, history: HistoryLog[], today: string) => string[]
+  /** 확인 질문에 넣을 짧은 이름. "가슴 하체 루틴". 없으면 답 전체를 풀어 쓴다. */
+  brief?: (answer: Answer) => string
+  /** 예측이 묶어 셀 기준. 세부 수치가 매번 달라도 같은 루틴으로 본다. 없으면 답 전체. */
+  routineKey?: (answer: Answer) => string
 }
 
 export const TRACK_IDS = ['exercise', 'sleep', 'meals', 'focus', 'mood'] as const
 export type TrackId = (typeof TRACK_IDS)[number]
-
-const EXERCISE_PARTS: readonly Choice[] = [
-  { value: 'chest', label: '가슴' },
-  { value: 'back', label: '등' },
-  { value: 'legs', label: '하체' },
-  { value: 'shoulders_arms', label: '어깨팔' },
-]
 
 const LEVELS = (labels: [string, string, string]): readonly Choice[] =>
   labels.map((label, index) => ({
@@ -103,81 +124,8 @@ const LEVELS = (labels: [string, string, string]): readonly Choice[] =>
     level: (index + 1) as 1 | 2 | 3,
   }))
 
-function summarizeExercise(answers: Answer[]): string {
-  const kinds = { gym: 0, cardio: 0, light: 0, rest: 0 }
-  const parts = { chest: 0, back: 0, legs: 0, shoulders_arms: 0 }
-  for (const answer of answers) {
-    if (typeof answer.kind === 'string' && answer.kind in kinds) kinds[answer.kind as keyof typeof kinds] += 1
-    if (Array.isArray(answer.parts)) {
-      for (const part of answer.parts) {
-        if (typeof part === 'string' && part in parts) parts[part as keyof typeof parts] += 1
-      }
-    }
-  }
-  if (answers.length === 0) return '운동 기록이 없었어요'
-
-  const kindLabel = { gym: '헬스', cardio: '유산소', light: '가볍게', rest: '쉼' }
-  const kindLine = (Object.keys(kinds) as (keyof typeof kinds)[])
-    .filter((kind) => kinds[kind] > 0)
-    .map((kind) => `${kindLabel[kind]} ${kinds[kind]}번`)
-    .join(', ')
-  if (kinds.gym === 0) return `운동 ${kindLine}`
-
-  const missed = EXERCISE_PARTS.filter((part) => parts[part.value as keyof typeof parts] === 0)
-  const partLine =
-    missed.length === 0
-      ? '네 부위 다 챙겼어요'
-      : `${missed.map((part) => part.label).join(', ')}${missed.length === 1 ? '는' : '은'} 없었어요`
-  return `운동 ${kindLine}. ${partLine}`
-}
-
 export const TRACKS: Readonly<Record<TrackId, TrackDef>> = {
-  exercise: {
-    id: 'exercise',
-    name: '운동',
-    templates: [
-      '오늘 몸 어떻게 썼어요?',
-      '오늘 운동은요?',
-      '몸 좀 움직였어요?',
-      '오늘 하루, 몸은 어땠어요?',
-      '운동 어떻게 됐어요?',
-    ],
-    confirmTemplates: ['오늘도 {x}?', '{x}, 오늘도요?', '이번에도 {x}?'],
-    defaultNotifyAt: '21:00',
-    primary: 'kind',
-    quick: { title: '쉼', answer: { kind: 'rest' } },
-    summarize: summarizeExercise,
-    steps: [
-      {
-        key: 'kind',
-        question: '오늘 몸 어떻게 썼어요?',
-        columns: 2,
-        choices: [
-          { value: 'gym', label: '헬스', tone: 'blue' },
-          { value: 'cardio', label: '유산소', tone: 'teal' },
-          { value: 'light', label: '가볍게', tone: 'amber' },
-          { value: 'rest', label: '쉼', tone: 'violet' },
-        ],
-      },
-      {
-        key: 'parts',
-        question: '어디 했어요?',
-        columns: 2,
-        multi: true,
-        when: { kind: ['gym'] },
-        toneFrom: 'kind',
-        choices: EXERCISE_PARTS,
-      },
-      {
-        key: 'intensity',
-        question: '어땠어요?',
-        columns: 3,
-        when: { kind: ['gym', 'cardio'] },
-        toneFrom: 'kind',
-        choices: LEVELS(['가벼움', '적당', '빡셈']),
-      },
-    ],
-  },
+  exercise: EXERCISE,
   sleep: {
     id: 'sleep',
     name: '수면',
@@ -306,8 +254,14 @@ function choiceValues(choices: readonly Choice[]): string[] {
   return choices.map((choice) => choice.value)
 }
 
-function choiceLabel(choices: readonly Choice[], value: string): string {
-  return choices.find((choice) => choice.value === value)?.label ?? value
+const choiceLabel = labelFor
+
+/** 직접 더한 값이 이 칸 규칙에 맞는가. 묶음은 카탈로그에 있는 것, 이름은 길이 안. */
+function isValidCustom(field: Extract<EntryField, { kind: 'choice' }>, value: string): boolean {
+  if (!field.custom) return false
+  const parsed = parseCustom(value)
+  if (!parsed || parsed.name.length > field.custom.maxLength) return false
+  return field.choices.some((choice) => choice.group === parsed.group)
 }
 
 /** 범위 안이고 간격에 맞으면 그 수, 아니면 null. 2.5kg 간격 같은 소수 간격도 받는다. */
@@ -327,7 +281,8 @@ function normalizeEntry(fields: readonly EntryField[], raw: unknown): Entry | nu
   for (const field of fields) {
     const value = source[field.key]
     if (field.kind === 'choice') {
-      if (typeof value !== 'string' || !choiceValues(field.choices).includes(value)) return null
+      if (typeof value !== 'string') return null
+      if (!choiceValues(field.choices).includes(value) && !isValidCustom(field, value)) return null
       entry[field.key] = value
       continue
     }
@@ -389,29 +344,41 @@ export function normalizeAnswer(
   return answer
 }
 
+/** 자정부터의 분을 HH:MM 으로. 1140 → "19:00" */
+export function minutesToClock(minutes: number): string {
+  const hours = Math.floor(minutes / 60)
+  return `${String(hours).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
+}
+
+export function describeNumber(range: NumberRange, value: number): string {
+  if (range.format === 'time') return minutesToClock(value)
+  return value === 0 && range.zeroLabel ? range.zeroLabel : `${value}${range.unit}`
+}
+
 function describeEntry(fields: readonly EntryField[], entry: Entry): string {
   return fields
     .map((field) => {
       const value = entry[field.key]
       if (value === undefined) return ''
       if (field.kind === 'choice') return choiceLabel(field.choices, String(value))
-      return `${value}${field.unit}`
+      return describeNumber(field, Number(value))
     })
     .filter(Boolean)
     .join(' ')
 }
 
+/** 묶음 단계 답을 줄마다. 칩과 기록 카드가 한 줄씩 보여줄 때 쓴다. */
+export function describeEntries(step: EntriesStepDef, value: AnswerValue): string[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((item): item is Entry => typeof item === 'object')
+    .map((entry) => describeEntry(step.fields, entry))
+}
+
 /** 한 단계 답을 사람이 읽는 조각으로. "가슴 하체", "40분", "벤치프레스 60kg 5회 / 스쿼트 80kg 5회" */
 export function describeValue(step: StepDef, value: AnswerValue): string {
-  if (step.kind === 'number') return `${value}${step.unit}`
-  if (step.kind === 'entries') {
-    return Array.isArray(value)
-      ? value
-          .filter((item): item is Entry => typeof item === 'object')
-          .map((entry) => describeEntry(step.fields, entry))
-          .join(' / ')
-      : ''
-  }
+  if (step.kind === 'number') return describeNumber(step, Number(value))
+  if (step.kind === 'entries') return describeEntries(step, value).join(' / ')
   if (Array.isArray(value)) {
     return value
       .filter((item): item is string => typeof item === 'string')
@@ -430,6 +397,11 @@ export function describeAnswer(track: TrackDef, answer: Answer): string {
     pieces.push(describeValue(step, value))
   }
   return pieces.join(', ')
+}
+
+/** 확인 질문과 알림에 넣을 짧은 말. 트랙이 정하지 않으면 답 전체. */
+export function briefAnswer(track: TrackDef, answer: Answer): string {
+  return track.brief?.(answer) ?? describeAnswer(track, answer)
 }
 
 /** 하루의 색을 정하는 단계. primary 는 선택지 단계여야 색조가 있다. */
@@ -462,7 +434,7 @@ export function confirmQuestionText(
   dayIndex: number,
   salt = 0,
 ): string {
-  return rotate(track.confirmTemplates, dayIndex, salt).replace('{x}', describeAnswer(track, prediction))
+  return rotate(track.confirmTemplates, dayIndex, salt).replace('{x}', briefAnswer(track, prediction))
 }
 
 /** 주간 요약 한 줄. 트랙 고유 요약이 있으면 그것, 없으면 "수면 5일, 7~8시간이 3번". */
@@ -480,4 +452,31 @@ export function summarizeTrackWeek(track: TrackDef, answers: Answer[]): string {
   if (!top || !step) return `${track.name} ${answers.length}일`
   const label = step.choices.find((choice) => choice.value === top[0])?.label ?? top[0]
   return `${track.name} ${answers.length}일, ${label}이 ${top[1]}번`
+}
+
+/**
+ * 이 사용자가 기록 안에 직접 더한 선택지들. 묶음 단계 키별로, 처음 쓴 순서대로.
+ * 따로 저장하지 않고 기록에서 다시 모은다. 한 번 더한 종목이 다음부터 칩으로 나오게 하는 용도.
+ */
+export function customChoicesFrom(track: TrackDef, answers: Answer[]): Record<string, Choice[]> {
+  const found: Record<string, Choice[]> = {}
+  for (const step of track.steps) {
+    if (step.kind !== 'entries') continue
+    const head = step.fields.find((field) => field.kind === 'choice')
+    if (!head || head.kind !== 'choice' || !head.custom) continue
+    const seen = new Map<string, Choice>()
+    for (const answer of answers) {
+      const list = answer[step.key]
+      if (!Array.isArray(list)) continue
+      for (const entry of list) {
+        if (typeof entry !== 'object') continue
+        const value = String(entry[head.key])
+        if (seen.has(value) || !isValidCustom(head, value)) continue
+        const parsed = parseCustom(value)
+        if (parsed) seen.set(value, { value, label: parsed.name, group: parsed.group })
+      }
+    }
+    if (seen.size > 0) found[step.key] = [...seen.values()]
+  }
+  return found
 }

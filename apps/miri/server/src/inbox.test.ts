@@ -15,6 +15,14 @@ const base: QuestionRow = {
   answered_at: null,
 }
 
+const chestDay = {
+  kind: 'gym',
+  parts: ['chest'],
+  lifts: [{ exercise: 'bench', weight: 60, reps: 5, sets: 5 }],
+  startAt: 1140,
+  minutes: 60,
+}
+
 describe('buildInbox', () => {
   it('is empty when there is nothing today', () => {
     expect(buildInbox([])).toEqual([])
@@ -38,13 +46,30 @@ describe('buildInbox', () => {
   it('offers accept when a prediction exists and carries it along', () => {
     const question: QuestionRow = {
       ...base,
-      text: '오늘도 헬스, 가슴, 적당?',
-      prediction: JSON.stringify({ kind: 'gym', parts: ['chest'], intensity: 'mid' }),
+      text: '오늘도 가슴 루틴?',
+      prediction: JSON.stringify(chestDay),
     }
     const [notification] = buildInbox([question])
     expect(notification?.actions[0]).toEqual({ action: 'accept', title: '그래요' })
-    expect(notification?.prediction).toEqual({ kind: 'gym', parts: ['chest'], intensity: 'mid' })
+    expect(notification?.prediction).toEqual(chestDay)
     expect(notification?.quick).toBeNull()
+    expect(notification?.body).toBe('벤치프레스 60kg 5회 5세트')
+  })
+
+  it('summarizes several predicted lifts as the first plus a count', () => {
+    const twoLifts = { ...chestDay, lifts: [...chestDay.lifts, { exercise: 'fly', weight: 10, reps: 12, sets: 3 }] }
+    const [notification] = buildInbox([{ ...base, prediction: JSON.stringify(twoLifts) }])
+    expect(notification?.body).toBe('벤치프레스 60kg 5회 5세트 외 1개')
+  })
+
+  it('drops a stored prediction the track can no longer save', () => {
+    const question: QuestionRow = {
+      ...base,
+      prediction: JSON.stringify({ kind: 'gym', parts: ['chest'], intensity: 'mid' }),
+    }
+    const [notification] = buildInbox([question])
+    expect(notification?.prediction).toBeNull()
+    expect(notification?.actions.map((action) => action.action)).toEqual(['quick', 'open'])
   })
 
   it('changes the body once a reminder went out', () => {

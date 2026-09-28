@@ -21,10 +21,11 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#06080d',
         theme_color: '#06080d',
+        // any 는 모서리가 둥근 아이콘, maskable 은 런처가 모양을 잘라내도록 모서리까지 칠한 판.
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       devOptions: { enabled: true, type: 'module' },

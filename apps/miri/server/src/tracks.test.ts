@@ -10,6 +10,7 @@ import {
   toneOf,
   TRACK_IDS,
   TRACKS,
+  customChoicesFrom,
   describeValue,
   normalizeNumber,
   type Answer,
@@ -45,19 +46,32 @@ describe('normalizeAnswer (strict)', () => {
     expect(normalizeAnswer(exercise, { kind: 'rest', intensity: 'high' })).toEqual({ kind: 'rest' })
   })
 
-  it('requires parts and intensity for gym, sorts and dedupes parts', () => {
+  it('requires parts and lifts for gym, sorts and dedupes parts, drops intensity', () => {
+    const bench = { exercise: 'bench', weight: 60, reps: 5, sets: 5 }
     expect(normalizeAnswer(exercise, { kind: 'gym' })).toBeNull()
-    expect(normalizeAnswer(exercise, { kind: 'gym', parts: ['legs', 'chest', 'legs', 'abs'] })).toBeNull()
+    expect(normalizeAnswer(exercise, { kind: 'gym', parts: ['chest'], intensity: 'mid' })).toBeNull()
+    const time = { startAt: 1140, minutes: 60 }
+    expect(normalizeAnswer(exercise, { kind: 'gym', parts: ['chest'], lifts: [bench] })).toBeNull()
     expect(
-      normalizeAnswer(exercise, { kind: 'gym', parts: ['legs', 'chest', 'legs', 'abs'], intensity: 'mid' }),
-    ).toEqual({ kind: 'gym', parts: ['chest', 'legs'], intensity: 'mid' })
+      normalizeAnswer(exercise, { kind: 'gym', parts: ['legs', 'chest', 'legs', 'abs'], lifts: [bench], intensity: 'mid', ...time }),
+    ).toEqual({ kind: 'gym', parts: ['chest', 'legs'], lifts: [bench], ...time })
   })
 
-  it('asks intensity for cardio but not parts', () => {
-    expect(normalizeAnswer(exercise, { kind: 'cardio', parts: ['chest'], intensity: 'low' })).toEqual({
-      kind: 'cardio',
-      intensity: 'low',
-    })
+  it('asks time, minutes and intensity for cardio but not parts', () => {
+    expect(normalizeAnswer(exercise, { kind: 'cardio', intensity: 'low' })).toBeNull()
+    expect(
+      normalizeAnswer(exercise, { kind: 'cardio', parts: ['chest'], startAt: 420, minutes: 40, intensity: 'low' }),
+    ).toEqual({ kind: 'cardio', startAt: 420, minutes: 40, intensity: 'low' })
+  })
+
+  it('accepts a custom lift under a known part only', () => {
+    const time = { startAt: 1140, minutes: 60 }
+    const lift = (exercise: string) => ({ kind: 'gym', parts: ['chest'], lifts: [{ exercise, weight: 20, reps: 12, sets: 3 }], ...time })
+    expect(normalizeAnswer(exercise, lift('custom:chest:케이블 크로스오버'))).not.toBeNull()
+    expect(normalizeAnswer(exercise, lift('custom:abs:크런치'))).toBeNull()
+    expect(normalizeAnswer(exercise, lift('custom:chest:' + '가'.repeat(21)))).toBeNull()
+    expect(normalizeAnswer(exercise, lift('custom:chest:  공백  '))).toBeNull()
+    expect(normalizeAnswer(exercise, lift('custom:chest:'))).toBeNull()
   })
 
   it('rejects unknown kinds and non-objects', () => {
@@ -238,5 +252,29 @@ describe('number and entries steps', () => {
     )
     expect(describeValue(lifting.steps[2]!, 35)).toBe('35분')
     expect(toneOf(lifting, { kind: 'run', minutes: 35 })).toBe('teal')
+  })
+})
+
+describe('time and custom helpers', () => {
+  it('reads a time step as a clock', () => {
+    const startAt = exercise.steps.find((step) => step.key === 'startAt')!
+    expect(describeValue(startAt, 1140)).toBe('19:00')
+    expect(describeValue(startAt, 425)).toBe('07:05')
+  })
+
+  it('collects custom lifts from past answers, once each, in first-use order', () => {
+    const custom = (name: string) => ({ exercise: `custom:chest:${name}`, weight: 20, reps: 12, sets: 3 })
+    const answers: Answer[] = [
+      { kind: 'gym', lifts: [custom('케이블 크로스오버'), { exercise: 'bench', weight: 60, reps: 5, sets: 5 }] },
+      { kind: 'gym', lifts: [custom('펙덱'), custom('케이블 크로스오버')] },
+      { kind: 'rest' },
+    ]
+    expect(customChoicesFrom(exercise, answers)).toEqual({
+      lifts: [
+        { value: 'custom:chest:케이블 크로스오버', label: '케이블 크로스오버', group: 'chest' },
+        { value: 'custom:chest:펙덱', label: '펙덱', group: 'chest' },
+      ],
+    })
+    expect(describeAnswer(exercise, { kind: 'gym', lifts: [custom('펙덱')] })).toBe('헬스, 펙덱 20kg 12회 3세트')
   })
 })

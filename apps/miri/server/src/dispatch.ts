@@ -15,7 +15,7 @@ import {
   type UserRow,
 } from './db.ts'
 import { kstDate, kstSlot, kstWeekday, shiftDate } from './kst.ts'
-import { predictFromHistory } from './predict.ts'
+import { predictFor } from './predict.ts'
 import { sendPush } from './push.ts'
 import {
   confirmQuestionText,
@@ -126,7 +126,7 @@ async function sendDaily(ctx: Ctx): Promise<Tally> {
       continue
     }
 
-    const prediction = predictFromHistory(await sameWeekdayLogs(ctx.db, user.id, track, ctx.today))
+    const prediction = predictFor(TRACKS[track], await sameWeekdayLogs(ctx.db, user.id, track, ctx.today))
     const recentLogs = await logsBetween(ctx.db, user.id, track, shiftDate(ctx.today, -7), shiftDate(ctx.today, -1))
     const context: QuestionContext = {
       userId: user.id,

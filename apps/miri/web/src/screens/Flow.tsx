@@ -8,6 +8,8 @@ import {
 import Canvas from "../components/Canvas.tsx";
 import { LoggerHeader } from "../components/Header.tsx";
 import { ErrorNote, Question } from "../components/Prompt.tsx";
+import LiftTrend from "../components/LiftTrend.tsx";
+import Skeleton from "../components/Skeleton.tsx";
 import { shiftDate, weekdayOf } from "../dates.ts";
 import {
   isChoiceStep,
@@ -193,6 +195,16 @@ function TrackTabs({
   );
 }
 
+/** 묶음(종목 줄) 기록이 하나라도 있는가. 없으면 추이 영역을 통째로 숨긴다. */
+function hasEntries(track: TrackDef, history: History): boolean {
+  const step = track.steps.find((item) => item.kind === "entries");
+  if (!step) return false;
+  return history.logs.some((log) => {
+    const value = log.answer[step.key];
+    return Array.isArray(value) && value.length > 0;
+  });
+}
+
 export default function Flow({
   userId,
   onExpired,
@@ -206,6 +218,7 @@ export default function Flow({
   const [current, setCurrent] = useState<TrackId | null>(null);
   const [history, setHistory] = useState<History | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [meLoaded, setMeLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -213,6 +226,7 @@ export default function Flow({
       .then((me) => {
         if (cancelled) return;
         const enabled = me.tracks.filter((item) => item.enabled).map((item) => item.track);
+        setMeLoaded(true);
         setTracks(enabled);
         setCurrent((chosen) => chosen ?? enabled[0] ?? null);
       })
@@ -251,13 +265,18 @@ export default function Flow({
     <Canvas top header={<LoggerHeader progress={null} />} nav={nav}>
       {error ? <ErrorNote>{error}</ErrorNote> : null}
       {current ? <TrackTabs tracks={tracks} current={current} onChange={setCurrent} /> : null}
-      {tracks.length === 0 && !error && current === null ? null : null}
+      {!history && !error && (current !== null || !meLoaded) ? <Skeleton variant="flow" /> : null}
       {history && track ? (
         <>
           <Question>{history.weekText}</Question>
           <Section title="이번 주">
             <WeekStrip track={track} today={history.today} byDate={byDate} />
           </Section>
+          {hasEntries(track, history) ? (
+            <Section title="종목 추이">
+              <LiftTrend key={track.id} track={track} logs={history.logs} />
+            </Section>
+          ) : null}
           <Section title={`최근 ${WEEKS}주`}>
             <Heatmap track={track} today={history.today} byDate={byDate} />
             <Legend track={track} />

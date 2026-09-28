@@ -14,6 +14,7 @@ import {
   questionsOn,
   recordEvent,
   sameWeekdayLogs,
+  setFeedback,
   setPaused,
   upsertLog,
   upsertTrack,
@@ -23,11 +24,11 @@ import {
 } from './db.ts'
 import { dispatch, templateComposers, weeklyText, type Composers } from './dispatch.ts'
 import { fullTrackSettings, isNotifyTime, isOffDays, type TrackSettings } from './domain.ts'
-import { composeFeedback, FEEDBACK_HISTORY_DAYS } from './feedback.ts'
+import { composeFeedback, FEEDBACK_HISTORY_DAYS, ruleFeedback } from './feedback.ts'
 import { buildInbox } from './inbox.ts'
 import { kstDate, shiftDate } from './kst.ts'
-import { predictFromHistory } from './predict.ts'
-import { isTrackId, normalizeAnswer, summarizeTrackWeek, TRACKS, type TrackId } from './tracks.ts'
+import { predictFor } from './predict.ts'
+import { customChoicesFrom, isTrackId, normalizeAnswer, summarizeTrackWeek, TRACKS, type TrackId } from './tracks.ts'
 
 export type Env = {
   DB: D1Database
@@ -173,19 +174,40 @@ async function writeLog(request: Request, env: Env): Promise<Response> {
 
   const via = ANSWERED_VIA.find((value) => value === body.via) ?? 'pick'
   const today = kstDate()
-  const history = await logsBetween(
-    env.DB,
-    user.id,
-    body.track,
-    shiftDate(today, -FEEDBACK_HISTORY_DAYS),
-    shiftDate(today, -1),
-  )
-  const feedback = await composeFeedback(user.id, TRACKS[body.track], answer, history, composersFrom(env))
+  const history = await feedbackHistory(env, user.id, body.track, today)
+  // 저장을 AI 에 묶지 않는다. 규칙 문장을 먼저 남기고, AI 가 있으면 화면이 /api/feedback 으로 다듬게 한다.
+  const feedback = ruleFeedback(TRACKS[body.track], answer, history, today)
   await upsertLog(env.DB, user.id, body.track, today, answer, feedback)
   await answerDailyQuestion(env.DB, user.id, body.track, today, via)
   await recordEvent(env.DB, user.id, 'completed', today)
   const weekDays = await weekDaysLogged(env.DB, user.id, body.track, today)
-  return json({ ok: true, loggedOn: today, track: body.track, answer, feedback, weekDays })
+  const feedbackPending = feedback !== null && Boolean(env.ANTHROPIC_API_KEY)
+  return json({ ok: true, loggedOn: today, track: body.track, answer, feedback, feedbackPending, weekDays })
+}
+
+function feedbackHistory(env: Env, userId: string, track: TrackId, today: string) {
+  return logsBetween(env.DB, userId, track, shiftDate(today, -FEEDBACK_HISTORY_DAYS), shiftDate(today, -1))
+}
+
+/**
+ * 오늘 기록의 한마디를 AI 로 다듬어 바꾼다. 저장 직후 화면이 한 번 부른다.
+ * AI 가 없거나 실패하면 규칙 문장이 그대로 남고 그 문장을 돌려준다.
+ */
+async function writeFeedback(request: Request, env: Env): Promise<Response> {
+  const body = await readBody<Identity & { track?: unknown }>(request)
+  if (!body || !isTrackId(body.track)) return json({ error: 'track is required' }, 400)
+
+  const user = await resolveUser(env, body)
+  if (!user) return unknownUser()
+
+  const today = kstDate()
+  const log = await findLog(env.DB, user.id, body.track, today)
+  if (!log) return json({ error: 'no log today' }, 404)
+
+  const history = await feedbackHistory(env, user.id, body.track, today)
+  const feedback = await composeFeedback(user.id, TRACKS[body.track], log.answer, history, today, composersFrom(env))
+  if (feedback && feedback !== log.feedback) await setFeedback(env.DB, user.id, body.track, today, feedback)
+  return json({ feedback: feedback ?? log.feedback })
 }
 
 async function writeEvent(request: Request, env: Env): Promise<Response> {
@@ -215,7 +237,7 @@ async function today(url: URL, env: Env): Promise<Response> {
     const daily = questions.find((q) => q.intent === 'daily' && q.track === item.track)
     const prediction = daily
       ? parsePrediction(item.track, daily.prediction)
-      : predictFromHistory(await sameWeekdayLogs(env.DB, user.id, item.track, date))
+      : predictFor(TRACKS[item.track], await sameWeekdayLogs(env.DB, user.id, item.track, date))
     tracks.push({
       track: item.track,
       notifyAt: item.notifyAt,
@@ -225,10 +247,19 @@ async function today(url: URL, env: Env): Promise<Response> {
       questionText: daily?.text ?? null,
       prediction,
       weekDays: await weekDaysLogged(env.DB, user.id, item.track, date),
+      custom: await recentCustomChoices(env, user.id, item.track, date),
     })
   }
 
   return json({ loggedOn: date, paused: settings.paused, tracks })
+}
+
+/** 직접 더한 종목을 찾아볼 기간. 석 달 안 쓴 종목은 칩에서 빠진다. */
+const CUSTOM_LOOKBACK_DAYS = 90
+
+async function recentCustomChoices(env: Env, userId: string, track: TrackId, today: string) {
+  const logs = await logsBetween(env.DB, userId, track, shiftDate(today, -CUSTOM_LOOKBACK_DAYS), today)
+  return customChoicesFrom(TRACKS[track], logs.map((log) => log.answer))
 }
 
 /** 서비스워커 전용. 푸시를 받은 순간 보여줄 알림 목록. */
@@ -313,6 +344,7 @@ const ROUTES: Record<string, (request: Request, url: URL, env: Env) => Promise<R
   'GET /api/config': async (_request, _url, env) => json({ vapidPublicKey: env.VAPID_PUBLIC_KEY }),
   'POST /api/subscribe': (request, _url, env) => subscribe(request, env),
   'POST /api/log': (request, _url, env) => writeLog(request, env),
+  'POST /api/feedback': (request, _url, env) => writeFeedback(request, env),
   'POST /api/event': (request, _url, env) => writeEvent(request, env),
   'GET /api/today': (_request, url, env) => today(url, env),
   'GET /api/inbox': (_request, url, env) => inbox(url, env),

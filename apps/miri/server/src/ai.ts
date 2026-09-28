@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { Composers, FeedbackContext, QuestionContext, WeeklyContext } from './dispatch.ts'
-import { describeAnswer } from './tracks.ts'
+import { briefAnswer, describeAnswer } from './tracks.ts'
 
 /**
  * AI 는 문구만 쓴다. 선택지를 만들거나 값을 저장하거나 자유 입력을 해석하지 않는다.
@@ -75,7 +75,7 @@ export function acceptFeedbackText(text: string, facts: string[]): boolean {
 }
 
 export function dailyPrompt(ctx: QuestionContext): string {
-  const predictionText = ctx.prediction ? describeAnswer(ctx.track, ctx.prediction) : null
+  const predictionText = ctx.prediction ? briefAnswer(ctx.track, ctx.prediction) : null
   const lines = [
     `트랙: ${ctx.track.name}`,
     `이 트랙의 기본 문구 예시: ${ctx.track.templates.slice(0, 3).join(' / ')}`,
@@ -116,7 +116,7 @@ export function aiComposers(apiKey: string, model: string = DEFAULT_AI_MODEL): C
         messages: [{ role: 'user', content: dailyPrompt(ctx) }],
       })
       const text = firstText(response.content)
-      const predictionText = ctx.prediction ? describeAnswer(ctx.track, ctx.prediction) : null
+      const predictionText = ctx.prediction ? briefAnswer(ctx.track, ctx.prediction) : null
       if (!acceptDailyText(text, predictionText)) throw new Error('daily text rejected')
       return text
     },

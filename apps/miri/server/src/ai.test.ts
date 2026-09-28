@@ -52,11 +52,12 @@ describe('dailyPrompt', () => {
   it('quotes the prediction verbatim so the model can echo it', () => {
     const prompt = dailyPrompt({
       ...base,
-      prediction: { kind: 'gym', parts: ['chest'], intensity: 'mid' },
+      prediction: { kind: 'gym', parts: ['chest'], lifts: [{ exercise: 'bench', weight: 60, reps: 5, sets: 5 }] },
       recent: ['쉼', '유산소, 가벼움'],
       weekDays: 3,
     })
-    expect(prompt).toContain('예측: "헬스, 가슴, 적당"')
+    // 예측은 루틴 이름으로 짧게 넣는다. 종목을 다 풀면 30자 문구에 들어가지 않는다.
+    expect(prompt).toContain('예측: "가슴 루틴"')
     expect(prompt).toContain('최근 7일 답: 쉼, 유산소, 가벼움')
     expect(prompt).toContain('이번 주 기록한 날: 3일')
   })

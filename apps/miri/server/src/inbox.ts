@@ -1,5 +1,5 @@
 import { parsePrediction, type QuestionRow } from './db.ts'
-import { isTrackId, TRACKS, type Answer } from './tracks.ts'
+import { describeAnswer, describeEntries, isTrackId, TRACKS, type Answer, type TrackDef } from './tracks.ts'
 
 /**
  * 서비스워커가 푸시를 받으면 여기서 "오늘 보여줄 알림"을 받아 간다.
@@ -37,6 +37,20 @@ export const FALLBACK_NOTIFICATION: Omit<InboxNotification, 'questionId'> = {
   actions: [{ action: 'open', title: '기록하기' }],
 }
 
+/**
+ * 예측이 있을 때 본문. "그래요"를 누르면 무엇이 저장되는지 알려준다.
+ * 묶음(종목)이 있으면 첫 줄과 나머지 개수만. 알림 한 줄에 다 들어가지 않는다.
+ */
+export function predictionBody(track: TrackDef, prediction: Answer): string {
+  for (const step of track.steps) {
+    if (step.kind !== 'entries') continue
+    const lines = describeEntries(step, prediction[step.key] ?? [])
+    if (lines.length === 0) continue
+    return lines.length > 1 ? `${lines[0]} 외 ${lines.length - 1}개` : (lines[0] as string)
+  }
+  return describeAnswer(track, prediction)
+}
+
 function dailyNotification(question: QuestionRow): InboxNotification | null {
   if (!isTrackId(question.track)) return null
   const track = TRACKS[question.track]
@@ -56,7 +70,12 @@ function dailyNotification(question: QuestionRow): InboxNotification | null {
   return {
     tag: `miri-${question.track}`,
     title: question.text,
-    body: question.reminded ? `아직이에요. ${track.name}, 3초면 끝나요` : `${track.name}, 3초면 끝나요`,
+    body: [
+      question.reminded ? '아직이에요.' : null,
+      prediction ? predictionBody(track, prediction) : `${track.name}, 3초면 끝나요`,
+    ]
+      .filter(Boolean)
+      .join(' '),
     url: `/?from=push&track=${question.track}`,
     questionId: question.id,
     track: question.track,

@@ -1,9 +1,9 @@
-import type { Answer, HistoryLog } from './tracks.ts'
+import { normalizeAnswer, type Answer, type HistoryLog, type TrackDef } from './tracks.ts'
 
 export type { HistoryLog }
 
 /**
- * 오늘 답을 미리 채워 두는 규칙. LLM 없이 "같은 요일에 가장 자주 한 답" 만 본다.
+ * 오늘 답을 미리 채워 두는 규칙. LLM 없이 "같은 요일에 가장 자주 한 루틴" 만 본다.
  * 근거가 2번 미만이면 예측하지 않는다. 틀린 예측은 없는 예측보다 나쁘다.
  */
 
@@ -14,24 +14,39 @@ function comboKey(answer: Answer): string {
   return JSON.stringify(answer)
 }
 
-/** 같은 요일 기록(최신순)을 받아 최빈 답을 돌려준다. 동률이면 더 최근 것. */
-export function predictFromHistory(sameWeekdayLogs: HistoryLog[]): Answer | null {
+/**
+ * 같은 요일 기록(최신순)을 루틴 키로 묶어 가장 많은 묶음의 가장 최근 답을 돌려준다.
+ * 동률이면 더 최근에 한 루틴. 무게처럼 매번 조금씩 다른 값은 키에서 빠지므로
+ * "화요일은 가슴" 을 알아보고, 내용은 지난번 그대로 제안한다.
+ */
+export function predictFromHistory(
+  sameWeekdayLogs: HistoryLog[],
+  keyOf: (answer: Answer) => string = comboKey,
+): Answer | null {
   if (sameWeekdayLogs.length < PREDICTION_MIN_SUPPORT) return null
 
-  const counts = new Map<string, { answer: Answer; count: number; latest: string }>()
+  const groups = new Map<string, { latest: HistoryLog; count: number }>()
   for (const log of sameWeekdayLogs) {
-    const key = comboKey(log.answer)
-    const current = counts.get(key)
-    counts.set(key, {
-      answer: log.answer,
+    const key = keyOf(log.answer)
+    const current = groups.get(key)
+    groups.set(key, {
+      latest: current && current.latest.loggedOn > log.loggedOn ? current.latest : log,
       count: (current?.count ?? 0) + 1,
-      latest: current && current.latest > log.loggedOn ? current.latest : log.loggedOn,
     })
   }
 
-  const best = [...counts.values()].sort(
-    (a, b) => b.count - a.count || (b.latest > a.latest ? 1 : -1),
+  const best = [...groups.values()].sort(
+    (a, b) => b.count - a.count || (b.latest.loggedOn > a.latest.loggedOn ? 1 : -1),
   )[0]
   if (!best || best.count < PREDICTION_MIN_SUPPORT) return null
-  return best.answer
+  return best.latest.answer
+}
+
+/**
+ * 트랙 기준 예측. 예측은 "그래요" 한 번으로 그대로 저장되므로 지금 트랙 정의로 저장 가능한 답만 낸다.
+ * 트랙이 바뀌기 전 형식의 기록에서 나온 예측은 여기서 걸러진다.
+ */
+export function predictFor(track: TrackDef, sameWeekdayLogs: HistoryLog[]): Answer | null {
+  const predicted = predictFromHistory(sameWeekdayLogs, track.routineKey)
+  return predicted ? normalizeAnswer(track, predicted) : null
 }

@@ -71,8 +71,17 @@ export function toSettings(row: TrackRow): TrackSettings | null {
   }
 }
 
+/**
+ * 저장된 예측. "그래요" 한 번으로 그대로 저장되므로 지금 트랙 정의로 저장 가능할 때만 돌려준다.
+ * 트랙 형식이 바뀌기 전에 만든 예측은 null 이 되어 직접 고르는 흐름으로 간다.
+ */
 export function parsePrediction(track: string, raw: string | null): Answer | null {
-  return isTrackId(track) ? parseAnswer(track, raw) : null
+  if (!isTrackId(track) || !raw) return null
+  try {
+    return normalizeAnswer(TRACKS[track], JSON.parse(raw))
+  } catch {
+    return null
+  }
 }
 
 // ── users ──────────────────────────────────────────────────────
@@ -249,6 +258,20 @@ export async function findLog(
     .first<LogRow>()
   const answer = row ? parseAnswer(track, row.answer) : null
   return row && answer ? { answer, feedback: row.feedback ?? null } : null
+}
+
+/** 저장된 기록의 한마디만 바꾼다. AI 문장이 뒤따라 올 때 쓴다. */
+export async function setFeedback(
+  db: D1Database,
+  userId: string,
+  track: TrackId,
+  loggedOn: string,
+  feedback: string,
+): Promise<void> {
+  await db
+    .prepare('UPDATE logs SET feedback = ? WHERE user_id = ? AND track = ? AND logged_on = ?')
+    .bind(feedback, userId, track, loggedOn)
+    .run()
 }
 
 /** from 이상 to 이하, 날짜 오름차순. */

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  refineFeedback,
   UnknownUserError,
   writeLog,
   type LogVia,
@@ -7,18 +8,26 @@ import {
   type TodayTrack,
 } from "../api.ts";
 import {
-  isChoiceStep,
+  cleanCustomName,
+  customValue,
   isStepActive,
   TRACKS,
   type Answer,
   type ChoiceStepDef,
+  type EntriesStepDef,
+  type Entry,
+  type NumberStepDef,
   type StepDef,
   type TrackId,
 } from "../domain.ts";
 
+function isEntry(value: unknown): value is Entry {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
  * confirm  예측이 있다. "오늘도 이렇게?" 한 번만 누르면 끝
- * pick     트랙 정의의 단계를 차례로. 단일 선택은 누르면 다음, 복수 선택은 "다음"으로
+ * pick     트랙 정의의 단계를 차례로. 단일 선택은 누르면 다음, 복수 선택과 수와 묶음은 "다음"으로
  * done     오늘 기록이 있다
  */
 export type Phase = "confirm" | "pick" | "done";
@@ -45,6 +54,8 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
   const [weekDays, setWeekDays] = useState(today.weekDays);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** 저장은 끝났고 미리가 한마디를 다듬는 중. 완료 화면이 이 동안 생각 중 표시를 띄운다. */
+  const [thinking, setThinking] = useState(false);
 
   // 트랙이 바뀌면 처음부터.
   useEffect(() => {
@@ -64,6 +75,23 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
   const current: StepDef | null =
     activeSteps.find((step) => !committed.includes(step.key)) ?? null;
 
+  /** 지금 화면에 함께 묻는 단계들. screen 이 같은 이웃 단계는 한 화면에서 받는다. */
+  const screenSteps: StepDef[] = useMemo(() => {
+    if (!current) return [];
+    if (!current.screen) return [current];
+    return activeSteps.filter((step) => step.screen === current.screen && !committed.includes(step.key));
+  }, [current, activeSteps, committed]);
+
+  /** 진행점은 단계가 아니라 화면 수로 센다. */
+  const screens = useMemo(() => {
+    const keys: string[] = [];
+    for (const step of activeSteps) {
+      const key = step.screen ?? step.key;
+      if (!keys.includes(key)) keys.push(key);
+    }
+    return keys;
+  }, [activeSteps]);
+
   const save = useCallback(
     async (value: Answer, via: LogVia) => {
       setBusy(true);
@@ -73,11 +101,16 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
         setSaved(result.answer);
         setWeekDays(result.weekDays);
         setPhase("done");
-        onSaved(trackId, {
-          answer: result.answer,
-          feedback: result.feedback,
-          weekDays: result.weekDays,
-        });
+        const saved = { answer: result.answer, feedback: result.feedback, weekDays: result.weekDays };
+        onSaved(trackId, saved);
+        if (result.feedbackPending) {
+          // 저장은 이미 끝났다. 다듬은 문장이 오면 그 자리만 바꾸고, 실패하면 규칙 문장이 남는다.
+          setThinking(true);
+          refineFeedback(userId, trackId)
+            .then(({ feedback }) => onSaved(trackId, { ...saved, feedback: feedback ?? saved.feedback }))
+            .catch(() => undefined)
+            .finally(() => setThinking(false));
+        }
       } catch (cause) {
         if (cause instanceof UnknownUserError) {
           onExpired();
@@ -106,7 +139,12 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
     if (today.prediction) void save(today.prediction, "predict");
   };
 
-  const handleDeclineClick = () => setPhase("pick");
+  // 다르게 고를 때도 예측에서 출발한다. 무게 하나만 바꾸려는 사람이 처음부터 다시 고르지 않게.
+  const handleDeclineClick = () => {
+    setAnswer(today.prediction ?? {});
+    setCommitted([]);
+    setPhase("pick");
+  };
 
   const handlePick = (step: ChoiceStepDef, value: string) => {
     setError(null);
@@ -118,7 +156,12 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
       });
       return;
     }
-    // 앞 단계를 다시 고르면 뒤 단계 답은 버린다.
+    // 같은 값을 다시 고르면 뒤 단계 답(예측에서 채운 것 포함)을 그대로 둔다.
+    if (answer[step.key] === value) {
+      setCommitted((prev) => [...prev.filter((key) => key !== step.key), step.key]);
+      return;
+    }
+    // 다른 값을 고르면 뒤 단계 답은 버린다.
     const index = track.steps.findIndex((item) => item.key === step.key);
     const later = track.steps.slice(index + 1).map((item) => item.key);
     setAnswer((prev) => {
@@ -130,11 +173,77 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
     setCommitted((prev) => [...prev.filter((key) => !later.includes(key)), step.key]);
   };
 
+  const numberOf = (step: NumberStepDef): number => {
+    const value = answer[step.key];
+    return typeof value === "number" ? value : (step.initial ?? step.min);
+  };
+
+  const entriesOf = (step: EntriesStepDef): Entry[] => {
+    const value = answer[step.key];
+    return Array.isArray(value) ? value.filter(isEntry) : [];
+  };
+
+  const handleNumberChange = (step: NumberStepDef, value: number) => {
+    setError(null);
+    setAnswer((prev) => ({ ...prev, [step.key]: value }));
+  };
+
+  /** 첫 칸(종목)을 고르면 나머지 수 칸은 기본값으로 줄을 더한다. */
+  const handleEntryAdd = (step: EntriesStepDef, value: string) => {
+    setError(null);
+    const entry: Entry = {};
+    for (const field of step.fields) {
+      entry[field.key] = field.kind === "choice" ? value : (field.initial ?? field.min);
+    }
+    setAnswer((prev) => {
+      const list = Array.isArray(prev[step.key]) ? (prev[step.key] as unknown[]).filter(isEntry) : [];
+      return { ...prev, [step.key]: [...list, entry] };
+    });
+  };
+
+  const handleEntryChange = (step: EntriesStepDef, index: number, key: string, value: number) => {
+    setAnswer((prev) => {
+      const list = Array.isArray(prev[step.key]) ? (prev[step.key] as unknown[]).filter(isEntry) : [];
+      return { ...prev, [step.key]: list.map((entry, i) => (i === index ? { ...entry, [key]: value } : entry)) };
+    });
+  };
+
+  const handleEntryRemove = (step: EntriesStepDef, index: number) => {
+    setAnswer((prev) => {
+      const list = Array.isArray(prev[step.key]) ? (prev[step.key] as unknown[]).filter(isEntry) : [];
+      return { ...prev, [step.key]: list.filter((_, i) => i !== index) };
+    });
+  };
+
+  /**
+   * 직접 이름을 적어 종목을 더한다. 이름은 한 번만 적고, 다음부터는 칩으로 나온다.
+   * 규칙에 안 맞으면(빈 이름, 너무 김) false 를 돌려 입력창이 그대로 남게 한다.
+   */
+  const handleEntryAddCustom = (step: EntriesStepDef, group: string, name: string): boolean => {
+    const head = step.fields.find((field) => field.kind === "choice");
+    const clean = cleanCustomName(name);
+    if (!head || head.kind !== "choice" || !head.custom) return false;
+    if (clean.length === 0 || clean.length > head.custom.maxLength) return false;
+    handleEntryAdd(step, customValue(group, clean));
+    return true;
+  };
+
+  /** "다음"을 누를 수 있는가. 단일 선택은 누르는 순간 넘어가므로 해당 없음. */
+  const canAdvance = (step: StepDef): boolean => {
+    if (step.kind === "number") return true;
+    if (step.kind === "entries") return entriesOf(step).length > 0;
+    return step.multi === true && selectedOf(step).length > 0;
+  };
+
   const handleNextClick = () => {
-    if (!current || !isChoiceStep(current) || !current.multi) return;
-    const list = answer[current.key];
-    if (!Array.isArray(list) || list.length === 0) return;
-    setCommitted((prev) => [...prev, current.key]);
+    if (!current || !screenSteps.every(canAdvance)) return;
+    // 수 단계는 한 번도 안 건드렸으면 보이던 기본값을 답으로 적는다.
+    const defaults: Answer = {};
+    for (const step of screenSteps) {
+      if (step.kind === "number" && typeof answer[step.key] !== "number") defaults[step.key] = numberOf(step);
+    }
+    if (Object.keys(defaults).length > 0) setAnswer((prev) => ({ ...prev, ...defaults }));
+    setCommitted((prev) => [...prev, ...screenSteps.map((step) => step.key)]);
   };
 
   const handleAgainClick = () => {
@@ -157,18 +266,28 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
     answer,
     current,
     activeSteps,
+    screenSteps,
+    thinking,
     progress: current
-      ? { current: activeSteps.indexOf(current), total: activeSteps.length }
+      ? { current: screens.indexOf(current.screen ?? current.key), total: screens.length }
       : null,
     saved,
     weekDays,
     error,
     busy,
     selectedOf,
+    numberOf,
+    entriesOf,
+    canAdvance,
     handleAcceptClick,
     handleDeclineClick,
     handlePick,
     handleNextClick,
+    handleNumberChange,
+    handleEntryAdd,
+    handleEntryAddCustom,
+    handleEntryChange,
+    handleEntryRemove,
     handleAgainClick,
   };
 }

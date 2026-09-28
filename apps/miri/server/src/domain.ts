@@ -12,6 +12,9 @@ export {
   isStepActive,
   normalizeAnswer,
   describeAnswer,
+  describeEntries,
+  describeNumber,
+  minutesToClock,
   describeValue,
   primaryStep,
   toneOf,
@@ -19,12 +22,17 @@ export {
   type AnswerValue,
   type Choice,
   type ChoiceStepDef,
+  type EntriesStepDef,
   type Entry,
+  type EntryField,
+  type NumberRange,
+  type NumberStepDef,
   type StepDef,
   type Tone,
   type TrackDef,
   type TrackId,
 } from './tracks.ts'
+export { cleanCustomName, customValue, parseCustom } from './choices.ts'
 import { TRACK_IDS, TRACKS, type TrackId } from './tracks.ts'
 
 /** 빠른 선택 프리셋. 이 밖의 시각은 10분 단위로 직접 고른다. */

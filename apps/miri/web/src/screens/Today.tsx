@@ -9,7 +9,10 @@ import {
 import Button from "../components/Button.tsx";
 import Canvas from "../components/Canvas.tsx";
 import ChoiceGrid from "../components/ChoiceGrid.tsx";
+import EntriesEditor from "../components/EntriesEditor.tsx";
+import FeedbackCard from "../components/FeedbackCard.tsx";
 import { LoggerHeader, Wordmark } from "../components/Header.tsx";
+import NumberGroup from "../components/NumberGroup.tsx";
 import Orb from "../components/Orb.tsx";
 import {
   AnswerChips,
@@ -18,11 +21,17 @@ import {
   Question,
   Trace,
 } from "../components/Prompt.tsx";
+import Skeleton from "../components/Skeleton.tsx";
 import StepStage from "../components/StepStage.tsx";
+import Stepper from "../components/Stepper.tsx";
 import {
   describeValue,
   isChoiceStep,
   TRACKS,
+  type Choice,
+  type EntriesStepDef,
+  type NumberStepDef,
+  type StepDef,
   type TrackId,
 } from "../domain.ts";
 import { choicesFor, describeTime } from "./options.ts";
@@ -140,7 +149,7 @@ function DoneScreen({
       <Orb size="lg" mood="done" />
       <Confirm title={`${flow.track.name} 기록했어요`} sub={sub} />
       {flow.saved ? <AnswerChips track={flow.track} answer={flow.saved} /> : null}
-      {today.feedback ? <p className={styles.feedback}>{today.feedback}</p> : null}
+      <FeedbackCard text={today.feedback} thinking={flow.thinking} />
       {flow.weekDays > 0 ? (
         <p className={styles.streak}>이번 주 {flow.weekDays}일째</p>
       ) : null}
@@ -156,7 +165,13 @@ function QuestionStage({ flow }: { flow: Flow }) {
   for (const item of flow.activeSteps) {
     if (item.key === step.key) break;
     const value = flow.answer[item.key];
-    if (value !== undefined) trace.push(describeValue(item, value));
+    if (value === undefined) continue;
+    // 묶음은 줄이 길어 흐름 표시에는 개수만.
+    trace.push(
+      item.kind === "entries" && Array.isArray(value)
+        ? `${value.length}개`
+        : describeValue(item, value),
+    );
   }
 
   return (
@@ -169,29 +184,116 @@ function QuestionStage({ flow }: { flow: Flow }) {
   );
 }
 
-/** 하단 도크. 에러 한 줄 + 현재 단계 선택지. 복수 선택은 "다음". */
-function ChoiceDock({ flow }: { flow: Flow }) {
+/** 앞 단계에서 고른 묶음(부위) 값들. */
+function pickedGroups(flow: Flow, key: string | undefined): string[] {
+  if (!key) return [];
+  const picked = flow.answer[key];
+  if (Array.isArray(picked)) return picked.filter((item): item is string => typeof item === "string");
+  return typeof picked === "string" ? [picked] : [];
+}
+
+/**
+ * 묶음 단계의 첫 칸 선택지. 카탈로그 뒤에 이 사람이 직접 더했던 것을 붙이고,
+ * groupFrom 이 있으면 앞 단계에서 고른 묶음(부위)의 것만 남긴다.
+ */
+function entryChoices(flow: Flow, today: TodayTrack, step: EntriesStepDef): readonly Choice[] {
+  const head = step.fields.find((field) => field.kind === "choice");
+  if (!head || head.kind !== "choice") return [];
+  const all = [...head.choices, ...(today.custom[step.key] ?? [])];
+  const groups = pickedGroups(flow, head.groupFrom);
+  if (groups.length === 0) return all;
+  return all.filter((choice) => choice.group && groups.includes(choice.group));
+}
+
+/** 직접 추가할 때 고를 묶음. 앞 단계에서 고른 부위의 이름표. */
+function customGroups(flow: Flow, step: EntriesStepDef): readonly Choice[] {
+  const head = step.fields.find((field) => field.kind === "choice");
+  if (!head || head.kind !== "choice" || !head.custom || !head.groupFrom) return [];
+  const source = flow.track.steps.find((item) => item.key === head.groupFrom);
+  if (!source || !isChoiceStep(source)) return [];
+  const groups = pickedGroups(flow, head.groupFrom);
+  return source.choices.filter((choice) => groups.includes(choice.value));
+}
+
+/** 예측에서 출발해 이미 답이 있는 단일 선택은 그 타일을 켜 둔다. 새로 고를 때는 토글이 아니다. */
+function singleSelected(flow: Flow, key: string): string[] | undefined {
+  const value = flow.answer[key];
+  return typeof value === "string" ? [value] : undefined;
+}
+
+/** 현재 단계의 입력. 선택지는 타일, 수는 +/-, 묶음은 줄 편집. 같은 화면의 수들은 카드 하나로. */
+function StepInput({ flow, today, step }: { flow: Flow; today: TodayTrack; step: StepDef }) {
+  const numbers = flow.screenSteps.filter((item): item is NumberStepDef => item.kind === "number");
+  if (numbers.length > 1) {
+    return (
+      <NumberGroup
+        steps={numbers}
+        valueOf={flow.numberOf}
+        disabled={flow.busy}
+        onChange={flow.handleNumberChange}
+      />
+    );
+  }
+  if (step.kind === "number") {
+    return (
+      <Stepper
+        label={step.question}
+        range={step}
+        value={flow.numberOf(step)}
+        disabled={flow.busy}
+        onChange={(value) => flow.handleNumberChange(step, value)}
+      />
+    );
+  }
+  if (step.kind === "entries") {
+    return (
+      <EntriesEditor
+        step={step}
+        entries={flow.entriesOf(step)}
+        choices={entryChoices(flow, today, step)}
+        groups={customGroups(flow, step)}
+        disabled={flow.busy}
+        onAdd={(value) => flow.handleEntryAdd(step, value)}
+        onAddCustom={(group, name) => flow.handleEntryAddCustom(step, group, name)}
+        onChange={(index, key, value) => flow.handleEntryChange(step, index, key, value)}
+        onRemove={(index) => flow.handleEntryRemove(step, index)}
+      />
+    );
+  }
+  return (
+    <ChoiceGrid
+      label={step.question}
+      choices={choicesFor(flow.track, step, flow.answer)}
+      columns={step.columns}
+      selected={step.multi ? flow.selectedOf(step) : singleSelected(flow, step.key)}
+      onPick={(value) => flow.handlePick(step, value)}
+    />
+  );
+}
+
+/** 단일 선택이 아닌 단계는 "다음"으로 넘어간다. 묶음은 한 줄 이상 있어야 한다. */
+function nextLabel(flow: Flow, step: StepDef): string {
+  if (flow.canAdvance(step)) return step.kind === "entries" ? "다 했어요" : "다음";
+  return step.kind === "entries" ? "하나 이상 더해주세요" : "골라주세요";
+}
+
+/** 하단 도크. 에러 한 줄 + 현재 단계 입력 + 필요하면 "다음". */
+function StepDock({ flow, today }: { flow: Flow; today: TodayTrack }) {
   const step = flow.current;
-  // 수와 묶음 단계의 입력 화면은 그 단계를 쓰는 트랙과 함께 붙인다.
-  if (!step || !isChoiceStep(step)) return null;
-  const selected = step.multi ? flow.selectedOf(step) : undefined;
+  if (!step) return null;
+  const needsNext = !isChoiceStep(step) || step.multi === true;
   return (
     <>
       {flow.error ? <ErrorNote>{flow.error}</ErrorNote> : null}
       <StepStage stepKey={`${flow.track.id}-${step.key}-choices`}>
-        <ChoiceGrid
-          label={step.question}
-          choices={choicesFor(flow.track, step, flow.answer)}
-          columns={step.columns}
-          selected={selected}
-          onPick={(value) => flow.handlePick(step, value)}
-        />
-        {step.multi ? (
+        <StepInput flow={flow} today={today} step={step} />
+        {needsNext ? (
           <Button
             onClick={flow.handleNextClick}
-            disabled={!selected || selected.length === 0 || flow.busy}
+            disabled={!flow.canAdvance(step) || flow.busy}
+            busy={flow.busy}
           >
-            {!selected || selected.length === 0 ? "골라주세요" : "다음"}
+            {nextLabel(flow, step)}
           </Button>
         ) : null}
       </StepStage>
@@ -244,7 +346,7 @@ function TrackScreen({
     <Canvas
       header={<LoggerHeader progress={progress} />}
       nav={nav}
-      dock={<ChoiceDock flow={flow} />}
+      dock={<StepDock flow={flow} today={today} />}
     >
       {tabs}
       <QuestionStage flow={flow} />
@@ -313,6 +415,7 @@ export default function Today({
     return (
       <Canvas header={<LoggerHeader progress={null} />} nav={nav}>
         {error ? <ErrorNote>{error}</ErrorNote> : null}
+        {!data && !error ? <Skeleton variant="today" /> : null}
         {data && data.tracks.length === 0 ? (
           <>
             <Question>켜진 기록이 없어요</Question>

@@ -41,6 +41,8 @@ type ActionNotificationOptions = NotificationOptions & {
 }
 
 const ICON = '/icon-192.png'
+// 안드로이드 상태 표시줄 배지는 알파 채널만 쓴다. 불투명한 앱 아이콘을 넣으면 흰 네모가 된다.
+const BADGE = '/badge-96.png'
 const DEFAULT_URL = '/?from=push'
 
 // 서버가 죽었거나 구독이 지워졌을 때도 빈손으로 끝내지 않는다.
@@ -83,7 +85,7 @@ function show(notification: InboxNotification): Promise<void> {
   const options: ActionNotificationOptions = {
     body: notification.body,
     icon: ICON,
-    badge: ICON,
+    badge: BADGE,
     tag: notification.tag,
     actions: notification.actions,
     data,
@@ -122,7 +124,7 @@ async function answer(track: string, value: Answer): Promise<void> {
   await self.registration.showNotification('기록했어요', {
     body: saved?.feedback ?? `${TRACKS[track].name}: ${describeAnswer(TRACKS[track], value)}`,
     icon: ICON,
-    badge: ICON,
+    badge: BADGE,
     tag: `miri-${track}`,
     data,
   })

@@ -1,4 +1,4 @@
-import type { Answer, TrackId, TrackSettings } from './domain.ts'
+import type { Answer, Choice, TrackId, TrackSettings } from './domain.ts'
 
 export type Settings = { userId: string; paused: boolean; tracks: TrackSettings[] }
 
@@ -13,6 +13,8 @@ export type TodayTrack = {
   prediction: Answer | null
   /** 오늘 포함 최근 7일 중 기록한 날 수 */
   weekDays: number
+  /** 사용자가 직접 더한 선택지. 묶음 단계 키별. 한 번 더한 종목이 다음부터 칩으로 나온다. */
+  custom: Record<string, Choice[]>
 }
 
 export type Today = { loggedOn: string; paused: boolean; tracks: TodayTrack[] }
@@ -83,8 +85,13 @@ export function writeLog(entry: {
   track: TrackId
   answer: Answer
   via: LogVia
-}): Promise<SavedLog & { ok: true; loggedOn: string; track: TrackId }> {
+}): Promise<SavedLog & { ok: true; loggedOn: string; track: TrackId; feedbackPending: boolean }> {
   return request('/api/log', { method: 'POST', body: JSON.stringify(entry) })
+}
+
+/** 저장 직후 한 번. AI 가 규칙 문장을 다듬어 돌려준다. 실패하면 규칙 문장 그대로. */
+export function refineFeedback(userId: string, track: TrackId): Promise<{ feedback: string | null }> {
+  return request('/api/feedback', { method: 'POST', body: JSON.stringify({ userId, track }) })
 }
 
 export function markOpened(userId: string): Promise<{ ok: true }> {

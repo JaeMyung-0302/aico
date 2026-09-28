@@ -13,6 +13,7 @@ import { LoggerHeader } from "../components/Header.tsx";
 import { ErrorNote, Question } from "../components/Prompt.tsx";
 import TimePicker from "../components/TimePicker.tsx";
 import Toggle from "../components/Toggle.tsx";
+import Skeleton from "../components/Skeleton.tsx";
 import {
   TRACKS,
   WEEKDAY_LABELS,
@@ -213,6 +214,7 @@ export default function Settings({
       }
     >
       {summary ? <Question>{summary}</Question> : null}
+      {!settings && !error ? <Skeleton variant="settings" /> : null}
       {settings ? (
         <>
           <Toggle

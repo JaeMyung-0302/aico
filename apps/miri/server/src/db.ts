@@ -17,7 +17,11 @@ export type TrackRow = {
   off_days: string
 }
 
-export type LogRow = { track: string; logged_on: string; answer: string }
+/** feedback 은 오늘 기록 한 건을 읽을 때만 고른다. */
+export type LogRow = { track: string; logged_on: string; answer: string; feedback?: string | null }
+
+/** 오늘 기록 한 건. 피드백은 할 말이 없던 날 null. */
+export type TodayLog = { answer: Answer; feedback: string | null }
 
 export type QuestionIntent = 'daily' | 'weekly'
 export type AnsweredVia = 'predict' | 'pick' | 'action'
@@ -211,20 +215,25 @@ export async function usersDueWeekly(db: D1Database, slot: string, today: string
 
 // ── logs ───────────────────────────────────────────────────────
 
-/** 같은 날 다시 누르면 덮어쓴다. 오답을 고치려고 앱을 다시 여는 마찰을 없애기 위해서다. */
+/**
+ * 같은 날 다시 누르면 덮어쓴다. 오답을 고치려고 앱을 다시 여는 마찰을 없애기 위해서다.
+ * 답이 바뀌면 피드백도 그 답 기준으로 다시 쓴다.
+ */
 export async function upsertLog(
   db: D1Database,
   userId: string,
   track: TrackId,
   loggedOn: string,
   answer: Answer,
+  feedback: string | null,
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO logs (user_id, track, logged_on, answer) VALUES (?, ?, ?, ?)
-       ON CONFLICT (user_id, track, logged_on) DO UPDATE SET answer = excluded.answer`,
+      `INSERT INTO logs (user_id, track, logged_on, answer, feedback) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT (user_id, track, logged_on)
+       DO UPDATE SET answer = excluded.answer, feedback = excluded.feedback`,
     )
-    .bind(userId, track, loggedOn, JSON.stringify(answer))
+    .bind(userId, track, loggedOn, JSON.stringify(answer), feedback)
     .run()
 }
 
@@ -233,12 +242,13 @@ export async function findLog(
   userId: string,
   track: TrackId,
   loggedOn: string,
-): Promise<Answer | null> {
+): Promise<TodayLog | null> {
   const row = await db
-    .prepare('SELECT track, logged_on, answer FROM logs WHERE user_id = ? AND track = ? AND logged_on = ?')
+    .prepare('SELECT track, logged_on, answer, feedback FROM logs WHERE user_id = ? AND track = ? AND logged_on = ?')
     .bind(userId, track, loggedOn)
     .first<LogRow>()
-  return row ? parseAnswer(track, row.answer) : null
+  const answer = row ? parseAnswer(track, row.answer) : null
+  return row && answer ? { answer, feedback: row.feedback ?? null } : null
 }
 
 /** from 이상 to 이하, 날짜 오름차순. */

@@ -115,10 +115,12 @@ async function answer(track: string, value: Answer): Promise<void> {
     body: JSON.stringify({ endpoint: current, track, answer: value, via: 'action' }),
   })
   if (!response.ok) throw new Error(`log failed with ${response.status}`)
+  const saved = (await response.json().catch(() => null)) as { feedback?: string | null } | null
 
+  // 앱을 열지 않은 사람에게도 돌려받는 한마디가 닿도록, 피드백이 있으면 확인 알림 본문에 싣는다.
   const data: NotificationData = { url: DEFAULT_URL, track, prediction: null, quick: null }
   await self.registration.showNotification('기록했어요', {
-    body: `${TRACKS[track].name}: ${describeAnswer(TRACKS[track], value)}`,
+    body: saved?.feedback ?? `${TRACKS[track].name}: ${describeAnswer(TRACKS[track], value)}`,
     icon: ICON,
     badge: ICON,
     tag: `miri-${track}`,

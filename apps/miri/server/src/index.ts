@@ -23,6 +23,7 @@ import {
 } from './db.ts'
 import { dispatch, templateComposers, weeklyText, type Composers } from './dispatch.ts'
 import { fullTrackSettings, isNotifyTime, isOffDays, type TrackSettings } from './domain.ts'
+import { composeFeedback, FEEDBACK_HISTORY_DAYS } from './feedback.ts'
 import { buildInbox } from './inbox.ts'
 import { kstDate, shiftDate } from './kst.ts'
 import { predictFromHistory } from './predict.ts'
@@ -172,11 +173,19 @@ async function writeLog(request: Request, env: Env): Promise<Response> {
 
   const via = ANSWERED_VIA.find((value) => value === body.via) ?? 'pick'
   const today = kstDate()
-  await upsertLog(env.DB, user.id, body.track, today, answer)
+  const history = await logsBetween(
+    env.DB,
+    user.id,
+    body.track,
+    shiftDate(today, -FEEDBACK_HISTORY_DAYS),
+    shiftDate(today, -1),
+  )
+  const feedback = await composeFeedback(user.id, TRACKS[body.track], answer, history, composersFrom(env))
+  await upsertLog(env.DB, user.id, body.track, today, answer, feedback)
   await answerDailyQuestion(env.DB, user.id, body.track, today, via)
   await recordEvent(env.DB, user.id, 'completed', today)
   const weekDays = await weekDaysLogged(env.DB, user.id, body.track, today)
-  return json({ ok: true, loggedOn: today, track: body.track, answer, weekDays })
+  return json({ ok: true, loggedOn: today, track: body.track, answer, feedback, weekDays })
 }
 
 async function writeEvent(request: Request, env: Env): Promise<Response> {
@@ -210,7 +219,8 @@ async function today(url: URL, env: Env): Promise<Response> {
     tracks.push({
       track: item.track,
       notifyAt: item.notifyAt,
-      log,
+      log: log?.answer ?? null,
+      feedback: log?.feedback ?? null,
       questionId: daily?.id ?? null,
       questionText: daily?.text ?? null,
       prediction,

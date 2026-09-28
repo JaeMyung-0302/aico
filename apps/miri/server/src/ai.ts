@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { Composers, QuestionContext, WeeklyContext } from './dispatch.ts'
+import type { Composers, FeedbackContext, QuestionContext, WeeklyContext } from './dispatch.ts'
 import { describeAnswer } from './tracks.ts'
 
 /**
@@ -17,6 +17,9 @@ const TIMEOUT_MS = 15_000
 const DAILY_MAX_CHARS = 34
 const WEEKLY_MAX_CHARS = 140
 const WEEKLY_MAX_LINES = 3
+/** 피드백은 사용자가 저장 버튼을 누르고 기다리는 동안 만든다. 늦으면 규칙 문장으로 간다. */
+const FEEDBACK_TIMEOUT_MS = 5_000
+const FEEDBACK_MAX_CHARS = 90
 
 const DAILY_SYSTEM = `당신은 "미리"라는 앱의 알림 문구 작가입니다. 미리는 사용자에게 먼저 묻고 버튼 한 번으로 하루를 기록하게 합니다.
 규칙:
@@ -33,6 +36,14 @@ const WEEKLY_SYSTEM = `당신은 "미리"라는 앱의 주간 요약 작가입�
 - 숫자를 다시 나열하지 말고 눈에 띄는 것 하나를 짚습니다. 빠진 것이 있으면 다음 주 제안을 한 줄로 덧붙입니다.
 - 잔소리하지 않습니다. 기록이 없으면 다시 시작하자고만 합니다.
 - 요약 문장만 출력합니다.`
+
+const FEEDBACK_SYSTEM = `당신은 "미리"라는 앱의 기록 코치입니다. 사용자가 방금 하루 기록을 마쳤고, 아래에 규칙이 판단한 사실들이 주어집니다.
+규칙:
+- 한국어 해요체. 한두 문장, 90자 이내, 줄바꿈 없이.
+- 주어진 사실만 씁니다. 사실에 없는 숫자, 종목, 조언을 만들지 않습니다.
+- 사실이 여러 개면 가장 쓸모 있는 것부터 자연스럽게 잇습니다.
+- 이모지, 느낌표, 칭찬 과잉, 잔소리를 쓰지 않습니다.
+- 문장만 출력합니다.`
 
 function firstText(content: Anthropic.ContentBlock[]): string {
   const block = content.find((item): item is Anthropic.TextBlock => item.type === 'text')
@@ -54,6 +65,15 @@ export function acceptWeeklyText(text: string): boolean {
   return !/[!]/.test(text)
 }
 
+/** 규칙에 맞는 한두 문장인가. 사실에 없는 숫자가 나오면 지어낸 것으로 보고 버린다. */
+export function acceptFeedbackText(text: string, facts: string[]): boolean {
+  if (text.length === 0 || text.length > FEEDBACK_MAX_CHARS) return false
+  if (text.includes('\n') || /[!]/.test(text)) return false
+  const known = facts.join(' ')
+  const numbers = text.match(/\d+(?:\.\d+)?/g) ?? []
+  return numbers.every((number) => known.includes(number))
+}
+
 export function dailyPrompt(ctx: QuestionContext): string {
   const predictionText = ctx.prediction ? describeAnswer(ctx.track, ctx.prediction) : null
   const lines = [
@@ -70,6 +90,15 @@ export function dailyPrompt(ctx: QuestionContext): string {
 
 export function weeklyPrompt(ctx: WeeklyContext): string {
   return ctx.lines.join('\n')
+}
+
+export function feedbackPrompt(ctx: FeedbackContext): string {
+  return [
+    `트랙: ${ctx.track.name}`,
+    `오늘 기록: ${describeAnswer(ctx.track, ctx.answer)}`,
+    '사실:',
+    ...ctx.facts.map((fact) => `- ${fact}`),
+  ].join('\n')
 }
 
 /** ANTHROPIC_API_KEY 가 있을 때만 만든다. 없으면 호출부가 템플릿을 쓴다. */
@@ -101,6 +130,21 @@ export function aiComposers(apiKey: string, model: string = DEFAULT_AI_MODEL): C
       })
       const text = firstText(response.content)
       if (!acceptWeeklyText(text)) throw new Error('weekly text rejected')
+      return text
+    },
+    feedback: async (ctx) => {
+      const response = await client.messages.create(
+        {
+          model,
+          max_tokens: 160,
+          output_config: { effort: 'low' },
+          system: FEEDBACK_SYSTEM,
+          messages: [{ role: 'user', content: feedbackPrompt(ctx) }],
+        },
+        { timeout: FEEDBACK_TIMEOUT_MS, maxRetries: 0 },
+      )
+      const text = firstText(response.content)
+      if (!acceptFeedbackText(text, ctx.facts)) throw new Error('feedback text rejected')
       return text
     },
   }

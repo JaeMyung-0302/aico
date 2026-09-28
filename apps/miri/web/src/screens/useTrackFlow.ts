@@ -3,6 +3,7 @@ import {
   UnknownUserError,
   writeLog,
   type LogVia,
+  type SavedLog,
   type TodayTrack,
 } from "../api.ts";
 import {
@@ -27,7 +28,7 @@ type Args = {
   trackId: TrackId;
   today: TodayTrack;
   onExpired: () => void;
-  onSaved: (track: TrackId, answer: Answer, weekDays: number) => void;
+  onSaved: (track: TrackId, saved: SavedLog) => void;
 };
 
 function initialPhase(today: TodayTrack): Phase {
@@ -72,7 +73,11 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
         setSaved(result.answer);
         setWeekDays(result.weekDays);
         setPhase("done");
-        onSaved(trackId, result.answer, result.weekDays);
+        onSaved(trackId, {
+          answer: result.answer,
+          feedback: result.feedback,
+          weekDays: result.weekDays,
+        });
       } catch (cause) {
         if (cause instanceof UnknownUserError) {
           onExpired();

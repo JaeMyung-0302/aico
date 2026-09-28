@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { acceptDailyText, acceptWeeklyText, dailyPrompt } from './ai.ts'
+import { acceptDailyText, acceptFeedbackText, acceptWeeklyText, dailyPrompt, feedbackPrompt } from './ai.ts'
 import type { QuestionContext } from './dispatch.ts'
 import { TRACKS } from './tracks.ts'
 
@@ -59,5 +59,37 @@ describe('dailyPrompt', () => {
     expect(prompt).toContain('예측: "헬스, 가슴, 적당"')
     expect(prompt).toContain('최근 7일 답: 쉼, 유산소, 가벼움')
     expect(prompt).toContain('이번 주 기록한 날: 3일')
+  })
+})
+
+describe('acceptFeedbackText', () => {
+  const facts = ['벤치프레스 60kg 5회를 3번 연속 채웠어요.', '이번 주 등은 없었어요.']
+
+  it('accepts one or two short sentences built from the facts', () => {
+    expect(acceptFeedbackText('벤치 60kg 5회를 3번 연속 채웠어요. 다음엔 등도 챙겨봐요.', facts)).toBe(true)
+  })
+
+  it('rejects numbers the rules never stated', () => {
+    expect(acceptFeedbackText('다음엔 62.5kg로 올려봐요.', facts)).toBe(false)
+  })
+
+  it('rejects empty, long, multi-line, or exclaiming output', () => {
+    expect(acceptFeedbackText('', facts)).toBe(false)
+    expect(acceptFeedbackText('좋아요'.repeat(40), facts)).toBe(false)
+    expect(acceptFeedbackText('잘했어요.\n등도 해요.', facts)).toBe(false)
+    expect(acceptFeedbackText('잘했어요!', facts)).toBe(false)
+  })
+})
+
+describe('feedbackPrompt', () => {
+  it('lists the record and every fact', () => {
+    const prompt = feedbackPrompt({
+      userId: 'u1',
+      track: TRACKS.exercise,
+      answer: { kind: 'gym', parts: ['chest'], intensity: 'mid' },
+      facts: ['이번 주 등은 없었어요.'],
+    })
+    expect(prompt).toContain('오늘 기록: 헬스, 가슴, 적당')
+    expect(prompt).toContain('- 이번 주 등은 없었어요.')
   })
 })

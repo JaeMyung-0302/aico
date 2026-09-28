@@ -47,3 +47,17 @@
   font-size: var(--text-base);
   font-weight: 600;
 }
+
+/* 기록 직후 돌려받은 한마디. 칩보다 한 단계 밝게, 읽히는 폭으로. */
+.feedback {
+  max-width: 30ch;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  text-align: center;
+}

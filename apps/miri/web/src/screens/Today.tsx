@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   fetchToday,
   UnknownUserError,
+  type SavedLog,
   type Today as TodayData,
   type TodayTrack,
 } from "../api.ts";
@@ -22,7 +23,6 @@ import {
   describeValue,
   isChoiceStep,
   TRACKS,
-  type Answer,
   type TrackId,
 } from "../domain.ts";
 import { choicesFor, describeTime } from "./options.ts";
@@ -140,6 +140,7 @@ function DoneScreen({
       <Orb size="lg" mood="done" />
       <Confirm title={`${flow.track.name} 기록했어요`} sub={sub} />
       {flow.saved ? <AnswerChips track={flow.track} answer={flow.saved} /> : null}
+      {today.feedback ? <p className={styles.feedback}>{today.feedback}</p> : null}
       {flow.weekDays > 0 ? (
         <p className={styles.streak}>이번 주 {flow.weekDays}일째</p>
       ) : null}
@@ -216,7 +217,7 @@ function TrackScreen({
   nav: ReactNode;
   tabs: ReactNode;
   onExpired: () => void;
-  onSaved: (track: TrackId, answer: Answer, weekDays: number) => void;
+  onSaved: (track: TrackId, saved: SavedLog) => void;
   onNext: (track: TrackId) => void;
 }) {
   const flow = useTrackFlow({ userId, trackId: today.track, today, onExpired, onSaved });
@@ -293,13 +294,15 @@ export default function Today({
     };
   }, [userId, onExpired]);
 
-  const handleSaved = useCallback((track: TrackId, answer: Answer, weekDays: number) => {
+  const handleSaved = useCallback((track: TrackId, saved: SavedLog) => {
     setData((prev) =>
       prev
         ? {
             ...prev,
             tracks: prev.tracks.map((item) =>
-              item.track === track ? { ...item, log: answer, weekDays } : item,
+              item.track === track
+                ? { ...item, log: saved.answer, feedback: saved.feedback, weekDays: saved.weekDays }
+                : item,
             ),
           }
         : prev,

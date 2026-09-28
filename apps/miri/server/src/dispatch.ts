@@ -25,6 +25,7 @@ import {
   TRACK_IDS,
   TRACKS,
   type Answer,
+  type TrackDef,
 } from './tracks.ts'
 
 /**
@@ -61,16 +62,21 @@ export type QuestionContext = {
 
 export type WeeklyContext = { userId: string; lines: string[] }
 
+/** 기록 직후 피드백의 입력. facts 는 트랙 규칙이 이미 판단한 문장들이다. */
+export type FeedbackContext = { userId: string; track: TrackDef; answer: Answer; facts: string[] }
+
 /** 문구를 만드는 함수 묶음. 기본은 템플릿이고, AI 가 붙으면 이 자리를 대신한다. 실패하면 템플릿. */
 export type Composers = {
   daily: (ctx: QuestionContext) => Promise<string>
   weekly: (ctx: WeeklyContext) => Promise<string>
+  feedback: (ctx: FeedbackContext) => Promise<string>
 }
 
 export const templateComposers: Composers = {
   daily: async ({ track, prediction, dayIndex, salt }) =>
     prediction ? confirmQuestionText(track, prediction, dayIndex, salt) : openQuestionText(track, dayIndex, salt),
   weekly: async ({ lines }) => lines.join('\n'),
+  feedback: async ({ facts }) => facts.join(' '),
 }
 
 type Ctx = {

@@ -6,6 +6,8 @@ export type TodayTrack = {
   track: TrackId
   notifyAt: string
   log: Answer | null
+  /** 기록 직후 돌려받은 한마디. 할 말이 없던 날은 null */
+  feedback: string | null
   questionId: string | null
   questionText: string | null
   prediction: Answer | null
@@ -27,6 +29,9 @@ export type History = {
   /** 켜진 트랙 전부의 요약, 줄바꿈 구분 */
   allText: string
 }
+
+/** 저장 결과 중 화면이 이어 쓰는 부분. */
+export type SavedLog = { answer: Answer; feedback: string | null; weekDays: number }
 
 /** 어떻게 답했는지. 예측 수락, 직접 선택, 알림 버튼. */
 export type LogVia = 'predict' | 'pick' | 'action'
@@ -78,7 +83,7 @@ export function writeLog(entry: {
   track: TrackId
   answer: Answer
   via: LogVia
-}): Promise<{ ok: true; loggedOn: string; track: TrackId; answer: Answer; weekDays: number }> {
+}): Promise<SavedLog & { ok: true; loggedOn: string; track: TrackId }> {
   return request('/api/log', { method: 'POST', body: JSON.stringify(entry) })
 }
 

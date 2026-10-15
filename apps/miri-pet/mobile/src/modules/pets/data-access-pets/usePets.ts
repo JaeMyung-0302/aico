@@ -1,0 +1,33 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { uploadImage } from '@/modules/media/data-access-media/useUploadImage'
+import type { PetFormSubmit } from '../util-pet/validate-pet-form'
+import { createPet, fetchMyPets, fetchUserPets } from './pets-api'
+
+export const PETS_QUERY_KEY = ['pets'] as const
+
+// isEnabled: 인증 게이트는 동의를 마친 뒤에만 조회한다(동의 전 403 CONSENT_REQUIRED 방지)
+export const useMyPets = ({ isEnabled = true }: { isEnabled?: boolean } = {}) =>
+  useQuery({ queryKey: PETS_QUERY_KEY, queryFn: fetchMyPets, enabled: isEnabled })
+
+// 17 프로필 반려동물 탭: 탭을 처음 열 때(userId 지정) 조회한다
+export const useUserPets = (userId: string | undefined) =>
+  useQuery({
+    queryKey: ['users', userId, 'pets'],
+    queryFn: () => fetchUserPets(userId ?? ''),
+    enabled: Boolean(userId),
+  })
+
+// 사진(선택) → AVATAR 업로드 → 펫 생성
+const savePet = async ({ request, photo }: PetFormSubmit) => {
+  if (!photo) return createPet(request)
+  const avatarMediaId = await uploadImage(photo, 'AVATAR')
+  return createPet({ ...request, avatarMediaId })
+}
+
+export const useSavePet = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: savePet,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PETS_QUERY_KEY }),
+  })
+}

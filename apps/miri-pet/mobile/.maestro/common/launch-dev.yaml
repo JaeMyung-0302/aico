@@ -1,0 +1,19 @@
+# dev client를 깨끗한 상태로 열고 Metro 번들에 연결 → 로그인 화면까지
+appId: com.aico.miripet
+env:
+  METRO_URL: http%3A%2F%2Flocalhost%3A8082
+---
+# iOS 키체인(expo-secure-store 토큰)은 clearState로 지워지지 않는다
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - clearKeychain
+- launchApp:
+    clearState: true
+    stopApp: true
+- openLink: exp+miri-pet://expo-development-client/?url=${METRO_URL}
+- extendedWaitUntil:
+    visible:
+      id: dev-login-submit
+    timeout: 60000

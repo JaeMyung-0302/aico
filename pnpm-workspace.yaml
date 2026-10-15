@@ -3,4 +3,5 @@ packages:
   - apps/*/client
   - apps/*/server
   - apps/*/web
+  - apps/*/mobile
   - packages/*

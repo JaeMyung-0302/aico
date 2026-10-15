@@ -1,41 +1,7 @@
-import { createRequire } from 'node:module'
-import { resolve } from 'node:path'
+import { io, type Socket } from 'socket.io-client'
 
-// socket.io-client는 서버 의존성이 아니다(모바일 워크스페이스에만 설치) → 테스트에서만 모바일 패키지 기준으로 불러온다.
-// 쓰는 API만 구조적으로 타이핑한다
-// TODO: 서버 devDependencies에 socket.io-client를 추가하면(pnpm install 필요) 일반 import로 바꾼다
-export type ClientSocket = {
-  connected: boolean
-  on: (event: string, listener: (...args: unknown[]) => void) => ClientSocket
-  off: (event: string) => ClientSocket
-  connect: () => ClientSocket
-  disconnect: () => ClientSocket
-}
-
-type IoOptions = {
-  path: string
-  transports: string[]
-  auth?: Record<string, string>
-  reconnection: boolean
-  forceNew: boolean
-  extraHeaders?: Record<string, string>
-}
-type IoFactory = (url: string, options: IoOptions) => ClientSocket
-
-const isIoFactory = (value: unknown): value is IoFactory => typeof value === 'function'
-
-const MOBILE_PACKAGE_JSON = resolve(__dirname, '../../../mobile/package.json')
-
-const loadIo = (): IoFactory => {
-  const loaded: unknown = createRequire(MOBILE_PACKAGE_JSON)('socket.io-client')
-  // CJS 빌드는 module.exports = lookup 함수에 io 속성을 붙인다
-  const isModule = (typeof loaded === 'object' || typeof loaded === 'function') && loaded !== null
-  const io: unknown = isModule ? Reflect.get(loaded, 'io') : undefined
-  if (!isIoFactory(io)) throw new Error('socket.io-client를 불러오지 못했습니다')
-  return io
-}
-
-const io = loadIo()
+// 통합 테스트용 socket.io 클라이언트 (서버 devDependency)
+export type ClientSocket = Socket
 
 // headers: Node websocket 전송은 handshake 헤더를 보낼 수 있다(cf-connecting-ip로 클라이언트 IP 흉내)
 export const connectSocket = (baseUrl: string, token?: string, headers?: Record<string, string>): ClientSocket =>

@@ -1,0 +1,608 @@
+// 미리펫 데이터 모델 — architecture-decision §5 + implementation-plan A1(Notification, MediaAccessLog)
+// ID는 uuid v7(시간순) → id 하나로 커서 페이지네이션. 사용자 콘텐츠는 hiddenAt(모더레이션) / deletedAt(작성자 삭제) 분리
+// v1 로그인: 카카오 + Google (Apple 제외 → appleRefreshTokenEnc 컬럼 없음)
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── 사용자·인증 ─────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum AuthProvider {
+  KAKAO
+  GOOGLE
+}
+
+enum ConsentKind {
+  TERMS
+  PRIVACY
+  LOCATION
+  CERTIFICATE
+  MARKETING
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+}
+
+model User {
+  id                  String     @id @default(uuid(7)) @db.Uuid
+  nickname            String?    @unique @db.Citext // 탈퇴 시 null
+  bio                 String?
+  avatarMediaId       String?    @unique @db.Uuid
+  role                UserRole   @default(USER)
+  status              UserStatus @default(ACTIVE)
+  notifyVaccination   Boolean    @default(true)
+  notifySocial        Boolean    @default(true)
+  notifyDm            Boolean    @default(true)
+  birthYearVerifiedAt DateTime?  @db.Timestamptz(3)
+  createdAt           DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime   @updatedAt @db.Timestamptz(3)
+  deletedAt           DateTime?  @db.Timestamptz(3)
+  hiddenAt            DateTime?  @db.Timestamptz(3) // 신고 누적(3명) 자동 숨김·운영자 숨김 → 프로필 404
+
+  avatarMedia         Media?               @relation("UserAvatar", fields: [avatarMediaId], references: [id], onDelete: SetNull)
+  authAccounts        AuthAccount[]
+  sessions            Session[]
+  consents            Consent[]
+  pushTokens          PushToken[]
+  pets                Pet[]
+  media               Media[]              @relation("MediaOwner")
+  notificationLogs    NotificationLog[]
+  notifications       Notification[]       @relation("NotificationRecipient")
+  actedNotifications  Notification[]       @relation("NotificationActor")
+  mediaAccessLogs     MediaAccessLog[]
+  placeReports        PlaceReport[]
+  posts               Post[]
+  likes               Like[]
+  comments            Comment[]
+  following           Follow[]             @relation("Follower")
+  followers           Follow[]             @relation("Followee")
+  conversationsLow    Conversation[]       @relation("ConversationLow")
+  conversationsHigh   Conversation[]       @relation("ConversationHigh")
+  conversationMembers ConversationMember[]
+  sentMessages        Message[]
+  blocking            Block[]              @relation("Blocker")
+  blockedBy           Block[]              @relation("Blocked")
+  reports             Report[]
+}
+
+model AuthAccount {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  userId      String       @db.Uuid
+  provider    AuthProvider
+  providerSub String
+  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSub])
+  @@index([userId])
+}
+
+model Session {
+  id               String    @id @default(uuid(7)) @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String    @unique // SHA-256 해시만 저장
+  expiresAt        DateTime  @db.Timestamptz(3)
+  revokedAt        DateTime? @db.Timestamptz(3)
+  deviceLabel      String?
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Consent {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  userId      String      @db.Uuid
+  kind        ConsentKind
+  version     String
+  agreedAt    DateTime    @default(now()) @db.Timestamptz(3)
+  withdrawnAt DateTime?   @db.Timestamptz(3) // 선택 동의(위치·마케팅) 철회
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+model PushToken {
+  id         String         @id @default(uuid(7)) @db.Uuid
+  userId     String         @db.Uuid
+  expoToken  String         @unique
+  platform   DevicePlatform
+  lastSeenAt DateTime       @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── 펫·접종 ─────────────────────────────────────────────
+
+enum PetSpecies {
+  DOG
+  CAT
+  ETC
+}
+
+enum PetSize {
+  S
+  M
+  L
+}
+
+enum VaccineType {
+  DHPPL
+  RABIES
+  CORONA
+  KENNEL_COUGH
+  INFLUENZA
+  HEARTWORM
+  ETC
+}
+
+model Pet {
+  id            String     @id @default(uuid(7)) @db.Uuid
+  ownerId       String     @db.Uuid
+  name          String
+  species       PetSpecies
+  breed         String?
+  birthDate     DateTime?  @db.Date
+  size          PetSize
+  avatarMediaId String?    @unique @db.Uuid
+  createdAt     DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime   @updatedAt @db.Timestamptz(3)
+
+  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  avatarMedia  Media?        @relation("PetAvatar", fields: [avatarMediaId], references: [id], onDelete: SetNull)
+  vaccinations Vaccination[]
+  postPets     PostPet[]
+
+  @@index([ownerId])
+}
+
+model Vaccination {
+  id             String      @id @default(uuid(7)) @db.Uuid
+  petId          String      @db.Uuid
+  type           VaccineType
+  customName     String?
+  administeredOn DateTime    @db.Date
+  clinicName     String?
+  nextDueOn      DateTime?   @db.Date
+  createdAt      DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime    @updatedAt @db.Timestamptz(3)
+
+  pet          Pet                      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  certificates VaccinationCertificate[]
+
+  @@index([petId])
+  @@index([nextDueOn])
+}
+
+model VaccinationCertificate {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  vaccinationId String   @db.Uuid
+  mediaId       String   @unique @db.Uuid // PRIVATE 버킷 Media
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  vaccination Vaccination @relation(fields: [vaccinationId], references: [id], onDelete: Cascade)
+  media       Media       @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([vaccinationId])
+}
+
+// 리마인더 중복 발송 차단: insert 성공한 건만 발송. refId = vaccinationId, dueOn = nextDueOn
+enum NotificationLogKind {
+  VACCINATION_D7
+  VACCINATION_D1
+}
+
+model NotificationLog {
+  id        String              @id @default(uuid(7)) @db.Uuid
+  userId    String              @db.Uuid
+  kind      NotificationLogKind
+  refId     String              @db.Uuid
+  dueOn     DateTime            @db.Date
+  createdAt DateTime            @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([kind, refId, dueOn])
+  @@index([userId])
+}
+
+// ─── 미디어 ──────────────────────────────────────────────
+
+enum MediaBucket {
+  PUBLIC
+  PRIVATE
+}
+
+enum MediaStatus {
+  PENDING
+  READY
+  REJECTED
+}
+
+enum MediaPurpose {
+  POST
+  AVATAR
+  DM
+  CERTIFICATE
+  PLACE_REPORT
+}
+
+model Media {
+  id        String       @id @default(uuid(7)) @db.Uuid
+  ownerId   String       @db.Uuid
+  purpose   MediaPurpose
+  bucket    MediaBucket
+  key       String       @unique
+  status    MediaStatus  @default(PENDING)
+  mime      String
+  width     Int?
+  height    Int?
+  bytes     Int
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+
+  owner            User                    @relation("MediaOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  userAvatar       User?                   @relation("UserAvatar")
+  petAvatar        Pet?                    @relation("PetAvatar")
+  certificate      VaccinationCertificate?
+  postImages       PostImage[]
+  messages         Message[]
+  accessLogs       MediaAccessLog[]
+  placeReportImage PlaceReportImage?
+
+  @@index([status, createdAt])
+  @@index([ownerId])
+}
+
+// A1: 증명서 열람 로그
+model MediaAccessLog {
+  id      String   @id @default(uuid(7)) @db.Uuid
+  userId  String   @db.Uuid
+  mediaId String   @db.Uuid
+  at      DateTime @default(now()) @db.Timestamptz(3)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId, at])
+  @@index([userId, at])
+}
+
+// ─── 장소 ────────────────────────────────────────────────
+
+enum PlaceCategory {
+  CAFE
+  RESTAURANT
+  PARK
+  ACCOMMODATION
+  HOSPITAL
+  ETC
+}
+
+enum PlaceSource {
+  PUBLIC_DATA
+  TOUR_API
+  KAKAO
+  USER
+}
+
+enum PlaceStatus {
+  ACTIVE
+  HIDDEN
+  CLOSED
+}
+
+enum PlaceReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Place {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  name           String
+  category       PlaceCategory
+  address        String
+  lat            Float
+  lng            Float
+  allowedSizes   PetSize[]
+  indoorAllowed  Boolean       @default(false)
+  conditionsNote String?
+  source         PlaceSource
+  sourceRef      String?
+  verifiedAt     DateTime?     @db.Timestamptz(3)
+  status         PlaceStatus   @default(ACTIVE)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+
+  reports PlaceReport[]
+  posts   Post[]
+
+  @@unique([source, sourceRef])
+  @@index([lat, lng])
+}
+
+model PlaceReport {
+  id         String            @id @default(uuid(7)) @db.Uuid
+  placeId    String?           @db.Uuid // 신규 제보면 null
+  reporterId String?           @db.Uuid // 탈퇴 시 null (제보 내용은 남긴다)
+  payload    Json
+  status     PlaceReportStatus @default(PENDING)
+  reviewedAt DateTime?         @db.Timestamptz(3)
+  createdAt  DateTime          @default(now()) @db.Timestamptz(3)
+
+  place    Place?             @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  reporter User?              @relation(fields: [reporterId], references: [id], onDelete: SetNull)
+  images   PlaceReportImage[]
+
+  @@index([status, createdAt])
+  @@index([placeId])
+  @@index([reporterId])
+}
+
+// 제보 안내문 사진(선택, 최대 3장). private 버킷 r/{ownerId}/{mediaId}.jpg — 운영자만 presigned로 본다. 검수·탈퇴 시 Media와 함께 지운다
+model PlaceReportImage {
+  reportId String @db.Uuid
+  mediaId  String @unique @db.Uuid
+  order    Int
+
+  report PlaceReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  media  Media       @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([reportId, mediaId])
+  @@unique([reportId, order])
+}
+
+// ─── 피드·소셜 ───────────────────────────────────────────
+
+model Post {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  authorId     String    @db.Uuid
+  placeId      String?   @db.Uuid // 장소 태그(선택, 1곳). 장소가 지워지면 null
+  caption      String    @default("")
+  likeCount    Int       @default(0)
+  commentCount Int       @default(0)
+  hiddenAt     DateTime? @db.Timestamptz(3)
+  deletedAt    DateTime? @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(3)
+
+  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  place    Place?      @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  images   PostImage[]
+  pets     PostPet[]
+  likes    Like[]
+  comments Comment[]
+
+  @@index([authorId, id(sort: Desc)])
+  @@index([placeId, id(sort: Desc)])
+}
+
+model PostImage {
+  postId  String @db.Uuid
+  mediaId String @db.Uuid
+  order   Int
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([postId, mediaId])
+  @@unique([postId, order])
+  // 한 이미지는 한 게시물에만 붙는다(동시 게시 경쟁도 DB가 막는다)
+  @@unique([mediaId])
+}
+
+model PostPet {
+  postId String @db.Uuid
+  petId  String @db.Uuid
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@id([postId, petId])
+  @@index([petId])
+}
+
+model Like {
+  userId    String   @db.Uuid
+  postId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+}
+
+model Comment {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  postId    String    @db.Uuid
+  authorId  String    @db.Uuid
+  body      String
+  hiddenAt  DateTime? @db.Timestamptz(3)
+  deletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, id])
+  @@index([authorId])
+}
+
+model Follow {
+  followerId String   @db.Uuid
+  followeeId String   @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+
+  follower User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followee User @relation("Followee", fields: [followeeId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followeeId])
+  @@index([followeeId, createdAt(sort: Desc)])
+}
+
+// A1: 인앱 알림함(화면 07)
+enum NotificationKind {
+  LIKE
+  COMMENT
+  FOLLOW
+  DM_REQUEST
+  VACCINATION_DUE
+  PLACE_REPORT_REVIEWED
+}
+
+model Notification {
+  id        String           @id @default(uuid(7)) @db.Uuid
+  userId    String           @db.Uuid
+  kind      NotificationKind
+  actorId   String?          @db.Uuid
+  refId     String?          @db.Uuid
+  readAt    DateTime?        @db.Timestamptz(3)
+  createdAt DateTime         @default(now()) @db.Timestamptz(3)
+
+  user  User  @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  // DM_REQUEST는 (userId, actorId)당 1개: 부분 유니크 인덱스 Notification_dm_request_once_key (Prisma로 표현 불가 → 마이그레이션 SQL)
+
+  @@index([userId, id(sort: Desc)])
+  @@index([actorId])
+}
+
+// ─── DM ──────────────────────────────────────────────────
+
+enum MemberState {
+  ACCEPTED
+  REQUEST
+}
+
+model Conversation {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  userLowId     String    @db.Uuid // 두 사용자 id를 정렬해 저장 → 쌍당 1개
+  userHighId    String    @db.Uuid
+  lastMessageAt DateTime? @db.Timestamptz(3)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
+
+  userLow  User                 @relation("ConversationLow", fields: [userLowId], references: [id], onDelete: Restrict)
+  userHigh User                 @relation("ConversationHigh", fields: [userHighId], references: [id], onDelete: Restrict)
+  members  ConversationMember[]
+  messages Message[]
+
+  @@unique([userLowId, userHighId])
+  @@index([userHighId])
+}
+
+model ConversationMember {
+  conversationId    String      @db.Uuid
+  userId            String      @db.Uuid
+  state             MemberState @default(REQUEST)
+  lastReadMessageId String?     @db.Uuid
+  hiddenAt          DateTime?   @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  conversationId  String    @db.Uuid
+  senderId        String?   @db.Uuid // 탈퇴 시 null → "탈퇴한 사용자" 표기
+  body            String?
+  mediaId         String?   @db.Uuid
+  clientMessageId String
+  hiddenAt        DateTime? @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?        @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  media        Media?       @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+
+  @@unique([senderId, clientMessageId]) // 재전송 멱등
+  // 보안 리뷰 LOW-4: 사진 하나는 메시지 하나에만(NULL은 여러 개). 동시 전송 경쟁도 DB가 막는다
+  @@unique([mediaId])
+  @@index([conversationId, id])
+}
+
+// ─── 모더레이션 ──────────────────────────────────────────
+
+enum ReportTargetType {
+  POST
+  COMMENT
+  MESSAGE
+  USER
+}
+
+enum ReportReason {
+  SPAM
+  ANIMAL_ABUSE
+  HATE
+  SEXUAL
+  PRIVACY
+  ETC
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model Report {
+  id         String           @id @default(uuid(7)) @db.Uuid
+  reporterId String?          @db.Uuid // 탈퇴·삭제 시 null (신고 근거는 남긴다)
+  targetType ReportTargetType
+  targetId   String           @db.Uuid
+  reason     ReportReason
+  detail     String?
+  status     ReportStatus     @default(PENDING)
+  createdAt  DateTime         @default(now()) @db.Timestamptz(3)
+  resolvedAt DateTime?        @db.Timestamptz(3)
+
+  reporter User? @relation(fields: [reporterId], references: [id], onDelete: SetNull)
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([targetType, targetId])
+  @@index([status, createdAt])
+}

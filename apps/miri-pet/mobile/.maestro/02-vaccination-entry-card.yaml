@@ -1,0 +1,27 @@
+# 02: 접종 기록 추가(광견병, 접종일 기본값 오늘) → 입장용 카드에서 확인
+appId: com.aico.miripet
+name: 02 add vaccination and open entry card
+tags:
+  - smoke
+---
+- runFlow: common/launch-dev.yaml
+- runFlow: common/dev-login-new-user.yaml
+- runFlow: common/consent-and-pet.yaml
+- tapOn: 기록 추가
+- extendedWaitUntil:
+    visible: 미리 · 접종 기록 추가
+    timeout: 10000
+- tapOn: 광견병
+- scrollUntilVisible:
+    element: 저장
+    direction: DOWN
+- tapOn: 저장
+- extendedWaitUntil:
+    visible: 입장용 카드 열기
+    timeout: 15000
+- assertVisible: 광견병
+- tapOn: 입장용 카드 열기
+- extendedWaitUntil:
+    visible: 미리펫 입장용 카드
+    timeout: 10000
+- assertVisible: 광견병

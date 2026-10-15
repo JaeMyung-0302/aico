@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>개인정보 처리방침 (초안) | 미리펫</title>
+<style>
+  body { font-family: Pretendard, -apple-system, sans-serif; color: #141821; background: #f6f7fb; line-height: 1.7; margin: 0; padding: 24px 20px 64px; }
+  main { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 24px; }
+  .draft { background: #fff4e5; color: #c2410c; border-radius: 12px; padding: 12px 16px; font-weight: 600; }
+  h1 { font-size: 22px; } h2 { font-size: 17px; margin-top: 28px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; } th, td { border: 1px solid #dde1ea; padding: 8px; text-align: left; vertical-align: top; }
+  .todo { color: #c2410c; }
+</style>
+</head>
+<body>
+<main>
+<p class="draft">⚠️ 초안(DRAFT) — 법률 검토 전 문안입니다. 정식 출시 전(Phase 6)에 확정본으로 교체됩니다. [ ] 표시는 확정이 필요한 항목입니다.</p>
+<h1>미리펫 개인정보 처리방침</h1>
+<p>버전: 2026-10-draft · 시행일: <span class="todo">[시행일 확정 필요]</span></p>
+
+<h2>1. 수집하는 개인정보</h2>
+<table>
+  <tr><th>구분</th><th>항목</th><th>목적</th></tr>
+  <tr><td>필수</td><td>카카오/Google 회원 식별값(sub), 닉네임, 만 14세 이상 확인 여부, 약관 동의 이력</td><td>회원 식별·가입 자격 확인</td></tr>
+  <tr><td>선택</td><td>프로필 사진·소개, 반려동물 정보(이름·종·생일·크기), 접종 기록·증명서 사진</td><td>펫 프로필·접종 알림</td></tr>
+  <tr><td>선택</td><td>게시물·댓글·메시지, 장소 제보</td><td>커뮤니티·장소 정보 제공</td></tr>
+  <tr><td>자동</td><td>기기 푸시 토큰, 서비스 이용 기록(앱 내부 사용자 id 기준), 오류 로그</td><td>알림 발송·서비스 개선·장애 대응</td></tr>
+</table>
+<p>업로드한 사진의 위치(EXIF GPS) 정보는 서버에서 제거한 뒤 저장합니다. 접종 증명서는 비공개 저장소에 보관하며 본인만 열람할 수 있습니다.</p>
+<h2>2. 보유 및 이용 기간</h2>
+<p>회원 탈퇴 시 지체 없이 파기합니다. 다만 신고 처리 기록 등 분쟁 대응에 필요한 정보는 <span class="todo">[보존 기간 확정 필요]</span> 동안 보관 후 파기합니다.</p>
+<h2>3. 개인정보의 국외 이전 <span class="todo">[국외 이전 고지 — 이전 국가·일시·방법 확정 필요]</span></h2>
+<p>서비스 제공을 위해 아래와 같이 개인정보를 국외로 이전(처리 위탁·보관)합니다. 이전을 거부하려면 탈퇴할 수 있으나, 이 경우 서비스를 이용할 수 없습니다.</p>
+<table>
+  <tr><th>이전받는 자</th><th>국가</th><th>항목</th><th>목적</th><th>보유 기간</th></tr>
+  <tr><td>Cloudflare, Inc. (R2 저장소)</td><td class="todo">[미국 등 확정 필요]</td><td>프로필·게시물·메시지 사진, 접종 증명서 사진</td><td>이미지 저장·전송</td><td>탈퇴 또는 삭제 시까지</td></tr>
+  <tr><td>650 Industries, Inc. (Expo 푸시)</td><td class="todo">[미국]</td><td>기기 푸시 토큰, 알림 내용</td><td>푸시 알림 발송</td><td>발송 완료 시까지</td></tr>
+  <tr><td>PostHog, Inc. (이용 통계)</td><td class="todo">[미국 또는 EU 확정 필요]</td><td>앱 내부 사용자 id, 이용 이벤트(이메일·닉네임 제외)</td><td>서비스 개선</td><td class="todo">[확정 필요]</td></tr>
+  <tr><td>Functional Software, Inc. (Sentry 오류 수집)</td><td class="todo">[미국]</td><td>오류 로그, 기기 정보, 앱 내부 사용자 id</td><td>장애 대응</td><td class="todo">[확정 필요]</td></tr>
+</table>
+<p>이전 일시·방법: 서비스 이용 시점에 네트워크(TLS 암호화)를 통해 수시 이전.</p>
+<h2>4. 제3자 제공</h2>
+<p>법령에 근거가 있거나 이용자가 동의한 경우를 제외하고 개인정보를 제3자에게 제공하지 않습니다.</p>
+<h2>5. 이용자의 권리</h2>
+<p>이용자는 언제든 자신의 정보를 조회·수정할 수 있고, 설정 화면에서 탈퇴(삭제)할 수 있습니다. 선택 동의(위치·마케팅 등)는 철회할 수 있습니다.</p>
+<h2>6. 개인정보 보호책임자</h2>
+<p><span class="todo">[성명·직책·연락처 확정 필요]</span></p>
+
+<h2>문의</h2>
+<p>운영자: <span class="todo">[사업자명·대표자·사업자등록번호 확정 필요]</span><br />이메일: <span class="todo">[고객센터 이메일 확정 필요]</span></p>
+</main>
+</body>
+</html>

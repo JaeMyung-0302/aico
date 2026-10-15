@@ -1,0 +1,56 @@
+[
+  {
+    "source": "PUBLIC_DATA",
+    "sourceRef": "fixture-001",
+    "name": "픽스처 카페 하나",
+    "category": "CAFE",
+    "address": "서울 성동구 성수이로 1",
+    "lat": 37.5441,
+    "lng": 127.0557,
+    "allowedSizes": ["S", "M"],
+    "indoorAllowed": true,
+    "conditionsNote": "목줄 필수",
+    "verifiedAt": "2026-09-30"
+  },
+  {
+    "source": "PUBLIC_DATA",
+    "sourceRef": "fixture-002",
+    "name": "픽스처 공원",
+    "category": "PARK",
+    "address": "서울 성동구 뚝섬로 273",
+    "lat": 37.5444,
+    "lng": 127.0374,
+    "allowedSizes": ["S", "M", "L"],
+    "indoorAllowed": false
+  },
+  {
+    "source": "TOUR_API",
+    "sourceRef": "fixture-002",
+    "name": "픽스처 숙소 (출처가 달라 다른 행)",
+    "category": "ACCOMMODATION",
+    "address": "강원 강릉시 픽스처로 2",
+    "lat": 37.7519,
+    "lng": 128.8761,
+    "allowedSizes": ["S"],
+    "indoorAllowed": true
+  },
+  {
+    "source": "PUBLIC_DATA",
+    "sourceRef": "fixture-no-coords",
+    "name": "좌표 없는 행",
+    "category": "CAFE",
+    "address": "서울 어딘가",
+    "allowedSizes": ["S"],
+    "indoorAllowed": false
+  },
+  {
+    "source": "PUBLIC_DATA",
+    "name": "sourceRef 없는 행",
+    "category": "CAFE",
+    "address": "서울 어딘가",
+    "lat": 37.5,
+    "lng": 127.0,
+    "allowedSizes": ["S"],
+    "indoorAllowed": false
+  }
+]

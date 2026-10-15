@@ -1,0 +1,23 @@
+name: miri-pet
+
+services:
+  miri-pet-db:
+    image: postgres:16-alpine
+    container_name: miri-pet-db
+    environment:
+      POSTGRES_USER: miripet
+      POSTGRES_PASSWORD: miripet
+      POSTGRES_DB: miripet_dev
+    ports:
+      - '5439:5432'
+    volumes:
+      - miri_pet_pgdata:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U miripet -d miripet_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  miri_pet_pgdata:

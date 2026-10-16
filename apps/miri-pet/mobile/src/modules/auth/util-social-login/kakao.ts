@@ -31,4 +31,9 @@ export const getKakaoIdToken = async (): Promise<string | null> => {
   }
 }
 
-export const signOutKakao = (): Promise<void> => logout()
+// 초기화 전에 logout을 부르면 Android 네이티브가 UninitializedPropertyAccessException으로 앱을 종료한다
+// (개발 로그인 세션·앱 재시작 직후처럼 이번 실행에서 카카오 로그인을 안 한 경우) → 반드시 먼저 초기화한다
+export const signOutKakao = async (): Promise<void> => {
+  await ensureKakaoSdk()
+  await logout()
+}

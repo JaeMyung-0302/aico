@@ -5,15 +5,17 @@ Maestro 플로우)은 Phase 6에서 끝냈다. 배포 상세는 [`server/README.
 
 표기: `[ ]` 할 일 · **(차단)** 이 항목이 끝나야 스토어에 제출할 수 있음
 
+> **출시 범위 (2026-10-16 결정)**: Android 먼저 출시한다. Apple Developer 가입·iOS 제출·Apple 로그인 재도입은 iOS 출시를 정할 때까지 보류.
+
 ---
 
 ## 1. 계정·키 발급
 
 | # | 대상 | 할 일 | 넣을 곳 |
 | --- | --- | --- | --- |
-| [ ] 1.1 | Apple Developer Program | 가입(연 $99), 번들 ID `com.aico.miripet` 등록, App Store Connect 앱 생성 **(차단)** | EAS credentials |
+| 보류 1.1 | Apple Developer Program | iOS 출시 결정 시: 가입(연 $99), 번들 ID `com.aico.miripet` 등록, App Store Connect 앱 생성, Apple 로그인 재도입 | EAS credentials |
 | [ ] 1.2 | Google Play Console | 가입($25), 패키지 `com.aico.miripet` 앱 생성, 내부 테스트 트랙 **(차단)** | EAS Submit 서비스 계정 키 |
-| [ ] 1.3 | Expo / EAS | 프로젝트 생성 → `EAS_PROJECT_ID`, 빌드 프로필별 EAS env(`EXPO_PUBLIC_*`) 등록 | `mobile/.env`, EAS env |
+| [x] 1.3 | Expo / EAS | 프로젝트 `@leejaemyung/miri-pet` 생성(개인 계정, projectId는 `app.config.ts`에 고정), Android 개발 빌드·서명 키 생성 완료. 남은 일: 빌드 프로필별 EAS env(`EXPO_PUBLIC_*`) 등록 | `mobile/.env`, EAS env |
 | [ ] 1.4 | Expo access token | 푸시 발송용 토큰(Enhanced Security를 켜면 필수) | GitHub secret `EXPO_ACCESS_TOKEN` |
 | [ ] 1.5 | Kakao Developers | 앱 생성, 네이티브 앱 키, iOS 번들 ID·Android 키 해시 등록, **OpenID Connect 활성화**(서버가 id_token `aud` 검증), **Admin 키**(탈퇴 시 unlink) | 앱: `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` / 서버: `KAKAO_NATIVE_APP_KEY`, `KAKAO_ADMIN_KEY` |
 | [ ] 1.6 | Google Cloud OAuth | 클라이언트 3개: Web(서버 aud), iOS(URL scheme), Android(SHA-1 — EAS 키와 Play 앱 서명 키 **둘 다**) | 앱: `EXPO_PUBLIC_GOOGLE_*` / 서버: `GOOGLE_{WEB,IOS,ANDROID}_CLIENT_ID` |
@@ -36,7 +38,7 @@ Maestro 플로우)은 Phase 6에서 끝냈다. 배포 상세는 [`server/README.
 - [ ] 2.5 첫 배포(main push 또는 workflow_dispatch) → 잡 로그에서 `healthy` 확인 → `curl https://<api>/api/v1/health` 200, `POST /api/v1/auth/dev` 404
 - [ ] 2.6 백업: aws-cli 설치, 스크립트 복사, env 파일, systemd timer 활성화 → 수동 1회 실행 후 R2 객체 확인 → **복원 리허설 1회** (README 복원 절차)
 - [ ] 2.7 Sentry 테스트 이벤트: 서버에서 일부러 500을 1건 내고, Sentry `requestId` 태그가 응답 `x-request-id`와 같은지 확인
-- [ ] 2.8 `turbo.json` env 목록에 `KAKAO_ADMIN_KEY`를 추가하고 `configuration.ts`의 TODO/disable 제거
+- [x] 2.8 `turbo.json` env 목록에 `KAKAO_ADMIN_KEY` 추가, `configuration.ts`의 disable 주석 제거
 - [ ] 2.9 로컬 Docker 정리(선택): Phase 6 스모크용 DB `miripet_prod_smoke`가 로컬 `miri-pet-db`에 남아 있다. `DROP DATABASE miripet_prod_smoke`
 
 ## 3. 실기기 검증 (Phase별 미검증 항목)

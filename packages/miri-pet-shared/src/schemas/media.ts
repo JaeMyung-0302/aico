@@ -1,3 +1,4 @@
+import { MAX_UPLOAD_BYTES } from '../constants/limits'
 import { z } from 'zod'
 import { idSchema } from './common'
 
@@ -13,7 +14,7 @@ export const createUploadRequestSchema = z.object({
     .number()
     .int()
     .positive()
-    .max(15 * 1024 * 1024),
+    .max(MAX_UPLOAD_BYTES),
 })
 export type CreateUploadRequest = z.infer<typeof createUploadRequestSchema>
 

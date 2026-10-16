@@ -39,7 +39,7 @@ describe('미디어 업로드 파이프라인 (실DB, R2 메모리 대역)', () 
       .set(...bearer(token))
       .send(body)
 
-  it('presign: PENDING 행 + private incoming/ 5분 PUT URL(Content-Type·길이 서명)', async () => {
+  it('presign: PENDING 행 + private incoming/ 5분 PUT URL(host만 서명, 형식·크기는 complete에서 검사)', async () => {
     const me = await consentedLogin(app, '업로더')
     const res = await presign(me.accessToken, { purpose: 'POST', mime: 'image/jpeg', bytes: 1234 }).expect(201)
 
@@ -53,8 +53,7 @@ describe('미디어 업로드 파이프라인 (실DB, R2 메모리 대역)', () 
     expect(url.hostname.startsWith('miripet-private.')).toBe(true)
     expect(url.pathname).toMatch(/^\/incoming\//)
     expect(url.searchParams.get('X-Amz-Expires')).toBe('300')
-    expect(url.searchParams.get('X-Amz-SignedHeaders')).toContain('content-length')
-    expect(url.searchParams.get('X-Amz-SignedHeaders')).toContain('content-type')
+    expect(url.searchParams.get('X-Amz-SignedHeaders')).toBe('host')
     const media = await prisma.media.findUniqueOrThrow({ where: { id: res.body.mediaId } })
     expect(media).toMatchObject({ ownerId: me.userId, status: 'PENDING', purpose: 'POST', bytes: 1234 })
   })
@@ -107,6 +106,26 @@ describe('미디어 업로드 파이프라인 (실DB, R2 메모리 대역)', () 
       .post(`/api/v1/media/${res.body.mediaId}/complete`)
       .set(...bearer(other.accessToken))
       .expect(404)
+  })
+
+  it('업로드된 원본이 15MB를 넘으면(서명에 길이가 없으므로) complete가 422 UPLOAD_TOO_LARGE + REJECTED + incoming 삭제', async () => {
+    const me = await consentedLogin(app, '큰파일')
+    const res = await presign(me.accessToken, { purpose: 'POST', mime: 'image/jpeg', bytes: 1000 }).expect(201)
+    const media = await prisma.media.findUniqueOrThrow({ where: { id: res.body.mediaId } })
+    await memory.storage.putObject({
+      bucket: 'PRIVATE',
+      key: media.key,
+      body: Buffer.alloc(15 * 1024 * 1024 + 1),
+      contentType: 'image/jpeg',
+    })
+
+    const rejected = await http()
+      .post(`/api/v1/media/${media.id}/complete`)
+      .set(...bearer(me.accessToken))
+      .expect(422)
+    expect(rejected.body.code).toBe('UPLOAD_TOO_LARGE')
+    expect((await prisma.media.findUniqueOrThrow({ where: { id: media.id } })).status).toBe('REJECTED')
+    expect(memory.has({ bucket: 'PRIVATE', key: media.key })).toBe(false)
   })
 
   it('이미지가 아닌 파일은 422 + REJECTED + incoming 삭제', async () => {

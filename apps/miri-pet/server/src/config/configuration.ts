@@ -29,6 +29,8 @@ export const configuration = () => ({
     publicBucket: process.env.R2_PUBLIC_BUCKET ?? 'miripet-public',
     privateBucket: process.env.R2_PRIVATE_BUCKET ?? 'miripet-private',
     publicBaseUrl: process.env.R2_PUBLIC_BASE_URL ?? '',
+    // 로컬 개발용 S3 호환 저장소(MinIO) 주소. 비우면 Cloudflare R2 계정 엔드포인트를 쓴다
+    endpoint: process.env.R2_ENDPOINT ?? '',
   },
   expoAccessToken: process.env.EXPO_ACCESS_TOKEN ?? '',
   posthog: { apiKey: process.env.POSTHOG_API_KEY ?? '', host: process.env.POSTHOG_HOST ?? 'https://us.i.posthog.com' },

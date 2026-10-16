@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github@0.6.2"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      },
+      "description": "GitHub operations - PRs, issues, repos"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@context7/mcp-server@0.0.13"],
+      "description": "Live documentation lookup for libraries — prevents LLM API hallucination"
+    },
+    "tavily": {
+      "type": "http",
+      "url": "https://mcp.tavily.com/mcp",
+      "description": "AI-optimized web search — structured results for market research, error debugging",
+      "_auth": "OAuth - first run requires browser authentication"
+    },
+    "codebase-memory-mcp": {
+      "command": "codebase-memory-mcp",
+      "description": "AST-based code intelligence graph — call tracing, impact analysis, dead code detection"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@0.6.2", "${WORKSPACE_PATH}"],
+      "description": "Local filesystem operations"
+    }
+  },
+  "_meta": {
+    "profile": "base",
+    "serverCount": 5,
+    "description": "Essential servers: GitHub, Context7 (docs), Tavily (search), Codebase Memory (code graph), Filesystem"
+  }
+}

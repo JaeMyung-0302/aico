@@ -1,5 +1,15 @@
 # EAS 빌드 업로드에서 miri-pet 외 앱 산출물·대용량 자산을 뺀다 (plan 0.5)
 .git
+# 비밀값·서명 키는 EAS 업로드에서 뺀다 (.easignore가 있으면 EAS는 .gitignore를 보지 않는다)
+**/.env
+**/.env.*
+!**/.env.example
+**/*.jks
+**/*.keystore
+**/*.p8
+**/*.p12
+**/*.pem
+**/*.key
 **/node_modules
 **/dist
 **/.turbo

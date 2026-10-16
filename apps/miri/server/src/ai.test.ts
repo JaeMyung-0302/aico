@@ -52,7 +52,7 @@ describe('dailyPrompt', () => {
   it('quotes the prediction verbatim so the model can echo it', () => {
     const prompt = dailyPrompt({
       ...base,
-      prediction: { kind: 'gym', parts: ['chest'], lifts: [{ exercise: 'bench', weight: 60, reps: 5, sets: 5 }] },
+      prediction: { kind: 'gym', parts: ['chest'], lifts: [{ exercise: 'bench', weight: 60, reps: 5 }] },
       recent: ['쉼', '유산소, 가벼움'],
       weekDays: 3,
     })

@@ -47,7 +47,7 @@ describe('normalizeAnswer (strict)', () => {
   })
 
   it('requires parts and lifts for gym, sorts and dedupes parts, drops intensity', () => {
-    const bench = { exercise: 'bench', weight: 60, reps: 5, sets: 5 }
+    const bench = { exercise: 'bench', weight: 60, reps: 5 }
     expect(normalizeAnswer(exercise, { kind: 'gym' })).toBeNull()
     expect(normalizeAnswer(exercise, { kind: 'gym', parts: ['chest'], intensity: 'mid' })).toBeNull()
     const time = { startAt: 1140, minutes: 60 }
@@ -66,7 +66,7 @@ describe('normalizeAnswer (strict)', () => {
 
   it('accepts a custom lift under a known part only', () => {
     const time = { startAt: 1140, minutes: 60 }
-    const lift = (exercise: string) => ({ kind: 'gym', parts: ['chest'], lifts: [{ exercise, weight: 20, reps: 12, sets: 3 }], ...time })
+    const lift = (exercise: string) => ({ kind: 'gym', parts: ['chest'], lifts: [{ exercise, weight: 20, reps: 12 }], ...time })
     expect(normalizeAnswer(exercise, lift('custom:chest:케이블 크로스오버'))).not.toBeNull()
     expect(normalizeAnswer(exercise, lift('custom:abs:크런치'))).toBeNull()
     expect(normalizeAnswer(exercise, lift('custom:chest:' + '가'.repeat(21)))).toBeNull()
@@ -142,7 +142,7 @@ describe('summarizeTrackWeek', () => {
       { kind: 'gym', parts: ['back', 'chest'], intensity: 'high' },
       { kind: 'cardio', intensity: 'low' },
     ]
-    expect(summarizeTrackWeek(exercise, answers)).toBe('운동 헬스 2번, 유산소 1번. 하체, 어깨팔은 없었어요')
+    expect(summarizeTrackWeek(exercise, answers)).toBe('운동 헬스 2번, 유산소 1번. 하체, 어깨는 없었어요')
     expect(summarizeTrackWeek(exercise, [])).toBe('운동 기록이 없었어요')
   })
 
@@ -263,9 +263,9 @@ describe('time and custom helpers', () => {
   })
 
   it('collects custom lifts from past answers, once each, in first-use order', () => {
-    const custom = (name: string) => ({ exercise: `custom:chest:${name}`, weight: 20, reps: 12, sets: 3 })
+    const custom = (name: string) => ({ exercise: `custom:chest:${name}`, weight: 20, reps: 12 })
     const answers: Answer[] = [
-      { kind: 'gym', lifts: [custom('케이블 크로스오버'), { exercise: 'bench', weight: 60, reps: 5, sets: 5 }] },
+      { kind: 'gym', lifts: [custom('케이블 크로스오버'), { exercise: 'bench', weight: 60, reps: 5 }] },
       { kind: 'gym', lifts: [custom('펙덱'), custom('케이블 크로스오버')] },
       { kind: 'rest' },
     ]
@@ -275,6 +275,6 @@ describe('time and custom helpers', () => {
         { value: 'custom:chest:펙덱', label: '펙덱', group: 'chest' },
       ],
     })
-    expect(describeAnswer(exercise, { kind: 'gym', lifts: [custom('펙덱')] })).toBe('헬스, 펙덱 20kg 12회 3세트')
+    expect(describeAnswer(exercise, { kind: 'gym', lifts: [custom('펙덱')] })).toBe('헬스, 펙덱 20kg 12회')
   })
 })

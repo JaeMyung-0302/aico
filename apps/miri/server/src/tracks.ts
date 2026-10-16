@@ -78,6 +78,10 @@ export type EntriesStepDef = StepBase & {
   kind: 'entries'
   fields: readonly EntryField[]
   maxEntries: number
+  /** 같은 첫 칸으로 한 줄 더할 때 채워 둘 값. 운동의 다음 세트처럼. 없으면 앞 줄을 그대로 복사한다. */
+  nextEntry?: (prev: Entry) => Entry
+  /** 같은 첫 칸 아래 한 줄을 부르는 말. "세트". 없으면 "줄". */
+  rowLabel?: string
 }
 
 export type StepDef = ChoiceStepDef | NumberStepDef | EntriesStepDef
@@ -112,6 +116,8 @@ export type TrackDef = {
   brief?: (answer: Answer) => string
   /** 예측이 묶어 셀 기준. 세부 수치가 매번 달라도 같은 루틴으로 본다. 없으면 답 전체. */
   routineKey?: (answer: Answer) => string
+  /** 옛 모양으로 저장된 답을 지금 모양으로. 검증 전에 늘 거치므로 지금 모양은 그대로 돌려줘야 한다. */
+  upgrade?: (raw: Record<string, unknown>) => Record<string, unknown>
 }
 
 export const TRACK_IDS = ['exercise', 'sleep', 'meals', 'focus', 'mood'] as const
@@ -329,7 +335,8 @@ export function normalizeAnswer(
   mode: 'strict' | 'lenient' = 'strict',
 ): Answer | null {
   if (typeof input !== 'object' || input === null) return null
-  const source = input as Record<string, unknown>
+  const raw = input as Record<string, unknown>
+  const source = track.upgrade ? track.upgrade(raw) : raw
   const answer: Answer = {}
 
   for (const step of track.steps) {
@@ -367,12 +374,34 @@ function describeEntry(fields: readonly EntryField[], entry: Entry): string {
     .join(' ')
 }
 
-/** 묶음 단계 답을 줄마다. 칩과 기록 카드가 한 줄씩 보여줄 때 쓴다. */
+/**
+ * 묶음 단계 답을 첫 칸(종목)마다 한 줄로. 칩과 기록 카드가 한 줄씩 보여줄 때 쓴다.
+ * 같은 종목의 줄은 수만 이어 붙이고, 연달아 같은 줄은 "×n"으로 줄인다.
+ * "벤치프레스 60kg 5회 ×3, 62.5kg 3회"
+ */
 export function describeEntries(step: EntriesStepDef, value: AnswerValue): string[] {
   if (!Array.isArray(value)) return []
-  return value
-    .filter((item): item is Entry => typeof item === 'object')
-    .map((entry) => describeEntry(step.fields, entry))
+  const head = step.fields.find((field) => field.kind === 'choice')
+  const numbers = step.fields.filter((field) => field.kind === 'number')
+  const entries = value.filter((item): item is Entry => typeof item === 'object')
+  if (!head) return entries.map((entry) => describeEntry(step.fields, entry))
+
+  const groups = new Map<string, string[]>()
+  for (const entry of entries) {
+    const key = String(entry[head.key])
+    groups.set(key, [...(groups.get(key) ?? []), describeEntry(numbers, entry)])
+  }
+  return [...groups.entries()].map(([key, rows]) => {
+    const runs: { text: string; count: number }[] = []
+    for (const text of rows) {
+      const last = runs[runs.length - 1]
+      if (last && last.text === text) last.count += 1
+      else runs.push({ text, count: 1 })
+    }
+    const body = runs.map((run) => (run.count > 1 ? `${run.text} ×${run.count}` : run.text)).join(', ')
+    const name = describeEntry([head], { [head.key]: key })
+    return body ? `${name} ${body}` : name
+  })
 }
 
 /** 한 단계 답을 사람이 읽는 조각으로. "가슴 하체", "40분", "벤치프레스 60kg 5회 / 스쿼트 80kg 5회" */

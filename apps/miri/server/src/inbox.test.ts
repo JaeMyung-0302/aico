@@ -18,7 +18,11 @@ const base: QuestionRow = {
 const chestDay = {
   kind: 'gym',
   parts: ['chest'],
-  lifts: [{ exercise: 'bench', weight: 60, reps: 5, sets: 5 }],
+  lifts: [
+    { exercise: 'bench', weight: 60, reps: 5 },
+    { exercise: 'bench', weight: 60, reps: 5 },
+    { exercise: 'bench', weight: 60, reps: 5 },
+  ],
   startAt: 1140,
   minutes: 60,
 }
@@ -53,13 +57,13 @@ describe('buildInbox', () => {
     expect(notification?.actions[0]).toEqual({ action: 'accept', title: '그래요' })
     expect(notification?.prediction).toEqual(chestDay)
     expect(notification?.quick).toBeNull()
-    expect(notification?.body).toBe('벤치프레스 60kg 5회 5세트')
+    expect(notification?.body).toBe('벤치프레스 60kg 5회 ×3')
   })
 
   it('summarizes several predicted lifts as the first plus a count', () => {
-    const twoLifts = { ...chestDay, lifts: [...chestDay.lifts, { exercise: 'fly', weight: 10, reps: 12, sets: 3 }] }
+    const twoLifts = { ...chestDay, lifts: [...chestDay.lifts, { exercise: 'fly', weight: 10, reps: 12 }] }
     const [notification] = buildInbox([{ ...base, prediction: JSON.stringify(twoLifts) }])
-    expect(notification?.body).toBe('벤치프레스 60kg 5회 5세트 외 1개')
+    expect(notification?.body).toBe('벤치프레스 60kg 5회 ×3 외 1개')
   })
 
   it('drops a stored prediction the track can no longer save', () => {

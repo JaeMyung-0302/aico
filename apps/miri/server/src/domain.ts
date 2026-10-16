@@ -11,6 +11,7 @@ export {
   isChoiceStep,
   isStepActive,
   normalizeAnswer,
+  normalizeNumber,
   describeAnswer,
   describeEntries,
   describeNumber,

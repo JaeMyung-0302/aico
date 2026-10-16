@@ -4,7 +4,7 @@ import { predictFor } from './predict.ts'
 import { confirmQuestionText, TRACKS, type Answer, type HistoryLog } from './tracks.ts'
 
 const TODAY = '2026-09-29'
-const lift = (exercise: string, weight: number, reps = 5, sets = 5) => ({ exercise, weight, reps, sets })
+const lift = (exercise: string, weight: number, reps = 5) => ({ exercise, weight, reps })
 const gym = (parts: string[], lifts: ReturnType<typeof lift>[]): Answer => ({
   kind: 'gym',
   parts,
@@ -27,7 +27,7 @@ describe('exerciseFeedback', () => {
       on('2026-09-22', gym(['chest'], [lift('bench', 60, 6)])),
     ]
     expect(exerciseFeedback(gym(['chest'], [lift('bench', 60)]), history, TODAY)[0]).toBe(
-      '벤치프레스 60kg로 3번 연속 5회 5세트를 채웠어요. 다음엔 62.5kg 어때요?',
+      '벤치프레스 60kg로 3번 연속 5회를 채웠어요. 다음엔 62.5kg 어때요?',
     )
   })
 
@@ -50,7 +50,7 @@ describe('exerciseFeedback', () => {
     const history = [
       on('2026-09-10', gym(['back'], [lift('deadlift', 100)])),
       on('2026-09-25', gym(['legs'], [lift('squat', 80)])),
-      on('2026-09-27', gym(['shoulders_arms'], [lift('ohp', 40)])),
+      on('2026-09-27', gym(['shoulders'], [lift('ohp', 40)])),
     ]
     expect(exerciseFeedback(gym(['chest'], [lift('bench', 60)]), history, TODAY)).toEqual([
       '최근 7일 동안 등은 안 했어요.',
@@ -61,7 +61,7 @@ describe('exerciseFeedback', () => {
       on('2026-09-27', gym(['legs'], [lift('squat', 80, 4)])),
     ]
     expect(exerciseFeedback(gym(['legs'], [lift('squat', 80)]), onlyLegs, TODAY)).toEqual([
-      '최근 7일 동안 가슴, 등, 어깨팔은 안 했어요.',
+      '최근 7일 동안 가슴, 등, 어깨는 안 했어요.',
     ])
   })
 

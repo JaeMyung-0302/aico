@@ -12,6 +12,7 @@ import PetForm, { type PetFormIntent } from '@/modules/pets/ui-pet-form/PetForm'
 import type { PetFormSubmit } from '@/modules/pets/util-pet/validate-pet-form'
 import { track } from '@/shared/analytics/track'
 import { useTransientMessage } from '@/shared/hooks/use-transient-message'
+import { alertPhotoNotSaved } from '@/modules/pets/util-pet/alert-photo-not-saved'
 
 // 디자인 03 펫 프로필 만들기 (온보딩 2/2). 완료 → onboarding_completed + 알림 권한 요청(D-7·D-1 접종 알림)
 const OnboardingPetScreen = () => {
@@ -21,7 +22,8 @@ const OnboardingPetScreen = () => {
 
   const handleSubmit = (values: PetFormSubmit, intent: PetFormIntent) => {
     savePet.mutate(values, {
-      onSuccess: (pet) => {
+      onSuccess: ({ pet, isPhotoSaved }) => {
+        if (!isPhotoSaved) alertPhotoNotSaved()
         track('onboarding_completed')
         registerPushToken({ shouldRequestPermission: true }).catch(() => undefined)
         if (intent === 'next') {

@@ -6,10 +6,8 @@ export const OBJECT_STORAGE = Symbol('OBJECT_STORAGE')
 export type StoredObject = { bucket: MediaBucket; key: string }
 
 export type ObjectStorage = {
-  // 업로드용 presigned PUT (Content-Type·Content-Length를 서명에 고정)
-  presignPut: (
-    input: StoredObject & { contentType: string; contentLength: number; expiresIn: number },
-  ) => Promise<string>
+  // 업로드용 presigned PUT (host만 서명. 형식·크기는 complete에서 재검증)
+  presignPut: (input: StoredObject & { expiresIn: number }) => Promise<string>
   // 열람용 presigned GET (증명서: 60초)
   presignGet: (input: StoredObject & { expiresIn: number }) => Promise<string>
   // 없으면 null

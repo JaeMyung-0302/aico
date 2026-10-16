@@ -9,3 +9,5 @@ export const CERTIFICATE_URL_TTL_SECONDS = 60
 export const IMAGE_LONG_EDGE = 1440
 export const IMAGE_THUMB_EDGE = 480
 export const UPLOAD_URL_TTL_SECONDS = 300
+// 원본 업로드 최대 크기. presign 요청 검증 + complete에서 실제 업로드 크기 재검사(서명에 길이를 넣지 않으므로)
+export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024

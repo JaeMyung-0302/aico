@@ -1,6 +1,6 @@
 import { DeleteObjectsCommand, GetObjectCommand, NoSuchKey, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
-import { R2ObjectStorage } from './r2.client'
+import { R2ObjectStorage, s3ClientOptions } from './r2.client'
 
 const r2Config = {
   accountId: 'acc123',
@@ -9,6 +9,7 @@ const r2Config = {
   publicBucket: 'miripet-public',
   privateBucket: 'miripet-private',
   publicBaseUrl: 'https://img.test',
+  endpoint: '',
 }
 
 // 네트워크는 S3Client.send 하나로 모인다 → 그것만 대역으로 바꾼다. presign은 로컬 서명 계산이라 실제로 돈다
@@ -34,20 +35,14 @@ describe('R2ObjectStorage', () => {
     expect(send).not.toHaveBeenCalled()
   })
 
-  it('presignPut: Content-Type·Content-Length를 서명 헤더에 고정', async () => {
+  it('presignPut: host만 서명한다(Android가 Content-Type·길이를 바꿔 보내도 통과, 내용은 complete에서 재검증) + 빈 본문 체크섬 없음', async () => {
     const url = new URL(
-      await storage.presignPut({
-        bucket: 'PRIVATE',
-        key: 'incoming/x',
-        contentType: 'image/jpeg',
-        contentLength: 1234,
-        expiresIn: 300,
-      }),
+      await storage.presignPut({ bucket: 'PRIVATE', key: 'incoming/x', expiresIn: 300 }),
     )
     expect(url.searchParams.get('X-Amz-Expires')).toBe('300')
-    expect(url.searchParams.get('X-Amz-SignedHeaders')?.split(';')).toEqual(
-      expect.arrayContaining(['content-length', 'content-type', 'host']),
-    )
+    expect(url.searchParams.get('X-Amz-SignedHeaders')?.split(';')).toEqual(['host'])
+    // SDK 기본값(flexible checksums)은 빈 본문의 CRC32를 서명해 R2가 실제 업로드를 거부한다
+    expect([...url.searchParams.keys()].filter((key) => key.toLowerCase().includes('checksum'))).toEqual([])
   })
 
   it('getObject: 본문을 Buffer로 돌려준다', async () => {
@@ -107,5 +102,34 @@ describe('R2ObjectStorage', () => {
   it('deleteObjects: 빈 목록이면 요청하지 않는다', async () => {
     await storage.deleteObjects([])
     expect(send).not.toHaveBeenCalled()
+  })
+})
+
+describe('s3ClientOptions', () => {
+  const base = {
+    accountId: 'acc123',
+    accessKeyId: 'key',
+    secretAccessKey: 'secret',
+    publicBucket: 'pub',
+    privateBucket: 'priv',
+    publicBaseUrl: '',
+    endpoint: '',
+  }
+
+  it('기본은 Cloudflare R2 계정 엔드포인트(가상 호스트 방식)를 쓴다', () => {
+    expect(s3ClientOptions(base)).toMatchObject({
+      region: 'auto',
+      endpoint: 'https://acc123.r2.cloudflarestorage.com',
+      forcePathStyle: false,
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
+    })
+  })
+
+  it('R2_ENDPOINT가 있으면 로컬 S3 호환 저장소(MinIO)로 path-style 접속한다', () => {
+    expect(s3ClientOptions({ ...base, endpoint: 'http://192.168.10.56:9439' })).toMatchObject({
+      endpoint: 'http://192.168.10.56:9439',
+      forcePathStyle: true,
+    })
   })
 })

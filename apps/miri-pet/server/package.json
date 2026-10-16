@@ -16,7 +16,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "admin": "node dist/admin/admin.cli.js"
+    "admin": "node dist/admin/admin.cli.js",
+    "storage:init": "node --env-file=.env scripts/dev-storage-init.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",

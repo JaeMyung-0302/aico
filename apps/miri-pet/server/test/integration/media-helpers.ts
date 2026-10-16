@@ -20,6 +20,7 @@ export const createInMemoryStorage = () => {
         publicBucket: 'miripet-public',
         privateBucket: 'miripet-private',
         publicBaseUrl: 'https://img.test',
+        endpoint: '',
       },
     }),
   )

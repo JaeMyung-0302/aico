@@ -1,3 +1,4 @@
+import type { Pet } from '@miri-pet/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { uploadImage } from '@/modules/media/data-access-media/useUploadImage'
 import type { PetFormSubmit } from '../util-pet/validate-pet-form'
@@ -17,11 +18,22 @@ export const useUserPets = (userId: string | undefined) =>
     enabled: Boolean(userId),
   })
 
-// 사진(선택) → AVATAR 업로드 → 펫 생성
-const savePet = async ({ request, photo }: PetFormSubmit) => {
-  if (!photo) return createPet(request)
-  const avatarMediaId = await uploadImage(photo, 'AVATAR')
-  return createPet({ ...request, avatarMediaId })
+export type SavedPet = { pet: Pet; isPhotoSaved: boolean }
+
+const uploadAvatarOrNull = async (photo: NonNullable<PetFormSubmit['photo']>): Promise<string | null> => {
+  try {
+    return await uploadImage(photo, 'AVATAR')
+  } catch {
+    return null
+  }
+}
+
+// 사진(선택) → AVATAR 업로드 → 펫 생성. 사진이 실패해도 펫은 사진 없이 저장한다(화면이 따로 알린다)
+const savePet = async ({ request, photo }: PetFormSubmit): Promise<SavedPet> => {
+  if (!photo) return { pet: await createPet(request), isPhotoSaved: true }
+  const avatarMediaId = await uploadAvatarOrNull(photo)
+  if (!avatarMediaId) return { pet: await createPet(request), isPhotoSaved: false }
+  return { pet: await createPet({ ...request, avatarMediaId }), isPhotoSaved: true }
 }
 
 export const useSavePet = () => {

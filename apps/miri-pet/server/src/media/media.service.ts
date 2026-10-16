@@ -14,6 +14,7 @@ import {
   type CreateUploadRequest,
   type CreateUploadResponse,
   type Media as MediaDto,
+  MAX_UPLOAD_BYTES,
   UPLOAD_URL_TTL_SECONDS,
 } from '@miri-pet/shared'
 import type { Media, MediaPurpose } from '../generated/prisma'
@@ -80,8 +81,6 @@ export class MediaService {
     const uploadUrl = await this.storage.presignPut({
       bucket: 'PRIVATE',
       key: media.key,
-      contentType: mime,
-      contentLength: bytes,
       expiresIn: UPLOAD_URL_TTL_SECONDS,
     })
     return {
@@ -107,6 +106,7 @@ export class MediaService {
     const original = await this.storage.getObject({ bucket: 'PRIVATE', key: media.key })
     if (!original) throw new ConflictException({ code: 'UPLOAD_NOT_FOUND', message: '업로드가 아직 끝나지 않았어요' })
 
+    if (original.length > MAX_UPLOAD_BYTES) await this.reject(media, uploadTooLarge())
     const sanitized = await this.sanitizeOrReject(media, original)
     const finalKey = await this.store(media, sanitized)
     const claimed = await this.prisma.media.updateMany({
@@ -207,6 +207,13 @@ export class MediaService {
     }
   }
 
+  // 거부: REJECTED로 바꾸고 원본(incoming)을 지운 뒤 422를 던진다
+  private async reject(media: Media, error: UnprocessableEntityException): Promise<never> {
+    await this.prisma.media.update({ where: { id: media.id }, data: { status: 'REJECTED' } })
+    await this.purgeObjects([{ bucket: 'PRIVATE', key: media.key }])
+    throw error
+  }
+
   private async sanitizeOrReject(media: Media, original: Buffer): Promise<SanitizedImage> {
     try {
       return await this.sanitizer.sanitize(original)
@@ -219,9 +226,7 @@ export class MediaService {
         })
       }
       if (!(error instanceof InvalidImageError)) throw error
-      await this.prisma.media.update({ where: { id: media.id }, data: { status: 'REJECTED' } })
-      await this.purgeObjects([{ bucket: 'PRIVATE', key: media.key }])
-      throw invalidImage()
+      return this.reject(media, invalidImage())
     }
   }
 
@@ -252,6 +257,9 @@ export class MediaService {
     }
   }
 }
+
+const uploadTooLarge = () =>
+  new UnprocessableEntityException({ code: 'UPLOAD_TOO_LARGE', message: '사진 용량이 너무 커요(최대 15MB)' })
 
 const invalidImage = () =>
   new UnprocessableEntityException({ code: 'INVALID_IMAGE', message: '이미지 파일을 읽을 수 없어요' })

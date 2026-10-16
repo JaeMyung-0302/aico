@@ -9,6 +9,7 @@ import PetForm from '@/modules/pets/ui-pet-form/PetForm'
 import type { PetFormSubmit } from '@/modules/pets/util-pet/validate-pet-form'
 import { ApiError } from '@/shared/api/api-error'
 import { useTransientMessage } from '@/shared/hooks/use-transient-message'
+import { alertPhotoNotSaved } from '@/modules/pets/util-pet/alert-photo-not-saved'
 
 // 5마리 제한(422)은 서버 메시지를 그대로 보여준다
 const toSaveErrorMessage = (error: unknown): string =>
@@ -21,7 +22,10 @@ const NewPetScreen = () => {
 
   const handleSubmit = (values: PetFormSubmit) => {
     savePet.mutate(values, {
-      onSuccess: () => router.back(),
+      onSuccess: ({ isPhotoSaved }) => {
+        if (!isPhotoSaved) alertPhotoNotSaved()
+        router.back()
+      },
       onError: (error) => toast.show(toSaveErrorMessage(error)),
     })
   }

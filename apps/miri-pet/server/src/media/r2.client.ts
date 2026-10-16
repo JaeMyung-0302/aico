@@ -21,6 +21,23 @@ const DELETE_BATCH = 1000
 const isNotFound = (error: unknown): boolean =>
   error instanceof NoSuchKey || (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)
 
+// 운영: Cloudflare R2 계정 엔드포인트. 로컬 개발: R2_ENDPOINT(MinIO 등 S3 호환)로 바꾸고 path-style로 접속
+export const s3ClientOptions = (r2: R2Config) => {
+  const hasCustomEndpoint = r2.endpoint.length > 0
+  return {
+    region: 'auto',
+    endpoint: hasCustomEndpoint ? r2.endpoint : `https://${r2.accountId || 'unconfigured'}.r2.cloudflarestorage.com`,
+    forcePathStyle: hasCustomEndpoint,
+    // SDK 기본(WHEN_SUPPORTED)은 presigned PUT에 빈 본문의 CRC32를 서명해 넣는다 → R2가 실제 업로드를 거부한다
+    requestChecksumCalculation: 'WHEN_REQUIRED' as const,
+    responseChecksumValidation: 'WHEN_REQUIRED' as const,
+    credentials: {
+      accessKeyId: r2.accessKeyId || 'unconfigured',
+      secretAccessKey: r2.secretAccessKey || 'unconfigured',
+    },
+  }
+}
+
 const chunk = <T>(items: readonly T[], size: number): T[][] =>
   Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, (index + 1) * size))
 
@@ -33,34 +50,15 @@ export class R2ObjectStorage implements ObjectStorage {
   constructor(config: ConfigService) {
     const r2 = config.get<R2Config>('r2')
     if (!r2) throw new Error('r2 설정이 없습니다')
-    this.client = new S3Client({
-      region: 'auto',
-      endpoint: `https://${r2.accountId || 'unconfigured'}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: r2.accessKeyId || 'unconfigured',
-        secretAccessKey: r2.secretAccessKey || 'unconfigured',
-      },
-    })
+    this.client = new S3Client(s3ClientOptions(r2))
     this.buckets = { PUBLIC: r2.publicBucket, PRIVATE: r2.privateBucket }
   }
 
-  presignPut({
-    bucket,
-    key,
-    contentType,
-    contentLength,
-    expiresIn,
-  }: StoredObject & { contentType: string; contentLength: number; expiresIn: number }): Promise<string> {
-    const command = new PutObjectCommand({
-      Bucket: this.buckets[bucket],
-      Key: key,
-      ContentType: contentType,
-      ContentLength: contentLength,
-    })
-    return getSignedUrl(this.client, command, {
-      expiresIn,
-      signableHeaders: new Set(['content-type', 'content-length']),
-    })
+  // host만 서명한다: Android(React Native)는 Content-Type·길이를 바꿔(chunked) 보내 서명이 깨진다.
+  // 업로드된 원본은 complete에서 크기 검사 + 디코딩·재인코딩하므로 헤더를 서명으로 묶을 필요가 없다
+  presignPut({ bucket, key, expiresIn }: StoredObject & { expiresIn: number }): Promise<string> {
+    const command = new PutObjectCommand({ Bucket: this.buckets[bucket], Key: key })
+    return getSignedUrl(this.client, command, { expiresIn })
   }
 
   presignGet({ bucket, key, expiresIn }: StoredObject & { expiresIn: number }): Promise<string> {

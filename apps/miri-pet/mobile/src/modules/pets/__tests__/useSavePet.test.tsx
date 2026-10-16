@@ -37,6 +37,17 @@ describe('useSavePet', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: PETS_QUERY_KEY })
   })
 
+  it('사진(선택) 업로드가 실패해도 펫은 사진 없이 만들고 isPhotoSaved=false를 돌려준다', async () => {
+    jest.mocked(uploadImage).mockRejectedValue(new Error('storage down'))
+    const { result } = await setup()
+    let saved: Awaited<ReturnType<typeof result.current.mutateAsync>> | undefined
+    await act(async () => {
+      saved = await result.current.mutateAsync({ request: REQUEST, photo: PHOTO })
+    })
+    expect(createPet).toHaveBeenCalledWith(REQUEST)
+    expect(saved).toEqual({ pet: PET, isPhotoSaved: false })
+  })
+
   it('사진이 없으면 업로드 없이 만든다', async () => {
     const { result } = await setup()
     await act(async () => {

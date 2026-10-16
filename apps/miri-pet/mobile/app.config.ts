@@ -5,6 +5,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: '미리펫',
   slug: 'miri-pet',
+  // AICO 개인 프로젝트: 회사 조직(lattice-im)이 아닌 개인 Expo 계정 소유
+  owner: 'leejaemyung',
   version: '0.1.0',
   orientation: 'portrait',
   scheme: 'miripet',
@@ -42,6 +44,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   runtimeVersion: { policy: 'fingerprint' },
   extra: {
     apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:4008/api/v1',
-    eas: { projectId: process.env.EAS_PROJECT_ID },
+    // EAS 프로젝트 ID는 비밀값이 아니다 (expo.dev/@leejaemyung/miri-pet)
+    eas: { projectId: '1521d97e-d5fd-46a3-ab5f-e1953514ba42' },
   },
 })

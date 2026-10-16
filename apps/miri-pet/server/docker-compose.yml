@@ -19,5 +19,18 @@ services:
       timeout: 3s
       retries: 10
 
+  # 로컬 개발 전용 S3 호환 저장소 (운영은 Cloudflare R2). 실기기가 presigned URL로 직접 올리므로 LAN에서 접근 가능해야 한다
+  # 키는 로컬 전용 고정값(docker/s3-dev.json). miripet-public 버킷만 익명 읽기 허용 = R2 커스텀 도메인 역할
+  miri-pet-storage:
+    image: chrislusf/seaweedfs:3.97
+    container_name: miri-pet-storage
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0
+    ports:
+      - '9439:8333'
+    volumes:
+      - miri_pet_storage:/data
+      - ./docker/s3-dev.json:/etc/seaweedfs/s3.json:ro
+
 volumes:
   miri_pet_pgdata:
+  miri_pet_storage:

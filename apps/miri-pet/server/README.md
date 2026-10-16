@@ -104,6 +104,31 @@ DM 사진은 피드 사진과 같은 **public 버킷**에 `p/<mediaId>/1440.jpg`
 
 [`src/places/import/README.md`](src/places/import/README.md). 개발용 샘플은 `--allow-dev-samples` + 비운영 환경에서만 들어간다.
 
+## 로컬 실기기 개발 (Android 개발 빌드)
+
+R2·외부 키 없이 Mac + Android 폰(같은 Wi-Fi)으로 전체 흐름을 확인한다.
+
+1. `docker compose -f apps/miri-pet/server/docker-compose.yml up -d` — Postgres(5439) + **S3 호환 저장소 SeaweedFS(9439)**.
+   MinIO는 Docker Hub/quay 배포가 막혀 SeaweedFS를 쓴다. 키는 `docker/s3-dev.json`의 로컬 전용 고정값이고 `miripet-public`만 익명 읽기 허용.
+2. 서버 `.env`(로컬, 커밋 금지)에 `<LAN IP>`를 넣는다 — 폰이 presigned URL로 저장소에 직접 올리므로 `localhost`가 아니라 LAN 주소여야 한다.
+   ```
+   ENABLE_DEV_LOGIN=true
+   R2_ENDPOINT=http://<LAN IP>:9439
+   R2_ACCESS_KEY_ID=miripet
+   R2_SECRET_ACCESS_KEY=miripet-dev-storage
+   R2_PUBLIC_BASE_URL=http://<LAN IP>:9439/miripet-public
+   ```
+3. `pnpm --filter @miri-pet/server storage:init` — 버킷 2개 생성(이미 있으면 건너뜀).
+4. 서버 실행, 모바일 `.env`에 `EXPO_PUBLIC_API_BASE_URL=http://<LAN IP>:4008/api/v1`, `EXPO_PUBLIC_ENABLE_DEV_LOGIN=true` 후
+   `npx expo start --dev-client --lan --port 8082` → 폰 개발 빌드에서 `http://<LAN IP>:8082` 입력.
+
+### 업로드 서명 방식 (Android 대응)
+
+presigned PUT은 **host만 서명**한다. React Native(Android)는 사진을 `Content-Length` 없이 chunked로, `Content-Type`도 바꿔 보내서
+헤더를 서명에 묶으면 `SignatureDoesNotMatch`(403)가 난다. 형식·크기는 `complete`에서 다시 검사한다(15MB 초과 → 422 `UPLOAD_TOO_LARGE`,
+디코딩 실패 → 422 `INVALID_IMAGE`). 또 SDK 기본값(flexible checksums)이 presigned URL에 **빈 본문의 CRC32**를 넣어 R2가 실제 업로드를
+거부하므로 `requestChecksumCalculation: 'WHEN_REQUIRED'`로 끈다(`src/media/r2.client.ts`).
+
 ## 배포 (Phase 6)
 
 ### 이미지 — `Dockerfile`

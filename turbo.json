@@ -53,6 +53,7 @@
         "R2_PUBLIC_BUCKET",
         "R2_PRIVATE_BUCKET",
         "R2_PUBLIC_BASE_URL",
+        "R2_ENDPOINT",
         "EXPO_ACCESS_TOKEN",
         "REMINDER_BOOT_CATCHUP",
         "POSTHOG_API_KEY",

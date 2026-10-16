@@ -188,16 +188,50 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
     setAnswer((prev) => ({ ...prev, [step.key]: value }));
   };
 
-  /** 첫 칸(종목)을 고르면 나머지 수 칸은 기본값으로 줄을 더한다. */
+  /**
+   * 첫 칸(종목)을 고르면 줄을 하나 더한다. 예측(지난 같은 루틴)에 그 종목이 있으면
+   * 그날의 줄을 전부 가져오고, 없으면 기본값 한 줄로 시작한다.
+   */
   const handleEntryAdd = (step: EntriesStepDef, value: string) => {
     setError(null);
-    const entry: Entry = {};
+    const head = step.fields.find((field) => field.kind === "choice");
+    const past = head && Array.isArray(today.prediction?.[step.key])
+      ? (today.prediction[step.key] as unknown[]).filter(isEntry).filter((entry) => entry[head.key] === value)
+      : [];
+    const fresh: Entry = {};
     for (const field of step.fields) {
-      entry[field.key] = field.kind === "choice" ? value : (field.initial ?? field.min);
+      fresh[field.key] = field.kind === "choice" ? value : (field.initial ?? field.min);
     }
+    const added = past.length > 0 ? past.map((entry) => ({ ...entry })) : [fresh];
     setAnswer((prev) => {
       const list = Array.isArray(prev[step.key]) ? (prev[step.key] as unknown[]).filter(isEntry) : [];
-      return { ...prev, [step.key]: [...list, entry] };
+      return { ...prev, [step.key]: [...list, ...added].slice(0, step.maxEntries) };
+    });
+  };
+
+  /** 같은 종목 아래 한 줄 더. 그 종목의 마지막 줄을 바탕으로 채워 바로 뒤에 넣는다. */
+  const handleEntryAddRow = (step: EntriesStepDef, value: string) => {
+    setError(null);
+    const head = step.fields.find((field) => field.kind === "choice");
+    if (!head) return;
+    setAnswer((prev) => {
+      const list = Array.isArray(prev[step.key]) ? (prev[step.key] as unknown[]).filter(isEntry) : [];
+      if (list.length >= step.maxEntries) return prev;
+      const last = list.map((entry) => entry[head.key]).lastIndexOf(value);
+      if (last < 0) return prev;
+      const base = list[last] as Entry;
+      const next = step.nextEntry ? step.nextEntry(base) : { ...base };
+      return { ...prev, [step.key]: [...list.slice(0, last + 1), next, ...list.slice(last + 1)] };
+    });
+  };
+
+  /** 한 종목의 줄을 전부 뺀다. */
+  const handleEntryRemoveAll = (step: EntriesStepDef, value: string) => {
+    const head = step.fields.find((field) => field.kind === "choice");
+    if (!head) return;
+    setAnswer((prev) => {
+      const list = Array.isArray(prev[step.key]) ? (prev[step.key] as unknown[]).filter(isEntry) : [];
+      return { ...prev, [step.key]: list.filter((entry) => entry[head.key] !== value) };
     });
   };
 
@@ -285,9 +319,11 @@ export function useTrackFlow({ userId, trackId, today, onExpired, onSaved }: Arg
     handleNextClick,
     handleNumberChange,
     handleEntryAdd,
+    handleEntryAddRow,
     handleEntryAddCustom,
     handleEntryChange,
     handleEntryRemove,
+    handleEntryRemoveAll,
     handleAgainClick,
   };
 }

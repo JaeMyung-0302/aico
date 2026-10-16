@@ -25,6 +25,7 @@ import Skeleton from "../components/Skeleton.tsx";
 import StepStage from "../components/StepStage.tsx";
 import Stepper from "../components/Stepper.tsx";
 import {
+  describeEntries,
   describeValue,
   isChoiceStep,
   TRACKS,
@@ -166,10 +167,10 @@ function QuestionStage({ flow }: { flow: Flow }) {
     if (item.key === step.key) break;
     const value = flow.answer[item.key];
     if (value === undefined) continue;
-    // 묶음은 줄이 길어 흐름 표시에는 개수만.
+    // 묶음은 줄이 길어 흐름 표시에는 첫 칸(종목) 개수만. 세트 줄 수가 아니다.
     trace.push(
       item.kind === "entries" && Array.isArray(value)
-        ? `${value.length}개`
+        ? `${describeEntries(item, value).length}개`
         : describeValue(item, value),
     );
   }
@@ -254,9 +255,11 @@ function StepInput({ flow, today, step }: { flow: Flow; today: TodayTrack; step:
         groups={customGroups(flow, step)}
         disabled={flow.busy}
         onAdd={(value) => flow.handleEntryAdd(step, value)}
+        onAddRow={(value) => flow.handleEntryAddRow(step, value)}
         onAddCustom={(group, name) => flow.handleEntryAddCustom(step, group, name)}
         onChange={(index, key, value) => flow.handleEntryChange(step, index, key, value)}
         onRemove={(index) => flow.handleEntryRemove(step, index)}
+        onRemoveAll={(value) => flow.handleEntryRemoveAll(step, value)}
       />
     );
   }

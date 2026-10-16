@@ -22,6 +22,7 @@ export type IconName =
   | 'camera'
   | 'calendar'
   | 'send'
+  | 'settings'
 
 type IconProps = {
   name: IconName
@@ -86,6 +87,13 @@ const Icon = ({ name, size = 24, color = 'ink' }: IconProps) => {
         <>
           <Circle cx={12} cy={8} r={4} {...common} />
           <Path d="M4 21c1-4 4.5-6 8-6s7 2 8 6" {...common} />
+        </>
+      ) : null}
+      {name === 'settings' ? (
+        <>
+          <Path d="M4 7h10M18 7h2M4 17h2M10 17h10" {...common} />
+          <Circle cx={16} cy={7} r={2} {...common} />
+          <Circle cx={8} cy={17} r={2} {...common} />
         </>
       ) : null}
       {name === 'heart' ? <Path d={HEART} {...common} /> : null}

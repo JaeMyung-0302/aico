@@ -10,6 +10,7 @@ import Icon from '@/design-system/components/Icon'
 import { COLORS } from '@/design-system/tokens/colors'
 import { SPACING, TOUCH_TARGET } from '@/design-system/tokens/spacing'
 import { useMyPets } from '@/modules/pets/data-access-pets/usePets'
+import { useMe } from '@/modules/user/data-access-me/useMe'
 import PetSelector from '@/modules/pets/ui-my-pets/PetSelector'
 import PetSummaryCard from '@/modules/pets/ui-my-pets/PetSummaryCard'
 import { useVaccinations } from '@/modules/vaccinations/data-access-vaccinations/useVaccinations'
@@ -21,23 +22,45 @@ import { kstToday } from '@/modules/vaccinations/util-vaccination/vaccination-da
 const openEntryCard = (petId: string, vaccinationId?: string) =>
   router.push({ pathname: '/pets/[petId]/entry-card', params: vaccinationId ? { petId, vaccinationId } : { petId } })
 
-const MyPetsHeader = ({ canAddPet }: { canAddPet: boolean }) => (
-  <View style={styles.header}>
-    <AppText variant="title1" accessibilityRole="header" style={styles.title}>
-      내 펫
-    </AppText>
-    {canAddPet ? (
+// 디자인 14 상단: 펫 추가 · 내 프로필 · 설정(로그아웃·탈퇴·동의 관리 진입점)
+const MyPetsHeader = ({ canAddPet }: { canAddPet: boolean }) => {
+  const myId = useMe().data?.id
+  return (
+    <View style={styles.header}>
+      <AppText variant="title1" accessibilityRole="header" style={styles.title}>
+        내 펫
+      </AppText>
+      {canAddPet ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="펫 추가"
+          onPress={() => router.push('/pets/new')}
+          style={styles.icon}
+        >
+          <Icon name="plus" />
+        </Pressable>
+      ) : null}
+      {myId ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="내 프로필"
+          onPress={() => router.push({ pathname: '/users/[userId]', params: { userId: myId } })}
+          style={styles.icon}
+        >
+          <Icon name="user" />
+        </Pressable>
+      ) : null}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="펫 추가"
-        onPress={() => router.push('/pets/new')}
+        accessibilityLabel="설정"
+        onPress={() => router.push('/settings')}
         style={styles.icon}
       >
-        <Icon name="plus" />
+        <Icon name="settings" />
       </Pressable>
-    ) : null}
-  </View>
-)
+    </View>
+  )
+}
 
 // 디자인 14 내 펫: 펫 선택 → 펫 카드(입장용 카드) → 다음 접종 D-day → 접종 기록(증명서)
 const MyPetsScreen = () => {

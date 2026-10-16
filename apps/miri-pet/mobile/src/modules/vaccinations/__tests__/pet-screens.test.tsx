@@ -81,6 +81,13 @@ beforeEach(() => {
 })
 
 describe('14 내 펫', () => {
+  it('상단 설정 버튼으로 설정(로그아웃·탈퇴)에 간다', async () => {
+    const user = userEvent.setup()
+    await renderScreen(<MyPetsScreen />)
+    await user.press(await screen.findByRole('button', { name: '설정' }))
+    expect(router.push).toHaveBeenCalledWith('/settings')
+  })
+
   it('첫 펫의 카드·다음 접종·기록을 보여주고 증명서 배지로 입장용 카드(원본 보기)로 간다', async () => {
     const user = userEvent.setup()
     await renderScreen(<MyPetsScreen />)

@@ -1,0 +1,13 @@
+{
+  "identities": [
+    {
+      "name": "miripet-dev",
+      "credentials": [{ "accessKey": "miripet", "secretKey": "miripet-dev-storage" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "anonymous",
+      "actions": ["Read:miripet-public"]
+    }
+  ]
+}

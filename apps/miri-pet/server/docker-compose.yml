@@ -1,0 +1,36 @@
+name: miri-pet
+
+services:
+  miri-pet-db:
+    image: postgres:16-alpine
+    container_name: miri-pet-db
+    environment:
+      POSTGRES_USER: miripet
+      POSTGRES_PASSWORD: miripet
+      POSTGRES_DB: miripet_dev
+    ports:
+      - '5439:5432'
+    volumes:
+      - miri_pet_pgdata:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U miripet -d miripet_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # 로컬 개발 전용 S3 호환 저장소 (운영은 Cloudflare R2). 실기기가 presigned URL로 직접 올리므로 LAN에서 접근 가능해야 한다
+  # 키는 로컬 전용 고정값(docker/s3-dev.json). miripet-public 버킷만 익명 읽기 허용 = R2 커스텀 도메인 역할
+  miri-pet-storage:
+    image: chrislusf/seaweedfs:3.97
+    container_name: miri-pet-storage
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0
+    ports:
+      - '9439:8333'
+    volumes:
+      - miri_pet_storage:/data
+      - ./docker/s3-dev.json:/etc/seaweedfs/s3.json:ro
+
+volumes:
+  miri_pet_pgdata:
+  miri_pet_storage:

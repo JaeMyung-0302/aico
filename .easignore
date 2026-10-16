@@ -1,0 +1,13 @@
+# EAS 빌드 업로드에서 miri-pet 외 앱 산출물·대용량 자산을 뺀다 (plan 0.5)
+.git
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+apps/*/web
+apps/*/client
+apps/portfolio
+apps/land-of-splendid-rivers-and-mountains
+apps/*/server
+!apps/miri-pet/server
+apps/miri-pet/server/src/generated

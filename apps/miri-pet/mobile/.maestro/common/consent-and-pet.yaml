@@ -1,0 +1,30 @@
+# 약관 전체 동의 → 펫 등록(접종은 나중에) → 내 펫 탭
+appId: com.aico.miripet
+---
+- tapOn: 전체 동의
+- tapOn: 동의하고 계속
+- extendedWaitUntil:
+    visible: 함께 사는 아이를 소개해 주세요
+    timeout: 15000
+- tapOn:
+    id: pet-name-input
+- inputText: 미리
+- hideKeyboard
+- scrollUntilVisible:
+    element: 접종 기록은 나중에 할게요
+    direction: DOWN
+- tapOn: 접종 기록은 나중에 할게요
+# 알림 권한 시스템 팝업(registerPushToken)이 뜨면 허용
+- runFlow:
+    when:
+      visible: Allow
+    commands:
+      - tapOn: Allow
+- runFlow:
+    when:
+      visible: 허용
+    commands:
+      - tapOn: 허용
+- extendedWaitUntil:
+    visible: 입장용 카드 열기
+    timeout: 15000

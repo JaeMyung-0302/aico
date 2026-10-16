@@ -1,0 +1,14 @@
+# 매번 새 닉네임으로 개발 로그인 → 신규 가입 → 약관 동의 화면
+appId: com.aico.miripet
+---
+- evalScript: ${output.nickname = 'e2e' + String(Date.now()).slice(-8)}
+- tapOn:
+    id: dev-login-nickname
+- eraseText: 20
+- inputText: ${output.nickname}
+- hideKeyboard
+- tapOn:
+    id: dev-login-submit
+- extendedWaitUntil:
+    visible: 전체 동의
+    timeout: 15000

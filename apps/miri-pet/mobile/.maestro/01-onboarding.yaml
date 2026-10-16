@@ -1,0 +1,13 @@
+# 01: 개발 로그인 → 약관 동의 → 펫 온보딩 → 홈
+appId: com.aico.miripet
+name: 01 onboarding to home
+tags:
+  - smoke
+---
+- runFlow: common/launch-dev.yaml
+- runFlow: common/dev-login-new-user.yaml
+- runFlow: common/consent-and-pet.yaml
+- assertVisible: 미리
+- tapOn: 홈
+- assertVisible: 팔로잉
+- assertVisible: 탐색

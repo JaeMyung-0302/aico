@@ -2,121 +2,186 @@
   {
     "id": "crucianCarp",
     "nameKey": "fish.crucianCarp",
-    "seasons": ["spring", "summer", "autumn"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn"
+    ],
     "difficulty": 20,
     "basePrice": 40,
-    "rarity": "common"
+    "rarity": "common",
+    "location": "river"
   },
   {
     "id": "sweetfish",
     "nameKey": "fish.sweetfish",
-    "seasons": ["spring", "summer"],
+    "seasons": [
+      "spring",
+      "summer"
+    ],
     "difficulty": 30,
     "basePrice": 80,
-    "rarity": "common"
+    "rarity": "common",
+    "location": "river"
   },
   {
     "id": "catfish",
     "nameKey": "fish.catfish",
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "difficulty": 40,
     "basePrice": 100,
-    "rarity": "common"
+    "rarity": "common",
+    "location": "river"
   },
   {
     "id": "carp",
     "nameKey": "fish.carp",
-    "seasons": ["spring", "summer", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
     "difficulty": 25,
     "basePrice": 60,
-    "rarity": "common"
+    "rarity": "common",
+    "location": "river"
   },
   {
     "id": "eel",
     "nameKey": "fish.eel",
-    "seasons": ["summer"],
+    "seasons": [
+      "summer"
+    ],
     "difficulty": 55,
     "basePrice": 200,
-    "rarity": "uncommon"
+    "rarity": "uncommon",
+    "location": "river"
   },
   {
     "id": "mandarin",
     "nameKey": "fish.mandarin",
-    "seasons": ["spring", "autumn"],
+    "seasons": [
+      "spring",
+      "autumn"
+    ],
     "difficulty": 50,
     "basePrice": 180,
-    "rarity": "uncommon"
+    "rarity": "uncommon",
+    "location": "river"
   },
   {
     "id": "snakehead",
     "nameKey": "fish.snakehead",
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "difficulty": 60,
     "basePrice": 220,
-    "rarity": "uncommon"
+    "rarity": "uncommon",
+    "location": "river"
   },
   {
     "id": "salmon",
     "nameKey": "fish.salmon",
-    "seasons": ["autumn"],
+    "seasons": [
+      "autumn"
+    ],
     "difficulty": 65,
     "basePrice": 300,
-    "rarity": "rare"
+    "rarity": "rare",
+    "location": "river"
   },
   {
     "id": "cherryTrout",
     "nameKey": "fish.cherryTrout",
-    "seasons": ["spring"],
+    "seasons": [
+      "spring"
+    ],
     "difficulty": 70,
     "basePrice": 350,
-    "rarity": "rare"
+    "rarity": "rare",
+    "location": "river"
   },
   {
     "id": "goldenMandarin",
     "nameKey": "fish.goldenMandarin",
-    "seasons": ["spring", "summer", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
     "difficulty": 85,
     "basePrice": 800,
-    "rarity": "legendary"
+    "rarity": "legendary",
+    "location": "river"
   },
   {
     "id": "seaBream",
     "nameKey": "fish.seaBream",
-    "seasons": ["spring", "summer", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
     "difficulty": 45,
     "basePrice": 150,
-    "rarity": "common"
+    "rarity": "common",
+    "location": "ocean"
   },
   {
     "id": "tuna",
     "nameKey": "fish.tuna",
-    "seasons": ["summer", "autumn"],
+    "seasons": [
+      "summer",
+      "autumn"
+    ],
     "difficulty": 70,
     "basePrice": 400,
-    "rarity": "rare"
+    "rarity": "rare",
+    "location": "ocean"
   },
   {
     "id": "blowfish",
     "nameKey": "fish.blowfish",
-    "seasons": ["winter", "spring"],
+    "seasons": [
+      "winter",
+      "spring"
+    ],
     "difficulty": 60,
     "basePrice": 500,
-    "rarity": "rare"
+    "rarity": "rare",
+    "location": "ocean"
   },
   {
     "id": "anglerfish",
     "nameKey": "fish.anglerfish",
-    "seasons": ["winter"],
+    "seasons": [
+      "winter"
+    ],
     "difficulty": 80,
     "basePrice": 600,
-    "rarity": "rare"
+    "rarity": "rare",
+    "location": "ocean"
   },
   {
     "id": "dragonSeahorse",
     "nameKey": "fish.dragonSeahorse",
-    "seasons": ["spring", "summer", "autumn", "winter"],
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
     "difficulty": 95,
     "basePrice": 1200,
-    "rarity": "legendary"
+    "rarity": "legendary",
+    "location": "ocean"
   }
 ]

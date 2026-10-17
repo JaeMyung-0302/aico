@@ -7,7 +7,9 @@ import type { IGameSystem } from "./system-manager";
 import { Monster } from "../entities/Monster";
 import { ObjectPool } from "./object-pool";
 import { getFallbackMonsterDef } from "./monster-defs";
+import { applyExp, LEVEL_UP_BONUS } from "./leveling";
 import { eventBus } from "@/lib/event-bus";
+import { useGameStore } from "@/stores/useGameStore";
 import monstersData from "../data/monsters.json";
 import weaponsData from "../data/weapons.json";
 
@@ -24,7 +26,7 @@ export const getWeaponDef = (id: string): WeaponDefinition | undefined =>
 export const getMonsterDef = (id: string): MonsterDefinition | undefined =>
   monsterDefs.get(id);
 
-const PLAYER_MAX_HP_BASE = 50;
+const PLAYER_MAX_HP_BASE = 80;
 const PLAYER_INVINCIBLE_MS = 800;
 const HIT_FLASH_DURATION = 150;
 const DEATH_FADE_MS = 500;
@@ -41,6 +43,8 @@ export class CombatSystem implements IGameSystem {
   private maxHp = PLAYER_MAX_HP_BASE;
   private attack = 5;
   private defense = 2;
+  private level = useGameStore.getState().playerLevel;
+  private exp = useGameStore.getState().playerExp;
 
   private readonly monsters: Map<string, Monster> = new Map();
   private monsterPool: ObjectPool<Monster> | null = null;
@@ -58,7 +62,13 @@ export class CombatSystem implements IGameSystem {
       (m) => m.deactivate(),
       32,
     );
+    // 취침(자정) 시 완전 회복 — 던전은 시간이 흐르지 않아 던전 내 회복 없음
+    eventBus.on("time:dayEnd", this.onDayEnd);
   }
+
+  private readonly onDayEnd = (): void => {
+    this.heal(this.maxHp);
+  };
 
   update(_scene: Phaser.Scene, _time: number, delta: number): void {
     this.attackCooldown = Math.max(0, this.attackCooldown - delta);
@@ -85,6 +95,7 @@ export class CombatSystem implements IGameSystem {
   }
 
   destroy(): void {
+    eventBus.off("time:dayEnd", this.onDayEnd);
     for (const [, monster] of this.monsters) {
       monster.destroy();
     }
@@ -354,6 +365,21 @@ export class CombatSystem implements IGameSystem {
     eventBus.emit("energy:fainted", { goldPenaltyRate: 0.1 });
   }
 
+  private gainExp(amount: number): void {
+    const result = applyExp(this.level, this.exp, amount);
+    if (result.levelsGained > 0) {
+      this.maxHp += LEVEL_UP_BONUS.maxHp * result.levelsGained;
+      this.attack += LEVEL_UP_BONUS.attack * result.levelsGained;
+      this.defense += LEVEL_UP_BONUS.defense * result.levelsGained;
+      this.hp = this.maxHp; // 레벨업 시 완전 회복
+      eventBus.emit("combat:levelUp", { level: result.level });
+      this.emitPlayerHp();
+    }
+    this.level = result.level;
+    this.exp = result.exp;
+    useGameStore.getState().setPlayerLevel(this.level, this.exp);
+  }
+
   private onMonsterDefeated(instanceId: string, monster: Monster): void {
     const def = monster.definition;
     const drops: { itemId: string; quantity: number }[] = [];
@@ -365,6 +391,7 @@ export class CombatSystem implements IGameSystem {
     }
 
     eventBus.emit("combat:defeated", { monsterId: def.id, drops });
+    this.gainExp(def.expReward);
 
     this.scene.time.delayedCall(300, () => {
       if (!this.monsters.has(instanceId)) return;

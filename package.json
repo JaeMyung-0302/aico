@@ -11,7 +11,9 @@
     "dev:wasd": "concurrently -k -n server,web -c green,yellow \"pnpm --filter @wasd/server dev\" \"pnpm --filter @wasd/web dev\"",
     "dev:geumsugangsan": "docker compose -f apps/land-of-splendid-rivers-and-mountains/server/docker-compose.yml up -d && concurrently -k -n server,web -c green,yellow \"pnpm --filter @land-of-splendid-rivers-and-mountains/server dev\" \"pnpm --filter @land-of-splendid-rivers-and-mountains/client dev\"",
     "dev:portfolio": "pnpm --filter portfolio dev",
+    "dev:editor": "pnpm --filter editor dev",
     "dev:neurex-viz": "concurrently -k -n server,web -c green,yellow \"pnpm --filter @neurex-viz/server dev\" \"pnpm --filter @neurex-viz/web dev\"",
+    "dev:miri": "concurrently -k -n worker,web -c green,yellow \"pnpm --filter @miri/server dev\" \"pnpm --filter @miri/web dev\"",
     "dev:miri-pet": "docker compose -f apps/miri-pet/server/docker-compose.yml up -d && concurrently -k -n server,mobile -c green,yellow \"pnpm --filter @miri-pet/server dev\" \"pnpm --filter @miri-pet/mobile dev\"",
     "lint": "turbo run lint",
     "format": "oxfmt \"**/*.{ts,tsx,md}\"",
@@ -35,6 +37,8 @@
       "puppeteer",
       "bcrypt",
       "better-sqlite3",
+      "workerd",
+      "esbuild",
       "sharp"
     ]
   }

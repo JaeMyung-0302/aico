@@ -1,0 +1,225 @@
+/* 색조는 차트 전용 토큰을 쓴다. UI 톤보다 어둡게 맞춰 CVD 와 배경 대비를 검증한 값. */
+[data-tone="blue"] {
+  --mark: var(--chart-blue);
+}
+[data-tone="teal"] {
+  --mark: var(--chart-teal);
+}
+[data-tone="amber"] {
+  --mark: var(--chart-amber);
+}
+[data-tone="violet"] {
+  --mark: var(--chart-violet);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tab {
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.tabOn {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: rise var(--dur-slow) var(--ease-out) both;
+}
+
+.caption {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* 이번 주 */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dayLabel {
+  color: var(--text-3);
+  font-size: var(--text-sm);
+}
+
+/* --mark 은 data-tone 이 정한다. 여기서 기본값을 주면 같은 요소의 선언이라 그걸 덮어쓴다. */
+.dot {
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--surface-active);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.dotOn {
+  background: var(--mark, var(--surface-active));
+  box-shadow: 0 0 var(--glow-sm) var(--mark, transparent);
+}
+
+.today {
+  box-shadow:
+    0 0 0 var(--stroke) var(--bg-0),
+    0 0 0 calc(var(--stroke) * 2) var(--text-2);
+}
+
+/* 히트맵 */
+.heat {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.cell {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 var(--hairline) var(--surface-border);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.cellOn {
+  background: var(--mark, var(--surface));
+  box-shadow: none;
+}
+
+.cellOut {
+  visibility: hidden;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.legendDot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--mark, var(--text-3));
+}
+
+/* 분포 막대 */
+.dist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.distStep {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.distTitle {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.barLabel {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrack {
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-active);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: var(--radius-pill);
+  background: var(--mark, var(--accent));
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.barValue {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-3));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

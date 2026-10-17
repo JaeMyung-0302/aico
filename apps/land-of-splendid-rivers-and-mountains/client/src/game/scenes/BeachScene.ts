@@ -5,6 +5,11 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { QuestSystem } from "../systems/quest";
+import { FishingSystem } from "../systems/fishing";
+import { EnergySystem } from "../systems/energy";
+import { setupRewardHandler } from "../systems/reward";
+import { setupShopHandlers } from "../systems/shop";
 import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { saveManager } from "@/lib/save-manager";
@@ -17,6 +22,10 @@ export class BeachScene extends Phaser.Scene {
   private inputManager!: InputManager;
   private keyboardInput!: KeyboardInput;
   private touchInput!: TouchInput;
+  private fishingSystem!: FishingSystem;
+  private energySystem!: EnergySystem;
+  private groundLayer: Phaser.Tilemaps.TilemapLayer | null = null;
+  private prevAction = false;
   private readonly emitPosition = createPositionEmitter("BeachScene");
 
   constructor() {
@@ -61,6 +70,31 @@ export class BeachScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
+
+    const questSystem = new QuestSystem();
+    questSystem.init(this);
+    questSystem.loadState(
+      store.activeQuests,
+      store.completedQuests,
+      store.questProgress,
+    );
+
+    const energySystem = new EnergySystem();
+    energySystem.setState(store.energy, store.maxEnergy);
+    this.energySystem = energySystem;
+
+    const fishingSystem = new FishingSystem();
+    fishingSystem.init(this);
+    fishingSystem.setLocation("ocean");
+    this.fishingSystem = fishingSystem;
+
+    const onFishCaught = ({ fishId }: { fishId: string }) => {
+      inventory.addItem(fishId);
+      syncInventory();
+    };
+    eventBus.on("fishing:caught", onFishCaught);
 
     this.setupCollision(map);
     this.setupCamera(map);
@@ -70,8 +104,16 @@ export class BeachScene extends Phaser.Scene {
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
+        activeQuests: [...questSystem.getState().active],
+        completedQuests: [...questSystem.getState().completed],
+        questProgress: questSystem.getState().progress,
       });
       inventory.destroy();
+      questSystem.destroy();
+      cleanupReward();
+      cleanupShop();
+      this.fishingSystem.destroy();
+      eventBus.off("fishing:caught", onFishCaught);
       eventBus.off("inventory:equipped", syncInventory);
       this.keyboardInput.destroy();
       this.touchInput.destroy();
@@ -79,7 +121,7 @@ export class BeachScene extends Phaser.Scene {
     });
   }
 
-  update(): void {
+  update(time: number, delta: number): void {
     const pointer = this.input.activePointer;
     const isTouchActive = pointer.isDown && pointer.wasTouch;
     const rawState = isTouchActive
@@ -93,10 +135,43 @@ export class BeachScene extends Phaser.Scene {
       return;
     }
 
-    this.player.update(this.inputManager.getState());
+    this.fishingSystem.update(this, time, delta);
+    if (this.fishingSystem.isActive()) {
+      this.player.sprite.setVelocity(0, 0);
+      return;
+    }
+
+    const inputState = this.inputManager.getState();
+    this.player.update(inputState);
     this.emitPosition(this.player.sprite, this.time.now);
 
+    const actionPressed = inputState.action && !this.prevAction;
+    this.prevAction = inputState.action;
+    if (actionPressed) {
+      const equipped = useGameStore.getState().equippedTools.current;
+      if (
+        equipped === "tool-fishingRod" &&
+        this.isNearWater() &&
+        this.energySystem.consume("FISH")
+      ) {
+        this.fishingSystem.startFishing();
+      }
+    }
+
     this.checkPortal();
+  }
+
+  private isNearWater(): boolean {
+    if (!this.groundLayer) return false;
+    const tileX = Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE);
+    const tileY = Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE);
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -2; dy <= 2; dy++) {
+        const tile = this.groundLayer.getTileAt(tileX + dx, tileY + dy);
+        if (tile && tile.index === 3) return true;
+      }
+    }
+    return false;
   }
 
   private isTransitioning = false;
@@ -112,9 +187,10 @@ export class BeachScene extends Phaser.Scene {
       this.scene.start("RiverScene", { spawnX: 12, spawnY: 28 });
     }
 
-    // Portal to island (right edge, requires reputation threshold)
+    // Portal to island (배 선착장 — 우측 물가, requires reputation threshold).
+    // 해변 맵은 가로 25타일로 통행 한계가 x=19 — x>=28은 도달 불가 좌표였음.
     if (
-      tileX >= 28 &&
+      tileX >= 19 &&
       tileY >= 14 &&
       tileY <= 16 &&
       useGameStore.getState().unlockedIsland
@@ -152,7 +228,9 @@ export class BeachScene extends Phaser.Scene {
     const tileset = map.addTilesetImage("beach-tiles", "tileset-beach");
     if (!tileset) throw new Error("Failed to load beach tileset");
 
-    map.createLayer("ground", tileset)?.setDepth(0);
+    const ground = map.createLayer("ground", tileset);
+    ground?.setDepth(0);
+    this.groundLayer = ground ?? null;
     map.createLayer("path", tileset)?.setDepth(1);
     map.createLayer("objects", tileset)?.setDepth(2);
     map.createLayer("collision", tileset)?.setVisible(false);

@@ -1,0 +1,32 @@
+.wordmark {
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-2);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.progress {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.dot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-active);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.dotOn {
+  background: var(--accent);
+  box-shadow: 0 0 var(--glow-sm) var(--accent-glow);
+}

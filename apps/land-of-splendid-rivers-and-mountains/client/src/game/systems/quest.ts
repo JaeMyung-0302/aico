@@ -25,8 +25,10 @@ export class QuestSystem implements IGameSystem {
   init(_scene: Phaser.Scene): void {
     eventBus.on("farm:harvested", this.onHarvested);
     eventBus.on("fishing:caught", this.onFishCaught);
-    eventBus.on("crafting:cook", this.onCooked);
-    eventBus.on("crafting:ferment", this.onFermented);
+    // 요청(crafting:cook)이 아닌 성공 이벤트를 추적 — 재료 없는 요청으로
+    // 진행도가 오르던 버그 방지
+    eventBus.on("crafting:cooked", this.onCooked);
+    eventBus.on("crafting:fermented", this.onFermented);
     eventBus.on("npc:gifted", this.onGifted);
     eventBus.on("player:moved", this.onPlayerMoved);
     eventBus.on("combat:defeated", this.onCombatDefeated);
@@ -43,8 +45,8 @@ export class QuestSystem implements IGameSystem {
   destroy(): void {
     eventBus.off("farm:harvested", this.onHarvested);
     eventBus.off("fishing:caught", this.onFishCaught);
-    eventBus.off("crafting:cook", this.onCooked);
-    eventBus.off("crafting:ferment", this.onFermented);
+    eventBus.off("crafting:cooked", this.onCooked);
+    eventBus.off("crafting:fermented", this.onFermented);
     eventBus.off("npc:gifted", this.onGifted);
     eventBus.off("player:moved", this.onPlayerMoved);
     eventBus.off("combat:defeated", this.onCombatDefeated);

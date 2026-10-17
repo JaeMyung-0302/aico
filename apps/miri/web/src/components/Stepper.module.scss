@@ -1,0 +1,91 @@
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label {
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: center;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: var(--tap-min) minmax(0, 1fr) var(--tap-min);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.button {
+  min-height: var(--tap-min);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-spring);
+
+  &:active:not(:disabled) {
+    background: var(--surface-active);
+    transform: scale(0.92);
+    transition-duration: var(--dur-fast);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.value {
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 한 줄에 셋. 값을 위로 올리고 버튼 둘을 아래에 나란히 두어 좁은 폰에서도 가로 스크롤이 없게 한다. */
+.compact {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "value value"
+      "minus plus";
+    gap: var(--space-1);
+  }
+
+  .button {
+    min-height: var(--space-7);
+    font-size: var(--text-base);
+
+    &:first-child {
+      grid-area: minus;
+    }
+
+    &:last-child {
+      grid-area: plus;
+    }
+  }
+
+  .value {
+    grid-area: value;
+    font-size: var(--text-base);
+  }
+}
+
+.large {
+  .value {
+    font-size: var(--text-2xl);
+    letter-spacing: var(--tracking-tight);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+}

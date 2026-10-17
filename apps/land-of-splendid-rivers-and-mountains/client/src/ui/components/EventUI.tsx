@@ -1,12 +1,33 @@
 import { useState, useEffect, useCallback } from "react";
 import { eventBus } from "@/lib/event-bus";
 import { t } from "@/i18n";
+import { getItemName } from "@/ui/item-names";
+import storyData from "@/game/data/story.json";
 
 interface RewardInfo {
   readonly eventId: string;
   readonly goldReward: number;
   readonly items: ReadonlyArray<{ itemId: string; quantity: number }>;
 }
+
+const questNameKeys = new Map<string, string>(
+  (storyData as ReadonlyArray<{ id: string; nameKey: string }>).map((q) => [
+    q.id,
+    q.nameKey,
+  ]),
+);
+
+// 보상 출처가 퀘스트/도감 마일스톤/축제 이벤트로 갈리므로 순서대로 해석.
+// t()는 키 미스 시 키 문자열을 그대로 반환하므로 비교로 미스를 판별한다.
+const resolveRewardName = (eventId: string): string => {
+  const questKey = questNameKeys.get(eventId);
+  if (questKey) return t(questKey);
+  const dexMatch = /^dex-milestone-(\d+)$/.exec(eventId);
+  if (dexMatch) return t(`dex.milestone.${dexMatch[1]}`);
+  const eventKey = `event.${eventId}`;
+  const translated = t(eventKey);
+  return translated !== eventKey ? translated : eventId;
+};
 
 const EventUI = () => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
@@ -44,16 +65,14 @@ const EventUI = () => {
         <div style={styles.rewardBox}>
           <div style={styles.rewardTitle}>{t("ui.event.rewardTitle")}</div>
           <div style={styles.rewardName}>
-            {t(`${reward.eventId}.name` as never) || reward.eventId}
+            {resolveRewardName(reward.eventId)}
           </div>
           {reward.goldReward > 0 && (
             <div style={styles.rewardGold}>+{reward.goldReward}G</div>
           )}
           {reward.items.map((item, i) => (
             <div key={i} style={styles.rewardItem}>
-              {t(`item.${item.itemId.replace("-", ".")}` as never) ||
-                item.itemId}{" "}
-              x{item.quantity}
+              {getItemName(item.itemId)} x{item.quantity}
             </div>
           ))}
           <button

@@ -5,6 +5,12 @@ import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
 import { TouchInput } from "../input/touch-input";
 import { InventorySystem } from "../systems/inventory";
+import { QuestSystem } from "../systems/quest";
+import { EnergySystem } from "../systems/energy";
+import { setupRewardHandler } from "../systems/reward";
+import { setupShopHandlers } from "../systems/shop";
+import { setupTradeHandler } from "../systems/trade-runtime";
+import { setupMarriageHandler } from "../systems/marriage-runtime";
 import { NPCSystem } from "../systems/npc";
 import { FishingSystem } from "../systems/fishing";
 import { createPositionEmitter } from "../utils/position-emitter";
@@ -22,6 +28,8 @@ export class IslandScene extends Phaser.Scene {
   private touchInput!: TouchInput;
   private npcSystem: NPCSystem | null = null;
   private fishingSystem: FishingSystem | null = null;
+  private energySystem: EnergySystem | null = null;
+  private groundLayer: Phaser.Tilemaps.TilemapLayer | null = null;
   private prevAction = false;
   private readonly emitPosition = createPositionEmitter("IslandScene");
 
@@ -84,7 +92,34 @@ export class IslandScene extends Phaser.Scene {
     };
 
     eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
+
+    const questSystem = new QuestSystem();
+    questSystem.init(this);
+    questSystem.loadState(
+      store.activeQuests,
+      store.completedQuests,
+      store.questProgress,
+    );
     eventBus.on("npc:giftRequested", onGiftRequested);
+
+    const energySystem = new EnergySystem();
+    energySystem.setState(store.energy, store.maxEnergy);
+    this.energySystem = energySystem;
+
+    const fishingSystem = new FishingSystem();
+    fishingSystem.init(this);
+    fishingSystem.setLocation("ocean");
+    this.fishingSystem = fishingSystem;
+
+    const onFishCaught = ({ fishId }: { fishId: string }) => {
+      inventory.addItem(fishId);
+      syncInventory();
+    };
+    eventBus.on("fishing:caught", onFishCaught);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupTrade = setupTradeHandler(inventory, syncInventory, "island");
+    const cleanupMarriage = setupMarriageHandler(inventory, syncInventory);
 
     this.setupCollision(map);
     this.setupCamera(map);
@@ -94,11 +129,22 @@ export class IslandScene extends Phaser.Scene {
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
+        activeQuests: [...questSystem.getState().active],
+        completedQuests: [...questSystem.getState().completed],
+        questProgress: questSystem.getState().progress,
         npcRelations: useGameStore.getState().npcRelations,
       });
       inventory.destroy();
       this.npcSystem?.destroy();
       this.npcSystem = null;
+      cleanupShop();
+      cleanupTrade();
+      cleanupMarriage();
+      questSystem.destroy();
+      cleanupReward();
+      this.fishingSystem?.destroy();
+      this.fishingSystem = null;
+      eventBus.off("fishing:caught", onFishCaught);
       eventBus.off("inventory:equipped", syncInventory);
       eventBus.off("npc:giftRequested", onGiftRequested);
       this.keyboardInput.destroy();
@@ -107,7 +153,7 @@ export class IslandScene extends Phaser.Scene {
     });
   }
 
-  update(): void {
+  update(time: number, delta: number): void {
     const pointer = this.input.activePointer;
     const isTouchActive = pointer.isDown && pointer.wasTouch;
     const rawState = isTouchActive
@@ -117,6 +163,12 @@ export class IslandScene extends Phaser.Scene {
     this.inputManager.updateFromProvider(rawState);
 
     if (useGameStore.getState().dialogOpen) {
+      this.player.sprite.setVelocity(0, 0);
+      return;
+    }
+
+    this.fishingSystem?.update(this, time, delta);
+    if (this.fishingSystem?.isActive()) {
       this.player.sprite.setVelocity(0, 0);
       return;
     }
@@ -136,10 +188,32 @@ export class IslandScene extends Phaser.Scene {
       );
       if (nearbyNpcs.length > 0) {
         this.npcSystem.talk(nearbyNpcs[0]!.getDefinition().id);
+      } else {
+        const equipped = useGameStore.getState().equippedTools.current;
+        if (
+          equipped === "tool-fishingRod" &&
+          this.isNearWater() &&
+          this.energySystem?.consume("FISH")
+        ) {
+          this.fishingSystem?.startFishing();
+        }
       }
     }
 
     this.checkPortal();
+  }
+
+  private isNearWater(): boolean {
+    if (!this.groundLayer) return false;
+    const tileX = Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE);
+    const tileY = Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE);
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -2; dy <= 2; dy++) {
+        const tile = this.groundLayer.getTileAt(tileX + dx, tileY + dy);
+        if (tile && tile.index === 3) return true;
+      }
+    }
+    return false;
   }
 
   private isTransitioning = false;
@@ -154,6 +228,12 @@ export class IslandScene extends Phaser.Scene {
     if (tileY <= 0 && tileX >= 12 && tileX <= 13) {
       this.isTransitioning = true;
       this.scene.start("BeachScene", { spawnX: 12, spawnY: 28 });
+    }
+
+    // 해적 소굴 입구 (남서쪽 동굴)
+    if (tileY >= 28 && tileX <= 3) {
+      this.isTransitioning = true;
+      this.scene.start("PirateScene");
     }
   }
 
@@ -186,7 +266,9 @@ export class IslandScene extends Phaser.Scene {
     const tileset = map.addTilesetImage("island-tiles", "tileset-island");
     if (!tileset) throw new Error("Failed to load island tileset");
 
-    map.createLayer("ground", tileset)?.setDepth(0);
+    const ground = map.createLayer("ground", tileset);
+    ground?.setDepth(0);
+    this.groundLayer = ground ?? null;
     map.createLayer("path", tileset)?.setDepth(1);
     map.createLayer("objects", tileset)?.setDepth(2);
     map.createLayer("collision", tileset)?.setVisible(false);

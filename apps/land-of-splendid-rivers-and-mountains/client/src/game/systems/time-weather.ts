@@ -202,12 +202,6 @@ export class TimeWeatherSystem implements IGameSystem {
   }
 
   private advanceDay(): void {
-    eventBus.emit("time:dayEnd", {
-      day: this.day,
-      season: this.season,
-      year: this.year,
-    });
-
     this.timeOfDay = GAME_CONSTANTS.DAY_START_MINUTE;
     this.day += 1;
 
@@ -215,6 +209,14 @@ export class TimeWeatherSystem implements IGameSystem {
       this.day = 1;
       this.advanceSeason();
     }
+
+    // 새 날 기준으로 emit — 소비자(store-bridge, event)는 payload를 현재 날로 사용.
+    // rollWeather(내일 날씨)는 emit 이후: farm의 비 자동 급수가 끝난 날의 날씨를 봐야 함.
+    eventBus.emit("time:dayEnd", {
+      day: this.day,
+      season: this.season,
+      year: this.year,
+    });
 
     this.rollWeather();
   }

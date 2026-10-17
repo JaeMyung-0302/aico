@@ -3,6 +3,13 @@ import { useGameStore } from "@/stores/useGameStore";
 import { eventBus } from "@/lib/event-bus";
 import { t } from "@/i18n";
 import npcsData from "@/game/data/npcs.json";
+import {
+  MIN_RELATION_TO_PROPOSE,
+  WEDDING_RING_ITEM_ID,
+} from "@/game/systems/marriage";
+import { canHaveAnotherChild, getChildAgeInDays } from "@/game/systems/family";
+import { getItemType } from "@/ui/item-names";
+import { toAbsoluteDay } from "@/game/systems/marriage-runtime";
 import type { NpcDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 
 const npcMap = new Map<string, NpcDefinition>(
@@ -23,7 +30,17 @@ const DialogBox = () => {
     textKey: string;
     change: number;
   } | null>(null);
-  const { npcRelations, inventory } = useGameStore();
+  const {
+    npcRelations,
+    inventory,
+    marriageStatus,
+    marriagePartnerId,
+    familyChildren,
+    lastChildBornDay,
+    day,
+    season,
+    year,
+  } = useGameStore();
 
   const onNpcTalked = useCallback(({ npcId }: { npcId: string }) => {
     setActiveNpcId(npcId);
@@ -89,11 +106,12 @@ const DialogBox = () => {
     return t("ui.dialog.greeting" as never) || "안녕하세요.";
   };
 
+  // NPC 선호 선물에 food/drop/재료(stone 등 무접두사 id)도 있으므로
+  // id 프리픽스가 아닌 아이템 타입으로 판정 (도구·씨앗만 제외)
   const giftableItems = inventory.filter((slot) => {
     if (!slot) return false;
-    return (
-      slot.itemId.startsWith("crop-") || slot.itemId.startsWith("material-")
-    );
+    const type = getItemType(slot.itemId);
+    return type !== null && type !== "tool" && type !== "seed";
   });
 
   const handleGift = (itemId: string) => {
@@ -199,6 +217,55 @@ const DialogBox = () => {
             </div>
           </div>
         )}
+        {npcDef.marriageable &&
+          marriageStatus === "single" &&
+          relation >= MIN_RELATION_TO_PROPOSE &&
+          inventory.some((slot) => slot?.itemId === WEDDING_RING_ITEM_ID) && (
+            <button
+              style={styles.proposeBtn}
+              onClick={() => {
+                eventBus.emit("npc:proposed", { npcId: activeNpcId });
+                setGiftReaction("propose");
+              }}
+            >
+              💍 {t("ui.dialog.propose")}
+            </button>
+          )}
+        {marriagePartnerId === activeNpcId && marriageStatus === "engaged" && (
+          <div style={styles.marriageBadge}>💐 {t("ui.dialog.engaged")}</div>
+        )}
+        {marriagePartnerId === activeNpcId && marriageStatus === "married" && (
+          <>
+            <div style={styles.marriageBadge}>💍 {t("ui.dialog.married")}</div>
+            {familyChildren.length > 0 && (
+              <div style={styles.marriageBadge}>
+                👶 {t("ui.dialog.children")}:{" "}
+                {familyChildren
+                  .map(
+                    (c) =>
+                      `${c.name} (${getChildAgeInDays(c, toAbsoluteDay(day, season, year))}${t("ui.dialog.daysOld")})`,
+                  )
+                  .join(", ")}
+              </div>
+            )}
+            {canHaveAnotherChild(
+              { status: marriageStatus },
+              { children: familyChildren, lastChildBornDay },
+              toAbsoluteDay(day, season, year),
+            ).ok && (
+              <button
+                style={styles.proposeBtn}
+                onClick={() =>
+                  eventBus.emit("family:requestChild", {
+                    partnerId: activeNpcId,
+                  })
+                }
+              >
+                👶 {t("ui.dialog.haveChild")}
+              </button>
+            )}
+          </>
+        )}
         <button style={styles.talkBtn} onClick={handleClose}>
           {t("ui.dialog.close")}
         </button>
@@ -208,6 +275,25 @@ const DialogBox = () => {
 };
 
 const styles: Record<string, React.CSSProperties> = {
+  proposeBtn: {
+    padding: "8px 14px",
+    background: "linear-gradient(135deg, #e91e63, #f06292)",
+    color: "#fff",
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 700,
+    marginTop: 6,
+  },
+  marriageBadge: {
+    marginTop: 6,
+    padding: "6px 10px",
+    background: "rgba(233, 30, 99, 0.15)",
+    color: "#f48fb1",
+    borderRadius: 8,
+    fontSize: 13,
+    textAlign: "center",
+  },
   overlay: {
     position: "absolute",
     top: 0,

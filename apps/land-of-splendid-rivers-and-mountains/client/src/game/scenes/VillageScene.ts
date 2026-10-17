@@ -8,6 +8,10 @@ import { TouchInput } from "../input/touch-input";
 import { SystemManager } from "../systems/system-manager";
 import { TimeWeatherSystem } from "../systems/time-weather";
 import { InventorySystem } from "../systems/inventory";
+import { setupShopHandlers } from "../systems/shop";
+import { setupMarriageHandler } from "../systems/marriage-runtime";
+import { ngPlusStartingPerks } from "../systems/new-game-plus-runtime";
+import { setupRewardHandler } from "../systems/reward";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -21,18 +25,11 @@ import { createPositionEmitter } from "../utils/position-emitter";
 import { eventBus } from "@/lib/event-bus";
 import { useGameStore } from "@/stores/useGameStore";
 import { saveManager, SAVE_VERSION } from "@/lib/save-manager";
-import type {
-  CropDefinition,
-  ItemDefinition,
-} from "@land-of-splendid-rivers-and-mountains/shared";
+import type { CropDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 import cropsData from "../data/crops.json";
-import itemsData from "../data/items.json";
 
 const cropMap = new Map<string, CropDefinition>(
   (cropsData as ReadonlyArray<CropDefinition>).map((c) => [c.id, c]),
-);
-const itemMap = new Map<string, ItemDefinition>(
-  (itemsData as ReadonlyArray<ItemDefinition>).map((item) => [item.id, item]),
 );
 
 const PLAYER_SPAWN_X = 14;
@@ -140,40 +137,6 @@ export class VillageScene extends Phaser.Scene {
       syncInventory();
     };
 
-    const onShopBuy = ({ itemId }: { itemId: string }) => {
-      if (!itemId.startsWith("seed-")) return;
-      const cropId = itemId.slice(5);
-      const cropDef = cropMap.get(cropId);
-      if (!cropDef) return;
-      const store = useGameStore.getState();
-      if (store.gold < cropDef.seedPrice) return;
-      if (!inventory.addItem(itemId)) return;
-      const newGold = store.gold - cropDef.seedPrice;
-      eventBus.emit("gold:changed", {
-        amount: -cropDef.seedPrice,
-        total: newGold,
-      });
-      syncInventory();
-    };
-
-    const onShopSell = ({
-      itemId,
-      quantity,
-    }: {
-      itemId: string;
-      quantity: number;
-    }) => {
-      const def = itemMap.get(itemId);
-      if (!def || def.sellPrice <= 0) return;
-      if (!inventory.hasItem(itemId, quantity)) return;
-      inventory.removeItem(itemId, quantity);
-      const earnings = def.sellPrice * quantity;
-      const store = useGameStore.getState();
-      const newGold = store.gold + earnings;
-      eventBus.emit("gold:changed", { amount: earnings, total: newGold });
-      syncInventory();
-    };
-
     const syncFermentation = () => {
       const slots: {
         slotIndex: number;
@@ -204,6 +167,7 @@ export class VillageScene extends Phaser.Scene {
         return;
       }
       syncInventory();
+      eventBus.emit("crafting:cooked", { recipeId });
     };
 
     const onFerment = ({ recipeId }: { recipeId: string }) => {
@@ -219,6 +183,7 @@ export class VillageScene extends Phaser.Scene {
       }
       syncInventory();
       syncFermentation();
+      eventBus.emit("crafting:fermented", { recipeId });
     };
 
     const onCollect = ({ slotIndex }: { slotIndex: number }) => {
@@ -341,12 +306,15 @@ export class VillageScene extends Phaser.Scene {
     eventBus.on("inventory:useFood", onUseFood);
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
-    eventBus.on("shop:buy", onShopBuy);
-    eventBus.on("shop:sell", onShopSell);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupMarriage = setupMarriageHandler(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
     eventBus.on("crafting:ferment", onFerment);
+    // 자정마다 발효 진행도를 store에 반영 (UI 진행표시·수확 버튼 갱신)
+    eventBus.on("time:dayEnd", syncFermentation);
     eventBus.on("crafting:collect", onCollect);
     eventBus.on("building:build", onBuildingBuild);
     eventBus.on("building:upgrade", onBuildingUpgrade);
@@ -393,6 +361,20 @@ export class VillageScene extends Phaser.Scene {
           activeEventId: cachedActiveEventId,
           reputation: cachedReputation,
           unlockedIsland: cachedUnlockedIsland,
+          marriageStatus: useGameStore.getState().marriageStatus,
+          marriagePartnerId: useGameStore.getState().marriagePartnerId,
+          engagedAtDay: useGameStore.getState().engagedAtDay,
+          marriedAtDay: useGameStore.getState().marriedAtDay,
+          summonedGuardians: [...useGameStore.getState().summonedGuardians],
+          defeatedBosses: [...useGameStore.getState().defeatedBosses],
+          endingReached: useGameStore.getState().endingReached,
+          farmDecorations: [...useGameStore.getState().farmDecorations],
+          dexDiscovered: useGameStore.getState().dexDiscovered,
+          dexMilestonesGranted: [
+            ...useGameStore.getState().dexMilestonesGranted,
+          ],
+          familyChildren: [...useGameStore.getState().familyChildren],
+          lastChildBornDay: useGameStore.getState().lastChildBornDay,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -413,6 +395,30 @@ export class VillageScene extends Phaser.Scene {
         cachedActiveEventId = data.activeEventId ?? null;
         cachedReputation = data.reputation ?? 0;
         cachedUnlockedIsland = data.unlockedIsland ?? false;
+        // Farm 복원기와 달리 store 반영이 누락되어 마을에서 이어하기 시
+        // 섬 해금이 풀리던 버그 — 변수 캐시와 함께 store에도 반영.
+        useGameStore.getState().setUnlockedIsland(cachedUnlockedIsland);
+        useGameStore
+          .getState()
+          .setMarriage(
+            data.marriageStatus ?? "single",
+            data.marriagePartnerId ?? null,
+            data.engagedAtDay ?? null,
+            data.marriedAtDay ?? null,
+          );
+        useGameStore
+          .getState()
+          .setSummonedGuardians(data.summonedGuardians ?? []);
+        useGameStore.getState().setDefeatedBosses(data.defeatedBosses ?? []);
+        useGameStore.getState().setEndingReached(data.endingReached ?? null);
+        useGameStore.getState().setFarmDecorations(data.farmDecorations ?? []);
+        useGameStore.getState().setDexDiscovered(data.dexDiscovered ?? {});
+        useGameStore
+          .getState()
+          .setDexMilestonesGranted(data.dexMilestonesGranted ?? []);
+        useGameStore
+          .getState()
+          .setFamily(data.familyChildren ?? [], data.lastChildBornDay ?? null);
         const relations = data.npcRelations ?? {};
         npcSystem.loadRelationsState(relations);
         fermentSystem.loadState(data.fermentations ?? []);
@@ -458,6 +464,22 @@ export class VillageScene extends Phaser.Scene {
 
     if (saveManager.hasSave()) {
       saveManager.load();
+    } else {
+      // 새 게임 시작 키트: 물뿌리개 없이는 작물이 성장하지 않아 첫 수확 퀘스트 진행 불가
+      inventory.addItem("tool-wateringCan");
+      // 뉴게임+ 회차 보너스 (Ch.6)
+      const perks = ngPlusStartingPerks();
+      if (perks.gold > 0) {
+        const g = useGameStore.getState().gold;
+        eventBus.emit("gold:changed", {
+          amount: perks.gold,
+          total: g + perks.gold,
+        });
+      }
+      for (const item of perks.items) {
+        inventory.addItem(item.itemId, item.quantity);
+      }
+      syncInventory();
     }
 
     this.setupCollision(map);
@@ -469,13 +491,15 @@ export class VillageScene extends Phaser.Scene {
       inventory.destroy();
       eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:changed", syncInventory);
+      cleanupReward();
       eventBus.off("inventory:equipped", syncInventory);
-      eventBus.off("shop:buy", onShopBuy);
-      eventBus.off("shop:sell", onShopSell);
+      cleanupShop();
+      cleanupMarriage();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);
       eventBus.off("crafting:ferment", onFerment);
+      eventBus.off("time:dayEnd", syncFermentation);
       eventBus.off("crafting:collect", onCollect);
       eventBus.off("building:build", onBuildingBuild);
       eventBus.off("building:upgrade", onBuildingUpgrade);
@@ -545,11 +569,15 @@ export class VillageScene extends Phaser.Scene {
       this.scene.start("FarmScene", { spawnX: 28, spawnY: 14 });
     }
 
-    // 상 → Dungeon
+    // 상 → Dungeon (엔딩 후에는 무한던전 — Ch.6 포스트게임)
     if (tileY <= 0 && tileX >= 14 && tileX <= 15) {
       this.isTransitioning = true;
       saveManager.save();
-      this.scene.start("DungeonScene");
+      if (useGameStore.getState().endingReached) {
+        this.scene.start("InfiniteDungeonScene");
+      } else {
+        this.scene.start("DungeonScene");
+      }
     }
 
     // 우 → River

@@ -10,6 +10,10 @@ import type {
 } from "@land-of-splendid-rivers-and-mountains/shared";
 import { eventBus } from "./event-bus";
 import { api, getUserId } from "./api";
+import type {
+  FarmDecorationState,
+  FamilyChildState,
+} from "@/stores/useGameStore";
 
 const SAVE_KEY = "land-of-splendid-rivers-and-mountains:save";
 const SYNC_DEBOUNCE_MS = 2000;
@@ -45,6 +49,18 @@ export interface SaveData {
   readonly activeQuests?: ReadonlyArray<string>;
   readonly completedQuests?: ReadonlyArray<string>;
   readonly questProgress?: Readonly<Record<string, ReadonlyArray<number>>>;
+  readonly marriageStatus?: "single" | "dating" | "engaged" | "married";
+  readonly marriagePartnerId?: string | null;
+  readonly engagedAtDay?: number | null;
+  readonly marriedAtDay?: number | null;
+  readonly summonedGuardians?: ReadonlyArray<string>;
+  readonly defeatedBosses?: ReadonlyArray<string>;
+  readonly endingReached?: string | null;
+  readonly farmDecorations?: ReadonlyArray<FarmDecorationState>;
+  readonly dexDiscovered?: Readonly<Record<string, ReadonlyArray<string>>>;
+  readonly dexMilestonesGranted?: ReadonlyArray<number>;
+  readonly familyChildren?: ReadonlyArray<FamilyChildState>;
+  readonly lastChildBornDay?: number | null;
 }
 
 const REQUIRED_SAVE_FIELDS = [

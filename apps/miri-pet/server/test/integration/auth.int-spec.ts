@@ -11,10 +11,10 @@ import { truncateAll } from './truncate'
 const KAKAO_APP_KEY = 'int-test-kakao-key'
 
 const FOUR_CONSENTS = [
-  { kind: 'TERMS', version: '2026-10-draft' },
-  { kind: 'PRIVACY', version: '2026-10-draft' },
-  { kind: 'LOCATION', version: '2026-10-draft' },
-  { kind: 'CERTIFICATE', version: '2026-10-draft' },
+  { kind: 'TERMS', version: '2026-10-01' },
+  { kind: 'PRIVACY', version: '2026-10-01' },
+  { kind: 'LOCATION', version: '2026-10-01' },
+  { kind: 'CERTIFICATE', version: '2026-10-01' },
 ]
 
 describe('/auth/dev 노출 조건 (실DB)', () => {
@@ -192,7 +192,7 @@ describe('인증·동의 (실DB)', () => {
 
     const rows = await prisma.consent.findMany({ where: { userId: me.userId }, orderBy: { kind: 'asc' } })
     expect(rows.map((row) => row.kind).sort()).toEqual(['CERTIFICATE', 'LOCATION', 'PRIVACY', 'TERMS'])
-    expect(rows.every((row) => row.version === '2026-10-draft')).toBe(true)
+    expect(rows.every((row) => row.version === '2026-10-01')).toBe(true)
     const after = await request(app.getHttpServer())
       .get('/api/v1/me')
       .set(...bearer(me.accessToken))

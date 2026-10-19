@@ -1,50 +1,55 @@
-import type { InventorySlot, EquippedTools } from '@land-of-splendid-rivers-and-mountains/shared'
-import { GAME_CONSTANTS } from '@land-of-splendid-rivers-and-mountains/shared'
-import { eventBus } from '@/lib/event-bus'
-import type { ItemDefinition } from '@land-of-splendid-rivers-and-mountains/shared'
-import itemsData from '../data/items.json'
+import type {
+  InventorySlot,
+  EquippedTools,
+} from "@land-of-splendid-rivers-and-mountains/shared";
+import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
+import { eventBus } from "@/lib/event-bus";
+import type { ItemDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
+import itemsData from "../data/items.json";
 
 const itemMap = new Map<string, ItemDefinition>(
   (itemsData as ReadonlyArray<ItemDefinition>).map((item) => [item.id, item]),
-)
+);
 
 export class InventorySystem {
-  private slots: Array<InventorySlot | null>
-  private equipped: EquippedTools = { current: null }
+  private slots: Array<InventorySlot | null>;
+  private equipped: EquippedTools = { current: null };
 
   private readonly onEquipRequest = ({ toolId }: { toolId: string | null }) => {
     if (toolId) {
-      this.equip(toolId)
+      this.equip(toolId);
     } else {
-      this.unequip()
-      eventBus.emit('inventory:equipped', { toolId: null })
+      this.unequip();
+      eventBus.emit("inventory:equipped", { toolId: null });
     }
-  }
+  };
 
   constructor() {
-    this.slots = new Array<InventorySlot | null>(GAME_CONSTANTS.INVENTORY_SIZE).fill(null)
-    eventBus.on('inventory:equipRequest', this.onEquipRequest)
+    this.slots = new Array<InventorySlot | null>(
+      GAME_CONSTANTS.INVENTORY_SIZE,
+    ).fill(null);
+    eventBus.on("inventory:equipRequest", this.onEquipRequest);
   }
 
   destroy(): void {
-    eventBus.off('inventory:equipRequest', this.onEquipRequest)
+    eventBus.off("inventory:equipRequest", this.onEquipRequest);
   }
 
   addItem(itemId: string, quantity = 1): boolean {
-    const definition = itemMap.get(itemId)
-    if (!definition) return false
+    const definition = itemMap.get(itemId);
+    if (!definition) return false;
 
-    let remaining = quantity
+    let remaining = quantity;
 
     if (definition.stackable) {
       for (let i = 0; i < this.slots.length && remaining > 0; i++) {
-        const slot = this.slots[i]
+        const slot = this.slots[i];
         if (slot?.itemId === itemId) {
-          const space = definition.maxStack - slot.quantity
-          const toAdd = Math.min(remaining, space)
+          const space = definition.maxStack - slot.quantity;
+          const toAdd = Math.min(remaining, space);
           if (toAdd > 0) {
-            this.slots[i] = { itemId, quantity: slot.quantity + toAdd }
-            remaining -= toAdd
+            this.slots[i] = { itemId, quantity: slot.quantity + toAdd };
+            remaining -= toAdd;
           }
         }
       }
@@ -52,89 +57,107 @@ export class InventorySystem {
 
     for (let i = 0; i < this.slots.length && remaining > 0; i++) {
       if (this.slots[i] === null) {
-        const maxStack = definition.stackable ? definition.maxStack : 1
-        const toAdd = Math.min(remaining, maxStack)
-        this.slots[i] = { itemId, quantity: toAdd }
-        remaining -= toAdd
+        const maxStack = definition.stackable ? definition.maxStack : 1;
+        const toAdd = Math.min(remaining, maxStack);
+        this.slots[i] = { itemId, quantity: toAdd };
+        remaining -= toAdd;
       }
     }
 
     if (remaining < quantity) {
-      eventBus.emit('inventory:changed', { itemId, quantity: quantity - remaining })
+      eventBus.emit("inventory:changed", {
+        itemId,
+        quantity: quantity - remaining,
+      });
     }
 
-    return remaining === 0
+    return remaining === 0;
   }
 
   removeItem(itemId: string, quantity = 1): boolean {
-    let remaining = quantity
+    let remaining = quantity;
 
     for (let i = this.slots.length - 1; i >= 0 && remaining > 0; i--) {
-      const slot = this.slots[i]
+      const slot = this.slots[i];
       if (slot?.itemId === itemId) {
-        const toRemove = Math.min(remaining, slot.quantity)
-        const newQuantity = slot.quantity - toRemove
-        this.slots[i] = newQuantity > 0 ? { itemId, quantity: newQuantity } : null
-        remaining -= toRemove
+        const toRemove = Math.min(remaining, slot.quantity);
+        const newQuantity = slot.quantity - toRemove;
+        this.slots[i] =
+          newQuantity > 0 ? { itemId, quantity: newQuantity } : null;
+        remaining -= toRemove;
       }
     }
 
     if (remaining < quantity) {
-      eventBus.emit('inventory:changed', { itemId, quantity: -(quantity - remaining) })
+      eventBus.emit("inventory:changed", {
+        itemId,
+        quantity: -(quantity - remaining),
+      });
 
       if (this.equipped.current === itemId && this.getItemCount(itemId) === 0) {
-        this.unequip()
+        this.unequip();
       }
     }
 
-    return remaining === 0
+    return remaining === 0;
   }
 
   getItemCount(itemId: string): number {
-    let count = 0
+    let count = 0;
     for (const slot of this.slots) {
       if (slot?.itemId === itemId) {
-        count += slot.quantity
+        count += slot.quantity;
       }
     }
-    return count
+    return count;
   }
 
   hasItem(itemId: string, quantity = 1): boolean {
-    return this.getItemCount(itemId) >= quantity
+    return this.getItemCount(itemId) >= quantity;
   }
 
   getSlots(): ReadonlyArray<InventorySlot | null> {
-    return [...this.slots]
+    return [...this.slots];
   }
 
   equip(toolId: string): void {
-    this.equipped = { current: toolId }
-    eventBus.emit('inventory:equipped', { toolId })
+    this.equipped = { current: toolId };
+    eventBus.emit("inventory:equipped", { toolId });
   }
 
   unequip(): void {
-    this.equipped = { current: null }
+    this.equipped = { current: null };
   }
 
   getEquipped(): EquippedTools {
-    return this.equipped
+    return this.equipped;
   }
 
   getItemDefinition(itemId: string): ItemDefinition | undefined {
-    return itemMap.get(itemId)
+    return itemMap.get(itemId);
   }
 
   isFull(): boolean {
-    return this.slots.every((slot) => slot !== null)
+    return this.slots.every((slot) => slot !== null);
   }
 
-  getState(): { slots: ReadonlyArray<InventorySlot | null>; equipped: EquippedTools } {
-    return { slots: [...this.slots], equipped: { ...this.equipped } }
+  getState(): {
+    slots: ReadonlyArray<InventorySlot | null>;
+    equipped: EquippedTools;
+  } {
+    return { slots: [...this.slots], equipped: { ...this.equipped } };
   }
 
-  loadState(slots: ReadonlyArray<InventorySlot | null>, equipped: EquippedTools): void {
-    this.slots = [...slots]
-    this.equipped = { ...equipped }
+  loadState(
+    slots: ReadonlyArray<InventorySlot | null>,
+    equipped: EquippedTools,
+  ): void {
+    this.slots = [...slots];
+    // 슬롯 수가 모자란 세이브가 인벤토리를 영구 축소시키지 않도록 패딩
+    // (빈 슬롯 소실 → addItem 조용한 실패 → 수확/보상 유실 방지)
+    while (this.slots.length < GAME_CONSTANTS.INVENTORY_SIZE) {
+      this.slots.push(null);
+    }
+    this.equipped = { ...equipped };
   }
 }

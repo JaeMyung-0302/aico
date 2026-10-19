@@ -1,0 +1,42 @@
+.stage {
+  position: relative;
+  display: grid;
+}
+
+.enter,
+.leave {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.enter {
+  animation: enter var(--dur-slow) var(--ease-out) both;
+}
+
+.leave {
+  pointer-events: none;
+  animation: leave var(--dur-base) var(--ease-in) forwards;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-4));
+    filter: blur(var(--blur-step));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes leave {
+  to {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-3)));
+    filter: blur(calc(var(--blur-step) / 1.5));
+  }
+}

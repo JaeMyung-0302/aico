@@ -1,0 +1,181 @@
+.trend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lifts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.lift {
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.liftOn {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.heroLabel {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.heroRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.heroValue {
+  font-size: var(--text-3xl);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.heroChange {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* 늘었을 때만 성공색. 색 말고도 +, 문장으로 뜻이 전해진다. */
+.up {
+  color: var(--success);
+}
+
+.chart {
+  position: relative;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+}
+
+.grid line {
+  stroke: var(--surface-border);
+  stroke-width: 1;
+}
+
+.axis text {
+  fill: var(--text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  fill: none;
+  stroke: var(--chart-blue);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: draw 900ms var(--ease-out) forwards;
+}
+
+.point {
+  fill: var(--chart-blue);
+  stroke: var(--bg-1);
+  stroke-width: 2;
+  transition: r var(--dur-fast) var(--ease-out);
+}
+
+.cross {
+  stroke: var(--text-3);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: var(--hairline) solid var(--surface-highlight);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  box-shadow: var(--shadow-lift);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - var(--space-3)));
+}
+
+.tooltipDate {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.tooltipValue {
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+}
+
+.rowValue {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

@@ -1,0 +1,49 @@
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: auto;
+}
+
+.tab {
+  position: relative;
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.tabOn {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* 기록한 트랙은 오른쪽 위에 점. */
+.tabDone::after {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  right: calc(-1 * var(--space-1));
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--success);
+  box-shadow: 0 0 var(--glow-sm) var(--success);
+}
+
+.streak {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+}

@@ -1,9 +1,6 @@
 import Phaser from "phaser";
 import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
-import type {
-  CropDefinition,
-  ItemDefinition,
-} from "@land-of-splendid-rivers-and-mountains/shared";
+import type { CropDefinition } from "@land-of-splendid-rivers-and-mountains/shared";
 import { Player } from "../entities/Player";
 import { InputManager } from "../input/input-manager";
 import { KeyboardInput } from "../input/keyboard-input";
@@ -12,6 +9,10 @@ import { SystemManager } from "../systems/system-manager";
 import { TimeWeatherSystem } from "../systems/time-weather";
 import { FarmSystem, isFarmTile, FARM_ZONES } from "../systems/farm";
 import { InventorySystem } from "../systems/inventory";
+import { setupShopHandlers } from "../systems/shop";
+import { setupMarriageHandler } from "../systems/marriage-runtime";
+import { setupFarmDecorations } from "../systems/farm-decoration-runtime";
+import { setupFamilyRendering } from "../systems/family-scene";
 import { EnergySystem } from "../systems/energy";
 import { NPCSystem } from "../systems/npc";
 import { FermentationSystem, getRecipe } from "../systems/fermentation";
@@ -29,13 +30,9 @@ import { eventBus } from "@/lib/event-bus";
 import { useGameStore } from "@/stores/useGameStore";
 import { saveManager, SAVE_VERSION } from "@/lib/save-manager";
 import cropsData from "../data/crops.json";
-import itemsData from "../data/items.json";
 
 const cropMap = new Map<string, CropDefinition>(
   (cropsData as ReadonlyArray<CropDefinition>).map((c) => [c.id, c]),
-);
-const itemMap = new Map<string, ItemDefinition>(
-  (itemsData as ReadonlyArray<ItemDefinition>).map((item) => [item.id, item]),
 );
 
 const PLAYER_SPAWN_X = 22;
@@ -190,42 +187,6 @@ export class FarmScene extends Phaser.Scene {
     };
     this.syncInventoryFn = syncInventory;
 
-    const onShopBuy = ({ itemId }: { itemId: string }) => {
-      if (!itemId.startsWith("seed-")) return;
-      const cropId = itemId.slice(5);
-      const cropDef = cropMap.get(cropId);
-      if (!cropDef) return;
-
-      const store = useGameStore.getState();
-      if (store.gold < cropDef.seedPrice) return;
-      if (!inventory.addItem(itemId)) return;
-      const newGold = store.gold - cropDef.seedPrice;
-      eventBus.emit("gold:changed", {
-        amount: -cropDef.seedPrice,
-        total: newGold,
-      });
-      syncInventory();
-    };
-
-    const onShopSell = ({
-      itemId,
-      quantity,
-    }: {
-      itemId: string;
-      quantity: number;
-    }) => {
-      const def = itemMap.get(itemId);
-      if (!def || def.sellPrice <= 0) return;
-      if (!inventory.hasItem(itemId, quantity)) return;
-
-      inventory.removeItem(itemId, quantity);
-      const earnings = def.sellPrice * quantity;
-      const store = useGameStore.getState();
-      const newGold = store.gold + earnings;
-      eventBus.emit("gold:changed", { amount: earnings, total: newGold });
-      syncInventory();
-    };
-
     const onGiftRequested = ({
       npcId,
       itemId,
@@ -269,6 +230,7 @@ export class FarmScene extends Phaser.Scene {
         return;
       }
       syncInventory();
+      eventBus.emit("crafting:cooked", { recipeId });
     };
 
     const onFerment = ({ recipeId }: { recipeId: string }) => {
@@ -284,6 +246,7 @@ export class FarmScene extends Phaser.Scene {
       }
       syncInventory();
       syncFermentation();
+      eventBus.emit("crafting:fermented", { recipeId });
     };
 
     const onCollect = ({ slotIndex }: { slotIndex: number }) => {
@@ -471,12 +434,14 @@ export class FarmScene extends Phaser.Scene {
     eventBus.on("combat:playerDied", onCombatPlayerDied);
     eventBus.on("inventory:changed", syncInventory);
     eventBus.on("inventory:equipped", syncInventory);
-    eventBus.on("shop:buy", onShopBuy);
-    eventBus.on("shop:sell", onShopSell);
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
+    const cleanupMarriage = setupMarriageHandler(inventory, syncInventory);
     eventBus.on("npc:giftRequested", onGiftRequested);
     eventBus.on("energy:fainted", onFainted);
     eventBus.on("crafting:cook", onCook);
     eventBus.on("crafting:ferment", onFerment);
+    // 자정마다 발효 진행도를 store에 반영 (UI 진행표시·수확 버튼 갱신)
+    eventBus.on("time:dayEnd", syncFermentation);
     eventBus.on("crafting:collect", onCollect);
     eventBus.on("building:build", onBuildingBuild);
     eventBus.on("building:upgrade", onBuildingUpgrade);
@@ -518,6 +483,20 @@ export class FarmScene extends Phaser.Scene {
           reputation: useGameStore.getState().reputation,
           completedSeasonalQuests: [],
           unlockedIsland: useGameStore.getState().unlockedIsland ?? false,
+          marriageStatus: useGameStore.getState().marriageStatus,
+          marriagePartnerId: useGameStore.getState().marriagePartnerId,
+          engagedAtDay: useGameStore.getState().engagedAtDay,
+          marriedAtDay: useGameStore.getState().marriedAtDay,
+          summonedGuardians: [...useGameStore.getState().summonedGuardians],
+          defeatedBosses: [...useGameStore.getState().defeatedBosses],
+          endingReached: useGameStore.getState().endingReached,
+          farmDecorations: [...useGameStore.getState().farmDecorations],
+          dexDiscovered: useGameStore.getState().dexDiscovered,
+          dexMilestonesGranted: [
+            ...useGameStore.getState().dexMilestonesGranted,
+          ],
+          familyChildren: [...useGameStore.getState().familyChildren],
+          lastChildBornDay: useGameStore.getState().lastChildBornDay,
           activeQuests: questSystem.getState().active,
           completedQuests: questSystem.getState().completed,
           questProgress: questSystem.getState().progress,
@@ -566,6 +545,22 @@ export class FarmScene extends Phaser.Scene {
         npcSystem.setCurrentSeason(data.season);
         npcSystem.setLocation("farm", this);
         store.setUnlockedIsland(data.unlockedIsland ?? false);
+        store.setMarriage(
+          data.marriageStatus ?? "single",
+          data.marriagePartnerId ?? null,
+          data.engagedAtDay ?? null,
+          data.marriedAtDay ?? null,
+        );
+        store.setSummonedGuardians(data.summonedGuardians ?? []);
+        store.setDefeatedBosses(data.defeatedBosses ?? []);
+        store.setEndingReached(data.endingReached ?? null);
+        store.setFarmDecorations(data.farmDecorations ?? []);
+        store.setDexDiscovered(data.dexDiscovered ?? {});
+        store.setDexMilestonesGranted(data.dexMilestonesGranted ?? []);
+        store.setFamily(
+          data.familyChildren ?? [],
+          data.lastChildBornDay ?? null,
+        );
         questSystem.loadState(
           data.activeQuests ?? [],
           data.completedQuests ?? [],
@@ -597,19 +592,40 @@ export class FarmScene extends Phaser.Scene {
     this.setupCollision(map);
     this.setupCamera(map);
 
+    const cleanupDecorations = setupFarmDecorations(this, {
+      mapWidth: map.width,
+      mapHeight: map.height,
+      getPlayerTile: () => ({
+        x: Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE),
+        y: Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE),
+      }),
+      isTileBlocked: (tileX, tileY) => {
+        const tile = this.collisionLayer?.getTileAt(tileX, tileY);
+        return tile !== null && tile !== undefined && tile.index > 0;
+      },
+    });
+
+    const cleanupFamily = setupFamilyRendering(this, {
+      homeTileX: PLAYER_SPAWN_X - 2,
+      homeTileY: PLAYER_SPAWN_Y - 1,
+    });
+
     this.events.once("shutdown", () => {
+      cleanupFamily();
       saveManager.save();
       saveManager.destroy();
       inventory.destroy();
       eventBus.off("inventory:useFood", onUseFood);
       eventBus.off("inventory:changed", syncInventory);
       eventBus.off("inventory:equipped", syncInventory);
-      eventBus.off("shop:buy", onShopBuy);
-      eventBus.off("shop:sell", onShopSell);
+      cleanupShop();
+      cleanupMarriage();
+      cleanupDecorations();
       eventBus.off("npc:giftRequested", onGiftRequested);
       eventBus.off("energy:fainted", onFainted);
       eventBus.off("crafting:cook", onCook);
       eventBus.off("crafting:ferment", onFerment);
+      eventBus.off("time:dayEnd", syncFermentation);
       eventBus.off("crafting:collect", onCollect);
       eventBus.off("building:build", onBuildingBuild);
       eventBus.off("building:upgrade", onBuildingUpgrade);

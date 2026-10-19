@@ -3,11 +3,19 @@ import Phaser from "phaser";
 import { gameConfig } from "@/game/config";
 import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
 import { initStoreBridge, destroyStoreBridge } from "@/lib/store-bridge";
+import { initDexBridge, destroyDexBridge } from "@/lib/dex-bridge";
+import { initFamilyBridge, destroyFamilyBridge } from "@/lib/family-bridge";
 import { eventBus } from "@/lib/event-bus";
 import { useLocale } from "@/i18n/useLocale";
 import HUD from "@/ui/components/HUD";
 import InventoryPanel from "@/ui/components/InventoryPanel";
 import ShopPanel from "@/ui/components/ShopPanel";
+import TradePanel from "@/ui/components/TradePanel";
+import GuardianPanel from "@/ui/components/GuardianPanel";
+import DefensePanel from "@/ui/components/DefensePanel";
+import DecorationPanel from "@/ui/components/DecorationPanel";
+import DexPanel from "@/ui/components/DexPanel";
+import EndingOverlay from "@/ui/components/EndingOverlay";
 import DialogBox from "@/ui/components/DialogBox";
 import NPCPanel from "@/ui/components/NPCPanel";
 import CraftingPanel from "@/ui/components/CraftingPanel";
@@ -69,6 +77,8 @@ const App = () => {
     if (gameRef.current) return;
 
     initStoreBridge();
+    initDexBridge();
+    initFamilyBridge();
     gameRef.current = new Phaser.Game(gameConfig);
 
     const onTitleReady = () => {
@@ -85,6 +95,8 @@ const App = () => {
     return () => {
       clearTimeout(fallbackTimer);
       eventBus.off("title:ready", onTitleReady);
+      destroyFamilyBridge();
+      destroyDexBridge();
       destroyStoreBridge();
       gameRef.current?.destroy(true);
       gameRef.current = null;
@@ -176,6 +188,11 @@ const App = () => {
             )}
             <InventoryPanel open={activeTab === "inventory"} />
             <ShopPanel open={activeTab === "shop"} />
+            <TradePanel open={activeTab === "trade"} />
+            <GuardianPanel open={activeTab === "guardian"} />
+            <DefensePanel open={activeTab === "defense"} />
+            <DecorationPanel open={activeTab === "decoration"} />
+            <DexPanel open={activeTab === "dex"} />
             <CraftingPanel open={activeTab === "crafting"} />
             <BuildingPanel open={activeTab === "building"} />
             <AnimalPanel open={activeTab === "animal"} />
@@ -184,7 +201,11 @@ const App = () => {
             <FishingMiniGame />
             <EventUI />
             <SeasonTransitionOverlay />
-            <JournalPanel />
+            <EndingOverlay />
+            <JournalPanel
+              open={activeTab === "journal"}
+              onClose={() => setActiveTab(null)}
+            />
             {!dialogOpen && <TouchControls />}
             {!dialogOpen && (
               <GameTabBar activeTab={activeTab} onTabChange={handleTabChange} />

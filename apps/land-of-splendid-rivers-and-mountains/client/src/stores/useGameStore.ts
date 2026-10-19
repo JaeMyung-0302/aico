@@ -49,6 +49,33 @@ interface GameState {
   readonly dialogOpen: boolean;
   readonly reputation: number;
   readonly unlockedIsland: boolean;
+  readonly marriageStatus: "single" | "dating" | "engaged" | "married";
+  readonly marriagePartnerId: string | null;
+  readonly engagedAtDay: number | null;
+  readonly marriedAtDay: number | null;
+  readonly summonedGuardians: ReadonlyArray<string>;
+  readonly defeatedBosses: ReadonlyArray<string>;
+  readonly endingReached: string | null;
+  readonly farmDecorations: ReadonlyArray<FarmDecorationState>;
+  readonly dexDiscovered: Readonly<Record<string, ReadonlyArray<string>>>;
+  readonly dexMilestonesGranted: ReadonlyArray<number>;
+  readonly familyChildren: ReadonlyArray<FamilyChildState>;
+  readonly lastChildBornDay: number | null;
+}
+
+export interface FamilyChildState {
+  readonly id: string;
+  readonly name: string;
+  readonly birthDay: number;
+}
+
+export interface FarmDecorationState {
+  readonly instanceId: string;
+  readonly itemId: string;
+  readonly tileX: number;
+  readonly tileY: number;
+  readonly w: number;
+  readonly h: number;
 }
 
 interface GameActions {
@@ -96,6 +123,24 @@ interface GameActions {
   setDialogOpen: (open: boolean) => void;
   setReputation: (reputation: number) => void;
   setUnlockedIsland: (unlocked: boolean) => void;
+  setMarriage: (
+    status: "single" | "dating" | "engaged" | "married",
+    partnerId: string | null,
+    engagedAtDay: number | null,
+    marriedAtDay: number | null,
+  ) => void;
+  setSummonedGuardians: (ids: ReadonlyArray<string>) => void;
+  setDefeatedBosses: (ids: ReadonlyArray<string>) => void;
+  setEndingReached: (endingId: string | null) => void;
+  setFarmDecorations: (decorations: ReadonlyArray<FarmDecorationState>) => void;
+  setDexDiscovered: (
+    discovered: Readonly<Record<string, ReadonlyArray<string>>>,
+  ) => void;
+  setDexMilestonesGranted: (percents: ReadonlyArray<number>) => void;
+  setFamily: (
+    children: ReadonlyArray<FamilyChildState>,
+    lastChildBornDay: number | null,
+  ) => void;
   reset: () => void;
 }
 
@@ -134,6 +179,18 @@ const initialState: GameState = {
   dialogOpen: false,
   reputation: 0,
   unlockedIsland: false,
+  marriageStatus: "single",
+  marriagePartnerId: null,
+  engagedAtDay: null,
+  marriedAtDay: null,
+  summonedGuardians: [],
+  defeatedBosses: [],
+  endingReached: null,
+  farmDecorations: [],
+  dexDiscovered: {},
+  dexMilestonesGranted: [],
+  familyChildren: [],
+  lastChildBornDay: null,
 };
 
 export const useGameStore = create<GameState & GameActions>()((set) => ({
@@ -198,6 +255,21 @@ export const useGameStore = create<GameState & GameActions>()((set) => ({
   setReputation: (reputation) => set({ reputation }),
 
   setUnlockedIsland: (unlockedIsland) => set({ unlockedIsland }),
+  setMarriage: (
+    marriageStatus,
+    marriagePartnerId,
+    engagedAtDay,
+    marriedAtDay,
+  ) => set({ marriageStatus, marriagePartnerId, engagedAtDay, marriedAtDay }),
+  setSummonedGuardians: (summonedGuardians) => set({ summonedGuardians }),
+  setDefeatedBosses: (defeatedBosses) => set({ defeatedBosses }),
+  setEndingReached: (endingReached) => set({ endingReached }),
+  setFarmDecorations: (farmDecorations) => set({ farmDecorations }),
+  setDexDiscovered: (dexDiscovered) => set({ dexDiscovered }),
+  setDexMilestonesGranted: (dexMilestonesGranted) =>
+    set({ dexMilestonesGranted }),
+  setFamily: (familyChildren, lastChildBornDay) =>
+    set({ familyChildren, lastChildBornDay }),
 
   reset: () => set(initialState),
 }));

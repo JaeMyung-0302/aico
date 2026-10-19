@@ -1,165 +1,249 @@
-import Phaser from 'phaser'
-import { GAME_CONSTANTS } from '@land-of-splendid-rivers-and-mountains/shared'
-import { Player } from '../entities/Player'
-import { InputManager } from '../input/input-manager'
-import { KeyboardInput } from '../input/keyboard-input'
-import { TouchInput } from '../input/touch-input'
-import { InventorySystem } from '../systems/inventory'
-import { createPositionEmitter } from '../utils/position-emitter'
-import { eventBus } from '@/lib/event-bus'
-import { saveManager } from '@/lib/save-manager'
-import { useGameStore } from '@/stores/useGameStore'
-const PLAYER_SPAWN_X = 1
-const PLAYER_SPAWN_Y = 14
+import Phaser from "phaser";
+import { GAME_CONSTANTS } from "@land-of-splendid-rivers-and-mountains/shared";
+import { Player } from "../entities/Player";
+import { InputManager } from "../input/input-manager";
+import { KeyboardInput } from "../input/keyboard-input";
+import { TouchInput } from "../input/touch-input";
+import { InventorySystem } from "../systems/inventory";
+import { QuestSystem } from "../systems/quest";
+import { FishingSystem } from "../systems/fishing";
+import { EnergySystem } from "../systems/energy";
+import { setupRewardHandler } from "../systems/reward";
+import { setupShopHandlers } from "../systems/shop";
+import { createPositionEmitter } from "../utils/position-emitter";
+import { eventBus } from "@/lib/event-bus";
+import { saveManager } from "@/lib/save-manager";
+import { useGameStore } from "@/stores/useGameStore";
+const PLAYER_SPAWN_X = 1;
+const PLAYER_SPAWN_Y = 14;
 
 export class RiverScene extends Phaser.Scene {
-  private player!: Player
-  private inputManager!: InputManager
-  private keyboardInput!: KeyboardInput
-  private touchInput!: TouchInput
-  private readonly emitPosition = createPositionEmitter('RiverScene')
+  private player!: Player;
+  private inputManager!: InputManager;
+  private keyboardInput!: KeyboardInput;
+  private touchInput!: TouchInput;
+  private fishingSystem!: FishingSystem;
+  private energySystem!: EnergySystem;
+  private groundLayer: Phaser.Tilemaps.TilemapLayer | null = null;
+  private prevAction = false;
+  private readonly emitPosition = createPositionEmitter("RiverScene");
 
   constructor() {
-    super({ key: 'RiverScene' })
+    super({ key: "RiverScene" });
   }
 
   preload(): void {
-    this.createTilesetTexture()
-    this.load.tilemapTiledJSON('river-map', '/assets/tilemaps/river.json')
+    this.createTilesetTexture();
+    this.load.tilemapTiledJSON("river-map", "/assets/tilemaps/river.json");
   }
 
   create(): void {
-    this.isTransitioning = false
-    const map = this.loadTilemap()
+    this.isTransitioning = false;
+    const map = this.loadTilemap();
 
-    this.inputManager = new InputManager()
-    this.keyboardInput = new KeyboardInput()
-    this.touchInput = new TouchInput()
-    this.keyboardInput.init(this)
-    this.touchInput.init(this)
+    this.inputManager = new InputManager();
+    this.keyboardInput = new KeyboardInput();
+    this.touchInput = new TouchInput();
+    this.keyboardInput.init(this);
+    this.touchInput.init(this);
 
-    const data = this.scene.settings.data as { spawnX?: number; spawnY?: number } | undefined
-    const tileX = data?.spawnX ?? PLAYER_SPAWN_X
-    const tileY = data?.spawnY ?? PLAYER_SPAWN_Y
-    const spawnX = tileX * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2
-    const spawnY = tileY * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2
-    this.player = new Player(this, spawnX, spawnY)
-    this.player.sprite.setDepth(10)
+    const data = this.scene.settings.data as
+      | { spawnX?: number; spawnY?: number }
+      | undefined;
+    const tileX = data?.spawnX ?? PLAYER_SPAWN_X;
+    const tileY = data?.spawnY ?? PLAYER_SPAWN_Y;
+    const spawnX =
+      tileX * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
+    const spawnY =
+      tileY * GAME_CONSTANTS.TILE_SIZE + GAME_CONSTANTS.TILE_SIZE / 2;
+    this.player = new Player(this, spawnX, spawnY);
+    this.player.sprite.setDepth(10);
 
-    const inventory = new InventorySystem()
-    const store = useGameStore.getState()
-    inventory.loadState(store.inventory, store.equippedTools)
+    const inventory = new InventorySystem();
+    const store = useGameStore.getState();
+    inventory.loadState(store.inventory, store.equippedTools);
 
     const syncInventory = () => {
-      const state = inventory.getState()
-      useGameStore.getState().setInventory(state.slots)
-      useGameStore.getState().setEquippedTools(state.equipped)
-    }
+      const state = inventory.getState();
+      useGameStore.getState().setInventory(state.slots);
+      useGameStore.getState().setEquippedTools(state.equipped);
+    };
 
-    eventBus.on('inventory:equipped', syncInventory)
+    eventBus.on("inventory:equipped", syncInventory);
+    const cleanupReward = setupRewardHandler(inventory, syncInventory);
 
-    this.setupCollision(map)
-    this.setupCamera(map)
+    const questSystem = new QuestSystem();
+    questSystem.init(this);
+    questSystem.loadState(
+      store.activeQuests,
+      store.completedQuests,
+      store.questProgress,
+    );
+    const cleanupShop = setupShopHandlers(inventory, syncInventory);
 
-    this.events.once('shutdown', () => {
-      syncInventory()
+    const energySystem = new EnergySystem();
+    energySystem.setState(store.energy, store.maxEnergy);
+    this.energySystem = energySystem;
+
+    const fishingSystem = new FishingSystem();
+    fishingSystem.init(this);
+    this.fishingSystem = fishingSystem;
+
+    const onFishCaught = ({ fishId }: { fishId: string }) => {
+      inventory.addItem(fishId);
+      syncInventory();
+    };
+    eventBus.on("fishing:caught", onFishCaught);
+
+    this.setupCollision(map);
+    this.setupCamera(map);
+
+    this.events.once("shutdown", () => {
+      syncInventory();
       saveManager.patchSave({
         equippedTools: inventory.getEquipped(),
         inventory: [...inventory.getSlots()],
-      })
-      inventory.destroy()
-      eventBus.off('inventory:equipped', syncInventory)
-      this.keyboardInput.destroy()
-      this.touchInput.destroy()
-      this.player.destroy()
-    })
+        activeQuests: [...questSystem.getState().active],
+        completedQuests: [...questSystem.getState().completed],
+        questProgress: questSystem.getState().progress,
+      });
+      inventory.destroy();
+      cleanupShop();
+      questSystem.destroy();
+      cleanupReward();
+      this.fishingSystem.destroy();
+      eventBus.off("fishing:caught", onFishCaught);
+      eventBus.off("inventory:equipped", syncInventory);
+      this.keyboardInput.destroy();
+      this.touchInput.destroy();
+      this.player.destroy();
+    });
   }
 
-  update(): void {
-    const pointer = this.input.activePointer
-    const isTouchActive = pointer.isDown && pointer.wasTouch
+  update(time: number, delta: number): void {
+    const pointer = this.input.activePointer;
+    const isTouchActive = pointer.isDown && pointer.wasTouch;
     const rawState = isTouchActive
       ? this.touchInput.getState()
-      : this.keyboardInput.getState()
+      : this.keyboardInput.getState();
 
-    this.inputManager.updateFromProvider(rawState)
+    this.inputManager.updateFromProvider(rawState);
 
     if (useGameStore.getState().dialogOpen) {
-      this.player.sprite.setVelocity(0, 0)
-      return
+      this.player.sprite.setVelocity(0, 0);
+      return;
     }
 
-    this.player.update(this.inputManager.getState())
-    this.emitPosition(this.player.sprite, this.time.now)
+    this.fishingSystem.update(this, time, delta);
+    if (this.fishingSystem.isActive()) {
+      this.player.sprite.setVelocity(0, 0);
+      return;
+    }
 
-    this.checkPortal()
+    const inputState = this.inputManager.getState();
+    this.player.update(inputState);
+    this.emitPosition(this.player.sprite, this.time.now);
+
+    const actionPressed = inputState.action && !this.prevAction;
+    this.prevAction = inputState.action;
+    if (actionPressed) {
+      const equipped = useGameStore.getState().equippedTools.current;
+      if (
+        equipped === "tool-fishingRod" &&
+        this.isNearWater() &&
+        this.energySystem.consume("FISH")
+      ) {
+        this.fishingSystem.startFishing();
+      }
+    }
+
+    this.checkPortal();
   }
 
-  private isTransitioning = false
+  private isNearWater(): boolean {
+    if (!this.groundLayer) return false;
+    const tileX = Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE);
+    const tileY = Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE);
+    // 강둑 틈새(1타일 포켓)는 물리적으로 진입이 어려워 감지 반경 2타일
+    for (let dx = -2; dx <= 2; dx++) {
+      for (let dy = -2; dy <= 2; dy++) {
+        const tile = this.groundLayer.getTileAt(tileX + dx, tileY + dy);
+        if (tile && tile.index === 3) return true;
+      }
+    }
+    return false;
+  }
+
+  private isTransitioning = false;
 
   private checkPortal(): void {
-    if (this.isTransitioning) return
+    if (this.isTransitioning) return;
 
-    const tileX = Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE)
-    const tileY = Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE)
+    const tileX = Math.floor(this.player.sprite.x / GAME_CONSTANTS.TILE_SIZE);
+    const tileY = Math.floor(this.player.sprite.y / GAME_CONSTANTS.TILE_SIZE);
 
     // 좌 → Village
     if (tileX <= 0 && tileY >= 14 && tileY <= 15) {
-      this.isTransitioning = true
-      this.scene.start('VillageScene', { spawnX: 28, spawnY: 14 })
+      this.isTransitioning = true;
+      this.scene.start("VillageScene", { spawnX: 28, spawnY: 14 });
     }
 
     // 하 → Beach
     if (tileY >= 29 && tileX >= 12 && tileX <= 13) {
-      this.isTransitioning = true
-      this.scene.start('BeachScene')
+      this.isTransitioning = true;
+      this.scene.start("BeachScene");
     }
-
   }
 
   private createTilesetTexture(): void {
-    if (this.textures.exists('tileset-river')) return
-    const size = GAME_CONSTANTS.TILE_SIZE
-    const colors = [0x228b22, 0x8b6914, 0x2196f3, 0x607d8b]
+    if (this.textures.exists("tileset-river")) return;
+    const size = GAME_CONSTANTS.TILE_SIZE;
+    const colors = [0x228b22, 0x8b6914, 0x2196f3, 0x607d8b];
 
-    const canvas = this.textures.createCanvas('tileset-river', size * 2, size * 2)
-    if (!canvas) return
+    const canvas = this.textures.createCanvas(
+      "tileset-river",
+      size * 2,
+      size * 2,
+    );
+    if (!canvas) return;
 
-    const ctx = canvas.context
+    const ctx = canvas.context;
     for (let i = 0; i < colors.length; i++) {
-      const x = (i % 2) * size
-      const y = Math.floor(i / 2) * size
-      const hex = colors[i]!
-      ctx.fillStyle = `#${hex.toString(16).padStart(6, '0')}`
-      ctx.fillRect(x, y, size, size)
+      const x = (i % 2) * size;
+      const y = Math.floor(i / 2) * size;
+      const hex = colors[i]!;
+      ctx.fillStyle = `#${hex.toString(16).padStart(6, "0")}`;
+      ctx.fillRect(x, y, size, size);
     }
-    canvas.refresh()
+    canvas.refresh();
   }
 
   private loadTilemap(): Phaser.Tilemaps.Tilemap {
-    const map = this.make.tilemap({ key: 'river-map' })
-    const tileset = map.addTilesetImage('river-tiles', 'tileset-river')
-    if (!tileset) throw new Error('Failed to load river tileset')
+    const map = this.make.tilemap({ key: "river-map" });
+    const tileset = map.addTilesetImage("river-tiles", "tileset-river");
+    if (!tileset) throw new Error("Failed to load river tileset");
 
-    map.createLayer('ground', tileset)?.setDepth(0)
-    map.createLayer('path', tileset)?.setDepth(1)
-    map.createLayer('objects', tileset)?.setDepth(2)
-    map.createLayer('collision', tileset)?.setVisible(false)
+    const ground = map.createLayer("ground", tileset);
+    ground?.setDepth(0);
+    this.groundLayer = ground ?? null;
+    map.createLayer("path", tileset)?.setDepth(1);
+    map.createLayer("objects", tileset)?.setDepth(2);
+    map.createLayer("collision", tileset)?.setVisible(false);
 
-    return map
+    return map;
   }
 
   private setupCollision(map: Phaser.Tilemaps.Tilemap): void {
-    const collisionLayer = map.getLayer('collision')?.tilemapLayer
-    if (!collisionLayer) return
+    const collisionLayer = map.getLayer("collision")?.tilemapLayer;
+    if (!collisionLayer) return;
 
-    collisionLayer.setCollisionByExclusion([-1, 0])
-    this.physics.add.collider(this.player.sprite, collisionLayer)
+    collisionLayer.setCollisionByExclusion([-1, 0]);
+    this.physics.add.collider(this.player.sprite, collisionLayer);
   }
 
   private setupCamera(map: Phaser.Tilemaps.Tilemap): void {
-    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1)
-    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   }
 }

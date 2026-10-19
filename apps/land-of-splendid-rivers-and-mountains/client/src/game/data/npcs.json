@@ -5,9 +5,17 @@
     "location": "farm",
     "spawnTileX": 18,
     "spawnTileY": 5,
-    "lovedGifts": ["crop-rice", "crop-cabbage"],
-    "likedGifts": ["crop-radish", "crop-greenOnion"],
-    "dislikedGifts": ["stone"],
+    "lovedGifts": [
+      "crop-rice",
+      "crop-cabbage"
+    ],
+    "likedGifts": [
+      "crop-radish",
+      "crop-greenOnion"
+    ],
+    "dislikedGifts": [
+      "stone"
+    ],
     "dialogChoices": [
       {
         "id": "kind-words",
@@ -58,9 +66,16 @@
     "location": "village",
     "spawnTileX": 10,
     "spawnTileY": 12,
-    "lovedGifts": ["crop-ginseng"],
-    "likedGifts": ["crop-perilla", "crop-sesame"],
-    "dislikedGifts": ["iron"],
+    "lovedGifts": [
+      "crop-ginseng"
+    ],
+    "likedGifts": [
+      "crop-perilla",
+      "crop-sesame"
+    ],
+    "dislikedGifts": [
+      "iron"
+    ],
     "dialogChoices": [
       {
         "id": "respect",
@@ -77,7 +92,8 @@
         "textKey": "npc.parkJeongsu.choice.dismiss",
         "relationChange": -1
       }
-    ]
+    ],
+    "marriageable": true
   },
   {
     "id": "choi-cheolsu",
@@ -85,9 +101,16 @@
     "location": "village",
     "spawnTileX": 14,
     "spawnTileY": 8,
-    "lovedGifts": ["iron"],
-    "likedGifts": ["stone", "wood"],
-    "dislikedGifts": ["crop-cabbage"],
+    "lovedGifts": [
+      "iron"
+    ],
+    "likedGifts": [
+      "stone",
+      "wood"
+    ],
+    "dislikedGifts": [
+      "crop-cabbage"
+    ],
     "dialogChoices": [
       {
         "id": "admire-craft",
@@ -104,7 +127,8 @@
         "textKey": "npc.choiCheolsu.choice.ignore",
         "relationChange": -1
       }
-    ]
+    ],
+    "marriageable": true
   },
   {
     "id": "han-seoyoung",
@@ -112,9 +136,17 @@
     "location": "village",
     "spawnTileX": 8,
     "spawnTileY": 15,
-    "lovedGifts": ["crop-ginseng", "crop-perilla"],
-    "likedGifts": ["crop-garlic", "crop-pepper"],
-    "dislikedGifts": ["stone"],
+    "lovedGifts": [
+      "crop-ginseng",
+      "crop-perilla"
+    ],
+    "likedGifts": [
+      "crop-garlic",
+      "crop-pepper"
+    ],
+    "dislikedGifts": [
+      "stone"
+    ],
     "dialogChoices": [
       {
         "id": "compliment",
@@ -157,7 +189,8 @@
         "spawnTileX": 8,
         "spawnTileY": 15
       }
-    ]
+    ],
+    "marriageable": true
   },
   {
     "id": "kang-taepung",
@@ -166,8 +199,12 @@
     "spawnTileX": 28,
     "spawnTileY": 15,
     "lovedGifts": [],
-    "likedGifts": ["wood"],
-    "dislikedGifts": ["crop-rice"],
+    "likedGifts": [
+      "wood"
+    ],
+    "dislikedGifts": [
+      "crop-rice"
+    ],
     "dialogChoices": [
       {
         "id": "challenge",
@@ -192,9 +229,16 @@
     "location": "village",
     "spawnTileX": 16,
     "spawnTileY": 10,
-    "lovedGifts": ["wood"],
-    "likedGifts": ["stone", "iron"],
-    "dislikedGifts": ["crop-pepper"],
+    "lovedGifts": [
+      "wood"
+    ],
+    "likedGifts": [
+      "stone",
+      "iron"
+    ],
+    "dislikedGifts": [
+      "crop-pepper"
+    ],
     "dialogChoices": [
       {
         "id": "help-build",
@@ -211,7 +255,8 @@
         "textKey": "npc.leeDohyun.choice.bother",
         "relationChange": -1
       }
-    ]
+    ],
+    "marriageable": true
   },
   {
     "id": "song-narae",
@@ -219,9 +264,16 @@
     "location": "farm",
     "spawnTileX": 25,
     "spawnTileY": 3,
-    "lovedGifts": ["crop-sesame"],
-    "likedGifts": ["crop-sweetPotato", "crop-perilla"],
-    "dislikedGifts": ["iron"],
+    "lovedGifts": [
+      "crop-sesame"
+    ],
+    "likedGifts": [
+      "crop-sweetPotato",
+      "crop-perilla"
+    ],
+    "dislikedGifts": [
+      "iron"
+    ],
     "dialogChoices": [
       {
         "id": "praise-farm",
@@ -272,9 +324,17 @@
     "location": "village",
     "spawnTileX": 12,
     "spawnTileY": 14,
-    "lovedGifts": ["crop-pepper", "crop-garlic"],
-    "likedGifts": ["crop-cabbage", "crop-radish"],
-    "dislikedGifts": ["stone"],
+    "lovedGifts": [
+      "crop-pepper",
+      "crop-garlic"
+    ],
+    "likedGifts": [
+      "crop-cabbage",
+      "crop-radish"
+    ],
+    "dislikedGifts": [
+      "stone"
+    ],
     "dialogChoices": [
       {
         "id": "taste-food",
@@ -291,7 +351,8 @@
         "textKey": "npc.jungMisuk.choice.refuse",
         "relationChange": -1
       }
-    ]
+    ],
+    "marriageable": true
   },
   {
     "id": "oh-kyungho",
@@ -300,8 +361,13 @@
     "spawnTileX": 20,
     "spawnTileY": 6,
     "lovedGifts": [],
-    "likedGifts": ["wood", "iron"],
-    "dislikedGifts": ["crop-sweetPotato"],
+    "likedGifts": [
+      "wood",
+      "iron"
+    ],
+    "dislikedGifts": [
+      "crop-sweetPotato"
+    ],
     "dialogChoices": [
       {
         "id": "fish-story",
@@ -344,7 +410,8 @@
         "spawnTileX": 22,
         "spawnTileY": 12
       }
-    ]
+    ],
+    "marriageable": true
   },
   {
     "id": "yoon-haneul",
@@ -352,9 +419,17 @@
     "location": "farm",
     "spawnTileX": 15,
     "spawnTileY": 12,
-    "lovedGifts": ["crop-sweetPotato", "crop-radish"],
-    "likedGifts": ["crop-rice", "crop-greenOnion"],
-    "dislikedGifts": ["iron"],
+    "lovedGifts": [
+      "crop-sweetPotato",
+      "crop-radish"
+    ],
+    "likedGifts": [
+      "crop-rice",
+      "crop-greenOnion"
+    ],
+    "dislikedGifts": [
+      "iron"
+    ],
     "dialogChoices": [
       {
         "id": "encourage",
@@ -379,8 +454,12 @@
     "location": "temple",
     "spawnTileX": 12,
     "spawnTileY": 10,
-    "lovedGifts": ["crop-ginseng"],
-    "likedGifts": ["food-samgyetang"],
+    "lovedGifts": [
+      "crop-ginseng"
+    ],
+    "likedGifts": [
+      "food-samgyetang"
+    ],
     "dislikedGifts": [],
     "dialogChoices": [
       {
@@ -406,9 +485,16 @@
     "location": "beach",
     "spawnTileX": 8,
     "spawnTileY": 20,
-    "lovedGifts": ["drop-sharkTooth"],
-    "likedGifts": ["wood", "iron"],
-    "dislikedGifts": ["crop-cabbage"],
+    "lovedGifts": [
+      "drop-sharkTooth"
+    ],
+    "likedGifts": [
+      "wood",
+      "iron"
+    ],
+    "dislikedGifts": [
+      "crop-cabbage"
+    ],
     "dialogChoices": [
       {
         "id": "ask-voyage",
@@ -433,9 +519,16 @@
     "location": "island",
     "spawnTileX": 10,
     "spawnTileY": 12,
-    "lovedGifts": ["drop-seaCoral", "drop-mermaidScale"],
-    "likedGifts": ["food-samgyetang"],
-    "dislikedGifts": ["stone"],
+    "lovedGifts": [
+      "drop-seaCoral",
+      "drop-mermaidScale"
+    ],
+    "likedGifts": [
+      "food-samgyetang"
+    ],
+    "dislikedGifts": [
+      "stone"
+    ],
     "dialogChoices": [
       {
         "id": "share-story",
@@ -460,9 +553,16 @@
     "location": "island",
     "spawnTileX": 20,
     "spawnTileY": 8,
-    "lovedGifts": ["iron"],
-    "likedGifts": ["drop-sharkTooth", "drop-inkSac"],
-    "dislikedGifts": ["crop-rice"],
+    "lovedGifts": [
+      "iron"
+    ],
+    "likedGifts": [
+      "drop-sharkTooth",
+      "drop-inkSac"
+    ],
+    "dislikedGifts": [
+      "crop-rice"
+    ],
     "dialogChoices": [
       {
         "id": "challenge-duel",

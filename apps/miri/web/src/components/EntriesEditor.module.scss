@@ -1,0 +1,275 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: inset 0 var(--hairline) 0 var(--surface-highlight);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cardName {
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--text-base);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+}
+
+.remove {
+  flex: none;
+  min-height: var(--space-6);
+  padding-inline: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 세트 번호, 수 칸들, 빼기. 수 칸은 남는 폭을 똑같이 나눈다. */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+
+  > label {
+    flex: 1 1 0;
+  }
+}
+
+.order {
+  flex: none;
+  width: var(--space-5);
+  min-height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.removeRow {
+  flex: none;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--text-lg);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.addRow {
+  min-height: var(--tap-min);
+  border: var(--hairline) dashed var(--surface-highlight);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+
+  &:active:not(:disabled) {
+    background: var(--accent-soft);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-spring);
+
+  &:active:not(:disabled) {
+    background: var(--surface-active);
+    transform: scale(0.95);
+    transition-duration: var(--dur-fast);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.chipCustom {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: transparent;
+  color: var(--accent);
+}
+
+.custom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--hairline) solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  animation: open var(--dur-base) var(--ease-out);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.group {
+  min-height: var(--space-6);
+  padding-inline: var(--space-3);
+  border: var(--hairline) solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.groupOn {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.customLabel {
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.customRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.input {
+  flex-grow: 1;
+  min-width: 0;
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: var(--hairline) solid var(--surface-highlight);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  color: var(--text);
+  /* 16px 미만이면 iOS 가 입력 때 화면을 확대한다. */
+  font: inherit;
+  font-size: var(--text-base);
+
+  &:focus-visible {
+    outline: var(--stroke) solid var(--accent);
+    outline-offset: var(--hairline);
+  }
+
+  &[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+}
+
+.submit {
+  flex: none;
+  min-height: var(--space-7);
+  padding-inline: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.customHint {
+  color: var(--text-3);
+  font-size: var(--text-sm);
+}
+
+@keyframes open {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-2)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

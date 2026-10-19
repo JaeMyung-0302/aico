@@ -33,14 +33,38 @@ export interface GameEvents {
     drops: ReadonlyArray<{ itemId: string; quantity: number }>;
   };
   "combat:playerDied": undefined;
+  "combat:levelUp": { level: number };
+  "npc:proposed": { npcId: string };
+  "marriage:event": {
+    type: "engagement" | "wedding";
+    partnerId: string;
+    day: number;
+  };
   "energy:changed": { current: number; max: number };
   "energy:depleted": undefined;
   "energy:fainted": { goldPenaltyRate: number };
   "gold:changed": { amount: number; total: number };
   "shop:buy": { itemId: string };
+  "trade:buy": { itemId: string };
+  "guardian:summon": { guardianId: string };
+  "guardian:summoned": { guardianId: string };
+  "ending:reached": { endingId: string };
+  "decoration:place": { itemId: string };
+  "decoration:placed": {
+    instanceId: string;
+    itemId: string;
+    tileX: number;
+    tileY: number;
+  };
+  "decoration:remove": { instanceId: string };
+  "family:requestChild": { partnerId: string };
+  "family:childBorn": { childId: string; name: string; birthDay: number };
+  "trade:sell": { itemId: string };
   "shop:sell": { itemId: string; quantity: number };
   "crafting:cook": { recipeId: string };
   "crafting:ferment": { recipeId: string };
+  "crafting:cooked": { recipeId: string };
+  "crafting:fermented": { recipeId: string };
   "crafting:collect": { slotIndex: number };
   "building:build": { buildingId: string };
   "building:upgrade": { buildingId: string };

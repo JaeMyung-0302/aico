@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { t } from "@/i18n";
 import { saveManager } from "@/lib/save-manager";
 import { useGameStore } from "@/stores/useGameStore";
+import { loadNgPlus } from "@/game/systems/new-game-plus-runtime";
 
 interface Props {
   readonly onStart: () => void;
@@ -14,6 +15,7 @@ const TitleScreen = ({ onStart, onOpenSaveLoad, onOpenSettings }: Props) => {
   const [loadError, _setLoadError] = useState(false);
 
   const hasSave = saveManager.hasSave();
+  const ngPlus = loadNgPlus();
 
   const handleNewGame = () => {
     saveManager.deleteSave();
@@ -31,6 +33,9 @@ const TitleScreen = ({ onStart, onOpenSaveLoad, onOpenSettings }: Props) => {
     <div style={{ ...styles.container, opacity: fading ? 0 : 1 }}>
       {loadError && <p style={styles.errorText}>{t("ui.title.loadFailed")}</p>}
 
+      {ngPlus.cycleCount > 0 && (
+        <div style={styles.ngBadge}>🔄 {ngPlus.cycleCount}회차</div>
+      )}
       <div style={styles.menu}>
         {hasSave && (
           <button style={styles.button} onClick={handleContinue}>
@@ -54,6 +59,13 @@ const TitleScreen = ({ onStart, onOpenSaveLoad, onOpenSettings }: Props) => {
 };
 
 const styles: Record<string, CSSProperties> = {
+  ngBadge: {
+    color: "#ffd700",
+    fontSize: 13,
+    fontWeight: 700,
+    marginBottom: 8,
+    textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+  },
   container: {
     position: "absolute",
     inset: 0,

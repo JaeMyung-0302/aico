@@ -1,0 +1,94 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--cta-h);
+  padding-inline: var(--space-5);
+  border: var(--hairline) solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  cursor: pointer;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform var(--dur-base) var(--ease-spring),
+    box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+
+  &:active {
+    transform: scale(0.96);
+    transition-duration: var(--dur-fast);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+    transform: none;
+  }
+}
+
+.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow);
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: var(--accent-strong);
+    }
+  }
+
+  &:active {
+    box-shadow: 0 0 var(--glow-sm) var(--accent-glow);
+  }
+}
+
+.ghost {
+  min-height: var(--tap-min);
+  background: var(--surface);
+  border-color: var(--surface-border);
+  color: var(--text-2);
+  font-size: var(--text-base);
+  font-weight: 600;
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+  }
+
+  &:active {
+    background: var(--surface-active);
+  }
+}
+
+.spinner {
+  width: var(--space-4);
+  height: var(--space-4);
+  border: var(--stroke) solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: spin var(--dur-ambient) linear infinite;
+  animation-duration: calc(var(--dur-slow) * 1.5);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-right-color: currentColor;
+    opacity: 0.6;
+  }
+}

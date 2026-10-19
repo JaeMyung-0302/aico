@@ -1,4 +1,4 @@
-import type { LatLng } from '@miri-pet/shared'
+import { haversineKm, type LatLng } from '@miri-pet/shared'
 import type { MapBbox } from './util-place-query'
 
 export type Region = { id: string; label: string; center: LatLng }
@@ -43,3 +43,9 @@ export const hasMovedAway = (search: MapBbox, current: MapBbox): boolean => {
   const lngDiff = Math.max(Math.abs(search.swLng - current.swLng), Math.abs(search.neLng - current.neLng))
   return latDiff > latSpan * MOVE_TOLERANCE_RATIO || lngDiff > lngSpan * MOVE_TOLERANCE_RATIO
 }
+
+// 서버 GET /places 제한(server/src/places/geo.ts MAX_BBOX_DIAGONAL_KM)과 같은 값. 넘으면 400 "지도를 조금 더 확대해 주세요"
+export const MAX_BBOX_DIAGONAL_KM = 50
+
+export const isBboxTooWide = ({ swLat, swLng, neLat, neLng }: MapBbox): boolean =>
+  haversineKm({ lat: swLat, lng: swLng }, { lat: neLat, lng: neLng }) > MAX_BBOX_DIAGONAL_KM

@@ -3,6 +3,7 @@ import { render, screen, userEvent, waitFor } from '@testing-library/react-nativ
 import { router } from 'expo-router'
 import { makePost } from '@/modules/feed/__fixtures__/posts'
 import { openConversation } from '@/modules/dm/data-access-dm/dm-api'
+import { blockUser, unblockUser } from '@/modules/moderation/data-access-moderation/moderation-api'
 import { fetchUserPets } from '@/modules/pets/data-access-pets/pets-api'
 import { fetchUserPosts } from '@/modules/posts/data-access-posts/posts-api'
 import { ApiError } from '@/shared/api/api-error'
@@ -14,6 +15,11 @@ jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), ca
 jest.mock('@/modules/dm/data-access-dm/dm-api', () => ({ openConversation: jest.fn() }))
 jest.mock('@/modules/posts/data-access-posts/posts-api', () => ({ fetchUserPosts: jest.fn(), deletePost: jest.fn() }))
 jest.mock('@/modules/pets/data-access-pets/pets-api', () => ({ fetchUserPets: jest.fn() }))
+jest.mock('@/modules/moderation/data-access-moderation/moderation-api', () => ({
+  blockUser: jest.fn(),
+  unblockUser: jest.fn(),
+  createReport: jest.fn(),
+}))
 const mockFetchProfile = jest.fn()
 jest.mock('@/modules/user/data-access-user/useUserProfile', () => {
   const { useQuery } = jest.requireActual('@tanstack/react-query')
@@ -154,5 +160,64 @@ describe('사용자 프로필 (17)', () => {
     await renderScreen(PROFILE.id)
     await user.press(await screen.findByRole('tab', { name: '반려동물' }))
     expect(await screen.findByText('등록된 반려동물이 없어요')).toBeOnTheScreen()
+  })
+})
+
+describe('차단 / 차단 해제', () => {
+  const NOT_FOUND = new ApiError({ code: 'HTTP', status: 404, message: 'x' })
+
+  const blockFromMenu = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.press(await screen.findByRole('button', { name: '신고 또는 차단' }))
+    await user.press(await screen.findByRole('button', { name: `${PROFILE.nickname} 님 차단` }))
+    await user.press(await screen.findByRole('button', { name: '차단하기' }))
+    await user.press(await screen.findByRole('button', { name: '확인' }))
+  }
+
+  beforeEach(() => {
+    jest.mocked(blockUser).mockImplementation(async () => {
+      // 차단하면 서버가 프로필을 404로 숨긴다
+      mockFetchProfile.mockRejectedValue(NOT_FOUND)
+    })
+    jest.mocked(unblockUser).mockImplementation(async () => {
+      mockFetchProfile.mockResolvedValue(PROFILE)
+    })
+  })
+
+  it('차단하면 팔로우·메시지·"찾을 수 없어요" 없이 차단 상태 하나만 보여 주고 화면에 머문다', async () => {
+    const user = userEvent.setup()
+    await renderScreen(PROFILE.id)
+    await blockFromMenu(user)
+
+    expect(await screen.findByText('차단한 사용자예요')).toBeOnTheScreen()
+    expect(screen.getByRole('button', { name: '차단 해제' })).toBeOnTheScreen()
+    expect(screen.queryByRole('button', { name: '팔로우' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '메시지' })).toBeNull()
+    expect(screen.queryByText('사용자를 찾을 수 없어요')).toBeNull()
+    expect(screen.queryByRole('button', { name: '신고 또는 차단' })).toBeNull()
+    expect(router.back).not.toHaveBeenCalled()
+    expect(blockUser).toHaveBeenCalledWith(PROFILE.id)
+  })
+
+  it('차단 해제하면 다시 일반 프로필로 돌아온다', async () => {
+    const user = userEvent.setup()
+    await renderScreen(PROFILE.id)
+    await blockFromMenu(user)
+    await user.press(await screen.findByRole('button', { name: '차단 해제' }))
+
+    expect(await screen.findByRole('button', { name: '팔로우' })).toBeOnTheScreen()
+    expect(unblockUser).toHaveBeenCalledWith(PROFILE.id)
+    expect(screen.queryByText('차단한 사용자예요')).toBeNull()
+    expect(screen.queryByText('사용자를 찾을 수 없어요')).toBeNull()
+  })
+
+  it('차단 해제에 실패하면 차단 상태에 머물며 알린다', async () => {
+    jest.mocked(unblockUser).mockRejectedValue(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen(PROFILE.id)
+    await blockFromMenu(user)
+    await user.press(await screen.findByRole('button', { name: '차단 해제' }))
+
+    expect(await screen.findByText('차단을 풀지 못했어요. 잠시 후 다시 시도해 주세요')).toBeOnTheScreen()
+    expect(screen.getByText('차단한 사용자예요')).toBeOnTheScreen()
   })
 })

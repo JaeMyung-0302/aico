@@ -8,10 +8,10 @@ import { RADIUS } from '@/design-system/tokens/radius'
 import { SPACING } from '@/design-system/tokens/spacing'
 import { petInfoLine } from '../util-pet/format-pet'
 
-type PetSummaryCardProps = { pet: Pet; today: string; onOpenEntryCard: () => void }
+type PetSummaryCardProps = { pet: Pet; today: string; onOpenEntryCard: () => void; onEdit: () => void }
 
-// 디자인 14 펫 카드: 사진 · 이름 · 품종/나이/크기 · 입장용 카드 열기
-const PetSummaryCard = ({ pet, today, onOpenEntryCard }: PetSummaryCardProps) => (
+// 디자인 14 펫 카드: 사진 · 이름 · 품종/나이/크기 · 수정 · 입장용 카드 열기
+const PetSummaryCard = ({ pet, today, onOpenEntryCard, onEdit }: PetSummaryCardProps) => (
   <View style={styles.card}>
     <View style={styles.header}>
       <Avatar name={pet.name} uri={pet.avatarUrl} size={84} />
@@ -21,6 +21,7 @@ const PetSummaryCard = ({ pet, today, onOpenEntryCard }: PetSummaryCardProps) =>
           {petInfoLine(pet, today)}
         </AppText>
       </View>
+      <Button label="수정" variant="ghost" size="md" accessibilityLabel={`${pet.name} 정보 수정`} onPress={onEdit} />
     </View>
     <Button label="입장용 카드 열기" variant="secondary" size="md" onPress={onOpenEntryCard} />
   </View>

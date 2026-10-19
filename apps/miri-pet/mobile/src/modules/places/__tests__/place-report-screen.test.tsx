@@ -3,6 +3,7 @@ import { uploadImage } from '@/modules/media/data-access-media/useUploadImage'
 import { pickImagesOrEmpty } from '@/modules/media/util-pick-image/pick-images'
 import { track } from '@/shared/analytics/track'
 import { ApiError } from '@/shared/api/api-error'
+import { useConfirmLeave } from '@/shared/hooks/use-confirm-leave'
 import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
 import { SafeAreaTestProvider } from '@/test-utils/SafeAreaTestProvider'
 import { makePlace } from '../__fixtures__/places'
@@ -14,6 +15,8 @@ jest.mock('@/shared/analytics/track', () => ({ track: jest.fn() }))
 jest.mock('../data-access-places/places-api', () => ({ fetchPlace: jest.fn(), createPlaceReport: jest.fn() }))
 jest.mock('@/modules/media/util-pick-image/pick-images', () => ({ pickImagesOrEmpty: jest.fn() }))
 jest.mock('@/modules/media/data-access-media/useUploadImage', () => ({ uploadImage: jest.fn() }))
+// 나가기 확인(내비게이터 연동)은 훅 테스트가 맡고, 여기서는 "작성 중" 판단만 본다
+jest.mock('@/shared/hooks/use-confirm-leave', () => ({ useConfirmLeave: jest.fn() }))
 
 const PLACE = makePlace()
 const photo = (n: number) => ({ uri: `file:///notice-${n}.jpg`, width: 800, height: 600 })
@@ -173,5 +176,37 @@ describe('장소 제보 (11)', () => {
       expect(await screen.findByText('사진을 올리지 못했어요. 다시 시도해 주세요')).toBeOnTheScreen()
       expect(createPlaceReport).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('작성 중 나가기 확인', () => {
+  const isGuardingLeave = () => jest.mocked(useConfirmLeave).mock.calls.at(-1)?.[0]
+
+  it('장소 정보만 불러온 상태(입력 없음)면 확인 없이 나간다', async () => {
+    await renderScreen({ placeId: PLACE.id })
+    await screen.findByText('숲길 테라스 카페')
+    expect(isGuardingLeave()).toBe(false)
+  })
+
+  it('내용을 바꾸면 나갈 때 확인하고, 보낸 뒤(검수 대기 화면)에는 확인하지 않는다', async () => {
+    const user = userEvent.setup()
+    await renderScreen({ placeId: PLACE.id })
+    await screen.findByText('숲길 테라스 카페')
+    await user.press(button(/^폐업 · 동반 불가/))
+    expect(isGuardingLeave()).toBe(true)
+
+    await user.press(button('제보 보내기'))
+    expect(await screen.findByRole('header', { name: '검수 대기 중이에요' })).toBeOnTheScreen()
+    expect(isGuardingLeave()).toBe(false)
+  })
+
+  it('사진만 넣어도 확인한다', async () => {
+    jest.mocked(pickImagesOrEmpty).mockResolvedValue([photo(1)])
+    const user = userEvent.setup()
+    await renderScreen({ placeId: PLACE.id })
+    await screen.findByText('숲길 테라스 카페')
+    await user.press(button(/사진 추가/))
+    await screen.findByRole('button', { name: /사진 1 빼기/ })
+    expect(isGuardingLeave()).toBe(true)
   })
 })

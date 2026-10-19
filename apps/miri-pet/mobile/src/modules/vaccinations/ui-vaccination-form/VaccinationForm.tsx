@@ -1,5 +1,5 @@
-import { VACCINE_PRESETS } from '@miri-pet/shared'
-import { useState } from 'react'
+import { VACCINE_PRESETS, type Vaccination } from '@miri-pet/shared'
+import { type ReactNode, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AppText from '@/design-system/components/AppText'
 import Button from '@/design-system/components/Button'
@@ -22,15 +22,33 @@ type VaccinationFormProps = {
   // 카메라를 열어 사진 1장을 돌려준다(취소·거부면 null)
   onPickCertificate: () => Promise<PickedImage | null>
   isSubmitting?: boolean
+  // 수정 화면: 저장된 값으로 채운다. 수정 API가 증명서를 받지 않아 촬영 영역은 숨긴다
+  initialVaccination?: Vaccination
+  // 작성 중 이탈 확인용 — 처음 값과 달라졌는지 알린다
+  onDirtyChange?: (isDirty: boolean) => void
+  // 저장 버튼 아래 (예: 기록 삭제)
+  footer?: ReactNode
 }
 
 const DATE_PLACEHOLDER = 'YYYY-MM-DD'
 
-// 디자인 15 접종 기록 추가 폼 — 저장(업로드·생성)은 화면이 맡는다
-const VaccinationForm = ({ today, onSubmit, onPickCertificate, isSubmitting = false }: VaccinationFormProps) => {
-  const form = useVaccinationFormState(today)
+// 디자인 15 접종 기록 추가·수정 폼 — 저장(업로드·생성·수정)은 화면이 맡는다
+const VaccinationForm = ({
+  today,
+  onSubmit,
+  onPickCertificate,
+  isSubmitting = false,
+  initialVaccination,
+  onDirtyChange,
+  footer,
+}: VaccinationFormProps) => {
+  const form = useVaccinationFormState(today, initialVaccination)
   const [errors, setErrors] = useState<VaccinationFormErrors>({})
-  const { state } = form
+  const { state, isDirty } = form
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty)
+  }, [isDirty, onDirtyChange])
 
   const handleCapture = async () => {
     const image = await onPickCertificate()
@@ -38,7 +56,7 @@ const VaccinationForm = ({ today, onSubmit, onPickCertificate, isSubmitting = fa
   }
 
   const handleSave = () => {
-    const result = validateVaccinationForm(state)
+    const result = validateVaccinationForm(state, today)
     setErrors(result.errors)
     if (result.submit) onSubmit(result.submit)
   }
@@ -46,17 +64,19 @@ const VaccinationForm = ({ today, onSubmit, onPickCertificate, isSubmitting = fa
   return (
     <KeyboardAvoider>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <CertificateCapture
-          certificates={state.certificates}
-          canAdd={form.canAddCertificate}
-          hasConsent={state.hasCertificateConsent}
-          errorMessage={errors.certificates}
-          onCapture={() => {
-            handleCapture().catch(() => undefined)
-          }}
-          onRemove={form.removeCertificate}
-          onToggleConsent={form.toggleCertificateConsent}
-        />
+        {initialVaccination ? null : (
+          <CertificateCapture
+            certificates={state.certificates}
+            canAdd={form.canAddCertificate}
+            hasConsent={state.hasCertificateConsent}
+            errorMessage={errors.certificates}
+            onCapture={() => {
+              handleCapture().catch(() => undefined)
+            }}
+            onRemove={form.removeCertificate}
+            onToggleConsent={form.toggleCertificateConsent}
+          />
+        )}
         <View style={styles.section}>
           <AppText variant="captionStrong" color="ink2">
             접종 종류 *
@@ -88,6 +108,7 @@ const VaccinationForm = ({ today, onSubmit, onPickCertificate, isSubmitting = fa
           다음 접종 7일 전 · 하루 전 알림
         </AppText>
         <Button label="저장" onPress={handleSave} isLoading={isSubmitting} />
+        {footer}
       </ScrollView>
     </KeyboardAvoider>
   )

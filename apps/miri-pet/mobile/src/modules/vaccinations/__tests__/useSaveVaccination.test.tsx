@@ -76,4 +76,39 @@ describe('useSaveVaccination', () => {
     })
     expect(createVaccination).not.toHaveBeenCalled()
   })
+
+  it('기록 저장이 실패한 뒤 다시 저장하면 이미 올린 증명서는 다시 올리지 않는다', async () => {
+    jest.mocked(createVaccination).mockRejectedValueOnce(new Error('server'))
+    const { result } = await setup()
+    await act(async () => {
+      await expect(result.current.mutateAsync({ request: REQUEST, certificates: PHOTOS })).rejects.toThrow('server')
+    })
+    await act(async () => {
+      await result.current.mutateAsync({ request: REQUEST, certificates: PHOTOS })
+    })
+    expect(uploadImage).toHaveBeenCalledTimes(2)
+    expect(createVaccination).toHaveBeenLastCalledWith(PET_ID, {
+      ...REQUEST,
+      certificateMediaIds: ['media-a', 'media-b'],
+    })
+  })
+
+  it('두 번째 사진 업로드가 실패하면 재시도 때 첫 사진은 건너뛰고 두 번째만 올린다', async () => {
+    jest
+      .mocked(uploadImage)
+      .mockReset()
+      .mockResolvedValueOnce('media-a')
+      .mockRejectedValueOnce(new Error('upload'))
+      .mockResolvedValueOnce('media-b')
+    const { result } = await setup()
+    await act(async () => {
+      await expect(result.current.mutateAsync({ request: REQUEST, certificates: PHOTOS })).rejects.toThrow('upload')
+    })
+    await act(async () => {
+      await result.current.mutateAsync({ request: REQUEST, certificates: PHOTOS })
+    })
+    expect(uploadImage).toHaveBeenCalledTimes(3)
+    expect(uploadImage).toHaveBeenLastCalledWith(PHOTOS[1], 'CERTIFICATE')
+    expect(createVaccination).toHaveBeenCalledWith(PET_ID, { ...REQUEST, certificateMediaIds: ['media-a', 'media-b'] })
+  })
 })

@@ -1,23 +1,37 @@
-import type { VaccineType } from '@miri-pet/shared'
+import type { Vaccination, VaccineType } from '@miri-pet/shared'
 import { useState } from 'react'
 import type { PickedImage } from '@/modules/media/data-access-media/prepare-image'
 import { defaultNextDueOn, formatDateInput } from '../util-vaccination/vaccination-dates'
-import type { VaccinationFormState } from '../util-vaccination/validate-vaccination-form'
+import { type VaccinationFormState, vaccinationFormStateFrom } from '../util-vaccination/validate-vaccination-form'
 
 const MAX_CERTIFICATES = 5
 
+const newFormState = (today: string): VaccinationFormState => ({
+  type: 'DHPPL',
+  customName: '',
+  administeredOn: today,
+  nextDueOn: defaultNextDueOn('DHPPL', today) ?? '',
+  clinicName: '',
+  certificates: [],
+  hasCertificateConsent: false,
+})
+
+const isSameForm = (a: VaccinationFormState, b: VaccinationFormState): boolean =>
+  a.type === b.type &&
+  a.customName === b.customName &&
+  a.administeredOn === b.administeredOn &&
+  a.nextDueOn === b.nextDueOn &&
+  a.clinicName === b.clinicName &&
+  a.certificates.length === b.certificates.length
+
 // 다음 접종일은 사용자가 직접 고치기 전까지 종류·접종일에 맞춰 자동으로 채운다
-export const useVaccinationFormState = (today: string) => {
-  const [state, setState] = useState<VaccinationFormState>({
-    type: 'DHPPL',
-    customName: '',
-    administeredOn: today,
-    nextDueOn: defaultNextDueOn('DHPPL', today) ?? '',
-    clinicName: '',
-    certificates: [],
-    hasCertificateConsent: false,
-  })
-  const [isNextDueTouched, setIsNextDueTouched] = useState(false)
+// 수정(initial)은 저장된 다음 접종일을 직접 고친 값으로 보고 자동으로 덮어쓰지 않는다
+export const useVaccinationFormState = (today: string, initial?: Vaccination) => {
+  const [initialState] = useState<VaccinationFormState>(() =>
+    initial ? vaccinationFormStateFrom(initial) : newFormState(today),
+  )
+  const [state, setState] = useState<VaccinationFormState>(initialState)
+  const [isNextDueTouched, setIsNextDueTouched] = useState(Boolean(initial))
 
   const withAutoNextDue = (next: VaccinationFormState): VaccinationFormState =>
     isNextDueTouched ? next : { ...next, nextDueOn: defaultNextDueOn(next.type, next.administeredOn) ?? '' }
@@ -40,5 +54,6 @@ export const useVaccinationFormState = (today: string) => {
     removeCertificate: (index: number) =>
       setState((prev) => ({ ...prev, certificates: prev.certificates.filter((_, i) => i !== index) })),
     canAddCertificate: state.certificates.length < MAX_CERTIFICATES,
+    isDirty: !isSameForm(state, initialState),
   }
 }

@@ -1,7 +1,9 @@
-import { REQUIRED_CONSENT_KINDS, type ConsentKind, type SubmitConsentsRequest } from '@miri-pet/shared'
-
-// 약관 문서 버전 — 서버 public/legal 문서를 바꾸면 함께 올린다
-export const CONSENT_VERSION = '2026-10-01'
+import {
+  CURRENT_CONSENT_VERSION,
+  REQUIRED_CONSENT_KINDS,
+  type ConsentKind,
+  type SubmitConsentsRequest,
+} from '@miri-pet/shared'
 
 export type ConsentFormValues = {
   isAge14OrOlder: boolean
@@ -45,11 +47,12 @@ export const hasAllRequiredConsents = (values: ConsentFormValues): boolean =>
   ITEM_KEYS.filter(isConsentItemRequired).every((key) => values[key])
 
 // 폼 값 → POST /me/consents 요청. 필수가 빠지면 null
+// 버전은 서버가 검증하는 shared CURRENT_CONSENT_VERSION (다르면 400 CONSENT_VERSION_MISMATCH)
 export const buildConsentRequest = (values: ConsentFormValues): SubmitConsentsRequest | null => {
   if (!hasAllRequiredConsents(values)) return null
   const kinds = ITEM_KEYS.filter((key) => values[key]).flatMap((key) => {
     const kind = CONSENT_KIND_BY_ITEM[key]
     return kind ? [kind] : []
   })
-  return { isAge14OrOlder: true, consents: kinds.map((kind) => ({ kind, version: CONSENT_VERSION })) }
+  return { isAge14OrOlder: true, consents: kinds.map((kind) => ({ kind, version: CURRENT_CONSENT_VERSION })) }
 }

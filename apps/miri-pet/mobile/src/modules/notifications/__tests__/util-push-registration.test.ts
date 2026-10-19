@@ -82,6 +82,17 @@ describe('unregisterPushToken', () => {
     expect(requestApi).toHaveBeenCalledWith({ method: 'DELETE', url: '/push-tokens', data: { expoToken: TOKEN } })
   })
 
+  it('세션을 먼저 지운 로그아웃: 넘겨받은 access token으로 인증해 지운다', async () => {
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValue(permission(true))
+    await unregisterPushToken('old-access')
+    expect(requestApi).toHaveBeenCalledWith({
+      method: 'DELETE',
+      url: '/push-tokens',
+      data: { expoToken: TOKEN },
+      headers: { Authorization: 'Bearer old-access' },
+    })
+  })
+
   it('권한이 없으면 등록된 토큰도 없으므로 아무것도 하지 않는다', async () => {
     jest.mocked(Notifications.getPermissionsAsync).mockResolvedValue(permission(false))
     await unregisterPushToken()

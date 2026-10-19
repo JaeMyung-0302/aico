@@ -55,10 +55,15 @@ export const registerPushToken = async ({
   return 'registered'
 }
 
-// 로그아웃 직전에 호출해 이 기기로 더 보내지 않게 한다 (TODO: useLogout에 연결 — Phase 1 소유 파일)
-export const unregisterPushToken = async (): Promise<void> => {
+// 로그아웃 때 이 기기로 더 보내지 않게 한다. 기기 세션을 먼저 지우므로 지우기 전에 읽어 둔 access token을 받는다
+export const unregisterPushToken = async (accessToken?: string): Promise<void> => {
   if (!(await ensurePermission(false))) return
   const expoToken = await readExpoToken()
   if (!expoToken) return
-  await requestApi({ method: 'DELETE', url: '/push-tokens', data: { expoToken } })
+  await requestApi({
+    method: 'DELETE',
+    url: '/push-tokens',
+    data: { expoToken },
+    ...(accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : {}),
+  })
 }

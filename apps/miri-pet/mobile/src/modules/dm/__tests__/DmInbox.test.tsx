@@ -1,5 +1,6 @@
 import type { MemberState } from '@miri-pet/shared'
 import { render, screen, userEvent, waitFor } from '@testing-library/react-native'
+import type { ComponentProps } from 'react'
 import { router } from 'expo-router'
 import { testId } from '@/modules/feed/__fixtures__/posts'
 import { blockUser } from '@/modules/moderation/data-access-moderation/moderation-api'
@@ -9,7 +10,9 @@ import { makeConversation, makeMessage, ME_ID } from '../__fixtures__/dm'
 import { acceptConversation, fetchConversations, hideConversation } from '../data-access-dm/dm-api'
 import DmInboxScreen from '../feature-dm-inbox/DmInboxScreen'
 
-jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), canGoBack: () => true } }))
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn(), canGoBack: () => true, setParams: jest.fn() },
+}))
 jest.mock('../data-access-dm/dm-api', () => ({
   fetchConversations: jest.fn(),
   acceptConversation: jest.fn(),
@@ -44,11 +47,11 @@ const pageFor = (state: MemberState) => ({
   nextCursor: null,
 })
 
-const renderScreen = () =>
+const renderScreen = (props: ComponentProps<typeof DmInboxScreen> = {}) =>
   render(
     <SafeAreaTestProvider>
       <QueryTestProvider>
-        <DmInboxScreen />
+        <DmInboxScreen {...props} />
       </QueryTestProvider>
     </SafeAreaTestProvider>,
   )
@@ -103,6 +106,27 @@ describe('대화 목록 (12)', () => {
     await renderScreen()
     await user.press(await screen.findByText('hodu.mom'))
     expect(router.push).toHaveBeenCalledWith(`/dm/${UNREAD.id}`)
+  })
+
+  it('메시지 요청 알림(/dm?tab=requests)으로 들어오면 요청 탭을 열고, 같은 링크로 다시 와도 열리도록 파라미터를 지운다', async () => {
+    await renderScreen({ requestedTab: 'REQUEST' })
+    expect(await screen.findByText('run.with.coco')).toBeOnTheScreen()
+    expect(screen.getByRole('tab', { name: '요청 1' })).toBeSelected()
+    expect(screen.queryByText('jieun.bori')).toBeNull()
+    expect(router.setParams).toHaveBeenCalledWith({ tab: undefined })
+  })
+
+  it('이미 열린 대화 탭에서 요청 탭 이동 요청이 오면 요청 탭으로 바꾼다', async () => {
+    const view = await renderScreen()
+    expect(await screen.findByText('jieun.bori')).toBeOnTheScreen()
+    await view.rerender(
+      <SafeAreaTestProvider>
+        <QueryTestProvider>
+          <DmInboxScreen requestedTab="REQUEST" />
+        </QueryTestProvider>
+      </SafeAreaTestProvider>,
+    )
+    expect(await screen.findByText('run.with.coco')).toBeOnTheScreen()
   })
 
   it('대화가 없으면 안내', async () => {

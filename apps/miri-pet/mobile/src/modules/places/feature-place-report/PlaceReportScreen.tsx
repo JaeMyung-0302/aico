@@ -17,6 +17,7 @@ import { pickImagesOrEmpty } from '@/modules/media/util-pick-image/pick-images'
 import { PHOTO_PERMISSION_MESSAGE } from '@/modules/media/util-pick-image/pick-image-or-null'
 import { track } from '@/shared/analytics/track'
 import { ApiError } from '@/shared/api/api-error'
+import { useConfirmLeave } from '@/shared/hooks/use-confirm-leave'
 import { useCreatePlaceReport, usePlace } from '../data-access-places/usePlaces'
 import PlaceReportForm from '../ui-place-report-form/PlaceReportForm'
 import { buildPlaceReportRequest, draftFromPlace, type PlaceReportDraft } from '../util-place-report'
@@ -71,11 +72,15 @@ type ReportBodyProps = { place?: Place; location?: LatLng }
 const ReportBody = ({ place, location }: ReportBodyProps) => {
   const insets = useSafeAreaInsets()
   const kinds: readonly PlaceReportKind[] = place ? ['EDIT', 'CLOSED'] : ['NEW']
-  const [draft, setDraft] = useState<PlaceReportDraft>(() => draftFromPlace(place, kinds[0] ?? 'NEW'))
+  const [initialDraft] = useState<PlaceReportDraft>(() => draftFromPlace(place, kinds[0] ?? 'NEW'))
+  const [draft, setDraft] = useState<PlaceReportDraft>(initialDraft)
   const [message, setMessage] = useState<string | null>(null)
   const [photos, setPhotos] = useState<PickedImage[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const mutation = useCreatePlaceReport()
+  // 보내는 중·보낸 뒤(검수 대기 화면)에는 묻지 않는다
+  const hasDraft = photos.length > 0 || JSON.stringify(draft) !== JSON.stringify(initialDraft)
+  useConfirmLeave(hasDraft && !isUploading && !mutation.isPending && !mutation.isSuccess)
 
   const handleAddPhotos = async () => {
     const picked = await pickImagesOrEmpty(MAX_PLACE_REPORT_IMAGES - photos.length, () =>

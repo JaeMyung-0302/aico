@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router'
+import { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AppHeader from '@/design-system/components/AppHeader'
 import Toast from '@/design-system/components/Toast'
@@ -9,6 +10,7 @@ import { useSaveVaccination } from '@/modules/vaccinations/data-access-vaccinati
 import VaccinationForm from '@/modules/vaccinations/ui-vaccination-form/VaccinationForm'
 import { kstToday } from '@/modules/vaccinations/util-vaccination/vaccination-dates'
 import type { VaccinationFormSubmit } from '@/modules/vaccinations/util-vaccination/validate-vaccination-form'
+import { useConfirmLeave } from '@/shared/hooks/use-confirm-leave'
 import { useTransientMessage } from '@/shared/hooks/use-transient-message'
 
 // 디자인 15 접종 기록 추가: (증명서 동의 → 촬영본 업로드) → 기록 저장 → 14로 돌아간다
@@ -18,6 +20,8 @@ const NewVaccinationScreen = () => {
   const pet = pets.data?.find((candidate) => candidate.id === petId)
   const save = useSaveVaccination(petId)
   const toast = useTransientMessage()
+  const [isDirty, setIsDirty] = useState(false)
+  useConfirmLeave(isDirty && !save.isPending && !save.isSuccess)
 
   const handleSubmit = (values: VaccinationFormSubmit) => {
     save.mutate(values, {
@@ -34,6 +38,7 @@ const NewVaccinationScreen = () => {
         onSubmit={handleSubmit}
         onPickCertificate={() => pickImageOrNull('camera', () => toast.show(PHOTO_PERMISSION_MESSAGE))}
         isSubmitting={save.isPending}
+        onDirtyChange={setIsDirty}
       />
       <Toast message={toast.message} />
     </View>

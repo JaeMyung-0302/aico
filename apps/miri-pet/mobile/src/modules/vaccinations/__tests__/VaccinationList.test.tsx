@@ -35,7 +35,14 @@ describe('nextDueFor', () => {
 describe('VaccinationList', () => {
   it('접종 이름·날짜·병원을 보여주고 증명서가 있으면 증명서 버튼을 단다', async () => {
     const onPressCertificate = jest.fn()
-    await render(<VaccinationList vaccinations={[DHPPL, RABIES]} onPressCertificate={onPressCertificate} />)
+    const onPressVaccination = jest.fn()
+    await render(
+      <VaccinationList
+        vaccinations={[DHPPL, RABIES]}
+        onPressCertificate={onPressCertificate}
+        onPressVaccination={onPressVaccination}
+      />,
+    )
 
     expect(screen.getByText('종합백신(DHPPL)')).toBeOnTheScreen()
     expect(screen.getByText('2025.10.20 · 미리동물병원')).toBeOnTheScreen()
@@ -44,10 +51,13 @@ describe('VaccinationList', () => {
     expect(buttons).toHaveLength(1)
     await userEvent.setup().press(buttons[0]!)
     expect(onPressCertificate).toHaveBeenCalledWith(DHPPL)
+    expect(onPressVaccination).not.toHaveBeenCalled()
+    await userEvent.setup().press(screen.getByRole('button', { name: '광견병 기록 수정' }))
+    expect(onPressVaccination).toHaveBeenCalledWith(RABIES)
   })
 
   it('기록이 없으면 안내 문구', async () => {
-    await render(<VaccinationList vaccinations={[]} onPressCertificate={jest.fn()} />)
+    await render(<VaccinationList vaccinations={[]} onPressCertificate={jest.fn()} onPressVaccination={jest.fn()} />)
     expect(screen.getByText('아직 접종 기록이 없어요')).toBeOnTheScreen()
   })
 })

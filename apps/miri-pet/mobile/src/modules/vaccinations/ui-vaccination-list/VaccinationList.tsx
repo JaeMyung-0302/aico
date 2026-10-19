@@ -9,13 +9,15 @@ import { formatDotDate, vaccineLabel } from '../util-vaccination/vaccination-dat
 type VaccinationListProps = {
   vaccinations: readonly Vaccination[]
   onPressCertificate: (vaccination: Vaccination) => void
+  // 기록(이름·날짜)을 누르면 수정 화면
+  onPressVaccination: (vaccination: Vaccination) => void
 }
 
 const metaLine = (vaccination: Vaccination): string =>
   [formatDotDate(vaccination.administeredOn), vaccination.clinicName].filter(Boolean).join(' · ')
 
-// 디자인 14 "접종 기록" 목록: 이름 / 날짜 · 병원 / 증명서 배지
-const VaccinationList = ({ vaccinations, onPressCertificate }: VaccinationListProps) => {
+// 디자인 14 "접종 기록" 목록: 이름 / 날짜 · 병원(누르면 수정) / 증명서 배지
+const VaccinationList = ({ vaccinations, onPressCertificate, onPressVaccination }: VaccinationListProps) => {
   if (vaccinations.length === 0) {
     return (
       <AppText variant="callout" color="ink3" style={styles.empty}>
@@ -29,12 +31,17 @@ const VaccinationList = ({ vaccinations, onPressCertificate }: VaccinationListPr
         const label = vaccineLabel(vaccination.type, vaccination.customName)
         return (
           <View key={vaccination.id} style={styles.row}>
-            <View style={styles.body}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${label} 기록 수정`}
+              onPress={() => onPressVaccination(vaccination)}
+              style={styles.body}
+            >
               <AppText variant="bodyStrong">{label}</AppText>
               <AppText variant="caption" color="ink2">
                 {metaLine(vaccination)}
               </AppText>
-            </View>
+            </Pressable>
             {vaccination.certificateCount > 0 ? (
               <Pressable
                 accessibilityRole="button"

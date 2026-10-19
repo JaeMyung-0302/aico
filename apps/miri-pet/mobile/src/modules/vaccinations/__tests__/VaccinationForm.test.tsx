@@ -1,4 +1,5 @@
 import { render, screen, userEvent } from '@testing-library/react-native'
+import { Text } from 'react-native'
 import VaccinationForm from '../ui-vaccination-form/VaccinationForm'
 
 const TODAY = '2026-10-15'
@@ -92,4 +93,69 @@ describe('VaccinationForm', () => {
       certificates: [],
     })
   })
+
+  it('접종일이 미래면 에러를 보여주고 저장하지 않는다', async () => {
+    const { user, onSubmit } = await setup()
+    await retype(user, '접종일', '20261016')
+    await user.press(save())
+    expect(screen.getByText('접종일은 오늘 이후일 수 없어요')).toBeOnTheScreen()
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('값을 바꾸면 onDirtyChange(true)', async () => {
+    const onDirtyChange = jest.fn()
+    await render(
+      <VaccinationForm today={TODAY} onSubmit={jest.fn()} onPickCertificate={jest.fn()} onDirtyChange={onDirtyChange} />,
+    )
+    expect(onDirtyChange).not.toHaveBeenCalledWith(true)
+    await userEvent.setup().type(field('병원 (선택)'), '미리')
+    expect(onDirtyChange).toHaveBeenLastCalledWith(true)
+  })
 })
+
+describe('VaccinationForm 수정 모드', () => {
+  const VACCINATION = {
+    id: '01890a5d-ac96-774b-bcce-b302099a8061',
+    petId: '01890a5d-ac96-774b-bcce-b302099a8058',
+    type: 'DHPPL' as const,
+    customName: null,
+    administeredOn: '2026-03-02',
+    clinicName: '미리동물병원',
+    nextDueOn: '2026-12-01',
+    certificateCount: 1,
+  }
+
+  it('저장된 값으로 채우고 증명서 촬영은 숨긴다, 접종일을 바꿔도 저장된 다음 접종일은 그대로 두고 고친 값을 보낸다', async () => {
+    const onSubmit = jest.fn()
+    await render(
+      <VaccinationForm
+        today={TODAY}
+        initialVaccination={VACCINATION}
+        onSubmit={onSubmit}
+        onPickCertificate={jest.fn()}
+        footer={<Text>FOOTER</Text>}
+      />,
+    )
+    const user = userEvent.setup()
+    expect(field('접종일')).toHaveDisplayValue('2026-03-02')
+    expect(field('병원 (선택)')).toHaveDisplayValue('미리동물병원')
+    expect(screen.queryByRole('button', { name: '증명서 촬영' })).toBeNull()
+    expect(screen.getByText('FOOTER')).toBeOnTheScreen()
+
+    await retype(user, '접종일', '20260401')
+    expect(field('다음 접종일')).toHaveDisplayValue('2026-12-01')
+    await retype(user, '다음 접종일', '20270401')
+    await user.press(save())
+    expect(onSubmit).toHaveBeenCalledWith({
+      request: {
+        type: 'DHPPL',
+        customName: null,
+        administeredOn: '2026-04-01',
+        nextDueOn: '2027-04-01',
+        clinicName: '미리동물병원',
+      },
+      certificates: [],
+    })
+  })
+})
+

@@ -1,5 +1,5 @@
 import { MAX_PETS } from '@miri-pet/shared'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -21,6 +21,9 @@ import { kstToday } from '@/modules/vaccinations/util-vaccination/vaccination-da
 
 const openEntryCard = (petId: string, vaccinationId?: string) =>
   router.push({ pathname: '/pets/[petId]/entry-card', params: vaccinationId ? { petId, vaccinationId } : { petId } })
+
+const openVaccinationEdit = (petId: string, vaccinationId: string) =>
+  router.push({ pathname: '/pets/[petId]/vaccinations/[vaccinationId]/edit', params: { petId, vaccinationId } })
 
 // 디자인 14 상단: 펫 추가 · 내 프로필 · 설정(로그아웃·탈퇴·동의 관리 진입점)
 const MyPetsHeader = ({ canAddPet }: { canAddPet: boolean }) => {
@@ -66,7 +69,15 @@ const MyPetsHeader = ({ canAddPet }: { canAddPet: boolean }) => {
 const MyPetsScreen = () => {
   const insets = useSafeAreaInsets()
   const pets = useMyPets()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // /pets?petId= (접종 알림·D-day 배너): 그 펫을 고른다. 목록에 없는 id면 첫 펫
+  const { petId: linkedPetId } = useLocalSearchParams<{ petId?: string }>()
+  const [selectedId, setSelectedId] = useState<string | null>(linkedPetId ?? null)
+  const [seenLinkedPetId, setSeenLinkedPetId] = useState(linkedPetId)
+  // 탭이 열린 채로 새 링크가 오면 렌더 중에 바로 반영한다 (effect 연쇄 렌더 없이)
+  if (linkedPetId !== seenLinkedPetId) {
+    setSeenLinkedPetId(linkedPetId)
+    if (linkedPetId) setSelectedId(linkedPetId)
+  }
   const pet = pets.data?.find((p) => p.id === selectedId) ?? pets.data?.[0]
   const vaccinations = useVaccinations(pet?.id)
   const today = kstToday(new Date())
@@ -91,7 +102,12 @@ const MyPetsScreen = () => {
       <MyPetsHeader canAddPet={pets.data.length < MAX_PETS} />
       <PetSelector pets={pets.data} selectedId={pet.id} onSelect={setSelectedId} />
       <View style={styles.body}>
-        <PetSummaryCard pet={pet} today={today} onOpenEntryCard={() => openEntryCard(pet.id)} />
+        <PetSummaryCard
+          pet={pet}
+          today={today}
+          onOpenEntryCard={() => openEntryCard(pet.id)}
+          onEdit={() => router.push({ pathname: '/pets/[petId]/edit', params: { petId: pet.id } })}
+        />
         {next ? <NextDueCard next={next} /> : null}
         <View style={styles.sectionHeader}>
           <AppText variant="title3" style={styles.title}>
@@ -115,6 +131,7 @@ const MyPetsScreen = () => {
           <VaccinationList
             vaccinations={vaccinations.data ?? []}
             onPressCertificate={(vaccination) => openEntryCard(pet.id, vaccination.id)}
+            onPressVaccination={(vaccination) => openVaccinationEdit(pet.id, vaccination.id)}
           />
         )}
       </View>

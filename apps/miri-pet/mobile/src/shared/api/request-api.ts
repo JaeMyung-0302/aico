@@ -17,6 +17,8 @@ type RequestOptions = {
   url: string
   data?: unknown
   params?: Record<string, unknown>
+  // 기본 인증(저장된 토큰) 대신 보낼 헤더 — 로그아웃 정리처럼 토큰을 지운 뒤 보내는 요청용
+  headers?: Record<string, string>
 }
 
 type RequestApi = {

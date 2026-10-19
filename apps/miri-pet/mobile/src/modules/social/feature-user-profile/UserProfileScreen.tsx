@@ -1,5 +1,4 @@
 import type { ReportReason, UserProfile } from '@miri-pet/shared'
-import { router } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native'
 import AppHeader from '@/design-system/components/AppHeader'
@@ -11,13 +10,18 @@ import Icon from '@/design-system/components/Icon'
 import { COLORS } from '@/design-system/tokens/colors'
 import { SPACING, TOUCH_TARGET } from '@/design-system/tokens/spacing'
 import { useStartConversation } from '@/modules/dm/data-access-dm/useConversations'
-import { useBlockUser, useCreateReport } from '@/modules/moderation/data-access-moderation/useModeration'
+import {
+  useBlockUser,
+  useCreateReport,
+  useUnblockUser,
+} from '@/modules/moderation/data-access-moderation/useModeration'
 import { useUserPets } from '@/modules/pets/data-access-pets/usePets'
 import ReportSheet from '@/modules/moderation/ui-report-sheet/ReportSheet'
 import { useUserPosts } from '@/modules/posts/data-access-posts/usePosts'
 import PostGridTile, { GRID_COLUMNS, GRID_GAP } from '@/modules/posts/ui-post-grid/PostGridTile'
 import { useMe } from '@/modules/user/data-access-me/useMe'
 import { useUserProfile } from '@/modules/user/data-access-user/useUserProfile'
+import { isNotFoundError } from '@/shared/api/is-not-found-error'
 import FollowButton from '../ui-follow-button/FollowButton'
 import UserPetCard from './UserPetCard'
 
@@ -75,6 +79,31 @@ const ProfileSummary = ({ profile, isMine }: { profile: UserProfile; isMine: boo
   </View>
 )
 
+type BlockedViewProps = { isUnblocking: boolean; errorMessage: string | null; onUnblock: () => void }
+
+// 차단 직후: 프로필 대신 이 상태 하나만 보여 준다 (서버는 차단한 상대 프로필을 404로 숨긴다)
+const BlockedView = ({ isUnblocking, errorMessage, onUnblock }: BlockedViewProps) => (
+  <View style={styles.blocked}>
+    <AppText variant="title3">차단한 사용자예요</AppText>
+    <AppText variant="callout" color="ink2" style={styles.center}>
+      서로의 게시물, 댓글, 프로필이 보이지 않아요.
+    </AppText>
+    {errorMessage ? (
+      <AppText variant="callout" color="danger" accessibilityLiveRegion="polite">
+        {errorMessage}
+      </AppText>
+    ) : null}
+    <Button
+      label="차단 해제"
+      variant="secondary"
+      size="md"
+      isLoading={isUnblocking}
+      onPress={onUnblock}
+      style={styles.unblock}
+    />
+  </View>
+)
+
 const ProfileTabs = ({ tab, onChange }: { tab: ProfileTab; onChange: (tab: ProfileTab) => void }) => (
   <View accessibilityRole="tablist" style={styles.tabs}>
     {TABS.map(({ key, label }) => (
@@ -101,6 +130,7 @@ const UserProfileScreen = ({ userId }: UserProfileScreenProps) => {
   const me = useMe()
   const createReport = useCreateReport()
   const blockUser = useBlockUser()
+  const unblockUser = useUnblockUser()
   const [isSheetVisible, setIsSheetVisible] = useState(false)
   const [tab, setTab] = useState<ProfileTab>('posts')
   // 반려동물 탭을 처음 열 때 조회한다
@@ -112,15 +142,19 @@ const UserProfileScreen = ({ userId }: UserProfileScreenProps) => {
   }
   const handleBlock = async () => {
     await blockUser.mutateAsync(userId)
+    unblockUser.reset()
   }
-  // 차단을 마쳤다면 더 이상 볼 수 없는 프로필이므로 이전 화면으로 돌아간다
-  const handleSheetClose = () => {
-    setIsSheetVisible(false)
-    if (blockUser.isSuccess && router.canGoBack()) router.back()
-  }
+  // 해제 성공 시점에는 프로필을 이미 다시 받아 왔다(useUnblockUser가 invalidate를 기다림) → 일반 프로필로 돌아간다
+  const handleUnblock = () => unblockUser.mutate(userId, { onSuccess: () => blockUser.reset() })
+
+  // 화면 상태는 하나만: 차단함 > 볼 수 없음 > 프로필. 차단 처리 중에는 404 재조회로 "찾을 수 없어요"가 끼지 않게 한다
+  const isBlocked = blockUser.isSuccess
+  const isUnavailable =
+    !isBlocked && !blockUser.isPending && profile.isError && (!profile.data || isNotFoundError(profile.error))
+  const visibleProfile = isBlocked || isUnavailable ? undefined : profile.data
 
   const moreButton =
-    profile.data && !isMine ? (
+    visibleProfile && !isMine ? (
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="신고 또는 차단"
@@ -146,9 +180,9 @@ const UserProfileScreen = ({ userId }: UserProfileScreenProps) => {
       등록된 반려동물이 없어요
     </AppText>
   )
-  const header = profile.data ? (
+  const header = visibleProfile ? (
     <View>
-      <ProfileSummary profile={profile.data} isMine={isMine} />
+      <ProfileSummary profile={visibleProfile} isMine={isMine} />
       <ProfileTabs tab={tab} onChange={setTab} />
     </View>
   ) : null
@@ -157,10 +191,17 @@ const UserProfileScreen = ({ userId }: UserProfileScreenProps) => {
     <View style={styles.screen}>
       <AppHeader title={profile.data?.nickname} right={moreButton} />
       {profile.isPending ? <ActivityIndicator style={styles.loading} color={COLORS.primary} /> : null}
-      {profile.isError ? (
+      {isUnavailable ? (
         <EmptyLayout title="사용자를 찾을 수 없어요" description="탈퇴했거나 볼 수 없는 사용자예요." />
       ) : null}
-      {profile.data && tab === 'pets' ? (
+      {isBlocked ? (
+        <BlockedView
+          isUnblocking={unblockUser.isPending}
+          errorMessage={unblockUser.isError ? '차단을 풀지 못했어요. 잠시 후 다시 시도해 주세요' : null}
+          onUnblock={handleUnblock}
+        />
+      ) : null}
+      {visibleProfile && tab === 'pets' ? (
         <FlatList
           key="pets"
           data={pets.data?.items ?? []}
@@ -170,7 +211,7 @@ const UserProfileScreen = ({ userId }: UserProfileScreenProps) => {
           ListEmptyComponent={emptyPets}
         />
       ) : null}
-      {profile.data && tab === 'posts' ? (
+      {visibleProfile && tab === 'posts' ? (
         <FlatList
           key="posts"
           data={items}
@@ -185,10 +226,11 @@ const UserProfileScreen = ({ userId }: UserProfileScreenProps) => {
           }}
         />
       ) : null}
+      {/* 차단 완료 단계까지 시트가 이어지도록 마지막으로 받은 프로필로 둔다 */}
       {profile.data ? (
         <ReportSheet
           isVisible={isSheetVisible}
-          onClose={handleSheetClose}
+          onClose={() => setIsSheetVisible(false)}
           target={{ type: 'USER', id: profile.data.id }}
           author={{ id: profile.data.id, nickname: profile.data.nickname }}
           onSubmitReport={handleSubmitReport}
@@ -220,6 +262,16 @@ const styles = StyleSheet.create({
   messageButton: { flex: 1 },
   gridRow: { gap: GRID_GAP },
   emptyPosts: { textAlign: 'center', marginTop: SPACING.xxl },
+  blocked: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.sm,
+    padding: SPACING.xxl,
+    backgroundColor: COLORS.ground,
+  },
+  center: { textAlign: 'center' },
+  unblock: { marginTop: SPACING.sm, paddingHorizontal: SPACING.xl },
 })
 
 export default UserProfileScreen

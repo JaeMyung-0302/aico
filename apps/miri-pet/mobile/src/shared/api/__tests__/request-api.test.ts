@@ -68,6 +68,16 @@ describe('requestApi', () => {
     })
   })
 
+  it('headers를 넘기면 그대로 보낸다 (로그아웃 정리: 지우기 전에 읽어 둔 토큰으로 인증)', async () => {
+    const seen: string[] = []
+    const capture: AxiosAdapter = async (config) => {
+      seen.push(String(config.headers.get('Authorization')))
+      return { data: '', status: 204, statusText: '', headers: {}, config }
+    }
+    await makeRequestApi(capture)({ method: 'DELETE', url: '/push-tokens', headers: { Authorization: 'Bearer old' } })
+    expect(seen).toEqual(['Bearer old'])
+  })
+
   it('스키마 없이 호출하면 응답 본문 없이 끝난다(204 등)', async () => {
     const requestApi = makeRequestApi(respondWith(204, ''))
     await expect(requestApi({ method: 'DELETE', url: '/pets/1' })).resolves.toBeUndefined()

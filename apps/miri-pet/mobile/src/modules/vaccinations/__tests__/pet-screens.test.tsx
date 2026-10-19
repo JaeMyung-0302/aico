@@ -114,6 +114,47 @@ describe('14 내 펫', () => {
   })
 })
 
+describe('14 내 펫 — 수정 진입점·딥링크', () => {
+  it('/pets?petId= (접종 알림)으로 오면 그 펫을 고른다', async () => {
+    mockParams = { petId: PETS[1]!.id }
+    await renderScreen(<MyPetsScreen />)
+    expect(await screen.findByRole('button', { name: '두부' })).toBeSelected()
+    expect(fetchVaccinations).toHaveBeenLastCalledWith(PETS[1]?.id)
+  })
+
+  it('탭이 열려 있는 상태에서 새 알림(petId)으로 오면 그 펫으로 바꾼다', async () => {
+    const view = await renderScreen(<MyPetsScreen />)
+    expect(await screen.findByRole('button', { name: '보리' })).toBeSelected()
+    mockParams = { petId: PETS[1]!.id }
+    await view.rerender(
+      <SafeAreaTestProvider>
+        <QueryTestProvider>
+          <MyPetsScreen />
+        </QueryTestProvider>
+      </SafeAreaTestProvider>,
+    )
+    expect(await screen.findByRole('button', { name: '두부' })).toBeSelected()
+  })
+
+  it('목록에 없는 petId면 첫 펫을 보여준다', async () => {
+    mockParams = { petId: '01890a5d-ac96-774b-bcce-b30209999999' }
+    await renderScreen(<MyPetsScreen />)
+    expect(await screen.findByRole('button', { name: '보리' })).toBeSelected()
+  })
+
+  it('펫 카드의 수정으로 펫 수정 화면, 접종 기록을 누르면 기록 수정 화면에 간다', async () => {
+    const user = userEvent.setup()
+    await renderScreen(<MyPetsScreen />)
+    await user.press(await screen.findByRole('button', { name: '보리 정보 수정' }))
+    expect(router.push).toHaveBeenCalledWith({ pathname: '/pets/[petId]/edit', params: { petId: PET_ID } })
+    await user.press(await screen.findByRole('button', { name: '종합백신(DHPPL) 기록 수정' }))
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/pets/[petId]/vaccinations/[vaccinationId]/edit',
+      params: { petId: PET_ID, vaccinationId: VACCINATION_ID },
+    })
+  })
+})
+
 describe('16 입장용 카드', () => {
   it('요약 → "증명서 원본 보기"로 60초 URL 증명서를 연다', async () => {
     mockParams = { petId: PET_ID }

@@ -21,7 +21,8 @@ export const notificationText = ({ kind, actor, preview }: Notification): string
 export const notificationHref = ({ kind, actor, postId }: Notification): Href | null => {
   if ((kind === 'LIKE' || kind === 'COMMENT') && postId) return `/posts/${postId}`
   if (kind === 'FOLLOW' && actor) return `/users/${actor.id}`
-  if (kind === 'DM_REQUEST') return '/dm'
+  // 대화 탭의 "요청" 세그먼트로 연다 (app/(tabs)/dm.tsx가 tab 파라미터를 읽는다)
+  if (kind === 'DM_REQUEST') return '/dm?tab=requests'
   if (kind === 'VACCINATION_DUE') return '/pets'
   return null
 }

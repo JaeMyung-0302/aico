@@ -1,6 +1,6 @@
 import type { Conversation, MemberState } from '@miri-pet/shared'
 import { router } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
@@ -113,9 +113,14 @@ const TabButton = ({ label, isActive, onPress }: { label: string; isActive: bool
   </Pressable>
 )
 
+type DmInboxScreenProps = {
+  // 알림(메시지 요청)에서 열 탭 — 탭 화면이 이미 떠 있어도 바꾼다
+  requestedTab?: MemberState
+}
+
 // 12 DmInbox: 대화 / 요청 세그먼트, 안 읽은 수 배지, 요청 카드(차단·삭제·수락)
-const DmInboxScreen = () => {
-  const [tab, setTab] = useState<MemberState>('ACCEPTED')
+const DmInboxScreen = ({ requestedTab }: DmInboxScreenProps) => {
+  const [tab, setTab] = useState<MemberState>(requestedTab ?? 'ACCEPTED')
   const [blockTarget, setBlockTarget] = useState<Conversation | null>(null)
   const [blockError, setBlockError] = useState<string | null>(null)
   const me = useMe()
@@ -125,6 +130,17 @@ const DmInboxScreen = () => {
   const active = tab === 'ACCEPTED' ? chats : requests
   const items = active.data?.pages.flatMap((page) => page.items) ?? []
   const requestCount = requests.data?.pages.reduce((sum, page) => sum + page.items.length, 0) ?? 0
+
+  // 탭 화면이 이미 떠 있을 때 들어온 요청도 반영한다 (렌더 중 prop 변화에 맞춰 조정)
+  const [appliedRequest, setAppliedRequest] = useState(requestedTab)
+  if (requestedTab !== appliedRequest) {
+    setAppliedRequest(requestedTab)
+    if (requestedTab) setTab(requestedTab)
+  }
+  // 같은 링크로 다시 들어와도 탭이 바뀌도록 처리한 파라미터는 지운다
+  useEffect(() => {
+    if (requestedTab) router.setParams({ tab: undefined })
+  }, [requestedTab])
 
   const handleBlockConfirm = async () => {
     if (!blockTarget) return

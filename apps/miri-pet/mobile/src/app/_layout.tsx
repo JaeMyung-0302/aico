@@ -60,8 +60,10 @@ const RootNavigator = () => {
           <Stack.Screen name="spike" />
           <Stack.Screen name="dm/[conversationId]" />
           <Stack.Screen name="pets/new" />
+          <Stack.Screen name="pets/[petId]/edit" />
           <Stack.Screen name="pets/[petId]/entry-card" />
           <Stack.Screen name="pets/[petId]/vaccinations/new" />
+          <Stack.Screen name="pets/[petId]/vaccinations/[vaccinationId]/edit" />
           <Stack.Screen name="places/[placeId]" />
           <Stack.Screen name="places/report" />
           <Stack.Screen name="posts/[postId]" />

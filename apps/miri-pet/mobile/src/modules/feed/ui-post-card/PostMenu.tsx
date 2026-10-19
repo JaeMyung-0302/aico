@@ -1,7 +1,7 @@
 import type { Post, ReportReason } from '@miri-pet/shared'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { Pressable, StyleSheet } from 'react-native'
+import { Alert, Pressable, StyleSheet } from 'react-native'
 import AppText from '@/design-system/components/AppText'
 import BottomSheet from '@/design-system/components/BottomSheet'
 import Button from '@/design-system/components/Button'
@@ -29,7 +29,14 @@ const PostMenu = ({ post, isMine, onDeleted }: PostMenuProps) => {
   const blockUser = useBlockUser()
 
   const handleDelete = async () => {
-    await deletePost.mutateAsync(post.id)
+    try {
+      await deletePost.mutateAsync(post.id)
+    } catch {
+      // 실패하면 확인 창만 닫고 그 자리에 머문다(상세 화면이면 뒤로 가지 않는다)
+      setStep('closed')
+      Alert.alert('게시물을 삭제하지 못했어요', '잠시 후 다시 시도해 주세요.')
+      return
+    }
     setStep('closed')
     onDeleted?.()
   }

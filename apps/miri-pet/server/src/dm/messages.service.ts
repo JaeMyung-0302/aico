@@ -75,7 +75,7 @@ export class MessagesService {
     await this.assertRequestQuota(senderId, membership)
     if (body.mediaId) await this.assertAttachable(senderId, body.mediaId)
 
-    const created = await this.store(senderId, conversationId, body)
+    const created = await this.store(senderId, membership, body)
     if (!created.isNew) return created.message
     await this.deliver(senderId, membership, created.message)
     return created.message
@@ -161,7 +161,7 @@ export class MessagesService {
 
   private async store(
     senderId: string,
-    conversationId: string,
+    { conversationId, peerId, myState }: Membership,
     { clientMessageId, body, mediaId }: SendMessageRequest,
   ): Promise<{ message: Message; isNew: boolean }> {
     try {
@@ -176,6 +176,8 @@ export class MessagesService {
           where: { conversationId_userId: { conversationId, userId: senderId } },
           data: { lastReadMessageId: message.id, state: 'ACCEPTED', hiddenAt: null },
         })
+        // QA1 P2: 답장 자동 수락도 수락(accept)처럼 받은 요청 알림을 지운다
+        if (myState === 'REQUEST') await this.conversations.clearDmRequestNotices(senderId, peerId, tx)
         // 받는 사람: 수락한 대화를 숨겼으면 다시 보이게. 거절한(숨긴) 요청은 계속 숨김
         await tx.conversationMember.updateMany({
           where: { conversationId, userId: { not: senderId }, state: 'ACCEPTED', hiddenAt: { not: null } },

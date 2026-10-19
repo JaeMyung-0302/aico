@@ -164,6 +164,16 @@ describe('1:1 DM REST (실DB)', () => {
       expect(await prisma.notification.count({ where: { userId: a.userId, kind: 'DM_REQUEST' } })).toBe(0)
     })
 
+    it('QA1 P2: 요청받은 사람이 답장해 자동 수락되면 그 요청의 DM_REQUEST 알림도 지워진다', async () => {
+      const a = await login('에이')
+      const c = await login('씨이')
+      const conversationId = await open(c, a)
+      await send(c, conversationId)
+      expect(await prisma.notification.count({ where: { userId: a.userId, kind: 'DM_REQUEST' } })).toBe(1)
+      await send(a, conversationId, '반가워요')
+      expect(await prisma.notification.count({ where: { userId: a.userId, kind: 'DM_REQUEST' } })).toBe(0)
+    })
+
     it('요청받은 사람이 답장하면 자동 수락된다', async () => {
       const a = await login('에이')
       const c = await login('씨이')

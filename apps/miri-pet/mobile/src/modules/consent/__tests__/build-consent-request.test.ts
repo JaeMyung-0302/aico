@@ -1,5 +1,8 @@
-import { REQUIRED_CONSENT_KINDS, submitConsentsRequestSchema } from '@miri-pet/shared'
-import { buildConsentRequest, CONSENT_VERSION, isConsentItemRequired } from '../util-consent/build-consent-request'
+import { CURRENT_CONSENT_VERSION, REQUIRED_CONSENT_KINDS, submitConsentsRequestSchema } from '@miri-pet/shared'
+import { buildConsentRequest, isConsentItemRequired } from '../util-consent/build-consent-request'
+
+// 서버는 현재 약관 버전이 아니면 400 CONSENT_VERSION_MISMATCH → 앱 하드코딩이 아니라 shared 상수를 따라야 한다
+jest.mock('@miri-pet/shared', () => ({ ...jest.requireActual('@miri-pet/shared'), CURRENT_CONSENT_VERSION: '2099-01-01' }))
 
 const ALL_REQUIRED = {
   isAge14OrOlder: true,
@@ -16,8 +19,8 @@ describe('buildConsentRequest', () => {
     expect(request).toEqual({
       isAge14OrOlder: true,
       consents: [
-        { kind: 'TERMS', version: CONSENT_VERSION },
-        { kind: 'PRIVACY', version: CONSENT_VERSION },
+        { kind: 'TERMS', version: CURRENT_CONSENT_VERSION },
+        { kind: 'PRIVACY', version: CURRENT_CONSENT_VERSION },
       ],
     })
     expect(request?.consents.map((consent) => consent.kind)).toEqual(

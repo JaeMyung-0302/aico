@@ -1,17 +1,10 @@
 import { MAX_POST_IMAGES, type PostPlace } from '@miri-pet/shared'
 import { router } from 'expo-router'
 import { useRef, useState } from 'react'
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
+import KeyboardAvoider from '@/design-system/components/KeyboardAvoider'
 import Button from '@/design-system/components/Button'
 import Chip from '@/design-system/components/Chip'
 import TextField from '@/design-system/components/TextField'
@@ -97,7 +90,7 @@ const NewPostScreen = () => {
   )
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoider style={styles.screen}>
       <AppHeader title="새 게시물" right={shareButton} />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <PhotoPicker photos={photos} onAdd={handleAddPhoto} onRemove={handleRemovePhoto} />
@@ -147,7 +140,7 @@ const NewPostScreen = () => {
         onSelect={handleSelectPlace}
         onClose={() => setIsPlacePickerOpen(false)}
       />
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   )
 }
 

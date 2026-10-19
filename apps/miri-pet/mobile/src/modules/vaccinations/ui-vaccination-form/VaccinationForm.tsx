@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AppText from '@/design-system/components/AppText'
 import Button from '@/design-system/components/Button'
+import KeyboardAvoider from '@/design-system/components/KeyboardAvoider'
 import Chip from '@/design-system/components/Chip'
 import TextField from '@/design-system/components/TextField'
 import { SPACING } from '@/design-system/tokens/spacing'
@@ -43,50 +44,52 @@ const VaccinationForm = ({ today, onSubmit, onPickCertificate, isSubmitting = fa
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <CertificateCapture
-        certificates={state.certificates}
-        canAdd={form.canAddCertificate}
-        hasConsent={state.hasCertificateConsent}
-        errorMessage={errors.certificates}
-        onCapture={() => {
-          handleCapture().catch(() => undefined)
-        }}
-        onRemove={form.removeCertificate}
-        onToggleConsent={form.toggleCertificateConsent}
-      />
-      <View style={styles.section}>
-        <AppText variant="captionStrong" color="ink2">
-          접종 종류 *
-        </AppText>
-        <View style={styles.chips}>
-          {VACCINE_PRESETS.map((preset) => (
-            <Chip
-              key={preset.type}
-              label={preset.label}
-              isSelected={state.type === preset.type}
-              onPress={() => form.setType(preset.type)}
+    <KeyboardAvoider>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <CertificateCapture
+          certificates={state.certificates}
+          canAdd={form.canAddCertificate}
+          hasConsent={state.hasCertificateConsent}
+          errorMessage={errors.certificates}
+          onCapture={() => {
+            handleCapture().catch(() => undefined)
+          }}
+          onRemove={form.removeCertificate}
+          onToggleConsent={form.toggleCertificateConsent}
+        />
+        <View style={styles.section}>
+          <AppText variant="captionStrong" color="ink2">
+            접종 종류 *
+          </AppText>
+          <View style={styles.chips}>
+            {VACCINE_PRESETS.map((preset) => (
+              <Chip
+                key={preset.type}
+                label={preset.label}
+                isSelected={state.type === preset.type}
+                onPress={() => form.setType(preset.type)}
+              />
+            ))}
+          </View>
+          {state.type === 'ETC' ? (
+            <TextField
+              label="접종 이름"
+              isRequired
+              value={state.customName}
+              onChangeText={form.setCustomName}
+              maxLength={40}
+              errorMessage={errors.customName}
             />
-          ))}
+          ) : null}
         </View>
-        {state.type === 'ETC' ? (
-          <TextField
-            label="접종 이름"
-            isRequired
-            value={state.customName}
-            onChangeText={form.setCustomName}
-            maxLength={40}
-            errorMessage={errors.customName}
-          />
-        ) : null}
-      </View>
-      <DateFields form={form} errors={errors} />
-      <TextField label="병원 (선택)" value={state.clinicName} onChangeText={form.setClinicName} maxLength={60} />
-      <AppText variant="callout" color="ink2">
-        다음 접종 7일 전 · 하루 전 알림
-      </AppText>
-      <Button label="저장" onPress={handleSave} isLoading={isSubmitting} />
-    </ScrollView>
+        <DateFields form={form} errors={errors} />
+        <TextField label="병원 (선택)" value={state.clinicName} onChangeText={form.setClinicName} maxLength={60} />
+        <AppText variant="callout" color="ink2">
+          다음 접종 7일 전 · 하루 전 알림
+        </AppText>
+        <Button label="저장" onPress={handleSave} isLoading={isSubmitting} />
+      </ScrollView>
+    </KeyboardAvoider>
   )
 }
 

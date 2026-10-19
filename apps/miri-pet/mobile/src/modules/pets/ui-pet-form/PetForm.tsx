@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import AppText from '@/design-system/components/AppText'
 import Avatar from '@/design-system/components/Avatar'
 import Button from '@/design-system/components/Button'
+import KeyboardAvoider from '@/design-system/components/KeyboardAvoider'
 import Chip from '@/design-system/components/Chip'
 import TextField from '@/design-system/components/TextField'
 import { SPACING } from '@/design-system/tokens/spacing'
@@ -61,50 +62,52 @@ const PetForm = ({ primaryLabel, secondaryLabel, onSubmit, onPickPhoto, isSubmit
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Pressable accessibilityRole="button" accessibilityLabel="사진 추가" onPress={handlePickPhoto} style={styles.photo}>
-        <Avatar name={state.name.trim() || '펫'} uri={state.photo?.uri} size={96} />
-      </Pressable>
-      <TextField
-        testID="pet-name-input"
-        label="이름"
-        isRequired
-        value={state.name}
-        onChangeText={(name) => update({ name })}
-        errorMessage={errors.name}
-      />
-      <OptionGroup title="종류 *">
-        {SPECIES.map(({ value, label }) => (
-          <Chip key={value} label={label} isSelected={state.species === value} onPress={() => update({ species: value })} />
-        ))}
-      </OptionGroup>
-      <View style={styles.row}>
-        <View style={styles.flex}>
-          <TextField label="품종" value={state.breed} onChangeText={(breed) => update({ breed })} maxLength={40} />
+    <KeyboardAvoider>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Pressable accessibilityRole="button" accessibilityLabel="사진 추가" onPress={handlePickPhoto} style={styles.photo}>
+          <Avatar name={state.name.trim() || '펫'} uri={state.photo?.uri} size={96} />
+        </Pressable>
+        <TextField
+          testID="pet-name-input"
+          label="이름"
+          isRequired
+          value={state.name}
+          onChangeText={(name) => update({ name })}
+          errorMessage={errors.name}
+        />
+        <OptionGroup title="종류 *">
+          {SPECIES.map(({ value, label }) => (
+            <Chip key={value} label={label} isSelected={state.species === value} onPress={() => update({ species: value })} />
+          ))}
+        </OptionGroup>
+        <View style={styles.row}>
+          <View style={styles.flex}>
+            <TextField label="품종" value={state.breed} onChangeText={(breed) => update({ breed })} maxLength={40} />
+          </View>
+          <View style={styles.flex}>
+            <TextField
+              label="생일"
+              value={state.birthDate}
+              onChangeText={(raw) => update({ birthDate: formatDateInput(raw) })}
+              placeholder="YYYY-MM-DD"
+              keyboardType="number-pad"
+              errorMessage={errors.birthDate}
+            />
+          </View>
         </View>
-        <View style={styles.flex}>
-          <TextField
-            label="생일"
-            value={state.birthDate}
-            onChangeText={(raw) => update({ birthDate: formatDateInput(raw) })}
-            placeholder="YYYY-MM-DD"
-            keyboardType="number-pad"
-            errorMessage={errors.birthDate}
-          />
+        <OptionGroup title="크기 * · 동반 장소 필터에 쓰여요">
+          {SIZES.map(({ value, label, hint }) => (
+            <SizeOption key={value} label={label} hint={hint} isSelected={state.size === value} onPress={() => update({ size: value })} />
+          ))}
+        </OptionGroup>
+        <View style={styles.actions}>
+          <Button label={primaryLabel} onPress={() => handleSubmit('next')} isLoading={isSubmitting} />
+          {secondaryLabel ? (
+            <Button label={secondaryLabel} variant="ghost" onPress={() => handleSubmit('later')} disabled={isSubmitting} />
+          ) : null}
         </View>
-      </View>
-      <OptionGroup title="크기 * · 동반 장소 필터에 쓰여요">
-        {SIZES.map(({ value, label, hint }) => (
-          <SizeOption key={value} label={label} hint={hint} isSelected={state.size === value} onPress={() => update({ size: value })} />
-        ))}
-      </OptionGroup>
-      <View style={styles.actions}>
-        <Button label={primaryLabel} onPress={() => handleSubmit('next')} isLoading={isSubmitting} />
-        {secondaryLabel ? (
-          <Button label={secondaryLabel} variant="ghost" onPress={() => handleSubmit('later')} disabled={isSubmitting} />
-        ) : null}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoider>
   )
 }
 

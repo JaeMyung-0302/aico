@@ -1,6 +1,7 @@
 import {
   CERTIFICATE_CONSENT_VERSION,
   certificateConsentRequestSchema,
+  createCommentRequestSchema,
   createPlaceReportRequestSchema,
   createPostRequestSchema,
   createUploadRequestSchema,
@@ -46,5 +47,30 @@ describe('공유 요청 스키마 계약', () => {
     expect(MAX_PETS_PER_POST).toBe(MAX_PETS)
     expect(parse(ids(MAX_PETS))).toBe(true)
     expect(parse(ids(MAX_PETS + 1))).toBe(false)
+  })
+
+  describe('QA1 P3: 댓글·게시물 텍스트는 공백과 함께 제로폭 문자도 앞뒤에서 잘라낸다', () => {
+    const comment = (body: string) => createCommentRequestSchema.safeParse({ body })
+
+    it.each(['\u200B', ' \u200B \uFEFF ', '\u200C\u200D', '\u2060\n\t'])(
+      '공백·제로폭 문자만 있는 댓글 %j는 거부한다',
+      (body) => {
+        expect(comment(body).success).toBe(false)
+      },
+    )
+
+    it('앞뒤 제로폭 문자·공백을 잘라 저장하고, 가운데 문자(이모지 ZWJ 포함)는 그대로 둔다', () => {
+      expect(comment('\u200B 안녕 \uFEFF').data).toEqual({ body: '안녕' })
+      expect(comment('가족 👩\u200D👧').data).toEqual({ body: '가족 👩\u200D👧' })
+    })
+
+    it('게시물 캡션도 제로폭 문자만 있으면 빈 캡션이 된다', () => {
+      const parsed = createPostRequestSchema.safeParse({
+        caption: '\u200B\u2060 ',
+        mediaIds: ['0199e3a0-0000-7000-8000-000000000001'],
+        petIds: ['0199e3a0-0000-7000-8000-000000000002'],
+      })
+      expect(parsed.data?.caption).toBe('')
+    })
   })
 })

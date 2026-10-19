@@ -1,9 +1,10 @@
 import type { Comment } from '@miri-pet/shared'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
+import KeyboardAvoider from '@/design-system/components/KeyboardAvoider'
 import EmptyLayout from '@/design-system/components/EmptyLayout'
 import { COLORS } from '@/design-system/tokens/colors'
 import { SPACING } from '@/design-system/tokens/spacing'
@@ -12,6 +13,7 @@ import { useComments, useCreateComment, useDeleteComment } from '@/modules/socia
 import CommentInput from '@/modules/social/ui-comment-list/CommentInput'
 import CommentRow from '@/modules/social/ui-comment-list/CommentRow'
 import { useMe } from '@/modules/user/data-access-me/useMe'
+import { isNotFoundError } from '@/shared/api/is-not-found-error'
 import { usePost } from '../data-access-posts/usePosts'
 
 type PostDetailScreenProps = { postId: string }
@@ -33,7 +35,17 @@ const PostDetailScreen = ({ postId }: PostDetailScreenProps) => {
     return (
       <View style={styles.screen}>
         <AppHeader title="게시물" />
-        <EmptyLayout title="게시물을 찾을 수 없어요" description="삭제됐거나 볼 수 없는 게시물이에요." />
+        {isNotFoundError(post.error) ? (
+          <EmptyLayout title="게시물을 찾을 수 없어요" description="삭제됐거나 볼 수 없는 게시물이에요." />
+        ) : (
+          <EmptyLayout
+            title="게시물을 불러오지 못했어요"
+            description="네트워크 연결을 확인하고 다시 시도해 주세요."
+            onRetry={() => {
+              post.refetch().catch(() => undefined)
+            }}
+          />
+        )}
       </View>
     )
   }
@@ -66,7 +78,7 @@ const PostDetailScreen = ({ postId }: PostDetailScreenProps) => {
   )
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoider style={styles.screen}>
       <AppHeader title="게시물" />
       <FlatList
         data={items}
@@ -92,7 +104,7 @@ const PostDetailScreen = ({ postId }: PostDetailScreenProps) => {
         </AppText>
       ) : null}
       {post.data ? <CommentInput isSubmitting={createComment.isPending} onSubmit={handleSubmit} /> : null}
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   )
 }
 

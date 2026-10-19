@@ -71,7 +71,17 @@ const MyPetsScreen = () => {
   const vaccinations = useVaccinations(pet?.id)
   const today = kstToday(new Date())
 
-  if (pets.isError) return <EmptyLayout title="펫 정보를 불러오지 못했어요" description="잠시 후 다시 시도해 주세요" />
+  if (pets.isError) {
+    return (
+      <EmptyLayout
+        title="펫 정보를 불러오지 못했어요"
+        description="네트워크 연결을 확인하고 다시 시도해 주세요."
+        onRetry={() => {
+          pets.refetch().catch(() => undefined)
+        }}
+      />
+    )
+  }
   if (!pets.data) return <ActivityIndicator style={styles.loading} color={COLORS.primary} />
   if (!pet) return <EmptyLayout title="등록된 펫이 없어요" />
   const next = nextDueFor(vaccinations.data ?? [], today)
@@ -94,10 +104,19 @@ const MyPetsScreen = () => {
             onPress={() => router.push({ pathname: '/pets/[petId]/vaccinations/new', params: { petId: pet.id } })}
           />
         </View>
-        <VaccinationList
-          vaccinations={vaccinations.data ?? []}
-          onPressCertificate={(vaccination) => openEntryCard(pet.id, vaccination.id)}
-        />
+        {vaccinations.isError ? (
+          <EmptyLayout
+            title="접종 기록을 불러오지 못했어요"
+            onRetry={() => {
+              vaccinations.refetch().catch(() => undefined)
+            }}
+          />
+        ) : (
+          <VaccinationList
+            vaccinations={vaccinations.data ?? []}
+            onPressCertificate={(vaccination) => openEntryCard(pet.id, vaccination.id)}
+          />
+        )}
       </View>
     </ScrollView>
   )

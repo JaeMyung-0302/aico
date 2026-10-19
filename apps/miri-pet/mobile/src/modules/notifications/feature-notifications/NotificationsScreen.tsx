@@ -78,7 +78,14 @@ const NotificationsScreen = () => {
       {notifications.isSuccess && items.length === 0 ? (
         <EmptyLayout title="아직 알림이 없어요" description="좋아요·댓글·팔로우 소식이 여기에 모여요." />
       ) : null}
-      {notifications.isError ? <EmptyLayout title="알림을 불러오지 못했어요" /> : null}
+      {notifications.isError ? (
+        <EmptyLayout
+          title="알림을 불러오지 못했어요"
+          onRetry={() => {
+            notifications.refetch().catch(() => undefined)
+          }}
+        />
+      ) : null}
       {items.length > 0 ? (
         <SectionList
           sections={toSections(items)}

@@ -102,3 +102,26 @@ describe('게시물 상세 (05)', () => {
     expect(await screen.findByText('게시물을 찾을 수 없어요')).toBeOnTheScreen()
   })
 })
+
+describe('게시물 상세 불러오기 실패', () => {
+  it('네트워크 오류는 "찾을 수 없음"이 아니라 실패 안내와 다시 시도', async () => {
+    jest
+      .mocked(fetchPost)
+      .mockRejectedValueOnce(new ApiError({ code: 'NETWORK', message: '네트워크 연결을 확인해 주세요' }))
+    const user = userEvent.setup()
+    await renderScreen()
+    expect(await screen.findByText('게시물을 불러오지 못했어요')).toBeOnTheScreen()
+    expect(screen.queryByText('게시물을 찾을 수 없어요')).toBeNull()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByText(/첫 애견동반 카페/)).toBeOnTheScreen()
+  })
+
+  it('404는 다시 시도 없이 안내만', async () => {
+    jest
+      .mocked(fetchPost)
+      .mockRejectedValue(new ApiError({ code: 'HTTP', status: 404, message: '게시물을 찾을 수 없어요' }))
+    await renderScreen()
+    expect(await screen.findByText('게시물을 찾을 수 없어요')).toBeOnTheScreen()
+    expect(screen.queryByRole('button', { name: '다시 시도' })).toBeNull()
+  })
+})

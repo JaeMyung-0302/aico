@@ -32,8 +32,18 @@ const EntryCardScreen = () => {
     )
   }
   if (!pet || !vaccinations.data) {
-    return vaccinations.isError ? (
-      <EmptyLayout title="카드를 불러오지 못했어요" />
+    // 펫 목록·접종 기록 중 하나라도 실패하면 무한 로딩 대신 다시 시도를 보여준다
+    const failed = myPets.isError ? myPets : vaccinations.isError ? vaccinations : null
+    return failed ? (
+      <View style={styles.screen}>
+        <AppHeader title="입장용 카드" />
+        <EmptyLayout
+          title="카드를 불러오지 못했어요"
+          onRetry={() => {
+            failed.refetch().catch(() => undefined)
+          }}
+        />
+      </View>
     ) : (
       <ActivityIndicator style={styles.loading} color={COLORS.primary} />
     )

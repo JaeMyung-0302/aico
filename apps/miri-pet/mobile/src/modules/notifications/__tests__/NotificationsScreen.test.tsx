@@ -83,3 +83,15 @@ describe('알림 (07)', () => {
     expect(await screen.findByText('아직 알림이 없어요')).toBeOnTheScreen()
   })
 })
+
+describe('알림 불러오기 실패', () => {
+  it('실패 안내와 다시 시도 → 다시 받는다', async () => {
+    jest.mocked(fetchNotifications).mockRejectedValueOnce(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen()
+    expect(await screen.findByText('알림을 불러오지 못했어요')).toBeOnTheScreen()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    await waitFor(() => expect(fetchNotifications).toHaveBeenCalledTimes(2))
+    expect(screen.queryByText('알림을 불러오지 못했어요')).toBeNull()
+  })
+})

@@ -14,7 +14,8 @@ export const collectPetMedia = async (
       where: { vaccination: { pet: where } },
       select: { media: { select: MEDIA_ROW } },
     }),
-    tx.media.findMany({ where: { petAvatar: { is: where } }, select: MEDIA_ROW }),
+    // QA1 P1: 사용자 프로필 사진으로도 쓰이는 사진(과거 데이터)은 펫과 함께 지우지 않는다
+    tx.media.findMany({ where: { petAvatar: { is: where }, userAvatar: { is: null } }, select: MEDIA_ROW }),
   ])
   return [...certificates.map((certificate) => certificate.media), ...avatars]
 }

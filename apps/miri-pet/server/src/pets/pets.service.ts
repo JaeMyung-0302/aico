@@ -24,6 +24,10 @@ export const PET_LIMIT_EXCEEDED = 'PET_LIMIT_EXCEEDED'
 const petNotFound = () => new NotFoundException('펫을 찾을 수 없어요')
 
 // 같은 사진을 이미 다른 펫이 쓰고 있으면(Pet.avatarMediaId unique) 500 대신 409
+// QA1 P1: 사용자 프로필 사진과 같은 사진을 펫에 쓰면 펫 삭제 때 사용자 사진이 사라진다 → 공유 금지
+const userAvatarConflict = () =>
+  new ConflictException({ code: AVATAR_IN_USE, message: '이미 내 프로필에 쓰인 사진이에요' })
+
 const withAvatarConflict = async <T>(work: () => Promise<T>): Promise<T> => {
   try {
     return await work()
@@ -89,7 +93,7 @@ export class PetsService {
   }
 
   async create(ownerId: string, body: CreatePetRequest): Promise<PetDto> {
-    if (body.avatarMediaId) await this.media.assertUsable(ownerId, [body.avatarMediaId], 'AVATAR')
+    if (body.avatarMediaId) await this.assertPetAvatarUsable(ownerId, body.avatarMediaId)
     const pet = await withAvatarConflict(() =>
       this.prisma.$transaction(async (tx) => {
         // 같은 사용자의 동시 생성 요청을 직렬화해 5마리 제한을 지킨다(User 행 잠금)
@@ -112,7 +116,7 @@ export class PetsService {
 
   async update(ownerId: string, petId: string, body: UpdatePetRequest): Promise<PetDto> {
     const current = await this.findOwned(ownerId, petId)
-    if (body.avatarMediaId) await this.media.assertUsable(ownerId, [body.avatarMediaId], 'AVATAR')
+    if (body.avatarMediaId) await this.assertPetAvatarUsable(ownerId, body.avatarMediaId)
     const data: Prisma.PetUncheckedUpdateInput = {
       ...(body.name !== undefined ? { name: body.name } : {}),
       ...(body.species !== undefined ? { species: body.species } : {}),
@@ -140,6 +144,11 @@ export class PetsService {
       return owned
     })
     await this.media.purgeMedia(media)
+  }
+
+  private async assertPetAvatarUsable(ownerId: string, mediaId: string): Promise<void> {
+    await this.media.assertUsable(ownerId, [mediaId], 'AVATAR')
+    if ((await this.prisma.user.count({ where: { avatarMediaId: mediaId } })) > 0) throw userAvatarConflict()
   }
 
   private toDto(pet: PetWithAvatar): PetDto {

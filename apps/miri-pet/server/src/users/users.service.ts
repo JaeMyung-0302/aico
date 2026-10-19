@@ -56,7 +56,13 @@ export class UsersService {
 
   async updateMe(userId: string, body: UpdateMeRequest): Promise<Me> {
     // 내 것 + READY + AVATAR 용도만 (MEDIA_NOT_USABLE 422)
-    if (body.avatarMediaId) await this.media.assertUsable(userId, [body.avatarMediaId], 'AVATAR')
+    if (body.avatarMediaId) {
+      await this.media.assertUsable(userId, [body.avatarMediaId], 'AVATAR')
+      // QA1 P1: 펫 프로필 사진과 같은 사진을 쓰면 펫 삭제 때 내 사진이 사라진다 → 공유 금지
+      if ((await this.prisma.pet.count({ where: { avatarMediaId: body.avatarMediaId } })) > 0) {
+        throw new ConflictException({ code: AVATAR_IN_USE, message: '이미 펫 프로필에 쓰인 사진이에요' })
+      }
+    }
     const previous =
       body.avatarMediaId !== undefined
         ? await this.prisma.user.findUnique({

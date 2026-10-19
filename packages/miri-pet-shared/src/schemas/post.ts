@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { cursorQuerySchema, idSchema } from './common'
+import { cursorQuerySchema, idSchema, userTextSchema } from './common'
 import { placeCategorySchema } from './place'
 import { userSummarySchema } from './user'
 import { MAX_PETS_PER_POST, MAX_POST_IMAGES } from '../constants/limits'
 
 export const createPostRequestSchema = z.object({
-  caption: z.string().trim().max(2000).default(''),
+  caption: userTextSchema().max(2000).default(''),
   mediaIds: z.array(idSchema).min(1).max(MAX_POST_IMAGES),
   petIds: z.array(idSchema).min(1).max(MAX_PETS_PER_POST),
   // 장소 태그(선택, 1곳). ACTIVE 장소만 → 아니면 422 PLACE_NOT_USABLE

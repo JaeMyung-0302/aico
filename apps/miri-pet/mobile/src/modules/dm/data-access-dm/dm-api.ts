@@ -40,6 +40,15 @@ export const fetchMessages = (conversationId: string, cursor: string | null): Pr
     schema: messagePageSchema,
   })
 
+// 재연결 복구: after 이후 메시지를 오래된순으로 받는다(cursor와 함께 쓸 수 없다). nextCursor가 있으면 그 id를 다음 after로 쓴다
+export const fetchMessagesAfter = (conversationId: string, after: string): Promise<MessagePage> =>
+  requestApi({
+    method: 'GET',
+    url: `${BASE}/${conversationId}/messages`,
+    params: { after },
+    schema: messagePageSchema,
+  })
+
 // clientMessageId가 같으면 서버가 같은 메시지를 돌려준다(재시도 멱등)
 export const sendMessage = (conversationId: string, request: SendMessageRequest): Promise<Message> =>
   requestApi({ method: 'POST', url: `${BASE}/${conversationId}/messages`, data: request, schema: messageSchema })

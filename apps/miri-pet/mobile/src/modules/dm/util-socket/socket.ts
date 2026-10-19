@@ -5,6 +5,7 @@ import {
   messageReadEventSchema,
 } from '@miri-pet/shared'
 import type { QueryClient } from '@tanstack/react-query'
+import { catchUpMessages, isMessagesQueryKey } from '../data-access-dm/catch-up-messages'
 import { conversationQueryKey, DM_QUERY_KEY } from '../data-access-dm/query-keys'
 
 type AuthData = { token?: string }
@@ -41,12 +42,19 @@ export const connectDmSocket = <T>({ io, origin, getAccessToken }: ConnectOption
     },
   })
 
-// (재)연결·새 메시지 → ['dm'] 재조회(놓친 메시지 복구), 읽음 → 열린 대화의 읽음 위치만 바로 바꾼다
+// 새 메시지 → ['dm'] 재조회. (재)연결 → 열린 대화는 after 커서로 놓친 메시지만 받아 합치고 나머지 DM 캐시는 재조회.
+// 읽음 → 열린 대화의 읽음 위치만 바로 바꾼다
 export const bindDmSocketEvents = (socket: DmSocketLike, queryClient: QueryClient): void => {
   const refetchDm = () => {
     queryClient.invalidateQueries({ queryKey: DM_QUERY_KEY }).catch(() => undefined)
   }
-  socket.on('connect', refetchDm)
+  const recoverDm = () => {
+    catchUpMessages(queryClient).catch(() => undefined)
+    queryClient
+      .invalidateQueries({ queryKey: DM_QUERY_KEY, predicate: (query) => !isMessagesQueryKey(query.queryKey) })
+      .catch(() => undefined)
+  }
+  socket.on('connect', recoverDm)
   socket.on(DM_SOCKET_EVENTS.messageNew, refetchDm)
   socket.on(DM_SOCKET_EVENTS.messageRead, (payload) => {
     const parsed = messageReadEventSchema.safeParse(payload)

@@ -1,6 +1,7 @@
 import { render, screen, userEvent, within } from '@testing-library/react-native'
 import * as Location from 'expo-location'
 import { router } from 'expo-router'
+import { ApiError } from '@/shared/api/api-error'
 import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
 import { SafeAreaTestProvider } from '@/test-utils/SafeAreaTestProvider'
 import { makePlace } from '../__fixtures__/places'
@@ -35,6 +36,12 @@ jest.mock('@mj-studio/react-native-naver-map', () => {
             onPress={() => onCameraIdle?.({ region: { ...region, latitude: region.latitude + 0.05 } })}
           >
             <Text>테스트: 북쪽으로 이동</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => onCameraIdle?.({ region: { ...region, latitudeDelta: 1, longitudeDelta: 1 } })}
+          >
+            <Text>테스트: 크게 축소</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -210,5 +217,31 @@ describe('장소 탭 (08 지도 / 09 목록)', () => {
     await renderScreen()
     await user.press(await screen.findByRole('button', { name: '다시 시도' }))
     expect(await screen.findByText('지도 마커 2개')).toBeOnTheScreen()
+  })
+})
+
+describe('지도를 너무 넓게 볼 때 (서버 bbox 대각선 50km 제한)', () => {
+  it('크게 축소하면 다시 찾기 대신 확대 안내를 보여주고 요청하지 않는다', async () => {
+    const user = userEvent.setup()
+    await renderScreen()
+    await screen.findByText('지도 마커 2개')
+    const callsBefore = jest.mocked(fetchPlaces).mock.calls.length
+    await user.press(button('테스트: 크게 축소'))
+    expect(await screen.findByText('지도를 조금 더 확대해 주세요')).toBeOnTheScreen()
+    expect(screen.queryByRole('button', { name: '이 지역에서 다시 찾기' })).not.toBeOnTheScreen()
+    expect(jest.mocked(fetchPlaces).mock.calls.length).toBe(callsBefore)
+    // 다시 확대(작은 범위로 이동)하면 안내가 사라진다
+    await user.press(button('테스트: 북쪽으로 이동'))
+    expect(screen.queryByText('지도를 조금 더 확대해 주세요')).not.toBeOnTheScreen()
+  })
+
+  it('서버가 400으로 확대를 요구하면 그 문구를 보여주고, 소용없는 다시 시도는 숨긴다', async () => {
+    jest
+      .mocked(fetchPlaces)
+      .mockRejectedValue(new ApiError({ code: 'HTTP', status: 400, message: '지도를 조금 더 확대해 주세요' }))
+    await renderScreen()
+    expect(await screen.findByText('지도를 조금 더 확대해 주세요')).toBeOnTheScreen()
+    expect(screen.queryByText('장소를 불러오지 못했어요')).not.toBeOnTheScreen()
+    expect(screen.queryByRole('button', { name: '다시 시도' })).not.toBeOnTheScreen()
   })
 })

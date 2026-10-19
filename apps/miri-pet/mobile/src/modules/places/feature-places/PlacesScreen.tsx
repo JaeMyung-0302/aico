@@ -8,6 +8,7 @@ import Icon from '@/design-system/components/Icon'
 import Toast from '@/design-system/components/Toast'
 import { COLORS } from '@/design-system/tokens/colors'
 import { SCREEN_GUTTER, SPACING, TOUCH_TARGET } from '@/design-system/tokens/spacing'
+import { ApiError } from '@/shared/api/api-error'
 import { useTransientMessage } from '@/shared/hooks/use-transient-message'
 import PlaceFilters from '../ui-place-filters/PlaceFilters'
 import PlaceList from '../ui-place-list/PlaceList'
@@ -18,10 +19,25 @@ import PlacesMapPane from './PlacesMapPane'
 import RegionSheet from './RegionSheet'
 import { usePlacesScreenState } from './usePlacesScreenState'
 
+const ZOOM_IN_MESSAGE = '지도를 조금 더 확대해 주세요'
+
 const LOCATE_MESSAGES = {
   denied: '위치 권한이 없어 지역 선택으로 찾아볼 수 있어요',
   error: '현재 위치를 가져오지 못했어요',
 } as const
+
+// 서버 bbox 검증(400)은 다시 시도해도 같으므로 서버 문구(대개 "지도를 조금 더 확대해 주세요")만 보여준다
+const PlacesLoadError = ({ error, onRetry }: { error: Error; onRetry: () => void }) => {
+  const isBadRequest = error instanceof ApiError && error.status === 400
+  return (
+    <View style={styles.error}>
+      <AppText variant="callout" color="danger">
+        {isBadRequest ? error.message : '장소를 불러오지 못했어요'}
+      </AppText>
+      {isBadRequest ? null : <Button label="다시 시도" variant="secondary" size="md" onPress={onRetry} />}
+    </View>
+  )
+}
 
 const openPlace = (placeId: string) => router.push({ pathname: '/places/[placeId]', params: { placeId } })
 
@@ -78,13 +94,13 @@ const PlacesScreen = () => {
           장소가 많아 일부만 보여요. 지도를 확대해 주세요
         </AppText>
       ) : null}
-      {state.placesQuery.isError ? (
-        <View style={styles.error}>
-          <AppText variant="callout" color="danger">
-            장소를 불러오지 못했어요
-          </AppText>
-          <Button label="다시 시도" variant="secondary" size="md" onPress={() => state.placesQuery.refetch()} />
-        </View>
+      {state.isCameraTooWide ? (
+        <AppText variant="caption" color="onWarmSoft" style={styles.notice}>
+          {ZOOM_IN_MESSAGE}
+        </AppText>
+      ) : null}
+      {state.placesQuery.isError && !state.isCameraTooWide ? (
+        <PlacesLoadError error={state.placesQuery.error} onRetry={() => state.placesQuery.refetch()} />
       ) : null}
       {state.mode === 'map' ? (
         <PlacesMapPane

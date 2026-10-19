@@ -125,3 +125,19 @@ describe('ConsentsScreen (설정 > 동의 내역 관리)', () => {
     expect(await screen.findByText('동의 내역을 불러오지 못했어요')).toBeOnTheScreen()
   })
 })
+
+describe('ConsentsScreen 불러오기 실패', () => {
+  it('다시 시도를 누르면 다시 받아 목록을 보여준다', async () => {
+    jest.mocked(fetchMyConsents).mockRejectedValueOnce(new Error('500'))
+    const user = userEvent.setup()
+    await render(
+      <SafeAreaTestProvider>
+        <QueryTestProvider>
+          <ConsentsScreen />
+        </QueryTestProvider>
+      </SafeAreaTestProvider>,
+    )
+    await user.press(await screen.findByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByRole('switch', { name: '위치기반서비스 이용' })).toBeOnTheScreen()
+  })
+})

@@ -162,7 +162,7 @@ describe('AccountDeletionService', () => {
       select: { media: { select: { id: true, bucket: true, key: true, status: true } } },
     })
     expect(prisma.media.findMany).toHaveBeenCalledWith({
-      where: { petAvatar: { is: { ownerId: USER_ID } } },
+      where: { petAvatar: { is: { ownerId: USER_ID } }, userAvatar: { is: null } },
       select: { id: true, bucket: true, key: true, status: true },
     })
     expect(prisma.pet.deleteMany).toHaveBeenCalledWith({ where: { ownerId: USER_ID } })

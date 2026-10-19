@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { cursorQuerySchema, idSchema } from './common'
+import { cursorQuerySchema, idSchema, userTextSchema } from './common'
 import { userSummarySchema } from './user'
 
 export const createCommentRequestSchema = z.object({
-  body: z.string().trim().min(1).max(500),
+  body: userTextSchema().min(1).max(500),
 })
 export type CreateCommentRequest = z.infer<typeof createCommentRequestSchema>
 

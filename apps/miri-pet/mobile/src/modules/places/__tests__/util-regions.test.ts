@@ -1,6 +1,14 @@
 import { haversineKm } from '@miri-pet/shared'
 import { isGpsBuildEnabled } from '../util-location/gps-build-flag'
-import { bboxAround, bboxCenter, DEFAULT_REGION, hasMovedAway, REGIONS } from '../util-regions'
+import {
+  bboxAround,
+  bboxCenter,
+  DEFAULT_REGION,
+  hasMovedAway,
+  isBboxTooWide,
+  MAX_BBOX_DIAGONAL_KM,
+  REGIONS,
+} from '../util-regions'
 
 describe('util-regions', () => {
   it('bboxAround: 중심을 감싸는 약 3km 정사각형', () => {
@@ -41,5 +49,16 @@ describe('util-regions', () => {
     expect(isGpsBuildEnabled()).toBe(false)
     if (original === undefined) delete process.env.EXPO_PUBLIC_FEATURE_GPS
     else process.env.EXPO_PUBLIC_FEATURE_GPS = original
+  })
+})
+
+describe('isBboxTooWide (서버 MAX_BBOX_DIAGONAL_KM = 50과 같은 기준)', () => {
+  it('대각선 50km 이하면 요청할 수 있고, 넘으면 너무 넓다', () => {
+    expect(MAX_BBOX_DIAGONAL_KM).toBe(50)
+    expect(isBboxTooWide(bboxAround(DEFAULT_REGION.center))).toBe(false)
+    // 한 변 35km 정사각형 ≈ 대각선 49.5km
+    expect(isBboxTooWide(bboxAround(DEFAULT_REGION.center, 35))).toBe(false)
+    // 한 변 40km 정사각형 ≈ 대각선 56.6km
+    expect(isBboxTooWide(bboxAround(DEFAULT_REGION.center, 40))).toBe(true)
   })
 })

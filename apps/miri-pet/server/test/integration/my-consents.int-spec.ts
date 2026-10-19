@@ -37,7 +37,7 @@ describe('설정 > 동의 내역 관리 GET /me/consents · PATCH /me/consents/:
     expect(res.body.map((row: { kind: string }) => row.kind)).toEqual(['TERMS', 'PRIVACY', 'LOCATION', 'CERTIFICATE'])
     expect(res.body[0]).toEqual({
       kind: 'TERMS',
-      version: '2026-10-draft',
+      version: '2026-10-01',
       agreedAt: expect.any(String),
       withdrawnAt: null,
     })
@@ -131,5 +131,22 @@ describe('설정 > 동의 내역 관리 GET /me/consents · PATCH /me/consents/:
       await toggle(i % 2 === 0).expect(200)
     }
     await toggle(true).expect(429)
+  })
+
+  it('QA1 P3: POST /me/consents에 현재가 아닌 TERMS·PRIVACY·CERTIFICATE 버전은 400 CONSENT_VERSION_MISMATCH', async () => {
+    const me = await devLogin(app, '옛버전')
+    for (const kind of ['TERMS', 'PRIVACY', 'CERTIFICATE'] as const) {
+      const consents = ['TERMS', 'PRIVACY', 'CERTIFICATE'].map((k) => ({
+        kind: k,
+        version: k === kind ? 'v999' : CURRENT_CONSENT_VERSION,
+      }))
+      const res = await http()
+        .post('/api/v1/me/consents')
+        .set(...bearer(me.accessToken))
+        .send({ isAge14OrOlder: true, consents })
+        .expect(400)
+      expect(res.body.code).toBe('CONSENT_VERSION_MISMATCH')
+    }
+    expect(await prisma.consent.count({ where: { userId: me.userId } })).toBe(0)
   })
 })

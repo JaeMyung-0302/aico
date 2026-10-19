@@ -16,10 +16,10 @@ export const devLogin = async (app: INestApplication, nickname: string): Promise
 export const bearer = (token: string): [string, string] => ['Authorization', `Bearer ${token}`]
 
 export const REQUIRED_CONSENTS = [
-  { kind: 'TERMS', version: '2026-10-draft' },
-  { kind: 'PRIVACY', version: '2026-10-draft' },
-  { kind: 'LOCATION', version: '2026-10-draft' },
-  { kind: 'CERTIFICATE', version: '2026-10-draft' },
+  { kind: 'TERMS', version: '2026-10-01' },
+  { kind: 'PRIVACY', version: '2026-10-01' },
+  { kind: 'LOCATION', version: '2026-10-01' },
+  { kind: 'CERTIFICATE', version: '2026-10-01' },
 ]
 
 // devLogin + 필수 동의 제출(ConsentGuard 통과 + birthYearVerifiedAt 설정)

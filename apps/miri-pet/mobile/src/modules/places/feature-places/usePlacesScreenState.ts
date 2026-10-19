@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { usePlaces } from '../data-access-places/usePlaces'
 import { EMPTY_PLACE_FILTERS, type MapBbox, type PlaceFilterValue } from '../util-place-query'
-import { bboxAround, DEFAULT_REGION, hasMovedAway, type Region } from '../util-regions'
+import { bboxAround, DEFAULT_REGION, hasMovedAway, isBboxTooWide, type Region } from '../util-regions'
 
 export type PlacesMode = 'map' | 'list'
 type SearchArea = { label: string; bbox: MapBbox }
@@ -31,8 +31,11 @@ export const usePlacesScreenState = () => {
     return bbox
   }
 
+  // 너무 넓게 축소한 화면은 서버가 400으로 거절하므로 다시 찾기를 막고 확대 안내를 보여준다
+  const isCameraTooWide = cameraBbox !== null && isBboxTooWide(cameraBbox)
+
   const searchCameraArea = () => {
-    if (!cameraBbox) return
+    if (!cameraBbox || isCameraTooWide) return
     setSearch({ label: MAP_AREA_LABEL, bbox: cameraBbox })
     setSelectedPlaceId(null)
   }
@@ -45,7 +48,8 @@ export const usePlacesScreenState = () => {
     search,
     selectRegion,
     setCameraBbox,
-    canSearchCameraArea: cameraBbox !== null && hasMovedAway(search.bbox, cameraBbox),
+    canSearchCameraArea: cameraBbox !== null && !isCameraTooWide && hasMovedAway(search.bbox, cameraBbox),
+    isCameraTooWide,
     searchCameraArea,
     placesQuery,
     places,

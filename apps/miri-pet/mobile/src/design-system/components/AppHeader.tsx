@@ -15,8 +15,10 @@ type AppHeaderProps = {
   right?: ReactNode
 }
 
+// 스택에 이 화면 하나뿐이면(푸시·딥링크 콜드 스타트) 홈으로 대체한다 — 뒤로가 먹통이 되지 않게
 const handleBackPress = () => {
   if (router.canGoBack()) router.back()
+  else router.replace('/')
 }
 
 const AppHeader = ({ title, hasBack = true, onBackPress, right }: AppHeaderProps) => {

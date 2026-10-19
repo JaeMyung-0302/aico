@@ -1,19 +1,11 @@
 import type { Conversation, Message, ReportReason } from '@miri-pet/shared'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
-import {
-  ActivityIndicator,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
+import KeyboardAvoider from '@/design-system/components/KeyboardAvoider'
 import Button from '@/design-system/components/Button'
 import EmptyLayout from '@/design-system/components/EmptyLayout'
 import Icon from '@/design-system/components/Icon'
@@ -37,6 +29,8 @@ type Row = { kind: 'pending'; item: PendingMessage } | { kind: 'message'; item: 
 
 type ReportTarget = { type: 'USER' | 'MESSAGE'; id: string }
 
+const RETRY_LATER = '잠시 후 다시 시도해 주세요.'
+
 const rowKey = (row: Row) => (row.kind === 'pending' ? `pending:${row.item.clientMessageId}` : row.item.id)
 
 const pendingStatus = (item: PendingMessage) => (item.status === 'sending' ? '전송 중' : '전송 실패 · 다시 보내기')
@@ -49,9 +43,16 @@ const RequestBanner = ({ conversation }: { conversation: Conversation }) => {
   const accept = useAcceptConversation()
   const hide = useHideConversation()
   const handleDecline = async () => {
-    await hide.mutateAsync(conversation.id).catch(() => undefined)
+    try {
+      await hide.mutateAsync(conversation.id)
+    } catch {
+      Alert.alert('요청을 삭제하지 못했어요', RETRY_LATER)
+      return
+    }
     if (router.canGoBack()) router.back()
   }
+  const handleAccept = () =>
+    accept.mutate(conversation.id, { onError: () => Alert.alert('요청을 수락하지 못했어요', RETRY_LATER) })
   return (
     <View style={styles.banner}>
       <AppText variant="callout" color="ink2">
@@ -59,13 +60,7 @@ const RequestBanner = ({ conversation }: { conversation: Conversation }) => {
       </AppText>
       <View style={styles.bannerActions}>
         <Button label="삭제" variant="secondary" size="md" style={styles.flex} onPress={handleDecline} />
-        <Button
-          label="수락"
-          size="md"
-          style={styles.flex}
-          isLoading={accept.isPending}
-          onPress={() => accept.mutate(conversation.id)}
-        />
+        <Button label="수락" size="md" style={styles.flex} isLoading={accept.isPending} onPress={handleAccept} />
       </View>
     </View>
   )
@@ -124,7 +119,7 @@ const DmChatScreen = ({ conversationId }: DmChatScreenProps) => {
   }
   const handleSheetClose = () => {
     setReportTarget(null)
-    if (blockUser.isSuccess && router.canGoBack()) router.back()
+    if (blockUser.isSuccess) router.dismissTo('/dm')
   }
 
   const renderRow = ({ item: row }: { item: Row }) => {
@@ -166,7 +161,9 @@ const DmChatScreen = ({ conversationId }: DmChatScreenProps) => {
     </Pressable>
   ) : null
 
-  if (conversation.isError) {
+  // 차단하면 캐시 전체를 다시 받는 동안 이 대화가 403이 된다 → 차단 완료 안내를 닫을 때까지 화면을 유지한다
+  const isBlockingPeer = blockUser.isPending || blockUser.isSuccess
+  if (conversation.isError && !isBlockingPeer) {
     return (
       <View style={styles.screen}>
         <AppHeader title="대화" />
@@ -176,10 +173,25 @@ const DmChatScreen = ({ conversationId }: DmChatScreenProps) => {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoider style={styles.screen}>
       <AppHeader title={peer?.nickname} right={moreButton} />
       {conversation.data?.state === 'REQUEST' ? <RequestBanner conversation={conversation.data} /> : null}
       {messages.isPending ? <ActivityIndicator style={styles.loading} color={COLORS.primary} /> : null}
+      {messages.isError && !messages.data && !isBlockingPeer ? (
+        <View style={styles.loadError}>
+          <AppText variant="callout" color="danger">
+            메시지를 불러오지 못했어요
+          </AppText>
+          <Button
+            label="다시 시도"
+            variant="secondary"
+            size="md"
+            onPress={() => {
+              messages.refetch().catch(() => undefined)
+            }}
+          />
+        </View>
+      ) : null}
       <FlatList
         inverted
         style={styles.list}
@@ -240,13 +252,21 @@ const DmChatScreen = ({ conversationId }: DmChatScreenProps) => {
           }}
         />
       ) : null}
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   )
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.surface },
   loading: { marginTop: SPACING.xxxl },
+  loadError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.dangerSoft,
+  },
   flex: { flex: 1 },
   iconButton: { width: TOUCH_TARGET, height: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' },
   banner: {

@@ -18,6 +18,7 @@ import { useAcceptConversation, useConversations, useHideConversation } from '..
 import { conversationPreview } from '../util-dm/dm-display'
 
 const REQUEST_NOTICE = '서로 팔로우하지 않은 사람의 메시지예요. 수락하기 전에는 상대가 내 읽음 여부를 알 수 없어요.'
+const BLOCK_FAILURE_MESSAGE = '차단하지 못했어요. 잠시 후 다시 시도해 주세요'
 
 const openChat = (conversationId: string) => router.push(`/dm/${conversationId}`)
 
@@ -116,6 +117,7 @@ const TabButton = ({ label, isActive, onPress }: { label: string; isActive: bool
 const DmInboxScreen = () => {
   const [tab, setTab] = useState<MemberState>('ACCEPTED')
   const [blockTarget, setBlockTarget] = useState<Conversation | null>(null)
+  const [blockError, setBlockError] = useState<string | null>(null)
   const me = useMe()
   const chats = useConversations('ACCEPTED')
   const requests = useConversations('REQUEST')
@@ -126,8 +128,18 @@ const DmInboxScreen = () => {
 
   const handleBlockConfirm = async () => {
     if (!blockTarget) return
-    await blockUser.mutateAsync(blockTarget.peer.id).catch(() => undefined)
+    setBlockError(null)
+    try {
+      await blockUser.mutateAsync(blockTarget.peer.id)
+      setBlockTarget(null)
+    } catch {
+      // 실패하면 확인 창에 머물러 다시 누를 수 있게 한다
+      setBlockError(BLOCK_FAILURE_MESSAGE)
+    }
+  }
+  const handleBlockClose = () => {
     setBlockTarget(null)
+    setBlockError(null)
   }
 
   return (
@@ -142,7 +154,14 @@ const DmInboxScreen = () => {
         />
       </View>
       {active.isPending ? <ActivityIndicator style={styles.loading} color={COLORS.primary} /> : null}
-      {active.isError ? <EmptyLayout title="대화를 불러오지 못했어요" /> : null}
+      {active.isError ? (
+        <EmptyLayout
+          title="대화를 불러오지 못했어요"
+          onRetry={() => {
+            active.refetch().catch(() => undefined)
+          }}
+        />
+      ) : null}
       {active.isSuccess && items.length === 0 ? (
         tab === 'ACCEPTED' ? (
           <EmptyLayout title="아직 대화가 없어요" description="프로필에서 메시지를 보내 대화를 시작해 보세요." />
@@ -179,18 +198,12 @@ const DmInboxScreen = () => {
       ) : null}
       <Dialog
         isVisible={blockTarget !== null}
-        onClose={() => setBlockTarget(null)}
+        onClose={handleBlockClose}
         title={`${blockTarget?.peer.nickname ?? ''} 님을 차단할까요?`}
         description="서로 메시지를 보낼 수 없고, 서로의 게시물·프로필이 보이지 않아요."
         actions={
           <>
-            <Button
-              label="취소"
-              variant="secondary"
-              size="md"
-              style={styles.flex}
-              onPress={() => setBlockTarget(null)}
-            />
+            <Button label="취소" variant="secondary" size="md" style={styles.flex} onPress={handleBlockClose} />
             <Button
               label="차단하기"
               variant="danger"
@@ -201,7 +214,13 @@ const DmInboxScreen = () => {
             />
           </>
         }
-      />
+      >
+        {blockError ? (
+          <AppText variant="callout" color="danger" accessibilityLiveRegion="polite">
+            {blockError}
+          </AppText>
+        ) : null}
+      </Dialog>
     </View>
   )
 }

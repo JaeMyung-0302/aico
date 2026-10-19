@@ -39,7 +39,10 @@ const REQUEST = makeConversation({
   unreadCount: 1,
 })
 
-const pageFor = (state: MemberState) => ({ items: state === 'REQUEST' ? [REQUEST] : [FRIEND, UNREAD], nextCursor: null })
+const pageFor = (state: MemberState) => ({
+  items: state === 'REQUEST' ? [REQUEST] : [FRIEND, UNREAD],
+  nextCursor: null,
+})
 
 const renderScreen = () =>
   render(
@@ -106,5 +109,27 @@ describe('대화 목록 (12)', () => {
     jest.mocked(fetchConversations).mockResolvedValue({ items: [], nextCursor: null })
     await renderScreen()
     expect(await screen.findByText('아직 대화가 없어요')).toBeOnTheScreen()
+  })
+})
+
+describe('대화 목록 불러오기 실패', () => {
+  it('실패 안내와 다시 시도 → 다시 받아 목록을 보여준다', async () => {
+    jest.mocked(fetchConversations).mockRejectedValueOnce(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen()
+    expect(await screen.findByText('대화를 불러오지 못했어요')).toBeOnTheScreen()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByText('jieun.bori')).toBeOnTheScreen()
+  })
+
+  it('요청 차단에 실패하면 확인 창에 머물며 실패를 알린다', async () => {
+    jest.mocked(blockUser).mockRejectedValue(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen()
+    await user.press(await screen.findByRole('tab', { name: '요청 1' }))
+    await user.press(await screen.findByRole('button', { name: 'run.with.coco 차단' }))
+    await user.press(await screen.findByRole('button', { name: '차단하기' }))
+    expect(await screen.findByText('차단하지 못했어요. 잠시 후 다시 시도해 주세요')).toBeOnTheScreen()
+    expect(screen.getByRole('button', { name: '차단하기' })).toBeOnTheScreen()
   })
 })

@@ -205,9 +205,9 @@ export class ConversationsService {
     ])
   }
 
-  // 요청을 수락·거절하면 그 상대의 DM_REQUEST 알림을 지운다(요청이 끝났으므로 다음 요청은 다시 알릴 수 있다)
-  private clearDmRequestNotices(userId: string, peerId: string) {
-    return this.prisma.notification.deleteMany({ where: { userId, actorId: peerId, kind: 'DM_REQUEST' } })
+  // 요청을 수락·거절(답장 자동 수락 포함)하면 그 상대의 DM_REQUEST 알림을 지운다(요청이 끝났으므로 다음 요청은 다시 알릴 수 있다)
+  clearDmRequestNotices(userId: string, peerId: string, client: Prisma.TransactionClient = this.prisma) {
+    return client.notification.deleteMany({ where: { userId, actorId: peerId, kind: 'DM_REQUEST' } })
   }
 
   // 대화별 안 읽은 수: 내가 보내지 않았고(탈퇴자 메시지 포함) 숨김이 아니며 내 lastReadMessageId 이후인 메시지

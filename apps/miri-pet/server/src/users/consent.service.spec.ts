@@ -1,5 +1,5 @@
 import { BadRequestException, UnprocessableEntityException } from '@nestjs/common'
-import { CONSENT_REQUIRED_KIND_CODE, CURRENT_CONSENT_VERSION } from '@miri-pet/shared'
+import { CERTIFICATE_CONSENT_VERSION, CONSENT_REQUIRED_KIND_CODE, CURRENT_CONSENT_VERSION } from '@miri-pet/shared'
 import { Test } from '@nestjs/testing'
 import { createFakePrisma, type FakePrisma } from '../../test/helpers/fake-prisma'
 import { PrismaService } from '../prisma/prisma.service'
@@ -7,10 +7,10 @@ import { ConsentService } from './consent.service'
 
 const USER_ID = '0199e3a0-0000-7000-8000-0000000000a1'
 const ALL_FOUR = [
-  { kind: 'TERMS' as const, version: '2026-10' },
-  { kind: 'PRIVACY' as const, version: '2026-10' },
-  { kind: 'LOCATION' as const, version: '2026-10' },
-  { kind: 'CERTIFICATE' as const, version: '2026-10' },
+  { kind: 'TERMS' as const, version: CURRENT_CONSENT_VERSION },
+  { kind: 'PRIVACY' as const, version: CURRENT_CONSENT_VERSION },
+  { kind: 'LOCATION' as const, version: CURRENT_CONSENT_VERSION },
+  { kind: 'CERTIFICATE' as const, version: CERTIFICATE_CONSENT_VERSION },
 ]
 
 describe('ConsentService', () => {
@@ -54,12 +54,25 @@ describe('ConsentService', () => {
   })
 
   it('같은 kind가 중복되면 마지막 값 하나만 저장한다', async () => {
-    const consents = [...ALL_FOUR, { kind: 'TERMS' as const, version: '2026-11' }]
+    const consents = [...ALL_FOUR, { kind: 'LOCATION' as const, version: '2026-11' }]
     await service.submit(USER_ID, { isAge14OrOlder: true, consents })
     const data = prisma.consent.createMany.mock.calls[0][0].data
     expect(data).toHaveLength(4)
-    expect(data).toContainEqual({ userId: USER_ID, kind: 'TERMS', version: '2026-11' })
+    expect(data).toContainEqual({ userId: USER_ID, kind: 'LOCATION', version: '2026-11' })
   })
+
+  it.each(['TERMS', 'PRIVACY', 'CERTIFICATE'] as const)(
+    'QA1 P3: %s 버전이 현재 약관 버전과 다르면 400 CONSENT_VERSION_MISMATCH이고 저장하지 않는다',
+    async (kind) => {
+      const consents = ALL_FOUR.map((c) => (c.kind === kind ? { ...c, version: '1999-01-01' } : c))
+      const error = await service.submit(USER_ID, { isAge14OrOlder: true, consents }).catch((e: unknown) => e)
+      expect(error).toBeInstanceOf(BadRequestException)
+      expect(error instanceof BadRequestException ? error.getResponse() : null).toMatchObject({
+        code: 'CONSENT_VERSION_MISMATCH',
+      })
+      expect(prisma.consent.createMany).not.toHaveBeenCalled()
+    },
+  )
 
   it('위치 동의는 선택이라 빠져도 저장한다', async () => {
     const consents = ALL_FOUR.filter((c) => c.kind !== 'LOCATION')

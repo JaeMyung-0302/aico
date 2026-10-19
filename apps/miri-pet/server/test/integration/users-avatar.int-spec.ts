@@ -72,15 +72,65 @@ describe('PATCH /me 프로필 사진 (실DB, 보안 리뷰 L4·M1)', () => {
     const shared = await uploadImage(app, prisma, memory, me.accessToken, 'AVATAR')
     const next = await uploadImage(app, prisma, memory, me.accessToken, 'AVATAR')
     await patchMe(me.accessToken, { avatarMediaId: shared }).expect(200)
-    await request(app.getHttpServer())
-      .post('/api/v1/pets')
-      .set(...bearer(me.accessToken))
-      .send({ name: '보리', species: 'DOG', size: 'S', avatarMediaId: shared })
-      .expect(201)
+    // API로는 더 이상 공유할 수 없다(QA1 P1) → 과거 데이터처럼 DB에 직접 만든다
+    await prisma.pet.create({
+      data: { ownerId: me.userId, name: '보리', species: 'DOG', size: 'S', avatarMediaId: shared },
+    })
 
     await patchMe(me.accessToken, { avatarMediaId: next }).expect(200)
 
     expect(await prisma.media.findUnique({ where: { id: shared } })).not.toBeNull()
     expect(memory.has({ bucket: 'PUBLIC', key: `p/${shared}/1440.jpg` })).toBe(true)
+  })
+
+  const postPet = (token: string, body: Record<string, unknown>) =>
+    request(app.getHttpServer())
+      .post('/api/v1/pets')
+      .set(...bearer(token))
+      .send({ name: '보리', species: 'DOG', size: 'S', ...body })
+
+  it('QA1 P1: 펫 프로필 사진으로 쓰인 사진을 내 프로필로 지정하면 409 AVATAR_IN_USE', async () => {
+    const me = await consentedLogin(app, '펫먼저')
+    const photo = await uploadImage(app, prisma, memory, me.accessToken, 'AVATAR')
+    await postPet(me.accessToken, { avatarMediaId: photo }).expect(201)
+
+    const res = await patchMe(me.accessToken, { avatarMediaId: photo }).expect(409)
+    expect(res.body.code).toBe('AVATAR_IN_USE')
+  })
+
+  it('QA1 P1: 내 프로필 사진을 펫 등록·수정에 쓰면 409 AVATAR_IN_USE', async () => {
+    const me = await consentedLogin(app, '나먼저')
+    const photo = await uploadImage(app, prisma, memory, me.accessToken, 'AVATAR')
+    await patchMe(me.accessToken, { avatarMediaId: photo }).expect(200)
+
+    const created = await postPet(me.accessToken, { avatarMediaId: photo }).expect(409)
+    expect(created.body.code).toBe('AVATAR_IN_USE')
+
+    const pet = await postPet(me.accessToken, {}).expect(201)
+    const updated = await request(app.getHttpServer())
+      .patch(`/api/v1/pets/${pet.body.id}`)
+      .set(...bearer(me.accessToken))
+      .send({ avatarMediaId: photo })
+      .expect(409)
+    expect(updated.body.code).toBe('AVATAR_IN_USE')
+  })
+
+  it('QA1 P1: 펫을 지워도 내 프로필 사진으로도 쓰이는 사진(과거 데이터)은 지우지 않는다', async () => {
+    const me = await consentedLogin(app, '펫삭제')
+    const shared = await uploadImage(app, prisma, memory, me.accessToken, 'AVATAR')
+    await patchMe(me.accessToken, { avatarMediaId: shared }).expect(200)
+    const pet = await prisma.pet.create({
+      data: { ownerId: me.userId, name: '보리', species: 'DOG', size: 'S', avatarMediaId: shared },
+    })
+
+    await request(app.getHttpServer())
+      .delete(`/api/v1/pets/${pet.id}`)
+      .set(...bearer(me.accessToken))
+      .expect(204)
+
+    expect(await prisma.media.findUnique({ where: { id: shared } })).not.toBeNull()
+    expect(memory.has({ bucket: 'PUBLIC', key: `p/${shared}/1440.jpg` })).toBe(true)
+    const meRes = await request(app.getHttpServer()).get('/api/v1/me').set(...bearer(me.accessToken)).expect(200)
+    expect(meRes.body.avatarUrl).toContain(shared)
   })
 })

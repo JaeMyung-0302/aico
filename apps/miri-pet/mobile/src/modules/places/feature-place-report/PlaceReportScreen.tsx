@@ -1,10 +1,11 @@
 import { type LatLng, MAX_PLACE_REPORT_IMAGES, type Place, type PlaceReportKind } from '@miri-pet/shared'
 import { router } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
+import KeyboardAvoider from '@/design-system/components/KeyboardAvoider'
 import Button from '@/design-system/components/Button'
 import EmptyLayout from '@/design-system/components/EmptyLayout'
 import { COLORS } from '@/design-system/tokens/colors'
@@ -152,12 +153,12 @@ const PlaceReportScreen = ({ placeId, location }: PlaceReportScreenProps) => {
   const isMissingPlace = Boolean(placeId) && placeQuery.isError
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoider style={styles.flex}>
       <AppHeader title="장소 제보" />
       {isLoadingPlace ? <ActivityIndicator style={styles.flex} color={COLORS.primary} /> : null}
       {isMissingPlace ? <EmptyLayout title="장소 정보를 불러오지 못했어요" /> : null}
       {!isLoadingPlace && !isMissingPlace ? <ReportBody place={placeQuery.data} location={location} /> : null}
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   )
 }
 

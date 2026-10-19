@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PLACES_BBOX_MAX_RESULTS, type Place, type PlaceBboxQuery, type PlaceList } from '@miri-pet/shared'
+import type { Place as PlaceRow } from '../generated/prisma'
 import { assertValidBbox, bboxCenter, haversineKm } from './geo'
 import { toPlaceDto } from './place-mapper'
 import { PlacesRepository } from './places.repository'
@@ -36,7 +37,9 @@ export class PlacesService {
     return toPlaceDto(place)
   }
 
-  async assertActive(id: string): Promise<void> {
-    if (!(await this.repository.findActiveById(id))) throw new NotFoundException(PLACE_NOT_FOUND)
+  async assertActive(id: string): Promise<PlaceRow> {
+    const place = await this.repository.findActiveById(id)
+    if (!place) throw new NotFoundException(PLACE_NOT_FOUND)
+    return place
   }
 }

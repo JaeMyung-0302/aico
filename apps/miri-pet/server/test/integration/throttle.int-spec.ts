@@ -41,7 +41,15 @@ describe('rate limit: 프록시 뒤 클라이언트 IP 식별 + /auth/* 10회/�
 
       const statuses = await exhaust(app, first)
       expect(statuses.every((status) => status === 401)).toBe(true)
-      expect((await refreshFrom(app, first)).status).toBe(429)
+      const limited = await refreshFrom(app, first)
+      expect(limited.status).toBe(429)
+      // QA1 P3: 앱 에러 모양(code·한국어 message·requestId)
+      expect(limited.body).toMatchObject({
+        statusCode: 429,
+        code: 'RATE_LIMITED',
+        message: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요',
+      })
+      expect(typeof limited.body.requestId).toBe('string')
 
       expect((await refreshFrom(app, second)).status).toBe(401)
     })

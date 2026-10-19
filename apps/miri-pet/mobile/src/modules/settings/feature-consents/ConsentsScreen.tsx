@@ -65,7 +65,14 @@ const ConsentsScreen = () => {
   return (
     <View style={styles.screen}>
       <AppHeader title="동의 내역 관리" />
-      {consents.isError ? <EmptyLayout title="동의 내역을 불러오지 못했어요" /> : null}
+      {consents.isError ? (
+        <EmptyLayout
+          title="동의 내역을 불러오지 못했어요"
+          onRetry={() => {
+            consents.refetch().catch(() => undefined)
+          }}
+        />
+      ) : null}
       {consents.isPending ? <ActivityIndicator style={styles.loading} color={COLORS.primary} /> : null}
       {consents.data ? (
         <ScrollView contentContainerStyle={[styles.body, { paddingBottom: insets.bottom + SPACING.xxl }]}>

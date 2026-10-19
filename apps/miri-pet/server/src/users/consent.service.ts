@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common'
 import {
+  CERTIFICATE_CONSENT_VERSION,
   CONSENT_REQUIRED_KIND_CODE,
   type ConsentKind,
   consentKindSchema,
@@ -37,6 +38,25 @@ const assertEditable = (kind: ConsentKind): void => {
   }
 }
 
+// QA1 P3: 법적 효력이 있는 동의는 현재 약관 버전에만 동의할 수 있다(임의 버전 기록 금지)
+const PINNED_VERSIONS: Partial<Record<ConsentKind, string>> = {
+  TERMS: CURRENT_CONSENT_VERSION,
+  PRIVACY: CURRENT_CONSENT_VERSION,
+  CERTIFICATE: CERTIFICATE_CONSENT_VERSION,
+}
+
+const assertCurrentVersions = (byKind: ReadonlyMap<ConsentKind, string>): void => {
+  const stale = [...byKind].filter(([kind, version]) => {
+    const pinned = PINNED_VERSIONS[kind]
+    return pinned !== undefined && pinned !== version
+  })
+  if (stale.length === 0) return
+  throw new BadRequestException({
+    code: 'CONSENT_VERSION_MISMATCH',
+    message: '약관이 바뀌었어요. 최신 약관을 확인하고 다시 동의해 주세요',
+  })
+}
+
 @Injectable()
 export class ConsentService {
   constructor(private readonly prisma: PrismaService) {}
@@ -47,6 +67,7 @@ export class ConsentService {
     const byKind = new Map(body.consents.map((consent) => [consent.kind, consent.version]))
     const missing = REQUIRED.filter((kind) => !byKind.has(kind))
     if (missing.length > 0) throw new UnprocessableEntityException(`필수 동의가 필요해요: ${missing.join(', ')}`)
+    assertCurrentVersions(byKind)
 
     await this.prisma.$transaction([
       this.prisma.consent.createMany({

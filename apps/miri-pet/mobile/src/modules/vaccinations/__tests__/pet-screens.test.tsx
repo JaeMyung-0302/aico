@@ -141,3 +141,33 @@ describe('16 입장용 카드', () => {
     expect(fetchVaccinations).not.toHaveBeenCalled()
   })
 })
+
+describe('불러오기 실패 (다시 시도)', () => {
+  it('14: 펫 목록을 못 받으면 다시 시도로 다시 받는다', async () => {
+    jest.mocked(fetchMyPets).mockRejectedValueOnce(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen(<MyPetsScreen />)
+    expect(await screen.findByText('펫 정보를 불러오지 못했어요')).toBeOnTheScreen()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByText(petInfoLine(PETS[0]!, TODAY))).toBeOnTheScreen()
+  })
+
+  it('14: 접종 기록을 못 받으면 "기록 없음" 대신 실패 안내와 다시 시도', async () => {
+    jest.mocked(fetchVaccinations).mockRejectedValueOnce(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen(<MyPetsScreen />)
+    expect(await screen.findByText('접종 기록을 불러오지 못했어요')).toBeOnTheScreen()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByText('다음 접종 · 종합백신(DHPPL)')).toBeOnTheScreen()
+  })
+
+  it('16: 펫 목록을 못 받으면 무한 로딩 대신 실패 안내와 다시 시도', async () => {
+    mockParams = { petId: PET_ID }
+    jest.mocked(fetchMyPets).mockRejectedValueOnce(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen(<EntryCardScreen />)
+    expect(await screen.findByText('카드를 불러오지 못했어요')).toBeOnTheScreen()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByRole('button', { name: '증명서 원본 보기' })).toBeOnTheScreen()
+  })
+})

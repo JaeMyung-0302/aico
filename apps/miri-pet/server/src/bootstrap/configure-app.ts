@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import helmet from 'helmet'
 import { GlobalExceptionFilter } from '../common/filters/http-exception.filter'
+import { RejectNulPipe } from '../common/pipes/reject-nul.pipe'
 import { requestIdMiddleware } from '../common/middleware/request-id.middleware'
 import { requestContextMiddleware } from '../common/request-context/request-context'
 import { legalPagesMiddleware } from './legal-pages'
@@ -18,5 +19,6 @@ export const configureApp = (app: NestExpressApplication): void => {
   app.use(legalPagesMiddleware)
   app.setGlobalPrefix(API_PREFIX)
   app.useGlobalFilters(new GlobalExceptionFilter())
+  app.useGlobalPipes(new RejectNulPipe())
   app.enableShutdownHooks()
 }

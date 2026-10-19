@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native'
+import { useEffect } from 'react'
+import { BackHandler, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
@@ -21,8 +22,17 @@ const ConsentScreen = () => {
     if (request) submitConsents.mutate(request)
   }
 
-  // 동의 전에는 돌아갈 화면이 없다 → 뒤로 = 로그아웃 후 로그인 화면
-  const handleBackPress = () => logout.mutate()
+  // 동의 전에는 돌아갈 화면이 없다 → 뒤로(헤더·Android) = 로그아웃 후 로그인 화면
+  const { mutate: logoutMutate } = logout
+  const handleBackPress = () => logoutMutate()
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      logoutMutate()
+      return true
+    })
+    return () => subscription.remove()
+  }, [logoutMutate])
 
   return (
     <View style={[styles.screen, { paddingBottom: insets.bottom + SPACING.lg }]}>

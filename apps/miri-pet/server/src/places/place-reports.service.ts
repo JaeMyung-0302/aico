@@ -1,13 +1,17 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common'
+import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common'
 import type { CreatePlaceReportRequest, MyPlaceReport } from '@miri-pet/shared'
 import { isForeignKeyViolation, uniqueViolationTargets } from '../common/prisma/prisma-errors'
 import { MEDIA_NOT_USABLE, MediaService } from '../media/media.service'
 import { PrismaService } from '../prisma/prisma.service'
+import { hasEditChanges } from './edit-report-changes'
 import { parseReportPayload, payloadName } from './place-report-payload'
 import { PlacesService } from './places.service'
 
 const MY_REPORTS_LIMIT = 50
 const DELETED_PLACE_NAME = '삭제된 장소'
+
+const noChanges = () =>
+  new BadRequestException({ code: 'PLACE_REPORT_NO_CHANGES', message: '바뀐 내용을 알려주세요' })
 
 const mediaNotUsable = () =>
   new UnprocessableEntityException({ code: MEDIA_NOT_USABLE, message: '사용할 수 없는 이미지예요' })
@@ -24,7 +28,9 @@ export class PlaceReportsService {
   // 안내문 사진(선택): 내 것 + READY + PLACE_REPORT 용도 + 아직 어떤 제보에도 안 붙음. payload가 아닌 PlaceReportImage에 저장
   async create(reporterId: string, body: CreatePlaceReportRequest): Promise<{ id: string; status: 'PENDING' }> {
     const { mediaIds = [], ...payload } = body
-    if (payload.kind !== 'NEW') await this.places.assertActive(payload.placeId)
+    const place = payload.kind === 'NEW' ? null : await this.places.assertActive(payload.placeId)
+    // QA1 P3: 바뀌는 필드·메모·사진이 하나도 없는 정보 수정 제보는 검수할 게 없다
+    if (payload.kind === 'EDIT' && place && mediaIds.length === 0 && !hasEditChanges(payload, place)) throw noChanges()
     await this.media.assertUsable(reporterId, mediaIds, 'PLACE_REPORT')
     if ((await this.prisma.placeReportImage.count({ where: { mediaId: { in: mediaIds } } })) > 0) throw mediaNotUsable()
     const report = await this.prisma.placeReport

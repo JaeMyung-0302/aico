@@ -150,6 +150,17 @@ describe('장소 제보 → 검수 (실DB)', () => {
     await submit({ kind: 'EDIT', name: '대상 없음' }).expect(400)
   })
 
+  it('QA1 P3: 바뀌는 내용이 없는 정보 수정 제보는 400 PLACE_REPORT_NO_CHANGES (메모·사진만 있어도 허용)', async () => {
+    const place = await createPlace(prisma, { name: '그대로', allowedSizes: ['S'] })
+    const empty = await submit({ kind: 'EDIT', placeId: place.id }).expect(400)
+    expect(empty.body.code).toBe('PLACE_REPORT_NO_CHANGES')
+    const same = await submit({ kind: 'EDIT', placeId: place.id, name: '그대로', allowedSizes: ['S'] }).expect(400)
+    expect(same.body.code).toBe('PLACE_REPORT_NO_CHANGES')
+    expect(await prisma.placeReport.count()).toBe(0)
+
+    await submit({ kind: 'EDIT', placeId: place.id, note: '주차 가능' }).expect(201)
+  })
+
   it('GET /me/place-reports: 내 제보만 최신순으로, 상태·장소 이름 포함', async () => {
     const other = await consentedLogin(app, '다른사람')
     const place = await createPlace(prisma, { name: '기존 장소' })

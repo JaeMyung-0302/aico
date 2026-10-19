@@ -14,6 +14,7 @@ import { PHOTO_PERMISSION_MESSAGE } from '@/modules/media/util-pick-image/pick-i
 import { pickImagesOrEmpty } from '@/modules/media/util-pick-image/pick-images'
 import { useMyPets } from '@/modules/pets/data-access-pets/usePets'
 import PlacePickerSheet from '@/modules/places/ui-place-picker/PlacePickerSheet'
+import { useConfirmLeave } from '@/shared/hooks/use-confirm-leave'
 import { useCreatePost } from '../data-access-posts/usePosts'
 import PhotoPicker, { type PhotoItem } from './PhotoPicker'
 import PlaceTagRow from './PlaceTagRow'
@@ -36,6 +37,9 @@ const NewPostScreen = () => {
   const myPets = pets.data ?? []
   const selectedPetIds = pickedPetIds ?? (myPets.length === 1 && myPets[0] ? [myPets[0].id] : [])
   const canShare = photos.length > 0 && selectedPetIds.length > 0 && !createPost.isPending
+  // 게시 중·게시 후(상세로 replace)에는 묻지 않는다
+  const hasDraft = photos.length > 0 || caption.trim().length > 0 || place !== null
+  useConfirmLeave(hasDraft && !createPost.isPending && !createPost.isSuccess)
 
   // 앨범에서 남은 자리만큼 여러 장을 고른 순서대로 붙인다
   const handleAddPhoto = async () => {

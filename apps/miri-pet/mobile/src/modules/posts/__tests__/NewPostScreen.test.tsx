@@ -9,6 +9,7 @@ import { fetchPlaces } from '@/modules/places/data-access-places/places-api'
 import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
 import { SafeAreaTestProvider } from '@/test-utils/SafeAreaTestProvider'
 import { makePost } from '@/modules/feed/__fixtures__/posts'
+import { useConfirmLeave } from '@/shared/hooks/use-confirm-leave'
 import { createPost } from '../data-access-posts/posts-api'
 import NewPostScreen from '../feature-new-post/NewPostScreen'
 
@@ -18,6 +19,8 @@ jest.mock('@/modules/media/data-access-media/useUploadImage', () => ({ uploadIma
 jest.mock('@/modules/media/util-pick-image/pick-images', () => ({ pickImagesOrEmpty: jest.fn() }))
 jest.mock('@/modules/places/data-access-places/places-api', () => ({ fetchPlaces: jest.fn() }))
 jest.mock('../data-access-posts/posts-api', () => ({ createPost: jest.fn() }))
+// 나가기 확인(내비게이터 연동)은 훅 테스트가 맡고, 여기서는 "작성 중" 판단만 본다
+jest.mock('@/shared/hooks/use-confirm-leave', () => ({ useConfirmLeave: jest.fn() }))
 
 const PET = (id: string, name: string): Pet => ({
   id,
@@ -199,5 +202,48 @@ describe('새 게시물 (06)', () => {
     expect(screen.getByRole('button', { name: '장소 태그 (선택)' })).toBeOnTheScreen()
     await user.press(shareButton())
     await waitFor(() => expect(createPost).toHaveBeenCalledWith({ caption: '', mediaIds: ['m-1'], petIds: [BORI.id] }))
+  })
+})
+
+describe('작성 중 나가기 확인', () => {
+  const isGuardingLeave = () => jest.mocked(useConfirmLeave).mock.calls.at(-1)?.[0]
+
+  it('아무것도 입력하지 않았으면 확인 없이 나간다', async () => {
+    await renderScreen()
+    await screen.findByRole('button', { name: '보리' })
+    expect(isGuardingLeave()).toBe(false)
+  })
+
+  it('글을 쓰거나 사진을 넣으면 나갈 때 확인한다', async () => {
+    const user = userEvent.setup()
+    await renderScreen()
+    await user.type(await screen.findByLabelText('내용'), '산책')
+    expect(isGuardingLeave()).toBe(true)
+  })
+
+  it('사진만 넣어도 확인한다', async () => {
+    const user = userEvent.setup()
+    await renderScreen()
+    await user.press(await screen.findByRole('button', { name: '사진 추가' }))
+    await screen.findByText('1 / 10')
+    expect(isGuardingLeave()).toBe(true)
+  })
+
+  it('게시에 성공해 상세로 넘어갈 때는 확인하지 않는다', async () => {
+    jest.mocked(fetchMyPets).mockResolvedValue([BORI])
+    jest.mocked(uploadImage).mockResolvedValue('0199e3a0-0000-7000-8000-0000000000f1')
+    jest.mocked(createPost).mockResolvedValue(makePost())
+    const guardAtReplace: (boolean | undefined)[] = []
+    jest.mocked(router.replace).mockImplementation(() => {
+      guardAtReplace.push(isGuardingLeave())
+    })
+    const user = userEvent.setup()
+    await renderScreen()
+    await user.press(await screen.findByRole('button', { name: '사진 추가' }))
+    await screen.findByText('1 / 10')
+    await user.press(shareButton())
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalled())
+    expect(guardAtReplace).toEqual([false])
   })
 })

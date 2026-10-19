@@ -17,8 +17,8 @@ Maestro 플로우)은 Phase 6에서 끝냈다. 배포 상세는 [`server/README.
 | [ ] 1.2 | Google Play Console | 가입($25), 패키지 `com.aico.miripet` 앱 생성, 내부 테스트 트랙 **(차단)** | EAS Submit 서비스 계정 키 |
 | [x] 1.3 | Expo / EAS | 프로젝트 `@leejaemyung/miri-pet` 생성(개인 계정, projectId는 `app.config.ts`에 고정), Android 개발 빌드·서명 키 생성 완료. 남은 일: 빌드 프로필별 EAS env(`EXPO_PUBLIC_*`) 등록 | `mobile/.env`, EAS env |
 | [ ] 1.4 | Expo access token | 푸시 발송용 토큰(Enhanced Security를 켜면 필수) | GitHub secret `EXPO_ACCESS_TOKEN` |
-| [ ] 1.5 | Kakao Developers | 앱 생성, 네이티브 앱 키, iOS 번들 ID·Android 키 해시 등록, **OpenID Connect 활성화**(서버가 id_token `aud` 검증), **Admin 키**(탈퇴 시 unlink) | 앱: `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` / 서버: `KAKAO_NATIVE_APP_KEY`, `KAKAO_ADMIN_KEY` |
-| [ ] 1.6 | Google Cloud OAuth | 클라이언트 3개: Web(서버 aud), iOS(URL scheme), Android(SHA-1 — EAS 키와 Play 앱 서명 키 **둘 다**) | 앱: `EXPO_PUBLIC_GOOGLE_*` / 서버: `GOOGLE_{WEB,IOS,ANDROID}_CLIENT_ID` |
+| [x] 1.5 | Kakao Developers | 앱 '미리펫'(대표 도메인 `https://aico-app.com`) 생성, 네이티브 앱 키·어드민 키 발급, Android 패키지·키 해시(EAS 서명 `jld7vy6oisnfuWbjO6xr1bCTsG8=`) 등록, OpenID Connect 활성화 → **2026-10-19 실기기 로그인 성공**. 남은 일: Play 앱 서명 키 해시 추가, 비즈 앱 전환 시 개인정보처리방침 URL | 앱: `EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY` / 서버: `KAKAO_NATIVE_APP_KEY`, `KAKAO_ADMIN_KEY` / EAS env |
+| [x] 1.6 | Google Cloud OAuth | 프로젝트 `miripet`, 동의 화면(테스트 모드·테스트 사용자), 클라이언트 Web(서버 aud)·Android(EAS SHA-1 `8E:57:…:B0:6F`) → **2026-10-19 실기기 로그인 성공**. 남은 일: Android 클라이언트에 Play 앱 서명 SHA-1 추가, 출시 전 동의 화면 **게시(프로덕션)** 전환. iOS 클라이언트는 iOS 출시 때 | 앱: `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` / 서버: `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_ANDROID_CLIENT_ID` / EAS env |
 | [ ] 1.7 | NCP Maps (네이버 지도) | Application 등록, Mobile Dynamic Map, iOS 번들 ID·Android 패키지 등록 | `EXPO_PUBLIC_NAVER_MAP_CLIENT_ID` |
 | [ ] 1.8 | Cloudflare R2 | 버킷 `miripet-public`, `miripet-private` 생성 / 서버용 API 토큰 / **백업 전용 토큰**(private 버킷 R/W) | GitHub secrets `R2_*`, 호스트 `/app/.env.miri-pet-backup` |
 | [ ] 1.9 | R2 수명 주기 규칙 | private 버킷: `incoming/` 1일, `backups/db/` 15일 ([server/README](../server/README.md#r2-버킷-설정-배포-전-1회)) | Cloudflare 대시보드 |

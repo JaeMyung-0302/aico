@@ -1,4 +1,5 @@
-import { type ReactNode, useState } from 'react'
+import type { Pet } from '@miri-pet/shared'
+import { type ReactNode, useEffect, useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import AppText from '@/design-system/components/AppText'
 import Avatar from '@/design-system/components/Avatar'
@@ -14,6 +15,7 @@ import {
   type PetFormState,
   type PetFormSubmit,
   type PetSpecies,
+  petFormStateFrom,
   validatePetForm,
 } from '../util-pet/validate-pet-form'
 import SizeOption from './SizeOption'
@@ -27,6 +29,12 @@ type PetFormProps = {
   onSubmit: (values: PetFormSubmit, intent: PetFormIntent) => void
   onPickPhoto: () => Promise<PickedImage | null>
   isSubmitting?: boolean
+  // 수정 화면: 저장된 값으로 채우고 기존 사진을 보여준다
+  initialPet?: Pet
+  // 작성 중 이탈 확인용 — 처음 값과 달라졌는지 알린다
+  onDirtyChange?: (isDirty: boolean) => void
+  // 저장 버튼 아래 (예: 펫 삭제)
+  footer?: ReactNode
 }
 
 const SPECIES: readonly { value: PetSpecies; label: string }[] = [
@@ -43,11 +51,34 @@ const SIZES = [
 
 const INITIAL: PetFormState = { name: '', species: 'DOG', size: 'S', breed: '', birthDate: '', photo: null }
 
-// 디자인 03 펫 프로필 만들기 (이름·종류·크기 필수, 품종·생일·사진 선택)
-const PetForm = ({ primaryLabel, secondaryLabel, onSubmit, onPickPhoto, isSubmitting = false }: PetFormProps) => {
-  const [state, setState] = useState<PetFormState>(INITIAL)
+const isSameForm = (a: PetFormState, b: PetFormState): boolean =>
+  a.name === b.name &&
+  a.species === b.species &&
+  a.size === b.size &&
+  a.breed === b.breed &&
+  a.birthDate === b.birthDate &&
+  a.photo === b.photo
+
+// 디자인 03 펫 프로필 만들기 (이름·종류·크기 필수, 품종·생일·사진 선택) — 수정 화면도 같은 폼을 쓴다
+const PetForm = ({
+  primaryLabel,
+  secondaryLabel,
+  onSubmit,
+  onPickPhoto,
+  isSubmitting = false,
+  initialPet,
+  onDirtyChange,
+  footer,
+}: PetFormProps) => {
+  const [initial] = useState<PetFormState>(() => (initialPet ? petFormStateFrom(initialPet) : INITIAL))
+  const [state, setState] = useState<PetFormState>(initial)
   const [errors, setErrors] = useState<PetFormErrors>({})
   const update = (patch: Partial<PetFormState>) => setState((prev) => ({ ...prev, ...patch }))
+  const isDirty = !isSameForm(state, initial)
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty)
+  }, [isDirty, onDirtyChange])
 
   const handleSubmit = (intent: PetFormIntent) => {
     const result = validatePetForm(state)
@@ -64,8 +95,13 @@ const PetForm = ({ primaryLabel, secondaryLabel, onSubmit, onPickPhoto, isSubmit
   return (
     <KeyboardAvoider>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Pressable accessibilityRole="button" accessibilityLabel="사진 추가" onPress={handlePickPhoto} style={styles.photo}>
-          <Avatar name={state.name.trim() || '펫'} uri={state.photo?.uri} size={96} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={initialPet ? '사진 바꾸기' : '사진 추가'}
+          onPress={handlePickPhoto}
+          style={styles.photo}
+        >
+          <Avatar name={state.name.trim() || '펫'} uri={state.photo?.uri ?? initialPet?.avatarUrl} size={96} />
         </Pressable>
         <TextField
           testID="pet-name-input"
@@ -106,6 +142,7 @@ const PetForm = ({ primaryLabel, secondaryLabel, onSubmit, onPickPhoto, isSubmit
             <Button label={secondaryLabel} variant="ghost" onPress={() => handleSubmit('later')} disabled={isSubmitting} />
           ) : null}
         </View>
+        {footer}
       </ScrollView>
     </KeyboardAvoider>
   )

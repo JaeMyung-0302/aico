@@ -2,7 +2,7 @@ import type { Pet } from '@miri-pet/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { uploadImage } from '@/modules/media/data-access-media/useUploadImage'
 import type { PetFormSubmit } from '../util-pet/validate-pet-form'
-import { createPet, fetchMyPets, fetchUserPets } from './pets-api'
+import { createPet, deletePet, fetchMyPets, fetchUserPets, updatePet } from './pets-api'
 
 export const PETS_QUERY_KEY = ['pets'] as const
 
@@ -41,5 +41,35 @@ export const useSavePet = () => {
   return useMutation({
     mutationFn: savePet,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PETS_QUERY_KEY }),
+  })
+}
+
+// 수정: 새 사진을 골랐을 때만 올려 avatarMediaId를 보낸다(안 보내면 서버가 기존 사진을 유지). 사진 실패 규칙은 생성과 같다
+const editPet = async (petId: string, { request, photo }: PetFormSubmit): Promise<SavedPet> => {
+  const avatarMediaId = photo ? await uploadAvatarOrNull(photo) : null
+  if (!avatarMediaId) return { pet: await updatePet(petId, request), isPhotoSaved: !photo }
+  return { pet: await updatePet(petId, { ...request, avatarMediaId }), isPhotoSaved: true }
+}
+
+export const useUpdatePet = (petId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (values: PetFormSubmit) => editPet(petId, values),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PETS_QUERY_KEY }),
+  })
+}
+
+// 펫 → 접종 → 증명서는 서버가 함께 지운다. 화면은 기다리지 않고 바로 떠난다(지운 펫을 다시 그리지 않게)
+export const useDeletePet = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (petId: string) => deletePet(petId),
+    onSuccess: () => {
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: PETS_QUERY_KEY }),
+        // 펫별 기록과 홈 D-day(upcoming)를 모두 포함하는 접두사
+        queryClient.invalidateQueries({ queryKey: ['vaccinations'] }),
+      ]).catch(() => undefined)
+    },
   })
 }

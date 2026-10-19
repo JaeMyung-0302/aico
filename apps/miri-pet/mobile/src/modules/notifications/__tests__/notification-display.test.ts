@@ -24,10 +24,10 @@ describe('알림 표시 규칙', () => {
     expect(notificationText({ ...base, ...patch })).toBe(expected)
   })
 
-  it('이동: 사라진 게시물·장소 제보는 이동 안 함, DM 요청 → 대화, 접종 → 내 펫', () => {
+  it('이동: 사라진 게시물·장소 제보는 이동 안 함, DM 요청 → 대화의 요청 탭, 접종 → 내 펫', () => {
     expect(notificationHref({ ...base, postId: null })).toBeNull()
     expect(notificationHref({ ...base, kind: 'PLACE_REPORT_REVIEWED' })).toBeNull()
-    expect(notificationHref({ ...base, kind: 'DM_REQUEST' })).toBe('/dm')
+    expect(notificationHref({ ...base, kind: 'DM_REQUEST' })).toBe('/dm?tab=requests')
     expect(notificationHref({ ...base, kind: 'VACCINATION_DUE' })).toBe('/pets')
     expect(notificationHref({ ...base, kind: 'FOLLOW', actor: null })).toBeNull()
   })

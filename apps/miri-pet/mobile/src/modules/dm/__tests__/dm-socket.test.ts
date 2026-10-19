@@ -1,7 +1,15 @@
 import { DM_SOCKET_EVENTS, DM_SOCKET_PATH } from '@miri-pet/shared'
+import { waitFor } from '@testing-library/react-native'
+import { testId } from '@/modules/feed/__fixtures__/posts'
 import { createTestQueryClient } from '@/test-utils/QueryTestProvider'
 import { CONVERSATION_ID, makeConversation, makeMessage } from '../__fixtures__/dm'
-import { conversationQueryKey, DM_QUERY_KEY } from '../data-access-dm/query-keys'
+import { fetchMessagesAfter } from '../data-access-dm/dm-api'
+import {
+  conversationQueryKey,
+  conversationsQueryKey,
+  DM_QUERY_KEY,
+  messagesQueryKey,
+} from '../data-access-dm/query-keys'
 import {
   bindDmReconnect,
   bindDmSocketEvents,
@@ -9,6 +17,8 @@ import {
   type DmSocketOptions,
   socketOrigin,
 } from '../util-socket/socket'
+
+jest.mock('../data-access-dm/dm-api', () => ({ fetchMessagesAfter: jest.fn() }))
 
 type Listener = (payload?: unknown) => void
 
@@ -46,15 +56,41 @@ describe('DM 소켓', () => {
     expect(auth).toEqual({ token: 'access-1' })
   })
 
-  it('(재)연결·새 메시지 → DM 캐시를 다시 받는다(놓친 메시지 복구)', () => {
+  it('새 메시지 → DM 캐시를 다시 받는다', () => {
     const socket = createFakeSocket()
     const client = createTestQueryClient()
     const invalidate = jest.spyOn(client, 'invalidateQueries')
     bindDmSocketEvents(socket, client)
-    socket.emitLocal('connect')
-    expect(invalidate).toHaveBeenLastCalledWith({ queryKey: DM_QUERY_KEY })
     socket.emitLocal(DM_SOCKET_EVENTS.messageNew, makeMessage())
-    expect(invalidate).toHaveBeenCalledTimes(2)
+    expect(invalidate).toHaveBeenLastCalledWith({ queryKey: DM_QUERY_KEY })
+  })
+
+  it('(재)연결 → 열린 대화는 after 커서로 놓친 메시지만 받아 합치고, 대화 목록은 다시 받는다', async () => {
+    const socket = createFakeSocket()
+    const client = createTestQueryClient()
+    const LAST = makeMessage({ id: testId(961) })
+    const MISSED = makeMessage({ id: testId(962), body: '끊긴 동안 온 메시지' })
+    client.setQueryData(messagesQueryKey(CONVERSATION_ID), {
+      pages: [{ items: [LAST], nextCursor: null }],
+      pageParams: [null],
+    })
+    client.setQueryData(conversationsQueryKey('ACCEPTED'), { pages: [], pageParams: [null] })
+    jest.mocked(fetchMessagesAfter).mockResolvedValue({ items: [MISSED], nextCursor: null })
+    bindDmSocketEvents(socket, client)
+
+    socket.emitLocal('connect')
+
+    await waitFor(() =>
+      expect(
+        client
+          .getQueryData<{ pages: { items: { id: string }[] }[] }>(messagesQueryKey(CONVERSATION_ID))
+          ?.pages[0]?.items.map((m) => m.id),
+      ).toEqual([MISSED.id, LAST.id]),
+    )
+    expect(fetchMessagesAfter).toHaveBeenCalledWith(CONVERSATION_ID, LAST.id)
+    expect(client.getQueryState(conversationsQueryKey('ACCEPTED'))?.isInvalidated).toBe(true)
+    // 메시지 목록 전체를 다시 받지 않는다
+    expect(client.getQueryState(messagesQueryKey(CONVERSATION_ID))?.isInvalidated).toBe(false)
   })
 
   it('읽음 이벤트 → 열린 대화의 peerLastReadMessageId를 바로 갱신한다', () => {

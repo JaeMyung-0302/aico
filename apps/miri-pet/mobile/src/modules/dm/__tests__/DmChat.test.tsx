@@ -1,6 +1,9 @@
 import { render, screen, userEvent, waitFor } from '@testing-library/react-native'
 import { router } from 'expo-router'
+import { Alert } from 'react-native'
 import { testId } from '@/modules/feed/__fixtures__/posts'
+import { blockUser } from '@/modules/moderation/data-access-moderation/moderation-api'
+import { ApiError } from '@/shared/api/api-error'
 import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
 import { SafeAreaTestProvider } from '@/test-utils/SafeAreaTestProvider'
 import { CONVERSATION_ID, makeConversation, makeMessage, ME_ID, PEER } from '../__fixtures__/dm'
@@ -8,12 +11,15 @@ import {
   acceptConversation,
   fetchConversation,
   fetchMessages,
+  hideConversation,
   markConversationRead,
   sendMessage,
 } from '../data-access-dm/dm-api'
 import DmChatScreen from '../feature-dm-chat/DmChatScreen'
 
-jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn(), canGoBack: () => true } }))
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn(), canGoBack: () => true },
+}))
 jest.mock('../data-access-dm/dm-api', () => ({
   fetchConversation: jest.fn(),
   fetchMessages: jest.fn(),
@@ -34,7 +40,11 @@ const mockMeId = '0199e3a0-0000-7000-8000-000000000900'
 const MINE = makeMessage({ id: testId(962), senderId: ME_ID, body: '네! 테라스 사진 보내드릴게요' })
 const THEIRS = makeMessage({ id: testId(961), senderId: PEER.id, body: '테라스는 대형견도 되나요?' })
 const POST_ID = testId(70)
-const SHARED = makeMessage({ id: testId(963), senderId: PEER.id, body: `게시물을 공유했어요\nmiripet://posts/${POST_ID}` })
+const SHARED = makeMessage({
+  id: testId(963),
+  senderId: PEER.id,
+  body: `게시물을 공유했어요\nmiripet://posts/${POST_ID}`,
+})
 
 const renderScreen = () =>
   render(
@@ -104,5 +114,69 @@ describe('대화방 (13)', () => {
     await renderScreen()
     await user.longPress(await screen.findByText('테라스는 대형견도 되나요?'))
     expect(await screen.findByRole('button', { name: '메시지 신고' })).toBeOnTheScreen()
+  })
+})
+
+describe('대화방 차단 (P1)', () => {
+  it('차단하면 대화가 403이 돼도 완료 안내를 유지하고, 확인을 누르면 대화 목록으로 간다', async () => {
+    const user = userEvent.setup()
+    jest.mocked(blockUser).mockImplementation(async () => {
+      // 차단 이후 서버는 이 대화를 열어 주지 않는다
+      jest
+        .mocked(fetchConversation)
+        .mockRejectedValue(new ApiError({ code: 'HTTP', status: 403, message: '차단한 사용자예요' }))
+      jest
+        .mocked(fetchMessages)
+        .mockRejectedValue(new ApiError({ code: 'HTTP', status: 403, message: '차단한 사용자예요' }))
+    })
+    await renderScreen()
+    await user.press(await screen.findByRole('button', { name: '신고 또는 차단' }))
+    await user.press(await screen.findByRole('button', { name: `${PEER.nickname} 님 차단` }))
+    await user.press(await screen.findByRole('button', { name: '차단하기' }))
+
+    expect(await screen.findByText('차단했어요')).toBeOnTheScreen()
+    await waitFor(() => expect(fetchConversation).toHaveBeenCalledTimes(2))
+    expect(screen.getByText('차단했어요')).toBeOnTheScreen()
+    expect(screen.queryByText('대화를 열 수 없어요')).toBeNull()
+
+    await user.press(screen.getByRole('button', { name: '확인' }))
+    expect(router.dismissTo).toHaveBeenCalledWith('/dm')
+  })
+})
+
+describe('대화방 요청 배너 실패 (P2)', () => {
+  it('요청 삭제에 실패하면 알리고 대화방에 머문다', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined)
+    jest.mocked(fetchConversation).mockResolvedValue(makeConversation({ state: 'REQUEST' }))
+    jest.mocked(hideConversation).mockRejectedValue(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen()
+    await user.press(await screen.findByRole('button', { name: '삭제' }))
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('요청을 삭제하지 못했어요', expect.any(String)))
+    expect(router.back).not.toHaveBeenCalled()
+    alertSpy.mockRestore()
+  })
+
+  it('요청 수락에 실패하면 알린다', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined)
+    jest.mocked(fetchConversation).mockResolvedValue(makeConversation({ state: 'REQUEST' }))
+    jest.mocked(acceptConversation).mockRejectedValue(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen()
+    await user.press(await screen.findByRole('button', { name: '수락' }))
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('요청을 수락하지 못했어요', expect.any(String)))
+    alertSpy.mockRestore()
+  })
+})
+
+describe('대화방 메시지 불러오기 실패', () => {
+  it('빈 대화처럼 보이지 않게 실패 안내와 다시 시도', async () => {
+    jest.mocked(fetchMessages).mockRejectedValueOnce(new Error('offline'))
+    const user = userEvent.setup()
+    await renderScreen()
+    expect(await screen.findByText('메시지를 불러오지 못했어요')).toBeOnTheScreen()
+    await user.press(screen.getByRole('button', { name: '다시 시도' }))
+    expect(await screen.findByText('테라스는 대형견도 되나요?')).toBeOnTheScreen()
+    expect(screen.queryByText('메시지를 불러오지 못했어요')).toBeNull()
   })
 })

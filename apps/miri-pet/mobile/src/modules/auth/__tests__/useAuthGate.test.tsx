@@ -2,13 +2,13 @@ import { act, renderHook, waitFor } from '@testing-library/react-native'
 import { router } from 'expo-router'
 import { fetchMyPets } from '@/modules/pets/data-access-pets/pets-api'
 import { fetchMe } from '@/modules/user/data-access-me/me-api'
+import { session } from '@/shared/auth/session'
 import { sharedMemoryTokenStore as memoryTokenStore } from '@/test-utils/memory-token-store'
 import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
 import { useAuthGate } from '../feature-auth-gate/useAuthGate'
 
-// 경계만 대체: 라우터(네비게이션), /me 네트워크, 기기 저장소
-let mockSegment = '(tabs)'
-jest.mock('expo-router', () => ({ router: { replace: jest.fn() }, useSegments: () => [mockSegment] }))
+// 경계만 대체: 라우터(네비게이션), /me·펫 네트워크, 기기 저장소
+jest.mock('expo-router', () => ({ router: { replace: jest.fn(), dismissAll: jest.fn(), push: jest.fn() } }))
 jest.mock('@/modules/user/data-access-me/me-api', () => ({ fetchMe: jest.fn() }))
 jest.mock('@/modules/pets/data-access-pets/pets-api', () => ({ fetchMyPets: jest.fn() }))
 jest.mock('@/modules/notifications/util-push-registration', () => ({
@@ -40,10 +40,9 @@ const PET = {
   avatarUrl: null,
 }
 
-const renderGate = (segment: string, isNavigatorMounted = true) => {
-  mockSegment = segment
-  return renderHook(() => useAuthGate({ isNavigatorMounted }), { wrapper: QueryTestProvider })
-}
+const TOKENS = { accessToken: 'a', refreshToken: 'r' }
+
+const renderGate = () => renderHook(() => useAuthGate(), { wrapper: QueryTestProvider })
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -52,64 +51,71 @@ beforeEach(() => {
 })
 
 describe('useAuthGate', () => {
-  it('토큰이 없으면 /login으로 보낸다', async () => {
-    const { result } = await renderGate('(tabs)')
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'))
-    expect(result.current.isSessionResolved).toBe(true)
+  it('토큰이 없으면 signedOut — /me를 조회하지 않는다', async () => {
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('signedOut'))
     expect(fetchMe).not.toHaveBeenCalled()
   })
 
-  it('토큰은 있지만 필수 동의가 없으면(hasRequiredConsents=false) /consent로 보낸다', async () => {
-    memoryTokenStore.reset({ accessToken: 'a', refreshToken: 'r' })
+  it('필수 동의가 없으면(hasRequiredConsents=false) consentRequired — 펫 목록은 조회하지 않는다 (ConsentGuard 403 방지)', async () => {
+    memoryTokenStore.reset(TOKENS)
     jest.mocked(fetchMe).mockResolvedValue(ME)
-    await renderGate('(tabs)')
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/consent'))
-  })
-
-  it('필수 동의를 마쳤으면 로그인 화면에서 탭(/)으로 보낸다', async () => {
-    memoryTokenStore.reset({ accessToken: 'a', refreshToken: 'r' })
-    jest.mocked(fetchMe).mockResolvedValue({ ...ME, hasRequiredConsents: true })
-    await renderGate('login')
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'))
-  })
-
-  it('필수 동의를 마쳤고 탭에 있으면 그대로 둔다', async () => {
-    memoryTokenStore.reset({ accessToken: 'a', refreshToken: 'r' })
-    jest.mocked(fetchMe).mockResolvedValue({ ...ME, hasRequiredConsents: true })
-    await renderGate('(tabs)')
-    await waitFor(() => expect(fetchMe).toHaveBeenCalled())
-    // 늦게 도착한 리다이렉트가 없는지 남은 비동기 작업을 비운다
-    await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
-    expect(router.replace).not.toHaveBeenCalled()
-  })
-
-  it('네비게이터가 아직 마운트되지 않았으면 이동하지 않는다', async () => {
-    const { result } = await renderGate('(tabs)', false)
-    await waitFor(() => expect(result.current.isSessionResolved).toBe(true))
-    expect(router.replace).not.toHaveBeenCalled()
-  })
-
-  it('PHASE 2: 동의를 마쳤지만 펫이 0마리면 /onboarding/pet으로 보낸다', async () => {
-    memoryTokenStore.reset({ accessToken: 'a', refreshToken: 'r' })
-    jest.mocked(fetchMe).mockResolvedValue({ ...ME, hasRequiredConsents: true })
-    jest.mocked(fetchMyPets).mockResolvedValue([])
-    await renderGate('(tabs)')
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/onboarding/pet'))
-  })
-
-  it('PHASE 2: 동의 전에는 펫 목록을 조회하지 않는다 (ConsentGuard 403 방지)', async () => {
-    memoryTokenStore.reset({ accessToken: 'a', refreshToken: 'r' })
-    jest.mocked(fetchMe).mockResolvedValue(ME)
-    await renderGate('(tabs)')
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/consent'))
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('consentRequired'))
     expect(fetchMyPets).not.toHaveBeenCalled()
   })
 
-  it('PHASE 2: 펫 목록 조회가 실패해도 앱을 막지 않는다 (로그인 화면이면 탭으로)', async () => {
-    memoryTokenStore.reset({ accessToken: 'a', refreshToken: 'r' })
+  it('동의를 마쳤지만 펫이 0마리면 petless', async () => {
+    memoryTokenStore.reset(TOKENS)
+    jest.mocked(fetchMe).mockResolvedValue({ ...ME, hasRequiredConsents: true })
+    jest.mocked(fetchMyPets).mockResolvedValue([])
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('petless'))
+  })
+
+  it('동의를 마쳤고 펫이 있으면 allowed', async () => {
+    memoryTokenStore.reset(TOKENS)
+    jest.mocked(fetchMe).mockResolvedValue({ ...ME, hasRequiredConsents: true })
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('allowed'))
+  })
+
+  it('펫 목록 조회가 실패해도 앱을 막지 않는다 (allowed)', async () => {
+    memoryTokenStore.reset(TOKENS)
     jest.mocked(fetchMe).mockResolvedValue({ ...ME, hasRequiredConsents: true })
     jest.mocked(fetchMyPets).mockRejectedValue(new Error('500'))
-    await renderGate('login')
-    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/'))
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('allowed'))
+  })
+
+  it('/me 조회가 실패해도(오프라인 콜드 스타트) 스플래시에 갇히지 않는다 — 동의는 서버 ConsentGuard가 다시 확인한다', async () => {
+    memoryTokenStore.reset(TOKENS)
+    jest.mocked(fetchMe).mockRejectedValue(new Error('Network Error'))
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('allowed'))
+  })
+
+  it('로그인 직후 /me 조회 중에는 직전 단계(signedOut)를 유지한다 — 화면이 비지 않게', async () => {
+    let resolveMe: (me: typeof ME) => void = () => undefined
+    jest.mocked(fetchMe).mockImplementation(() => new Promise((resolve) => (resolveMe = resolve)))
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('signedOut'))
+
+    await act(() => session.signIn(TOKENS))
+    await waitFor(() => expect(fetchMe).toHaveBeenCalled())
+    expect(result.current.accessLevel).toBe('signedOut')
+
+    await act(async () => resolveMe({ ...ME, hasRequiredConsents: true }))
+    await waitFor(() => expect(result.current.accessLevel).toBe('allowed'))
+  })
+
+  it('화면 이동은 Stack.Protected가 맡는다 — 게이트는 router.replace로 화면을 바꾸지 않는다 (계정 전환 잔상 방지)', async () => {
+    memoryTokenStore.reset(TOKENS)
+    jest.mocked(fetchMe).mockResolvedValue(ME)
+    const { result } = await renderGate()
+    await waitFor(() => expect(result.current.accessLevel).toBe('consentRequired'))
+    await act(() => session.endSession())
+    await waitFor(() => expect(result.current.accessLevel).toBe('signedOut'))
+    expect(router.replace).not.toHaveBeenCalled()
   })
 })

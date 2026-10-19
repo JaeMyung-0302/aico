@@ -3,6 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin'
 import { initializeKakaoSDK } from '@react-native-kakao/core'
 import { login as kakaoLogin } from '@react-native-kakao/user'
 import Constants from 'expo-constants'
+import { Redirect } from 'expo-router'
 import * as Notifications from 'expo-notifications'
 import { useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
@@ -80,4 +81,7 @@ const styles = StyleSheet.create({
   map: { height: 260, borderRadius: RADIUS.xl, overflow: 'hidden' },
 })
 
-export default SpikeScreen
+// 실기기 검증용 dev client 전용 — 프로덕션 빌드에서는 열리지 않게 홈으로 보낸다
+const SpikeRoute = () => (__DEV__ ? <SpikeScreen /> : <Redirect href="/" />)
+
+export default SpikeRoute

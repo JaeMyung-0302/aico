@@ -1,7 +1,22 @@
 export type ApiErrorCode = 'NETWORK' | 'HTTP' | 'INVALID_RESPONSE'
 
-// 화면이 상태 코드 대신 보는 분류. 409 = 연결 해제 유예 중 쓰기 시도(SCR-18 시트), 403 CONSENT_REQUIRED = 필수 동의 누락
-export type ApiErrorKind = 'COUPLE_UNLINKING' | 'NOT_FOUND' | 'RATE_LIMITED' | 'CONSENT_REQUIRED' | 'UNKNOWN'
+// 서버 오류 본문 code 로만 구분되는 분류 (사진 업로드·일기 작성자·내보내기)
+const SERVER_CODE_KINDS = [
+  'CONSENT_REQUIRED',
+  'NOT_AUTHOR',
+  'PHOTO_LIMIT',
+  'TAKEN_AT_IN_FUTURE',
+  'ORIGINAL_TOO_LARGE',
+  'LOCATION_CONSENT_REQUIRED',
+  'UPLOAD_INCOMPLETE',
+  'INVALID_UPLOAD',
+  'BUSY',
+  'PURGE_IMMINENT',
+] as const
+type ServerCodeKind = (typeof SERVER_CODE_KINDS)[number]
+
+// 화면이 상태 코드 대신 보는 분류. code 없는 409 = 연결 해제 유예 중 쓰기 시도(SCR-18 시트), 403 CONSENT_REQUIRED = 필수 동의 누락
+export type ApiErrorKind = 'COUPLE_UNLINKING' | 'NOT_FOUND' | 'RATE_LIMITED' | 'UNKNOWN' | ServerCodeKind
 
 export type ApiIssue = { path: string; message: string }
 
@@ -21,8 +36,12 @@ const KIND_BY_STATUS: Readonly<Record<number, ApiErrorKind>> = {
   429: 'RATE_LIMITED',
 }
 
+const SERVER_CODE_KIND: ReadonlyMap<string, ServerCodeKind> = new Map(SERVER_CODE_KINDS.map((kind) => [kind, kind]))
+
+// 서버 code 가 우선이다 — 409 UPLOAD_INCOMPLETE·PURGE_IMMINENT 는 연결 해제가 아니다
 export const toApiErrorKind = (status: number | null, serverCode?: string): ApiErrorKind => {
-  if (status === 403 && serverCode === 'CONSENT_REQUIRED') return 'CONSENT_REQUIRED'
+  const byCode = serverCode ? SERVER_CODE_KIND.get(serverCode) : undefined
+  if (status !== null && byCode) return byCode
   return status === null ? 'UNKNOWN' : (KIND_BY_STATUS[status] ?? 'UNKNOWN')
 }
 

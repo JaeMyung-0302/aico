@@ -100,6 +100,26 @@ describe('requestApi', () => {
     await expect(forbidden({ method: 'GET', url: '/couples/me' })).rejects.toMatchObject({ kind: 'UNKNOWN' })
   })
 
+  it.each([
+    [400, 'PHOTO_LIMIT', 'PHOTO_LIMIT'],
+    [400, 'TAKEN_AT_IN_FUTURE', 'TAKEN_AT_IN_FUTURE'],
+    [400, 'ORIGINAL_TOO_LARGE', 'ORIGINAL_TOO_LARGE'],
+    [403, 'NOT_AUTHOR', 'NOT_AUTHOR'],
+    [403, 'LOCATION_CONSENT_REQUIRED', 'LOCATION_CONSENT_REQUIRED'],
+    [409, 'UPLOAD_INCOMPLETE', 'UPLOAD_INCOMPLETE'],
+    [409, 'PURGE_IMMINENT', 'PURGE_IMMINENT'],
+    [422, 'INVALID_UPLOAD', 'INVALID_UPLOAD'],
+    [503, 'BUSY', 'BUSY'],
+  ] as const)('HTTP %s + code %s 는 kind = %s (409 라도 서버 code 가 있으면 연결 해제가 아니다)', async (status, code, kind) => {
+    const requestApi = makeRequestApi(respondWith(status, { statusCode: status, code, message: 'x' }))
+    await expect(requestApi({ method: 'POST', url: '/photos/uploads' })).rejects.toMatchObject({ status, kind })
+  })
+
+  it('모르는 code 는 상태 코드로 분류한다 (프로토타입 키도 무시)', async () => {
+    const unknown = makeRequestApi(respondWith(409, { statusCode: 409, code: 'constructor', message: 'x' }))
+    await expect(unknown({ method: 'POST', url: '/diary' })).rejects.toMatchObject({ kind: 'COUPLE_UNLINKING' })
+  })
+
   it('네트워크 에러의 kind는 UNKNOWN', async () => {
     await expect(makeRequestApi(failNetwork)({ method: 'GET', url: '/me' })).rejects.toMatchObject({ kind: 'UNKNOWN' })
   })

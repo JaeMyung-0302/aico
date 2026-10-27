@@ -10,7 +10,7 @@ import {
   type UpdateDiaryRequest,
 } from '@you-in-heart/shared'
 import { fromDbDate, toDbDate } from '../common/dates/db-date'
-import { isUniqueViolation } from '../common/prisma/prisma-errors'
+import { isForeignKeyViolation, isUniqueViolation } from '../common/prisma/prisma-errors'
 import { CouplesService, type PartnerNotice } from '../couples/couples.service'
 import { EventsService } from '../events/events.service'
 import type { Prisma } from '../generated/prisma'
@@ -75,8 +75,12 @@ export class DiaryService {
     return this.toResponse(row)
   }
 
-  // happenedOn desc, id desc. cursor = 이전 페이지 마지막 id, before = 그 날짜보다 이전(배타)
-  async list(coupleId: string, { cursor, limit, before }: DiaryListQuery): Promise<DiaryListResponse> {
+  // happenedOn desc, id desc. cursor = 이전 페이지 마지막 id, before = 그 날짜보다 이전(배타). placeId = 지도 핀의 일기만
+  async list(
+    coupleId: string,
+    { cursor, limit, before }: DiaryListQuery,
+    { placeId }: { placeId?: string } = {},
+  ): Promise<DiaryListResponse> {
     const after = cursor ? await this.findCursor(coupleId, cursor) : null
     const conditions: Prisma.DiaryEntryWhereInput[] = [
       ...(before ? [{ happenedOn: { lt: toDbDate(before) } }] : []),
@@ -85,7 +89,7 @@ export class DiaryService {
         : []),
     ]
     const rows = await this.prisma.diaryEntry.findMany({
-      where: { coupleId, AND: conditions },
+      where: { coupleId, ...(placeId ? { placeId } : {}), AND: conditions },
       orderBy: [{ happenedOn: 'desc' }, { id: 'desc' }],
       take: limit + 1,
       select: ENTRY_SELECT,
@@ -104,10 +108,13 @@ export class DiaryService {
   async update(coupleId: string, actorId: string, id: string, body: UpdateDiaryRequest): Promise<DiaryEntry> {
     await this.assertAuthor(coupleId, actorId, id)
     if (body.placeId) await this.assertPlace(coupleId, body.placeId)
-    const { count } = await this.prisma.diaryEntry.updateMany({
-      where: { id, coupleId, authorId: actorId },
-      data: toUpdateData(body),
-    })
+    // 확인과 저장 사이에 핀이 지워지면 FK 위반 → 장소 404
+    const { count } = await this.prisma.diaryEntry
+      .updateMany({ where: { id, coupleId, authorId: actorId }, data: toUpdateData(body) })
+      .catch((error: unknown) => {
+        if (isForeignKeyViolation(error)) throw new NotFoundException('장소를 찾을 수 없어요')
+        throw error
+      })
     if (count === 0) throw notFound()
     return this.get(coupleId, id)
   }

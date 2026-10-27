@@ -42,16 +42,25 @@
    ```
    gunzip -c youinheart-<STAMP>.sql.gz | docker exec -i you-in-heart-db psql -U youinheart -d youinheart
    ```
-3. **purge 재적용 (필수)**: 백업 시점 이후 삭제된 커플이 되살아나므로 원장 기준으로 다시 지운다
+3. **원장 재적용 (필수)**: 백업 시점 이후의 삭제·해제가 되살아나므로 R2 원장 3종을 기준으로 다시 적용한다
    ```
    docker compose run --rm you-in-heart-server node dist/couples/purge-replay.cli.js
    ```
    (로컬: `pnpm --filter @you-in-heart/server purge:replay`)
-4. 확인 SQL — 결과가 0이어야 한다:
+   순서대로 처리하며 몇 번 돌려도 결과가 같다(멱등):
+   | 원장 접두사 | 재적용 |
+   |-------------|--------|
+   | `system/purge-ledger/` | purge된 커플: 커플 행 전체·R2 객체를 다시 지운다 |
+   | `system/unlinked-couples/` | 연결 해제 유예 중이던 커플: ACTIVE로 돌아갔으면 원장의 `purgeAfter`로 다시 UNLINKING (재연결하면 원장이 지워진다) |
+   | `system/deleted-users/` | 탈퇴한 사용자: 남아 있으면 탈퇴를 다시 적용(커플 있으면 UNLINKING + User DELETED, 없으면 User 삭제, 로그인 계정·세션·푸시 토큰 삭제). 상대 알림·카카오 unlink는 다시 하지 않는다 |
+   로그 마지막 줄 `purged=N unlinked=N deletedUsers=N`은 원장 항목 수다
+4. 확인 SQL — 모두 0이어야 한다:
    ```sql
    SELECT count(*) FROM "Couple" c JOIN "PurgedCouple" p ON p.id = c.id;
+   SELECT count(*) FROM "Session" s JOIN "User" u ON u.id = s."userId" WHERE u.status = 'DELETED';
    ```
-   주의: `PurgedCouple` 행도 백업 시점 기준이다. 복원 이후 삭제분은 R2 `system/purge-ledger/` 원장이 기준이며 purge-replay가 원장 전체를 읽는다.
+   주의: `PurgedCouple` 행도 백업 시점 기준이다. 복원 이후 삭제분은 R2 원장이 기준이며 purge-replay가 원장 3종 전체를 읽는다.
+   원장은 DB보다 먼저 쓴다 → R2 쓰기가 실패하면 탈퇴·해제 요청은 5xx로 끝나고 DB는 바뀌지 않는다.
 5. 서버 시작: `docker compose up -d you-in-heart-server`
 
 ## 4. purge 긴급 정지

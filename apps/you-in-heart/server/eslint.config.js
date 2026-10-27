@@ -40,6 +40,19 @@ export default [
             '테넌트 모델은 findFirst({ where: { id, coupleId } }) 또는 where에 coupleId/coupleId_id를 넣어 조회하세요',
         },
       ],
+      // 카톡 txt는 기기에서만 파싱한다(architecture §9 D7). 서버에 원문 txt가 들어올 경로를 만들지 않는다
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@you-in-heart/shared',
+              importNames: ['parseKakaoExport'],
+              message: '카톡 txt 파서는 모바일 전용입니다. 서버는 선택된 문구(POST /quotes/bulk)만 받습니다',
+            },
+          ],
+        },
+      ],
     },
   },
 ]

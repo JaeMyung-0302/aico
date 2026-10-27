@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
+import { sequentially } from '../common/async/sequentially'
 import { PrismaService } from '../prisma/prisma.service'
 import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage'
 import {
@@ -17,9 +18,6 @@ type Outcome = 'purged' | 'purged-with-failure' | 'skipped' | 'error'
 const PURGE_BATCH = 50
 
 const errorName = (error: unknown): string => (error instanceof Error ? error.name : 'UnknownError')
-
-const sequentially = <T, R>(items: readonly T[], run: (item: T) => Promise<R>): Promise<R[]> =>
-  items.reduce<Promise<R[]>>(async (previous, item) => [...(await previous), await run(item)], Promise.resolve([]))
 
 // 연결 해제 30일 뒤 커플 데이터를 지운다(implementation-plan 0E.9 순서 고정):
 // assertCouplePrefix → R2 원장 키 → DB 트랜잭션(Couple Cascade + PurgedCouple) → 접두사 3개 deletePrefix → 남으면 PurgeFailure

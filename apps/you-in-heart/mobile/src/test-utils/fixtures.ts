@@ -1,4 +1,11 @@
-import { type AnniversaryItem, computeAnniversaries, type Couple, type MeResponse } from '@you-in-heart/shared'
+import {
+  type AnniversaryItem,
+  computeAnniversaries,
+  type Couple,
+  type DiaryEntry,
+  type MeResponse,
+  type Photo,
+} from '@you-in-heart/shared'
 
 // 화면 테스트 공용 픽스처 (uuid v7 모양)
 export const ME_ID = '01890a5d-ac96-774b-bcce-b302099a8057'
@@ -45,4 +52,38 @@ export const mockClockAt = (startMs: number): void => {
   const realNow = Date.now.bind(Date)
   const startedAt = realNow()
   jest.spyOn(Date, 'now').mockImplementation(() => startMs + (realNow() - startedAt))
+}
+
+// 일기·사진 픽스처 (SCR-05·06·07 시안 문구)
+export const ENTRY_ID = '01890a5d-ac96-774b-bcce-b302099a8201'
+export const PHOTO_IDS = [
+  '01890a5d-ac96-774b-bcce-b302099a8301',
+  '01890a5d-ac96-774b-bcce-b302099a8302',
+  '01890a5d-ac96-774b-bcce-b302099a8303',
+] as const
+
+export const makePhoto = (id: string, overrides: Partial<Photo> = {}): Photo => ({
+  id,
+  entryId: ENTRY_ID,
+  uploaderId: ME_ID,
+  status: 'READY',
+  takenAt: '2026-10-25T05:00:00.000Z',
+  width: 2048,
+  height: 1536,
+  thumbUrl: `https://r2.test/${id}/t.jpg?sig=1`,
+  displayUrl: `https://r2.test/${id}/d.jpg?sig=1`,
+  ...overrides,
+})
+
+export const DIARY_ENTRY: DiaryEntry = {
+  id: ENTRY_ID,
+  kind: 'MANUAL',
+  authorId: ME_ID,
+  happenedOn: '2026-10-25',
+  title: '성수동 산책',
+  body: '오래 걸었던 날. 처음 가본 골목 카페에서 창가 자리에 앉아 한참 이야기했다.',
+  placeId: null,
+  photos: PHOTO_IDS.map((id) => makePhoto(id)),
+  createdAt: '2026-10-25T12:00:00.000Z',
+  updatedAt: '2026-10-25T12:00:00.000Z',
 }

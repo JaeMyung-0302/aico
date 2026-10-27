@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native'
 import { router } from 'expo-router'
+import * as MediaLibrary from 'expo-media-library/legacy'
 import { Linking } from 'react-native'
+import { createPlace, reversePlace } from '@/modules/map/data-access-place/place-api'
 import { uploadKey, uploadQueue } from '@/modules/media/data-access-media/upload-queue-store'
 import { ensurePhotoPermission, listRecentAssets, type LibraryAsset } from '@/modules/media/util-pick-assets/pick-assets'
 import { fetchMe } from '@/modules/user/data-access-me/me-api'
@@ -26,6 +28,11 @@ jest.mock('../data-access-diary/diary-api', () => ({
 jest.mock('@/modules/media/util-pick-assets/pick-assets', () => ({
   ensurePhotoPermission: jest.fn(),
   listRecentAssets: jest.fn(),
+}))
+jest.mock('@/modules/map/data-access-place/place-api', () => ({
+  reversePlace: jest.fn(),
+  createPlace: jest.fn(),
+  searchPlaces: jest.fn(),
 }))
 jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
@@ -124,6 +131,43 @@ describe('DiaryComposeScreen (SCR-05)', () => {
     expect(screen.getByText('0 / 2')).toBeOnTheScreen()
     const eventCalls = mockRequestApi.mock.calls.filter(([options]) => JSON.stringify(options).includes('/events'))
     expect(eventCalls).toEqual([])
+    // 위치 동의가 꺼져 있으면(ME) 사진 위치를 읽지도, 장소를 제안하지도 않는다
+    expect(MediaLibrary.getAssetInfoAsync).not.toHaveBeenCalled()
+    expect(screen.queryByText(/곳을 찾았어요/)).toBeNull()
+  })
+
+  it('위치 동의가 켜져 있으면 저장 뒤 사진 위치로 찾은 곳을 제안하고, 시트를 닫기 전에는 상세로 가지 않는다', async () => {
+    jest.mocked(fetchMe).mockResolvedValue({ ...ME, consents: { ...ME.consents, location: true } })
+    jest.mocked(reversePlace).mockResolvedValue('서울 성동구 성수동1가 685-20')
+    const location = { latitude: 37.5444, longitude: 127.0374 }
+    jest.mocked(MediaLibrary.getAssetInfoAsync).mockImplementation(async () => ({
+      ...asset(1),
+      filename: 'IMG.HEIC',
+      mediaType: 'photo',
+      duration: 0,
+      modificationTime: 0,
+      albumId: '',
+      location,
+    }))
+    await renderCompose()
+    await fireEvent.changeText(screen.getByLabelText('본문'), '서울숲 산책')
+    await pickPhotos(2)
+    await fireEvent.press(screen.getByRole('button', { name: '추가 2' }))
+    await fireEvent.press(screen.getByRole('button', { name: '저장' }))
+
+    expect(await screen.findByText('새로 다녀온 곳 1곳을 찾았어요')).toBeOnTheScreen()
+    expect(screen.getByRole('checkbox', { name: '성수동1가 근처' })).toBeChecked()
+    expect(createPlace).not.toHaveBeenCalled()
+
+    await act(async () => {
+      uploadQueue.getState().update(uploadKey(ENTRY_ID, 'asset-1'), { status: 'done', photoId: 'p1' })
+      uploadQueue.getState().update(uploadKey(ENTRY_ID, 'asset-2'), { status: 'done', photoId: 'p2' })
+    })
+    expect(router.replace).not.toHaveBeenCalled()
+
+    await fireEvent.press(screen.getByRole('button', { name: '나중에' }))
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith(`/diary/${ENTRY_ID}`))
+    expect(createPlace).not.toHaveBeenCalled()
   })
 
   it('일부 사진이 실패하면 안내와 다시 올리기를 보여주고, 모두 끝나면 상세로 간다', async () => {

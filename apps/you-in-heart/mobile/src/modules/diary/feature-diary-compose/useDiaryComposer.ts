@@ -1,6 +1,7 @@
 import { toKstDate } from '@you-in-heart/shared'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
+import { usePinSuggestionFlow } from '@/modules/map/feature-pin-suggestion/usePinSuggestionFlow'
 import { enqueuePhotos, useEntryUploads } from '@/modules/media/data-access-media/useUploadPhotos'
 import type { LibraryAsset } from '@/modules/media/util-pick-assets/pick-assets'
 import { useDiaryEntry } from '../data-access-diary/useDiaryEntry'
@@ -16,11 +17,13 @@ const toSaveInput = (entryId: string | undefined, { happenedOn, title, body }: D
 }
 
 // SCR-05 작성·수정 상태. 저장 → (사진이 있으면) 업로드 큐에 넣고 진행을 보여주다가 모두 올라가면 상세로 간다.
+// 사진이 있으면 저장 뒤 핀 제안(2B.3)을 띄우고, 시트를 닫을 때까지는 상세로 넘어가지 않는다.
 // 화면을 닫아도 큐는 루트의 실행기가 이어서 올린다
 export const useDiaryComposer = (entryId: string | undefined) => {
   const isEdit = entryId !== undefined
   const existing = useDiaryEntry(entryId ?? null)
   const save = useSaveDiary()
+  const pins = usePinSuggestionFlow()
   const [form, setForm] = useState<DiaryForm>(() => ({ happenedOn: toKstDate(Date.now()), title: '', body: '' }))
   const [assets, setAssets] = useState<LibraryAsset[]>([])
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
@@ -40,10 +43,10 @@ export const useDiaryComposer = (entryId: string | undefined) => {
 
   const isAllUploaded = savedEntryId !== null && summary.total > 0 && summary.done === summary.total
   useEffect(() => {
-    if (isAllUploaded && savedEntryId) leave(savedEntryId)
-    // 모두 올라간 순간 한 번만
+    if (isAllUploaded && savedEntryId && !pins.isPending) leave(savedEntryId)
+    // 모두 올라가고 핀 제안이 끝난 순간 한 번만
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAllUploaded])
+  }, [isAllUploaded, pins.isPending])
 
   const existingPhotos = existing.data?.photos ?? []
   const hasContent = form.body.trim() !== '' || form.title.trim() !== '' || assets.length > 0
@@ -55,16 +58,29 @@ export const useDiaryComposer = (entryId: string | undefined) => {
     save.mutate(toSaveInput(entryId, form), {
       onSuccess: (entry) => {
         if (assets.length === 0) return leave(entry.id)
-        enqueuePhotos(
-          entry.id,
-          assets.map((asset) => asset.id),
-        )
+        const assetIds = assets.map((asset) => asset.id)
+        enqueuePhotos(entry.id, assetIds)
         setSavedEntryId(entry.id)
+        pins.start(entry.id, assetIds)
       },
     })
   }
 
   const close = () => (savedEntryId ? leave(savedEntryId) : router.back())
 
-  return { form, setForm, assets, setAssets, existingPhotos, save, savedEntryId, uploads, summary, canSave, submit, close }
+  return {
+    form,
+    setForm,
+    assets,
+    setAssets,
+    existingPhotos,
+    save,
+    savedEntryId,
+    uploads,
+    summary,
+    canSave,
+    submit,
+    close,
+    pins,
+  }
 }

@@ -82,7 +82,9 @@ export class PlacesService {
     return toPlace(row)
   }
 
+  // 빈 본문이면 바꾸지 않고 현재 값을 돌려준다(빈 data의 updateMany는 0건으로 센다)
   async update(coupleId: string, id: string, body: UpdatePlaceRequest): Promise<Place> {
+    if (Object.keys(body).length === 0) return this.get(coupleId, id)
     const { count } = await this.prisma.place.updateMany({ where: { id, coupleId }, data: body })
     if (count === 0) throw notFound()
     return this.get(coupleId, id)

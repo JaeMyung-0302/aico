@@ -163,6 +163,12 @@ describe('추억 지도 장소 (실DB)', () => {
         .send({ name: '여의도 한강', address: '서울 영등포구' })
         .expect(200)
       expect(patched.body).toMatchObject({ id: place.id, name: '여의도 한강', address: '서울 영등포구', lat: 37.52 })
+      // 빈 본문은 바꾸지 않고 현재 값
+      await http()
+        .patch(`${API}/${place.id}`)
+        .set(...bearer(session.tokens[0]))
+        .send({})
+        .expect(200, patched.body)
 
       await get(session, `/${theirs.id}`).expect(404)
       await http()

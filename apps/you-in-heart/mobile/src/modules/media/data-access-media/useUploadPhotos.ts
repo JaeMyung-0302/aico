@@ -8,7 +8,7 @@ import { ApiError, type ApiErrorKind } from '@/shared/api/api-error'
 import { DIARY_QUERY_KEY, ME_QUERY_KEY, PHOTOS_QUERY_KEY } from '@/shared/auth/query-keys'
 import { useSessionStatus } from '@/shared/auth/session'
 import { type ResolvedAsset, resolveAsset } from '../util-pick-assets/pick-assets'
-import { completePhoto, createPhotoUpload, putFileToTarget } from './media-api'
+import { completePhoto, createPhotoUpload, putFileToTarget, renewPhotoUpload } from './media-api'
 import { discardFile, prepareDisplayImage } from './prepare-display-image'
 import {
   type UploadFailure,
@@ -28,6 +28,8 @@ const READY_REFRESH_DELAY_MS = 1500
 export type UploadDeps = {
   resolveAsset: (assetId: string) => Promise<ResolvedAsset | null>
   createUpload: (body: CreatePhotoUploadRequest) => Promise<CreatePhotoUploadResponse>
+  // 이미 발급된(PENDING) 사진의 서명 URL 만 새로 받는다 — 새 사진을 만들지 않아 20장 제한을 먹지 않는다
+  renewUpload: (photoId: string) => Promise<CreatePhotoUploadResponse>
   prepareDisplay: (uri: string) => Promise<{ uri: string }>
   putFile: (fileUri: string, target: UploadTarget) => Promise<void>
   complete: (photoId: string) => Promise<Photo>
@@ -93,20 +95,44 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     }
   }
 
-  // 발급받은 URL 이 아직 유효하면 이어서 쓰고, 아니면(앱 재시작·만료) 새로 받아 처음부터 올린다
-  const ensureTargets = async (key: string, body: CreatePhotoUploadRequest): Promise<IssuedTargets> => {
-    const item = current(key)
-    const known = item?.photoId ? issued[item.photoId] : undefined
-    if (known && known.expiresAtMs - TARGET_SAFETY_MS > deps.now()) return known
-    const response = await requestUpload(body)
+  const remember = (response: CreatePhotoUploadResponse): IssuedTargets => {
     const targets = {
       original: response.original,
       display: response.display,
       expiresAtMs: deps.now() + response.expiresIn * 1000,
     }
     issued = { ...issued, [response.photoId]: targets }
-    update(key, { photoId: response.photoId, isDisplayUploaded: false, isOriginalUploaded: false })
     return targets
+  }
+
+  // 만료(앱 재시작 포함)된 기존 사진: 같은 사진의 URL 을 갱신한다. 이미 올린 단계는 서버에 남아 있어 다시 하지 않는다
+  // (빠진 객체가 있으면 complete 가 409 UPLOAD_INCOMPLETE → 다음 시도에서 다시 올린다)
+  // 409 ALREADY_COMPLETE = 이미 끝남 → null(올릴 것 없이 complete). 404 = 사진이 사라짐 → 새로 발급
+  const renewTargets = async (key: string, photoId: string): Promise<IssuedTargets | null | undefined> => {
+    try {
+      return remember(await deps.renewUpload(photoId))
+    } catch (error) {
+      if (isKind(error, 'ALREADY_COMPLETE')) {
+        update(key, { isDisplayUploaded: true, isOriginalUploaded: true })
+        return null
+      }
+      if (isKind(error, 'NOT_FOUND')) return undefined
+      throw error
+    }
+  }
+
+  // 발급받은 URL 이 아직 유효하면 이어서 쓰고, 아니면 갱신(기존 사진) 또는 새로 받아 처음부터 올린다
+  const ensureTargets = async (key: string, body: CreatePhotoUploadRequest): Promise<IssuedTargets | null> => {
+    const item = current(key)
+    const known = item?.photoId ? issued[item.photoId] : undefined
+    if (known && known.expiresAtMs - TARGET_SAFETY_MS > deps.now()) return known
+    if (item?.photoId) {
+      const renewed = await renewTargets(key, item.photoId)
+      if (renewed !== undefined) return renewed
+    }
+    const response = await requestUpload(body)
+    update(key, { photoId: response.photoId, isDisplayUploaded: false, isOriginalUploaded: false })
+    return remember(response)
   }
 
   // 503 BUSY(서버 이미지 처리 밀림)는 1·2·4초 기다렸다가 다시
@@ -142,8 +168,8 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     if (!item) return
     if (!isComplete(item)) {
       const targets = await ensureTargets(key, buildRequest(item, { ...asset, mime }))
-      if (!current(key)?.isDisplayUploaded) await uploadDisplay(key, asset.localUri, targets.display)
-      if (!current(key)?.isOriginalUploaded) {
+      if (targets && !current(key)?.isDisplayUploaded) await uploadDisplay(key, asset.localUri, targets.display)
+      if (targets && !current(key)?.isOriginalUploaded) {
         await deps.putFile(asset.localUri, targets.original)
         update(key, { isOriginalUploaded: true })
       }
@@ -224,6 +250,7 @@ const createAppDeps = (queryClient: QueryClient): UploadDeps => {
   return {
     resolveAsset,
     createUpload: createPhotoUpload,
+    renewUpload: renewPhotoUpload,
     prepareDisplay: prepareDisplayImage,
     putFile: putFileToTarget,
     complete: completePhoto,

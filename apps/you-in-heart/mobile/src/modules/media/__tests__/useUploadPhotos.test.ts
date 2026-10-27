@@ -18,6 +18,13 @@ const UPLOAD: CreatePhotoUploadResponse = {
   expiresIn: 300,
 }
 
+// POST /photos/:id/uploads/renew — 같은 사진(PENDING)에 새 서명 URL
+const RENEWED: CreatePhotoUploadResponse = {
+  ...UPLOAD,
+  original: { url: 'https://r2.test/o?sig=renewed', headers: ORIGINAL_HEADERS },
+  display: { url: 'https://r2.test/incoming?sig=renewed', headers: { 'Content-Type': 'image/jpeg' } },
+}
+
 const READY: Photo = {
   id: PHOTO_ID,
   entryId: ENTRY,
@@ -57,6 +64,7 @@ let nowMs = NOW_MS
 const defaultDeps = () => ({
     resolveAsset: jest.fn<Promise<ResolvedAsset | null>, [string]>(async () => ASSET),
     createUpload: jest.fn<Promise<CreatePhotoUploadResponse>, [CreatePhotoUploadRequest]>(async () => UPLOAD),
+    renewUpload: jest.fn<Promise<CreatePhotoUploadResponse>, [string]>(async () => RENEWED),
     prepareDisplay: jest.fn<Promise<{ uri: string }>, [string]>(async () => ({ uri: 'file:///cache/display.jpg' })),
     putFile: jest.fn<Promise<void>, [string, { url: string; headers: Record<string, string> }]>(async () => undefined),
     complete: jest.fn<Promise<Photo>, [string]>(async () => READY),
@@ -174,13 +182,74 @@ describe('createUploadRunner (업로드 큐 실행)', () => {
     expect(deps.onPhotoReady).toHaveBeenCalledWith(READY)
   })
 
-  it('서명 URL(300초)이 지난 뒤 다시 올리면 새 업로드를 받아 처음부터 올린다', async () => {
-    const putFile = jest
+  const failOriginalOnce = () =>
+    jest
       .fn<Promise<void>, [string, { url: string; headers: Record<string, string> }]>()
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error('network'))
       .mockResolvedValue(undefined)
+
+  it('서명 URL(300초)이 지난 뒤 다시 올리면 새 사진을 만들지 않고 같은 사진의 URL 을 갱신해 남은 원본만 올린다', async () => {
+    const putFile = failOriginalOnce()
     const { store, deps, runner } = await setup({ putFile })
+    store.getState().enqueue(ENTRY, ['a1'])
+    runner.pump()
+    await waitFor(() => expect(statuses(store)).toEqual(['failed']))
+
+    nowMs += 301_000
+    store.getState().retryFailed(ENTRY)
+    runner.pump()
+
+    await waitFor(() => expect(statuses(store)).toEqual(['done']))
+    // 고아 PENDING 행이 20장 제한을 먹지 않도록 createUpload 는 처음 한 번뿐
+    expect(deps.createUpload).toHaveBeenCalledTimes(1)
+    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID)
+    expect(deps.prepareDisplay).toHaveBeenCalledTimes(1)
+    expect(putFile.mock.calls[2]).toEqual([ASSET.localUri, RENEWED.original])
+    expect(deps.complete).toHaveBeenCalledWith(PHOTO_ID)
+  })
+
+  it('앱을 다시 켜서(서명 URL 이 메모리에 없음) 이어 올릴 때도 같은 사진을 갱신한다', async () => {
+    const putFile = failOriginalOnce()
+    const first = await setup({ putFile })
+    first.store.getState().enqueue(ENTRY, ['a1'])
+    first.runner.pump()
+    await waitFor(() => expect(statuses(first.store)).toEqual(['failed']))
+
+    const deps = makeDeps({})
+    const restarted = createUploadRunner({ store: first.store, deps })
+    first.store.getState().retryFailed(ENTRY)
+    restarted.pump()
+
+    await waitFor(() => expect(statuses(first.store)).toEqual(['done']))
+    expect(deps.createUpload).not.toHaveBeenCalled()
+    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID)
+  })
+
+  it('갱신이 409 ALREADY_COMPLETE 면 다시 올리지 않고 complete 로 마무리한다', async () => {
+    const putFile = failOriginalOnce()
+    const renewUpload = jest
+      .fn<Promise<CreatePhotoUploadResponse>, [string]>()
+      .mockRejectedValue(httpError(409, 'ALREADY_COMPLETE'))
+    const { store, deps, runner } = await setup({ putFile, renewUpload })
+    store.getState().enqueue(ENTRY, ['a1'])
+    runner.pump()
+    await waitFor(() => expect(statuses(store)).toEqual(['failed']))
+
+    nowMs += 301_000
+    store.getState().retryFailed(ENTRY)
+    runner.pump()
+
+    await waitFor(() => expect(statuses(store)).toEqual(['done']))
+    expect(putFile).toHaveBeenCalledTimes(2)
+    expect(deps.createUpload).toHaveBeenCalledTimes(1)
+    expect(deps.complete).toHaveBeenCalledWith(PHOTO_ID)
+  })
+
+  it('갱신이 404(사진이 사라짐)면 새 업로드를 받아 처음부터 올린다', async () => {
+    const putFile = failOriginalOnce()
+    const renewUpload = jest.fn<Promise<CreatePhotoUploadResponse>, [string]>().mockRejectedValue(httpError(404))
+    const { store, deps, runner } = await setup({ putFile, renewUpload })
     store.getState().enqueue(ENTRY, ['a1'])
     runner.pump()
     await waitFor(() => expect(statuses(store)).toEqual(['failed']))

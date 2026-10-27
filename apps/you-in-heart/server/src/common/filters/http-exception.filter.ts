@@ -3,6 +3,7 @@ import { ThrottlerException } from '@nestjs/throttler'
 import type { Request, Response } from 'express'
 import { captureServerError } from '../../observability/sentry'
 import { REQUEST_ID_HEADER } from '../middleware/request-id.middleware'
+import { redactPushTokenPath } from '../redact/redact-path'
 
 type ErrorBody = { status: number; body: Record<string, unknown> }
 
@@ -59,7 +60,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (status >= 500) {
       captureServerError(exception, requestId)
       this.logger.error(
-        `[${requestId}] ${req.method} ${req.url}`,
+        `[${requestId}] ${req.method} ${redactPushTokenPath(req.url)}`,
         exception instanceof Error ? exception.stack : String(exception),
       )
     }

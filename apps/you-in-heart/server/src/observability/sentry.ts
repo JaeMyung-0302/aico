@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/nestjs'
 import type { Event } from '@sentry/nestjs'
+import { redactPushTokenPath } from '../common/redact/redact-path'
 
 // process.env를 그대로 받는다 (SENTRY_DSN, SENTRY_ENVIRONMENT, SENTRY_RELEASE, SENTRY_TRACES_SAMPLE_RATE, NODE_ENV)
 type SentryEnv = Record<string, string | undefined>
@@ -8,17 +9,19 @@ type SentryEnv = Record<string, string | undefined>
 const SCRUB_KEYS: ReadonlySet<string> = new Set(['lat', 'lng', 'uri', 'url', 'body', 'text'])
 const FILTERED = '[Filtered]'
 
+const scrubValue = (key: string, value: unknown): unknown => {
+  if (SCRUB_KEYS.has(key.toLowerCase())) return FILTERED
+  return typeof value === 'string' ? redactPushTokenPath(value) : value
+}
+
 // 키 이름 기준으로 값을 지운 복사본. Sentry가 어차피 JSON으로 보내므로 JSON 왕복으로 깊은 복사한다.
-// 요청 본문(data)·query string은 키와 상관없이 사적인 내용이라 통째로 뺀다
+// 요청 본문(data)·query string·헤더(Authorization·Cookie)는 키와 상관없이 사적인 내용이라 통째로 뺀다.
+// 문자열 안의 push-tokens/{토큰} 경로(transaction·breadcrumb·예외 메시지)도 가린다
 export const scrubEvent = <T extends Event>(event: T): T => {
   const withoutPayload = event.request
-    ? { ...event, request: { ...event.request, data: undefined, query_string: undefined } }
+    ? { ...event, request: { ...event.request, data: undefined, query_string: undefined, headers: undefined } }
     : event
-  return JSON.parse(
-    JSON.stringify(withoutPayload, (key: string, value: unknown) =>
-      SCRUB_KEYS.has(key.toLowerCase()) ? FILTERED : value,
-    ),
-  )
+  return JSON.parse(JSON.stringify(withoutPayload, scrubValue))
 }
 
 export type SentryOptions = {

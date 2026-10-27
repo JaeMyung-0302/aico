@@ -107,6 +107,26 @@ describe('scrubEvent', () => {
     expect(scrubbed.request).toEqual({ method: 'POST', url: '[Filtered]' })
   })
 
+  it('요청 헤더(Authorization·Cookie 등)는 통째로 뺀다', () => {
+    const scrubbed = scrubEvent({
+      request: { method: 'GET', headers: { authorization: 'Bearer secret', cookie: 'sid=1', 'x-request-id': 'r' } },
+    })
+    expect(scrubbed.request).toEqual({ method: 'GET' })
+  })
+
+  it('경로의 push-tokens/ 다음 세그먼트(Expo 토큰)는 어느 문자열에 있든 [Filtered]로 바꾼다', () => {
+    const scrubbed = scrubEvent({
+      transaction: 'DELETE /api/v1/me/push-tokens/ExponentPushToken%5Babc%5D',
+      breadcrumbs: [{ category: 'http', message: 'DELETE /api/v1/me/push-tokens/ExponentPushToken[abc]?x=1 500' }],
+      exception: { values: [{ type: 'Error', value: 'failed at /me/push-tokens/ExponentPushToken[abc]/x' }] },
+      request: { method: 'DELETE', url: 'https://api/api/v1/me/push-tokens/ExponentPushToken%5Babc%5D' },
+    })
+    expect(scrubbed.transaction).toBe('DELETE /api/v1/me/push-tokens/[Filtered]')
+    expect(scrubbed.breadcrumbs?.[0]?.message).toBe('DELETE /api/v1/me/push-tokens/[Filtered]?x=1 500')
+    expect(scrubbed.exception?.values?.[0]?.value).toBe('failed at /me/push-tokens/[Filtered]/x')
+    expect(JSON.stringify(scrubbed)).not.toContain('ExponentPushToken')
+  })
+
   it('원본 이벤트를 바꾸지 않는다', () => {
     const event = { extra: { body: '일기' } }
     scrubEvent(event)

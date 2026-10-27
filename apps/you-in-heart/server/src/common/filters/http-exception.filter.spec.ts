@@ -1,12 +1,12 @@
-import { NotFoundException } from '@nestjs/common'
+import { Logger, NotFoundException } from '@nestjs/common'
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host'
 import { ThrottlerException } from '@nestjs/throttler'
 import { GlobalExceptionFilter } from './http-exception.filter'
 
-const hostFor = () => {
+const hostFor = (url = '/x') => {
   const json = jest.fn<void, [Record<string, unknown>]>()
   const status = jest.fn<{ json: typeof json }, [number]>(() => ({ json }))
-  const req = { headers: { 'x-request-id': 'req-1' }, method: 'POST', url: '/x' }
+  const req = { headers: { 'x-request-id': 'req-1' }, method: 'POST', url }
   const host = new ExecutionContextHost([req, { status }, jest.fn()])
   return { host, status, json }
 }
@@ -55,5 +55,13 @@ describe('GlobalExceptionFilter', () => {
       message: '요청이 너무 많아요. 잠시 후 다시 시도해 주세요',
       requestId: 'req-1',
     })
+  })
+
+  it('5xx 로그의 URL에서 push-tokens/ 다음 세그먼트(Expo 토큰)를 [Filtered]로 바꾼다', () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined)
+    const { host } = hostFor('/api/v1/me/push-tokens/ExponentPushToken%5Babc%5D?a=1')
+    new GlobalExceptionFilter().catch(new Error('boom'), host)
+    expect(errorSpy).toHaveBeenCalledWith('[req-1] POST /api/v1/me/push-tokens/[Filtered]?a=1', expect.any(String))
+    errorSpy.mockRestore()
   })
 })

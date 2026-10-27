@@ -46,6 +46,9 @@ const toBody = (exception: unknown): ErrorBody => {
   return { status, body }
 }
 
+// 로그에는 경로만 남긴다. query string에는 장소 검색어·좌표(GET /places/search?q, /places/reverse?lat&lng)가 실린다
+const pathOnly = (url: string): string => url.split('?')[0] ?? ''
+
 // 모든 에러 응답에 requestId를 붙여 로그와 클라이언트 신고를 이어준다
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -60,7 +63,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (status >= 500) {
       captureServerError(exception, requestId)
       this.logger.error(
-        `[${requestId}] ${req.method} ${redactPushTokenPath(req.url)}`,
+        `[${requestId}] ${req.method} ${redactPushTokenPath(pathOnly(req.url))}`,
         exception instanceof Error ? exception.stack : String(exception),
       )
     }

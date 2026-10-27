@@ -61,7 +61,15 @@ describe('GlobalExceptionFilter', () => {
     const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined)
     const { host } = hostFor('/api/v1/me/push-tokens/ExponentPushToken%5Babc%5D?a=1')
     new GlobalExceptionFilter().catch(new Error('boom'), host)
-    expect(errorSpy).toHaveBeenCalledWith('[req-1] POST /api/v1/me/push-tokens/[Filtered]?a=1', expect.any(String))
+    expect(errorSpy).toHaveBeenCalledWith('[req-1] POST /api/v1/me/push-tokens/[Filtered]', expect.any(String))
+    errorSpy.mockRestore()
+  })
+
+  it('5xx 로그에는 query string(장소 검색어·좌표)을 남기지 않는다', () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined)
+    const { host } = hostFor('/api/v1/places/reverse?lat=37.5443&lng=127.0559')
+    new GlobalExceptionFilter().catch(new Error('boom'), host)
+    expect(errorSpy).toHaveBeenCalledWith('[req-1] POST /api/v1/places/reverse', expect.any(String))
     errorSpy.mockRestore()
   })
 })

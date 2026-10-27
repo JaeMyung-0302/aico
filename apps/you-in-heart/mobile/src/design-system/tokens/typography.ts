@@ -1,4 +1,4 @@
-import { Platform, type TextStyle } from 'react-native'
+import type { TextStyle } from 'react-native'
 
 // SCR-00 tokens.json typography 를 그대로 옮긴 값 (lineHeight 는 배수)
 export const TYPE_SCALE = {
@@ -11,11 +11,13 @@ export const TYPE_SCALE = {
   micro: { size: 11, weight: 400, lineHeight: 1.4, family: 'sans' },
 } as const
 
-// Pretendard 는 굵기마다 파일이 따로라 굵기별 family 이름으로 불러온다 (_layout useFonts)
+// Pretendard·Noto Serif KR 는 굵기마다 파일이 따로라 굵기별 family 이름으로 불러온다 (_layout useFonts)
 export const FONT_FAMILY = {
   regular: 'Pretendard-Regular',
   medium: 'Pretendard-Medium',
   bold: 'Pretendard-Bold',
+  serifMedium: 'NotoSerifKR-Medium',
+  serifBold: 'NotoSerifKR-Bold',
 } as const
 
 type Weight = 400 | 500 | 700
@@ -27,10 +29,9 @@ const SANS_BY_WEIGHT: Record<Weight, string> = {
   700: FONT_FAMILY.bold,
 }
 
-// TODO(1A): Noto Serif KR 번들 전까지 세리프는 시스템 글꼴로 대체한다 (Android 'serif', iOS 기본 글꼴)
+// 세리프는 500·700 두 굵기만 번들한다 (시안은 500 위주)
 const serifStyle = (weight: Weight): TextStyle => ({
-  fontFamily: Platform.select({ android: 'serif', default: undefined }),
-  fontWeight: weight === 700 ? '700' : '500',
+  fontFamily: weight === 700 ? FONT_FAMILY.serifBold : FONT_FAMILY.serifMedium,
 })
 
 const style = (size: number, weight: Weight, lineHeight: number, family: Family): TextStyle => ({

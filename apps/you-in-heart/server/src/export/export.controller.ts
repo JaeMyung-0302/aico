@@ -4,11 +4,15 @@ import { Authenticated } from '../auth/decorators/authenticated.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import type { AuthUser } from '../auth/guards/jwt-auth.guard'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
+import { UserThrottle } from '../common/throttle/user-throttle.guard'
 import { AllowDuringUnlinking } from '../couples/decorators/allow-during-unlinking.decorator'
 import { type CoupleContext, CurrentCouple } from '../couples/decorators/current-couple.decorator'
 import { ExportService } from './export.service'
 
 const idPipe = new ZodValidationPipe(idSchema)
+
+// 내보내기는 전체 기록을 zip으로 묶는 무거운 작업 → 사용자당 3회/시간. 넘으면 429 RATE_LIMITED
+const EXPORT_REQUEST_THROTTLE = { name: 'export-request', ttl: 3_600_000, limit: 3 }
 
 // 연결 해제 유예(UNLINKING) 중에도 내보내기는 허용한다(해제 후 30일 동안 기록을 가져갈 수 있게)
 @Controller('export')
@@ -20,6 +24,7 @@ export class ExportController {
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
   @AllowDuringUnlinking()
+  @UserThrottle(EXPORT_REQUEST_THROTTLE)
   request(@CurrentCouple() couple: CoupleContext, @CurrentUser() me: AuthUser): Promise<ExportJob> {
     return this.exports.request(couple.id, me.id)
   }

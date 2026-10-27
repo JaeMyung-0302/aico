@@ -193,6 +193,16 @@ describe('내보내기 (실DB + 메모리 스토리지)', () => {
     expect(Date.parse(first.body.expiresAt) - Date.now()).toBeGreaterThan((DAY_S - 60) * 1000)
   })
 
+  it('POST /export는 사용자당 1시간에 3회, 넘으면 429 RATE_LIMITED(상대 멤버는 별도)', async () => {
+    const session = await newCouple()
+    for (let index = 0; index < 3; index += 1) {
+      await requestExport(session).expect(202)
+    }
+    expect((await requestExport(session).expect(429)).body.code).toBe('RATE_LIMITED')
+    const partner = await requestExport(session, 1).expect(202)
+    await waitDone(session, partner.body.id)
+  })
+
   it('연결 해제 유예(UNLINKING) 중에도 내보내기를 요청·완료할 수 있다', async () => {
     const session = await newCouple({ status: 'UNLINKING', purgeAfter: new Date(Date.now() + 2 * DAY_S * 1000) })
     const res = await requestExport(session, 1).expect(202)

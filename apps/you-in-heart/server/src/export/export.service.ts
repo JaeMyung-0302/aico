@@ -126,7 +126,7 @@ export class ExportService implements OnApplicationBootstrap, OnModuleDestroy {
     if (started.count === 0) return
     const key = exportZipKey(coupleId, jobId)
     try {
-      await this.writeZip(coupleId, key)
+      await this.writeZip(coupleId, actorId, key)
     } catch (error) {
       this.logger.error(`[export] job ${jobId} failed (${errorName(error)})`)
       await this.prisma.exportJob
@@ -137,8 +137,8 @@ export class ExportService implements OnApplicationBootstrap, OnModuleDestroy {
     await this.finish(coupleId, jobId, actorId, key)
   }
 
-  private async writeZip(coupleId: string, key: string): Promise<void> {
-    const { manifest, files } = await this.manifests.build(coupleId, new Date())
+  private async writeZip(coupleId: string, actorId: string, key: string): Promise<void> {
+    const { manifest, files } = await this.manifests.build(coupleId, actorId, new Date())
     const body = new PassThrough()
     const uploading = this.storage.uploadStream({ key, body, contentType: 'application/zip' })
     // 업로드가 먼저 실패하면 zip 쪽 배압이 풀리지 않는다 → body를 끊어 zip 작성도 실패시킨다

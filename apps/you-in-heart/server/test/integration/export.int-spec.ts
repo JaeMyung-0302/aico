@@ -152,6 +152,28 @@ describe('내보내기 (실DB + 메모리 스토리지)', () => {
     ])
   })
 
+  it('요청자에게 위치 동의가 없으면 장소 좌표(lat·lng)를 빼고 나머지는 담는다. 동의한 요청자의 내보내기에는 좌표를 담는다', async () => {
+    const session = await newCouple()
+    await prisma.consent.create({ data: { userId: session.members[1].id, kind: 'LOCATION', version: 'test' } })
+    await seedMemories(session)
+    const placesOf = async (who: 0 | 1) => {
+      const res = await requestExport(session, who).expect(202)
+      expect((await waitDone(session, res.body.id)).status).toBe('READY')
+      const zip = await storage.getObject(exportZipKey(session.couple.id, res.body.id))
+      if (!zip) throw new Error('zip 없음')
+      const entries = readZip(zip).get('entries.json')?.toString('utf8') ?? '{}'
+      return { raw: entries, places: exportManifestV1Schema.parse(JSON.parse(entries)).places }
+    }
+
+    const withoutConsent = await placesOf(0)
+    expect(withoutConsent.places).toEqual([
+      { id: expect.any(String), name: '한강', kakaoPlaceId: null, address: null, createdAt: expect.any(String) },
+    ])
+    expect(withoutConsent.raw).not.toMatch(/"(lat|lng)"/)
+    const withConsent = await placesOf(1)
+    expect(withConsent.places).toEqual([expect.objectContaining({ name: '한강', lat: 37.5, lng: 127 })])
+  })
+
   it('연결 해제 유예(UNLINKING) 중에도 내보내기를 요청·완료할 수 있다', async () => {
     const session = await newCouple({ status: 'UNLINKING', purgeAfter: new Date(Date.now() + 2 * DAY_S * 1000) })
     const res = await requestExport(session, 1).expect(202)

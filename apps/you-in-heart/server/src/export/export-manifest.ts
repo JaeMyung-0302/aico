@@ -3,6 +3,7 @@ import { type ExportManifestV1, exportManifestV1Schema } from '@you-in-heart/sha
 import { fromDbDate } from '../common/dates/db-date'
 import type { BucketItem, Place, Quote } from '../generated/prisma'
 import { PrismaService } from '../prisma/prisma.service'
+import { ConsentService } from '../users/consent.service'
 
 // zip 안 원본 사진 하나: path = photos/{happenedOn}/{photoId}.{ext}, key = R2 원본 키
 export type ExportPhotoFile = { path: string; key: string }
@@ -25,15 +26,17 @@ const toCustomItem = ({ id, title, date }: { id: string; title: string; date: Da
   date: fromDbDate(date),
 })
 
-const toPlace = ({ id, name, lat, lng, kakaoPlaceId, address, createdAt }: Place) => ({
-  id,
-  name,
-  lat,
-  lng,
-  kakaoPlaceId,
-  address,
-  createdAt: createdAt.toISOString(),
-})
+// 요청자에게 위치 동의가 없으면 좌표를 뺀다(보수적 결정). 원본 사진의 EXIF(GPS 포함)는 원본을 그대로 돌려준다는 약속이라 손대지 않는다
+const toPlace =
+  (includeCoordinates: boolean) =>
+  ({ id, name, lat, lng, kakaoPlaceId, address, createdAt }: Place) => ({
+    id,
+    name,
+    ...(includeCoordinates ? { lat, lng } : {}),
+    kakaoPlaceId,
+    address,
+    createdAt: createdAt.toISOString(),
+  })
 
 const toBucketItem = ({ id, title, doneAt, entryId, createdAt }: BucketItem) => ({
   id,
@@ -78,13 +81,17 @@ const toDiary = (entry: EntryRow) => {
   }
 }
 
-// entries.json(ExportManifestV1)과 담을 원본 목록을 만든다. 모든 조회는 coupleId 조건. 사진은 READY만
+// entries.json(ExportManifestV1)과 담을 원본 목록을 만든다. 모든 조회는 coupleId 조건. 사진은 READY만.
+// 장소 좌표는 요청자(requestedById)의 위치 동의가 있을 때만 담는다
 @Injectable()
 export class ExportManifestBuilder {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly consents: ConsentService,
+  ) {}
 
-  async build(coupleId: string, now: Date): Promise<ExportContent> {
-    const [couple, entries, anniversaries, places, bucket, quotes] = await Promise.all([
+  async build(coupleId: string, requestedById: string, now: Date): Promise<ExportContent> {
+    const [couple, entries, anniversaries, places, bucket, quotes, hasLocationConsent] = await Promise.all([
       this.prisma.couple.findFirstOrThrow({
         where: { id: coupleId },
         select: {
@@ -97,6 +104,7 @@ export class ExportManifestBuilder {
       this.prisma.place.findMany({ where: { coupleId }, orderBy: { createdAt: 'asc' } }),
       this.prisma.bucketItem.findMany({ where: { coupleId }, orderBy: { createdAt: 'asc' } }),
       this.prisma.quote.findMany({ where: { coupleId }, orderBy: { createdAt: 'asc' } }),
+      this.consents.hasLocationConsent(requestedById),
     ])
     const diary = entries.map(toDiary)
     const manifest = exportManifestV1Schema.parse({
@@ -108,7 +116,7 @@ export class ExportManifestBuilder {
       },
       diary: diary.map(({ item }) => item),
       anniversaries: anniversaries.map(toCustomItem),
-      places: places.map(toPlace),
+      places: places.map(toPlace(hasLocationConsent)),
       bucket: bucket.map(toBucketItem),
       quotes: quotes.map(toQuote),
     })

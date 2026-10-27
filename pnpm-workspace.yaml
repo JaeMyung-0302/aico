@@ -5,3 +5,9 @@ packages:
   - apps/*/web
   - apps/*/mobile
   - packages/*
+
+# @react-native-kakao/core의 expo 플러그인이 선언 없이 @expo/config-plugins를 require한다(호이스팅 의존)
+packageExtensions:
+  '@react-native-kakao/core':
+    dependencies:
+      '@expo/config-plugins': '~57.0.11'

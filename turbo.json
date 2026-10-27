@@ -40,6 +40,7 @@
         "NODE_ENV",
         "DATABASE_URL_TEST",
         "ENABLE_DEV_LOGIN",
+        "PURGE_ENABLED",
         "ENABLE_GPS_LOCATION",
         "TRUST_PROXY_HOPS",
         "KAKAO_NATIVE_APP_KEY",

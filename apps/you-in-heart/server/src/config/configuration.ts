@@ -9,8 +9,6 @@ export const configuration = () => ({
   jwtSecret: process.env.JWT_SECRET ?? '',
   isDevLoginEnabled: process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEV_LOGIN === 'true',
   // 연결 해제 30일 뒤 삭제(purge) 실행 여부. 운영에서 검증 전까지 false
-  // TODO: 루트 turbo.json lint env 목록에 PURGE_ENABLED 추가 후 아래 disable 제거
-  // eslint-disable-next-line turbo/no-undeclared-env-vars
   purgeEnabled: process.env.PURGE_ENABLED === 'true',
   kakao: {
     // id_token aud 검증용 네이티브 앱 키

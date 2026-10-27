@@ -98,9 +98,11 @@ export class PhotosService {
     return this.presignUploads(coupleId, id, mime, photo.originalBytes, displayBytes)
   }
 
-  // 원본: HEAD 크기 + 매직 넘버만. 표시용 후보: 재인코딩(EXIF 제거) → d.jpg·t.jpg → incoming 삭제 → READY. 다시 불러도 같은 결과
-  async complete(coupleId: string, id: string): Promise<Photo> {
+  // 원본: HEAD 크기 + 매직 넘버만. 표시용 후보: 재인코딩(EXIF 제거) → d.jpg·t.jpg → incoming 삭제 → READY. 다시 불러도 같은 결과.
+  // renew처럼 올린 사람만 부를 수 있다
+  async complete(coupleId: string, actorId: string, id: string): Promise<Photo> {
     const photo = await this.findPhoto(coupleId, id)
+    if (photo.uploaderId !== actorId) throw notPhotoUploader()
     if (photo.status === 'READY') return this.signPhoto(photo)
     await this.verifyOriginal(photo)
     const size = await this.writeVariants(coupleId, id)

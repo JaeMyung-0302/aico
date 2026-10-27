@@ -16,10 +16,14 @@ import { Authenticated } from '../auth/decorators/authenticated.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import type { AuthUser } from '../auth/guards/jwt-auth.guard'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
+import { UserThrottle } from '../common/throttle/user-throttle.guard'
 import { type CoupleContext, CurrentCouple } from '../couples/decorators/current-couple.decorator'
 import { PhotosService } from './photos.service'
 
 const idPipe = new ZodValidationPipe(idSchema)
+
+// complete는 표시용 후보를 읽어 재인코딩한다(메모리·CPU) → 사용자당 60회/분. 넘으면 429 RATE_LIMITED
+const PHOTO_COMPLETE_THROTTLE = { name: 'photo-complete', ttl: 60_000, limit: 60 }
 
 // 좌표는 업로드 요청에서만 받고 응답에는 돌려주지 않는다. 위치 동의는 좌표가 있을 때만 서비스가 검사한다
 @Controller('photos')
@@ -51,8 +55,13 @@ export class PhotosController {
 
   @Post(':id/complete')
   @HttpCode(HttpStatus.OK)
-  complete(@CurrentCouple() couple: CoupleContext, @Param('id', idPipe) id: string): Promise<Photo> {
-    return this.photos.complete(couple.id, id)
+  @UserThrottle(PHOTO_COMPLETE_THROTTLE)
+  complete(
+    @CurrentCouple() couple: CoupleContext,
+    @CurrentUser() me: AuthUser,
+    @Param('id', idPipe) id: string,
+  ): Promise<Photo> {
+    return this.photos.complete(couple.id, me.id, id)
   }
 
   @Post(':id/uploads/renew')

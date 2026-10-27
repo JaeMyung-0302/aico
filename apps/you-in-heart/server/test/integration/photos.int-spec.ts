@@ -248,6 +248,16 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       expect((await prisma.photo.findFirstOrThrow({ where: { id: res.body.photoId } })).status).toBe('PENDING')
     })
 
+    it('올린 사람이 아니면 403 NOT_AUTHOR(PENDING 유지), 올린 사람은 200', async () => {
+      const session = await newCouple()
+      const original = fixture('gps-exif.jpg')
+      const { photoId } = await startUpload(session, original)
+      await putUploads(session.couple.id, photoId, original, fixture('no-exif.jpg'))
+      expect((await complete(session.tokens[1], photoId).expect(403)).body.code).toBe('NOT_AUTHOR')
+      expect((await prisma.photo.findFirstOrThrow({ where: { id: photoId } })).status).toBe('PENDING')
+      await complete(session.tokens[0], photoId).expect(200)
+    })
+
     it('표시용 후보가 상한을 넘으면 422 INVALID_UPLOAD. 통째 읽기(getObject) 없이 상한+1바이트까지만 읽는다', async () => {
       const session = await newCouple()
       const original = fixture('gps-exif.jpg')
@@ -279,6 +289,16 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       open()
       await Promise.all(busy)
       await complete(session.tokens[0], photoId).expect(200)
+    })
+
+    it('사용자당 1분에 60회, 넘으면 429 RATE_LIMITED', async () => {
+      const session = await newCouple()
+      const missing = '0199e3a0-0000-7000-8000-00000000fffe'
+      for (let index = 0; index < 60; index += 1) {
+        await complete(session.tokens[0], missing).expect(404)
+      }
+      expect((await complete(session.tokens[0], missing).expect(429)).body.code).toBe('RATE_LIMITED')
+      await complete(session.tokens[1], missing).expect(404)
     })
 
     it('원본 크기가 선언과 다르면 422, 아직 올리지 않았으면 409', async () => {

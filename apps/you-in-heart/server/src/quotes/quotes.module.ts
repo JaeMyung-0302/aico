@@ -4,6 +4,7 @@ import { EventsModule } from '../events/events.module'
 import { PhotosModule } from '../photos/photos.module'
 import { StorageModule } from '../storage/storage.module'
 import { QuoteBodyLimitMiddleware } from './quote-body-limit.middleware'
+import { QuoteCleanupCron } from './quote-cleanup.cron'
 import { QuotesController } from './quotes.controller'
 import { QuotesService } from './quotes.service'
 
@@ -11,7 +12,7 @@ import { QuotesService } from './quotes.service'
 @Module({
   imports: [AuthModule, EventsModule, StorageModule, PhotosModule],
   controllers: [QuotesController],
-  providers: [QuotesService],
+  providers: [QuotesService, QuoteCleanupCron],
 })
 export class QuotesModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

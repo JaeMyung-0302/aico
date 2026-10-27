@@ -8,6 +8,7 @@ import { PurgeService } from '../../src/couples/purge.service'
 import { ImageSanitizer, PHOTO_MAX_INPUT_PIXELS } from '../../src/photos/image-sanitizer'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
+import { QuoteCleanupCron } from '../../src/quotes/quote-cleanup.cron'
 import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
 import { OBJECT_STORAGE } from '../../src/storage/object-storage'
 import { quoteScreenshotIncomingKey, quoteScreenshotKey, quoteScreenshotThumbKey } from '../../src/storage/storage-keys'
@@ -405,6 +406,27 @@ describe('문구 보관함 (실DB + 메모리 스토리지)', () => {
       expect(await storage.head(quoteScreenshotIncomingKey(other.couple.id, theirs))).not.toBeNull()
       expect(await storage.head(quoteScreenshotKey(other.couple.id, theirs))).toBeNull()
     })
+  })
+
+  it('quote-cleanup: 24시간 지난 미완료 스크린샷 문구의 행과 incoming 객체만 지운다(완료·최근·텍스트는 그대로)', async () => {
+    const session = await newCouple()
+    const old = new Date(Date.now() - 25 * 3_600_000)
+    const stale = await startScreenshot(session, fixture('no-exif.jpg'))
+    const done = await startScreenshot(session, fixture('no-exif.jpg'))
+    await complete(session, done.quoteId).expect(200)
+    const fresh = await startScreenshot(session, fixture('no-exif.jpg'))
+    const { body: text } = await post(session, 0, '', { source: 'SHARE', text: '사랑해' }).expect(201)
+    await prisma.quote.updateMany({
+      where: { id: { in: [stale.quoteId, done.quoteId, text.id] } },
+      data: { createdAt: old },
+    })
+
+    await expect(app.get(QuoteCleanupCron).run()).resolves.toEqual({ deleted: 1 })
+    const ids = (await prisma.quote.findMany({ select: { id: true } })).map(({ id }) => id).sort()
+    expect(ids).toEqual([done.quoteId, fresh.quoteId, text.id].sort())
+    expect(await storage.head(quoteScreenshotIncomingKey(session.couple.id, stale.quoteId))).toBeNull()
+    expect(await storage.head(quoteScreenshotKey(session.couple.id, done.quoteId))).not.toBeNull()
+    expect(await storage.head(quoteScreenshotIncomingKey(session.couple.id, fresh.quoteId))).not.toBeNull()
   })
 
   it('커플 purge는 문구 행과 스크린샷 객체(s.jpg·st.jpg·incoming)를 모두 지운다', async () => {

@@ -12,6 +12,10 @@ export const bucketItemSchema = z.object({
 })
 export type BucketItem = z.infer<typeof bucketItemSchema>
 
+// GET /bucket 응답. 커플당 수십 개라 페이지 없이 전체(createdAt 오름차순)
+export const bucketListResponseSchema = z.object({ items: z.array(bucketItemSchema) })
+export type BucketListResponse = z.infer<typeof bucketListResponseSchema>
+
 // POST /bucket
 export const createBucketItemRequestSchema = z.object({ title: bucketItemTitleSchema })
 export type CreateBucketItemRequest = z.infer<typeof createBucketItemRequestSchema>

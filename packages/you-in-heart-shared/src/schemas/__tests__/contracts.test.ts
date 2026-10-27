@@ -4,7 +4,7 @@ import {
   customAnniversaryListResponseSchema,
 } from '../anniversary'
 import { authProviderParamSchema } from '../auth'
-import { bucketItemTitleSchema } from '../bucket'
+import { bucketItemTitleSchema, bucketListResponseSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
 import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
 import { latestExportResponseSchema } from '../export'
@@ -148,6 +148,12 @@ describe('bucket', () => {
   it('제목 1~60자', () => {
     expect(bucketItemTitleSchema.safeParse('제주도 가기').success).toBe(true)
     expect(bucketItemTitleSchema.safeParse('a'.repeat(61)).success).toBe(false)
+  })
+
+  it('목록 응답은 items 배열(doneAt·entryId nullable)', () => {
+    const item = { id: ENTRY_ID, title: '제주', doneAt: null, entryId: null, createdAt: '2026-10-27T00:00:00Z' }
+    expect(bucketListResponseSchema.safeParse({ items: [item] }).success).toBe(true)
+    expect(bucketListResponseSchema.safeParse({ items: [{ ...item, entryId: 'x' }] }).success).toBe(false)
   })
 })
 

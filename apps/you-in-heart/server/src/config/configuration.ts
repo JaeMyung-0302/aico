@@ -1,0 +1,24 @@
+import { parseTrustProxyHops } from '../common/throttle/client-ip'
+
+// 환경변수를 한 곳에서 읽는다. 비밀값은 .env(커밋 금지)로만 주입한다
+export const configuration = () => ({
+  port: Number(process.env.PORT ?? 4009),
+  nodeEnv: process.env.NODE_ENV ?? 'development',
+  // Express trust proxy 홉 수. 로컬 0, 운영(Cloudflare → Lightsail → Docker) 2
+  trustProxyHops: parseTrustProxyHops(process.env.TRUST_PROXY_HOPS),
+  jwtSecret: process.env.JWT_SECRET ?? '',
+  isDevLoginEnabled: process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEV_LOGIN === 'true',
+  // 연결 해제 30일 뒤 삭제(purge) 실행 여부. 운영에서 검증 전까지 false
+  // TODO: 루트 turbo.json lint env 목록에 PURGE_ENABLED 추가 후 아래 disable 제거
+  // eslint-disable-next-line turbo/no-undeclared-env-vars
+  purgeEnabled: process.env.PURGE_ENABLED === 'true',
+  kakao: {
+    // id_token aud 검증용 네이티브 앱 키
+    nativeAppKey: process.env.KAKAO_NATIVE_APP_KEY ?? '',
+    // 탈퇴 시 카카오 unlink용 Admin 키(서버 전용)
+    adminKey: process.env.KAKAO_ADMIN_KEY ?? '',
+  },
+  expoAccessToken: process.env.EXPO_ACCESS_TOKEN ?? '',
+})
+
+export type AppConfig = ReturnType<typeof configuration>

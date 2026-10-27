@@ -6,4 +6,6 @@ process.env.DATABASE_URL = resolveTestDatabaseUrl()
 // 부팅 검증(32바이트 이상)을 통과하는 테스트 전용 값
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'integration-test-only-secret-32-bytes-min'
 // 테스트가 앱을 띄워도 purge cron이 실제로 지우지 않는다
+// TODO: 루트 turbo.json lint env 목록에 PURGE_ENABLED 추가 후 아래 disable 제거
+// eslint-disable-next-line turbo/no-undeclared-env-vars
 process.env.PURGE_ENABLED = 'false'

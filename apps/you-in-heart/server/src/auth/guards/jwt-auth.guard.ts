@@ -24,6 +24,8 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<AuthenticatedRequest>()
+    // 커플 라우트는 전역 CoupleGuard가 먼저 이 가드를 실행해 authUser를 채운다 → 두 번 조회하지 않는다
+    if (req.authUser) return true
     const token = extractBearer(req.headers.authorization)
     if (!token) throw new UnauthorizedException('로그인이 필요합니다')
     const payload = await this.sessions.verifyAccessToken(token)

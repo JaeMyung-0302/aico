@@ -32,6 +32,13 @@ describe('JwtAuthGuard', () => {
     guard = moduleRef.get(JwtAuthGuard)
   })
 
+  it('전역 CoupleGuard가 이미 인증한 요청은 다시 검증하지 않는다', async () => {
+    const req: Partial<AuthenticatedRequest> = { headers: {}, authUser: { id: USER_ID } }
+    await expect(guard.canActivate(contextFor(req))).resolves.toBe(true)
+    expect(sessions.verifyAccessToken).not.toHaveBeenCalled()
+    expect(prisma.user.findUnique).not.toHaveBeenCalled()
+  })
+
   it('Bearer 토큰이 유효하고 ACTIVE 사용자면 req.authUser를 채우고 통과', async () => {
     sessions.verifyAccessToken.mockResolvedValue({ sub: USER_ID })
     prisma.user.findUnique.mockResolvedValue({ id: USER_ID, status: 'ACTIVE' })

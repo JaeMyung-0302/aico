@@ -1,7 +1,7 @@
 import '@/shared/observability/boot'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useFonts } from 'expo-font'
-import { Stack } from 'expo-router'
+import { Stack, useRootNavigationState } from 'expo-router'
 import { ShareIntentProvider } from 'expo-share-intent'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -9,6 +9,7 @@ import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { FONT_FAMILY } from '@/design-system/tokens/typography'
 import { useAuthGate } from '@/modules/auth/feature-auth-gate/useAuthGate'
+import { useShareRouting } from '@/modules/quote/feature-share-receive/useShareRouting'
 import { useUploadRunner } from '@/modules/media/data-access-media/useUploadPhotos'
 import { useMe } from '@/modules/user/data-access-me/useMe'
 import { useWidgetSync } from '@/modules/widget/feature-widget-sync/useWidgetSync'
@@ -46,6 +47,9 @@ const RootNavigator = () => {
   const { destination } = useAuthGate()
   // 게이트가 첫 단계를 정하기 전에는 아무 화면도 그리지 않고 스플래시를 유지한다
   const isReady = areFontsReady && destination !== null
+  // 받은 공유(4D)는 스택이 붙은 뒤에만 연다 — 로그인 전이면 기억해 두고 탭·페어링에 도착하면 이어서 연다
+  const isNavigationReady = Boolean(useRootNavigationState()?.key)
+  useShareRouting(isReady && isNavigationReady ? destination : null)
 
   useEffect(() => {
     if (isReady) SplashScreen.hideAsync().catch(() => undefined)
@@ -79,6 +83,14 @@ const RootNavigator = () => {
           <Stack.Screen name="diary/[entryId]" />
           <Stack.Screen name="photos/[photoId]" options={{ animation: 'fade' }} />
           <Stack.Screen name="album/import" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="places/[placeId]" />
+          <Stack.Screen name="bucket/index" />
+          <Stack.Screen name="quotes/index" />
+          <Stack.Screen name="quotes/import" />
+        </Stack.Protected>
+        {/* 공유로 받기(SCR-14): 미연결이면 "먼저 상대와 연결해 주세요"를 보여야 해서 페어링 단계에도 연다. 착지 화면이 되지 않게 마지막에 둔다 */}
+        <Stack.Protected guard={destination === '/(tabs)' || isPairing}>
+          <Stack.Screen name="quotes/share" />
         </Stack.Protected>
       </Stack>
     </>

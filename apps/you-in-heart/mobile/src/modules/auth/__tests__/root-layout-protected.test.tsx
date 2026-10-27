@@ -7,6 +7,7 @@ import { fetchMe } from '@/modules/user/data-access-me/me-api'
 import { session } from '@/shared/auth/session'
 import { queryClient } from '@/shared/query-client'
 import { useUploadRunner } from '@/modules/media/data-access-media/useUploadPhotos'
+import { useShareRouting } from '@/modules/quote/feature-share-receive/useShareRouting'
 import { useWidgetSync } from '@/modules/widget/feature-widget-sync/useWidgetSync'
 import { usePushTokenRegistration } from '@/shared/notifications/register-push-token'
 import { useNotificationRouting } from '@/shared/notifications/route-notification'
@@ -31,6 +32,8 @@ jest.mock('@/modules/widget/feature-widget-sync/useWidgetSync', () => ({ useWidg
 jest.mock('@/shared/notifications/register-push-token', () => ({ usePushTokenRegistration: jest.fn() }))
 jest.mock('@/modules/media/data-access-media/useUploadPhotos', () => ({ useUploadRunner: jest.fn() }))
 jest.mock('@/shared/notifications/route-notification', () => ({ useNotificationRouting: jest.fn() }))
+// 공유 인텐트 → 화면 이동은 useShareRouting 테스트가 본다 — 여기서는 단계만 넘기는지 본다
+jest.mock('@/modules/quote/feature-share-receive/useShareRouting', () => ({ useShareRouting: jest.fn() }))
 jest.mock('@/modules/user/data-access-me/me-api', () => ({ fetchMe: jest.fn() }))
 jest.mock('@/shared/query-client', () => ({
   queryClient: jest.requireActual('@/test-utils/QueryTestProvider').createTestQueryClient(),
@@ -71,6 +74,11 @@ const ROUTES = {
   'diary/[entryId]': stub('diary-detail'),
   'photos/[photoId]': stub('photo-viewer'),
   'album/import': stub('bulk-import'),
+  'places/[placeId]': stub('place-entries'),
+  'bucket/index': stub('bucket'),
+  'quotes/index': stub('quotes'),
+  'quotes/import': stub('quote-import'),
+  'quotes/share': stub('quote-share'),
 }
 
 const renderApp = async () => {
@@ -180,5 +188,38 @@ describe('RootLayout — Stack.Protected 인증 게이트 (plan 0F.5 표)', () =
     await act(() => session.endSession())
     expect(await screen.findByText('login')).toBeOnTheScreen()
     expect(usePushTokenRegistration).toHaveBeenLastCalledWith(null)
+  })
+
+  it('지도 장소·버킷리스트·문구 보관함·txt 가져오기·공유 받기 화면을 열 수 있다', async () => {
+    memoryTokenStore.reset(TOKENS)
+    await renderApp()
+    expect(await screen.findByText('home')).toBeOnTheScreen()
+    await act(async () => router.push('/places/01890a5d-ac96-774b-bcce-b302099a8701'))
+    expect(await screen.findByText('place-entries')).toBeOnTheScreen()
+    await act(async () => router.push('/bucket'))
+    expect(await screen.findByText('bucket')).toBeOnTheScreen()
+    await act(async () => router.push('/quotes'))
+    expect(await screen.findByText('quotes')).toBeOnTheScreen()
+    await act(async () => router.push('/quotes/import'))
+    expect(await screen.findByText('quote-import')).toBeOnTheScreen()
+    await act(async () => router.push('/quotes/share'))
+    expect(await screen.findByText('quote-share')).toBeOnTheScreen()
+    expect(useShareRouting).toHaveBeenLastCalledWith('/(tabs)')
+  })
+
+  it('미연결(페어링)에서도 공유 받기 화면은 열린다(SCR-14 연결 안내) — 착지는 초대 코드 화면', async () => {
+    memoryTokenStore.reset(TOKENS)
+    jest.mocked(fetchMe).mockResolvedValue({ ...ME, couple: null })
+    await renderApp()
+    expect(await screen.findByText('invite')).toBeOnTheScreen()
+    expect(useShareRouting).toHaveBeenLastCalledWith('/pairing')
+    await act(async () => router.push('/quotes/share'))
+    expect(await screen.findByText('quote-share')).toBeOnTheScreen()
+  })
+
+  it('로그인 전에는 공유 이동에 단계를 그대로 넘긴다(useShareRouting 이 기억만 한다)', async () => {
+    await renderApp()
+    expect(await screen.findByText('login')).toBeOnTheScreen()
+    expect(useShareRouting).toHaveBeenLastCalledWith('/login')
   })
 })

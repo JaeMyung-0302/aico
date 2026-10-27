@@ -9,17 +9,21 @@ import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { FONT_FAMILY } from '@/design-system/tokens/typography'
 import { useAuthGate } from '@/modules/auth/feature-auth-gate/useAuthGate'
+import { useUploadRunner } from '@/modules/media/data-access-media/useUploadPhotos'
 import { useMe } from '@/modules/user/data-access-me/useMe'
 import { useWidgetSync } from '@/modules/widget/feature-widget-sync/useWidgetSync'
 import { useSessionStatus } from '@/shared/auth/session'
 import { usePushTokenRegistration } from '@/shared/notifications/register-push-token'
+import { useNotificationRouting } from '@/shared/notifications/route-notification'
 import { queryClient } from '@/shared/query-client'
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined)
 
-// 화면과 무관한 기기 동기화: 홈 위젯 스냅샷(1B), 로그인 후 푸시 토큰 등록(1A.8)
+// 화면과 무관한 기기 동기화: 홈 위젯 스냅샷(1B), 로그인 후 푸시 토큰 등록(1A.8), 사진 업로드 큐(1E), 알림 탭 이동(1G)
 const DeviceSync = () => {
   useWidgetSync()
+  useUploadRunner()
+  useNotificationRouting()
   const isSignedIn = useSessionStatus() === 'signedIn'
   const me = useMe()
   usePushTokenRegistration(isSignedIn ? (me.data?.id ?? null) : null)
@@ -71,6 +75,10 @@ const RootNavigator = () => {
           <Stack.Screen name="settings/index" />
           <Stack.Screen name="anniversaries/index" />
           <Stack.Screen name="pairing/started-on" />
+          <Stack.Screen name="diary/new" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="diary/[entryId]" />
+          <Stack.Screen name="photos/[photoId]" options={{ animation: 'fade' }} />
+          <Stack.Screen name="album/import" options={{ presentation: 'fullScreenModal' }} />
         </Stack.Protected>
       </Stack>
     </>

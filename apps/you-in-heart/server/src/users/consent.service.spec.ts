@@ -50,6 +50,31 @@ describe('ConsentService', () => {
     })
   })
 
+  describe('hasRequiredConsents · hasLocationConsent', () => {
+    it.each([
+      [['TERMS', 'PRIVACY'], true],
+      [['TERMS', 'PRIVACY', 'LOCATION'], true],
+      [['TERMS'], false],
+      [['PRIVACY', 'LOCATION'], false],
+      [[], false],
+    ])('필수 동의 %j → %s', async (kinds, expected) => {
+      prisma.consent.findMany.mockResolvedValue(activeRows(...kinds))
+      await expect(service.hasRequiredConsents(USER_ID)).resolves.toBe(expected)
+    })
+
+    it.each([
+      [['TERMS', 'PRIVACY', 'LOCATION'], true],
+      [['LOCATION'], true],
+      [['TERMS', 'PRIVACY'], false],
+    ])('위치 동의 %j → %s (철회된 행은 조회에서 빠진다)', async (kinds, expected) => {
+      prisma.consent.findMany.mockResolvedValue(activeRows(...kinds))
+      await expect(service.hasLocationConsent(USER_ID)).resolves.toBe(expected)
+      expect(prisma.consent.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId: USER_ID, withdrawnAt: null } }),
+      )
+    })
+  })
+
   describe('put', () => {
     it('처음이면 TERMS·PRIVACY(+LOCATION=true면 LOCATION)를 현재 약관 버전으로 만든다', async () => {
       prisma.consent.findMany

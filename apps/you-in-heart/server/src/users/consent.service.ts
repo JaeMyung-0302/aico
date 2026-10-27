@@ -28,6 +28,17 @@ export class ConsentService {
     return readStatus(this.prisma.consent, userId)
   }
 
+  // 커플 라우트 게이트(CoupleGuard): 약관·개인정보 모두 유효한 동의
+  async hasRequiredConsents(userId: string): Promise<boolean> {
+    const { terms, privacy } = await this.status(userId)
+    return terms && privacy
+  }
+
+  // 좌표 저장·조회(@RequiresLocationConsent): 철회되지 않은 위치 동의
+  async hasLocationConsent(userId: string): Promise<boolean> {
+    return (await this.status(userId)).location
+  }
+
   // 전체 상태를 받는다. TERMS·PRIVACY는 스키마가 true만 허용. 동의는 없는 kind만 새 행(이력 보존), 위치 끄기는 철회 기록
   put(userId: string, body: PutConsentsRequest): Promise<Consents> {
     const wanted: readonly ConsentKind[] = body.location ? ['TERMS', 'PRIVACY', 'LOCATION'] : ['TERMS', 'PRIVACY']

@@ -8,6 +8,7 @@ import {
   type PhotoOriginalResponse,
   photoOriginalResponseSchema,
   photoSchema,
+  type RenewPhotoUploadRequest,
   type UploadTarget,
 } from '@you-in-heart/shared'
 import { File } from 'expo-file-system'
@@ -20,10 +21,12 @@ export const createPhotoUpload = (body: CreatePhotoUploadRequest): Promise<Creat
   requestApi({ method: 'POST', url: '/photos/uploads', data: body, schema: createPhotoUploadResponseSchema })
 
 // 서명 URL 이 만료된 내 PENDING 사진: 같은 사진에 새 URL(응답 모양은 발급과 같다). 409 ALREADY_COMPLETE·403 NOT_AUTHOR·404
-export const renewPhotoUpload = (photoId: string): Promise<CreatePhotoUploadResponse> =>
+// 표시용 후보는 다시 만들므로 그 바이트 수를 새로 보낸다(서버가 display PUT Content-Length 로 서명)
+export const renewPhotoUpload = (photoId: string, body: RenewPhotoUploadRequest): Promise<CreatePhotoUploadResponse> =>
   requestApi({
     method: 'POST',
     url: `/photos/${encodeURIComponent(photoId)}/uploads/renew`,
+    data: body,
     schema: createPhotoUploadResponseSchema,
   })
 

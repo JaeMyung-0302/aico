@@ -1,4 +1,10 @@
-import type { CreatePhotoUploadRequest, CreatePhotoUploadResponse, Photo } from '@you-in-heart/shared'
+import {
+  type CreatePhotoUploadRequest,
+  type CreatePhotoUploadResponse,
+  MAX_DISPLAY_CANDIDATE_BYTES,
+  type Photo,
+  type RenewPhotoUploadRequest,
+} from '@you-in-heart/shared'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { waitFor } from '@testing-library/react-native'
 import { ApiError } from '@/shared/api/api-error'
@@ -9,6 +15,7 @@ import type { ResolvedAsset } from '../util-pick-assets/pick-assets'
 const ENTRY = '01890a5d-ac96-774b-bcce-b302099a8201'
 const PHOTO_ID = '01890a5d-ac96-774b-bcce-b302099a8301'
 const NOW_MS = Date.parse('2026-10-27T03:00:00.000Z')
+const DISPLAY_BYTES = 480_000
 
 const ORIGINAL_HEADERS = { 'Content-Type': 'image/heic', 'Content-Length': '1000' }
 const UPLOAD: CreatePhotoUploadResponse = {
@@ -64,8 +71,11 @@ let nowMs = NOW_MS
 const defaultDeps = () => ({
     resolveAsset: jest.fn<Promise<ResolvedAsset | null>, [string]>(async () => ASSET),
     createUpload: jest.fn<Promise<CreatePhotoUploadResponse>, [CreatePhotoUploadRequest]>(async () => UPLOAD),
-    renewUpload: jest.fn<Promise<CreatePhotoUploadResponse>, [string]>(async () => RENEWED),
-    prepareDisplay: jest.fn<Promise<{ uri: string }>, [string]>(async () => ({ uri: 'file:///cache/display.jpg' })),
+    renewUpload: jest.fn<Promise<CreatePhotoUploadResponse>, [string, RenewPhotoUploadRequest]>(async () => RENEWED),
+    prepareDisplay: jest.fn<Promise<{ uri: string; bytes: number }>, [string]>(async () => ({
+      uri: 'file:///cache/display.jpg',
+      bytes: DISPLAY_BYTES,
+    })),
     putFile: jest.fn<Promise<void>, [string, { url: string; headers: Record<string, string> }]>(async () => undefined),
     complete: jest.fn<Promise<Photo>, [string]>(async () => READY),
     discardFile: jest.fn<void, [string]>(),
@@ -129,6 +139,7 @@ describe('createUploadRunner (업로드 큐 실행)', () => {
       entryId: ENTRY,
       originalMime: 'image/heic',
       originalBytes: 1000,
+      displayBytes: DISPLAY_BYTES,
       takenAt: '2026-10-25T03:00:00.000Z',
     })
     expect(deps.prepareDisplay).toHaveBeenCalledWith(ASSET.localUri)
@@ -203,8 +214,10 @@ describe('createUploadRunner (업로드 큐 실행)', () => {
     await waitFor(() => expect(statuses(store)).toEqual(['done']))
     // 고아 PENDING 행이 20장 제한을 먹지 않도록 createUpload 는 처음 한 번뿐
     expect(deps.createUpload).toHaveBeenCalledTimes(1)
-    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID)
-    expect(deps.prepareDisplay).toHaveBeenCalledTimes(1)
+    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID, { displayBytes: DISPLAY_BYTES })
+    // 갱신 요청에 표시용 크기가 필요해 후보를 다시 만들지만, 이미 올린 표시용은 다시 PUT 하지 않는다
+    expect(deps.prepareDisplay).toHaveBeenCalledTimes(2)
+    expect(putFile).toHaveBeenCalledTimes(3)
     expect(putFile.mock.calls[2]).toEqual([ASSET.localUri, RENEWED.original])
     expect(deps.complete).toHaveBeenCalledWith(PHOTO_ID)
   })
@@ -223,13 +236,13 @@ describe('createUploadRunner (업로드 큐 실행)', () => {
 
     await waitFor(() => expect(statuses(first.store)).toEqual(['done']))
     expect(deps.createUpload).not.toHaveBeenCalled()
-    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID)
+    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID, { displayBytes: DISPLAY_BYTES })
   })
 
   it('갱신이 409 ALREADY_COMPLETE 면 다시 올리지 않고 complete 로 마무리한다', async () => {
     const putFile = failOriginalOnce()
     const renewUpload = jest
-      .fn<Promise<CreatePhotoUploadResponse>, [string]>()
+      .fn<Promise<CreatePhotoUploadResponse>, [string, RenewPhotoUploadRequest]>()
       .mockRejectedValue(httpError(409, 'ALREADY_COMPLETE'))
     const { store, deps, runner } = await setup({ putFile, renewUpload })
     store.getState().enqueue(ENTRY, ['a1'])
@@ -248,7 +261,9 @@ describe('createUploadRunner (업로드 큐 실행)', () => {
 
   it('갱신이 404(사진이 사라짐)면 새 업로드를 받아 처음부터 올린다', async () => {
     const putFile = failOriginalOnce()
-    const renewUpload = jest.fn<Promise<CreatePhotoUploadResponse>, [string]>().mockRejectedValue(httpError(404))
+    const renewUpload = jest
+      .fn<Promise<CreatePhotoUploadResponse>, [string, RenewPhotoUploadRequest]>()
+      .mockRejectedValue(httpError(404))
     const { store, deps, runner } = await setup({ putFile, renewUpload })
     store.getState().enqueue(ENTRY, ['a1'])
     runner.pump()
@@ -360,5 +375,141 @@ describe('createUploadRunner (업로드 큐 실행)', () => {
     await Promise.resolve()
     expect(deps.resolveAsset).toHaveBeenCalledTimes(1)
     expect(store.getState().items.find((item) => item.key === uploadKey(ENTRY, 'a1'))?.status).toBe('done')
+  })
+  // 서버 흉내: 발급마다 새 사진, 두 객체가 다 올라가야 complete, 21장째부터 PHOTO_LIMIT
+  const fakeServer = () => {
+    const uploaded = new Set<string>()
+    const created: string[] = []
+    const createUpload = jest.fn(async (_body: CreatePhotoUploadRequest): Promise<CreatePhotoUploadResponse> => {
+      const photoId = `p${created.length}`
+      created.push(photoId)
+      if (created.length > 20) throw httpError(400, 'PHOTO_LIMIT')
+      return { photoId, original: { url: `o:${photoId}`, headers: {} }, display: { url: `d:${photoId}`, headers: {} }, expiresIn: 300 }
+    })
+    const putFile = jest.fn(async (_uri: string, target: { url: string; headers: Record<string, string> }) => {
+      uploaded.add(target.url)
+    })
+    const complete = jest.fn(async (photoId: string): Promise<Photo> => {
+      if (!uploaded.has(`o:${photoId}`) || !uploaded.has(`d:${photoId}`)) throw httpError(409, 'UPLOAD_INCOMPLETE')
+      return { ...READY, id: photoId }
+    })
+    return { createUpload, putFile, complete }
+  }
+
+  it('저장소 구독(useUploadRunner 처럼)이 붙어 있어도 같은 항목을 두 번 시작하지 않는다', async () => {
+    const gates = Array.from({ length: 5 }, () => defer<ResolvedAsset | null>())
+    let calls = 0
+    const { store, deps, runner } = await setup({
+      resolveAsset: jest.fn(async (_assetId: string) => {
+        const gate = gates[calls]
+        calls += 1
+        return gate ? gate.promise : null
+      }),
+    })
+    store.subscribe(() => runner.pump())
+
+    store.getState().enqueue(ENTRY, ['a1', 'a2', 'a3', 'a4', 'a5'])
+    await waitFor(() => expect(statuses(store)).toEqual(['uploading', 'uploading', 'uploading', 'queued', 'queued']))
+    expect(deps.resolveAsset).toHaveBeenCalledTimes(3)
+    expect(new Set(deps.resolveAsset.mock.calls.map(([assetId]) => assetId))).toEqual(new Set(['a1', 'a2', 'a3']))
+  })
+
+  it('구독이 붙은 채 20장을 넣으면 정확히 20번만 발급받고 모두 끝난다(PHOTO_LIMIT 없음)', async () => {
+    const server = fakeServer()
+    const { store, deps, runner } = await setup(server)
+    store.subscribe(() => runner.pump())
+
+    store.getState().enqueue(
+      ENTRY,
+      Array.from({ length: 20 }, (_, index) => `a${index}`),
+    )
+
+    await waitFor(() => expect(statuses(store).every((status) => status === 'done')).toBe(true))
+    expect(server.createUpload).toHaveBeenCalledTimes(20)
+    expect(deps.resolveAsset).toHaveBeenCalledTimes(20)
+    expect(store.getState().items.map((item) => item.failure)).not.toContain('PHOTO_LIMIT')
+  })
+
+  it('표시용 후보가 15MB 를 넘으면 발급받지 않고 기기에서 실패로 끝낸다', async () => {
+    const { store, deps, runner } = await setup({
+      prepareDisplay: jest.fn(async (_uri: string) => ({ uri: 'file:///cache/display.jpg', bytes: MAX_DISPLAY_CANDIDATE_BYTES + 1 })),
+    })
+    store.getState().enqueue(ENTRY, ['a1'])
+    runner.pump()
+
+    await waitFor(() => expect(store.getState().items[0]).toMatchObject({ status: 'failed', failure: 'INVALID' }))
+    expect(deps.createUpload).not.toHaveBeenCalled()
+    expect(deps.putFile).not.toHaveBeenCalled()
+    expect(deps.discardFile).toHaveBeenCalledWith('file:///cache/display.jpg')
+  })
+
+  it('표시용을 아직 못 올렸으면 남은 URL 이 있어도 지금 만든 크기로 다시 발급받는다(서명된 Content-Length)', async () => {
+    const putFile = jest
+      .fn<Promise<void>, [string, { url: string; headers: Record<string, string> }]>()
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValue(undefined)
+    const { store, deps, runner } = await setup({ putFile })
+    store.getState().enqueue(ENTRY, ['a1'])
+    runner.pump()
+    await waitFor(() => expect(statuses(store)).toEqual(['failed']))
+
+    store.getState().retryFailed(ENTRY)
+    runner.pump()
+
+    await waitFor(() => expect(statuses(store)).toEqual(['done']))
+    expect(deps.createUpload).toHaveBeenCalledTimes(1)
+    expect(deps.renewUpload).toHaveBeenCalledWith(PHOTO_ID, { displayBytes: DISPLAY_BYTES })
+    expect(putFile.mock.calls[1]).toEqual(['file:///cache/display.jpg', RENEWED.display])
+  })
+
+  it('지난 시도의 사진이 서버에서 사라졌으면(complete 404) 실패 대신 새로 발급받아 처음부터 올린다', async () => {
+    const putFile = failOriginalOnce()
+    const complete = jest.fn<Promise<Photo>, [string]>().mockRejectedValueOnce(httpError(404)).mockResolvedValue(READY)
+    const first = await setup({ putFile })
+    first.store.getState().enqueue(ENTRY, ['a1'])
+    first.runner.pump()
+    await waitFor(() => expect(statuses(first.store)).toEqual(['failed']))
+    first.store.getState().update(uploadKey(ENTRY, 'a1'), { isOriginalUploaded: true })
+
+    // 앱을 다시 켠 뒤(발급 기록 없음) 이어 올린다
+    const deps = makeDeps({ complete })
+    const restarted = createUploadRunner({ store: first.store, deps })
+    first.store.getState().retryFailed(ENTRY)
+    restarted.pump()
+
+    await waitFor(() => expect(statuses(first.store)).toEqual(['done']))
+    expect(complete).toHaveBeenCalledTimes(2)
+    expect(deps.createUpload).toHaveBeenCalledTimes(1)
+    expect(deps.putFile).toHaveBeenCalledTimes(2)
+  })
+
+  it('방금 발급받은 사진의 complete 가 404 면 GONE 으로 끝낸다(무한 재발급 없음)', async () => {
+    const { store, deps, runner } = await setup({
+      complete: jest.fn<Promise<Photo>, [string]>().mockRejectedValue(httpError(404)),
+    })
+    store.getState().enqueue(ENTRY, ['a1'])
+    runner.pump()
+
+    await waitFor(() => expect(store.getState().items[0]).toMatchObject({ status: 'failed', failure: 'GONE' }))
+    expect(deps.createUpload).toHaveBeenCalledTimes(1)
+  })
+
+  it('백그라운드에서 끊긴 연결 오류가 포그라운드로 돌아온 뒤 도착해도 실패가 아니라 대기로 둔다', async () => {
+    const gate = defer<ResolvedAsset | null>()
+    const resolveAsset = jest
+      .fn<Promise<ResolvedAsset | null>, [string]>()
+      .mockReturnValueOnce(gate.promise)
+      .mockResolvedValue(ASSET)
+    const { store, deps, runner } = await setup({ resolveAsset })
+    store.getState().enqueue(ENTRY, ['a1'])
+    runner.pump()
+    await waitFor(() => expect(statuses(store)).toEqual(['uploading']))
+
+    runner.setForeground(false)
+    runner.setForeground(true)
+    gate.reject(new ApiError({ code: 'NETWORK', message: 'x' }))
+
+    await waitFor(() => expect(statuses(store)).toEqual(['done']))
+    expect(deps.resolveAsset).toHaveBeenCalledTimes(2)
   })
 })

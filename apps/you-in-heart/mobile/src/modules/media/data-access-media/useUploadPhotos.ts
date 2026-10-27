@@ -1,4 +1,12 @@
-import type { CreatePhotoUploadRequest, CreatePhotoUploadResponse, MeResponse, Photo, UploadTarget } from '@you-in-heart/shared'
+import {
+  type CreatePhotoUploadRequest,
+  type CreatePhotoUploadResponse,
+  MAX_DISPLAY_CANDIDATE_BYTES,
+  type MeResponse,
+  type Photo,
+  type RenewPhotoUploadRequest,
+  type UploadTarget,
+} from '@you-in-heart/shared'
 import { type QueryClient, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 import { AppState } from 'react-native'
@@ -8,7 +16,7 @@ import { ApiError, type ApiErrorKind } from '@/shared/api/api-error'
 import { DIARY_QUERY_KEY, ME_QUERY_KEY, PHOTOS_QUERY_KEY } from '@/shared/auth/query-keys'
 import { useSessionStatus } from '@/shared/auth/session'
 import { type ResolvedAsset, resolveAsset } from '../util-pick-assets/pick-assets'
-import { completePhoto, createPhotoUpload, putFileToTarget, renewPhotoUpload } from './media-api'
+import { completePhoto, createPhotoUpload, putFileToTarget, renewPhotoUpload, UploadPutError } from './media-api'
 import { discardFile, prepareDisplayImage } from './prepare-display-image'
 import {
   type UploadFailure,
@@ -29,8 +37,9 @@ export type UploadDeps = {
   resolveAsset: (assetId: string) => Promise<ResolvedAsset | null>
   createUpload: (body: CreatePhotoUploadRequest) => Promise<CreatePhotoUploadResponse>
   // 이미 발급된(PENDING) 사진의 서명 URL 만 새로 받는다 — 새 사진을 만들지 않아 20장 제한을 먹지 않는다
-  renewUpload: (photoId: string) => Promise<CreatePhotoUploadResponse>
-  prepareDisplay: (uri: string) => Promise<{ uri: string }>
+  renewUpload: (photoId: string, body: RenewPhotoUploadRequest) => Promise<CreatePhotoUploadResponse>
+  // 표시용 후보 JPEG 와 그 바이트 수(발급·갱신 요청에 싣고, 서버가 PUT Content-Length 로 서명한다)
+  prepareDisplay: (uri: string) => Promise<{ uri: string; bytes: number }>
   putFile: (fileUri: string, target: UploadTarget) => Promise<void>
   complete: (photoId: string) => Promise<Photo>
   discardFile: (uri: string) => void
@@ -43,6 +52,9 @@ export type UploadDeps = {
 
 type IssuedTargets = { original: UploadTarget; display: UploadTarget; expiresAtMs: number }
 
+// 서버 상한(15MB)을 넘는 표시용 후보는 발급받지 않고 기기에서 실패로 끝낸다
+class DisplayTooLargeError extends Error {}
+
 // 다시 해도 같은 결과인 실패는 재시도 목록에 넣지 않는다
 const FAILURE_BY_KIND: Partial<Record<ApiErrorKind, UploadFailure>> = {
   PHOTO_LIMIT: 'PHOTO_LIMIT',
@@ -52,8 +64,14 @@ const FAILURE_BY_KIND: Partial<Record<ApiErrorKind, UploadFailure>> = {
   ORIGINAL_TOO_LARGE: 'INVALID',
 }
 
-const toFailure = (error: unknown): UploadFailure =>
-  (error instanceof ApiError ? FAILURE_BY_KIND[error.kind] : undefined) ?? 'RETRYABLE'
+const toFailure = (error: unknown): UploadFailure => {
+  if (error instanceof DisplayTooLargeError) return 'INVALID'
+  return (error instanceof ApiError ? FAILURE_BY_KIND[error.kind] : undefined) ?? 'RETRYABLE'
+}
+
+// 응답 없이 끊긴 요청(API 연결 오류·네이티브 업로드 오류). HTTP 응답이 있었던 실패는 아니다
+const isConnectionFailure = (error: unknown): boolean =>
+  error instanceof ApiError ? error.code === 'NETWORK' : !(error instanceof UploadPutError || error instanceof DisplayTooLargeError)
 
 const isKind = (error: unknown, kind: ApiErrorKind): boolean => error instanceof ApiError && error.kind === kind
 
@@ -62,9 +80,11 @@ const withoutLocation = ({ lat: _lat, lng: _lng, ...rest }: CreatePhotoUploadReq
 type CreateRunnerOptions = { store: UploadQueueStore; deps: UploadDeps; concurrency?: number }
 
 // 대기열 실행기: 동시 concurrency 장. 포그라운드·로그인·일시정지 아님·복원 완료일 때만 새 항목을 시작한다.
-// 한 장: 업로드 발급 → 표시용 후보 PUT → 원본 PUT → complete. 끝난 단계는 저장소에 남아 다시 하지 않는다
+// 한 장: 표시용 후보 만들기 → 업로드 발급(후보 크기 포함) → 표시용 PUT → 원본 PUT → complete. 끝난 단계는 저장소에 남아 다시 하지 않는다
 export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURRENCY }: CreateRunnerOptions) => {
   let inFlight: ReadonlySet<string> = new Set()
+  // 백그라운드로 갈 때 올리던 항목 — 끊긴 오류가 포그라운드 복귀 뒤에 도착해도 대기로 되돌린다
+  let interrupted: ReadonlySet<string> = new Set()
   // 서명 URL 은 메모리에만 (photoId → 발급 결과)
   let issued: Readonly<Record<string, IssuedTargets>> = {}
   let isForeground = true
@@ -73,11 +93,16 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
   const current = (key: string): UploadItem | undefined => store.getState().items.find((item) => item.key === key)
   const update = store.getState().update
 
-  const buildRequest = (item: UploadItem, asset: ResolvedAsset & { mime: NonNullable<ResolvedAsset['mime']> }) => {
+  const buildRequest = (
+    item: UploadItem,
+    asset: ResolvedAsset & { mime: NonNullable<ResolvedAsset['mime']> },
+    displayBytes: number,
+  ) => {
     const base: CreatePhotoUploadRequest = {
       entryId: item.entryId,
       originalMime: asset.mime,
       originalBytes: asset.bytes,
+      displayBytes,
       ...(asset.takenAt ? { takenAt: asset.takenAt } : {}),
     }
     return asset.location && deps.hasLocationConsent() ? { ...base, ...asset.location } : base
@@ -108,9 +133,9 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
   // 만료(앱 재시작 포함)된 기존 사진: 같은 사진의 URL 을 갱신한다. 이미 올린 단계는 서버에 남아 있어 다시 하지 않는다
   // (빠진 객체가 있으면 complete 가 409 UPLOAD_INCOMPLETE → 다음 시도에서 다시 올린다)
   // 409 ALREADY_COMPLETE = 이미 끝남 → null(올릴 것 없이 complete). 404 = 사진이 사라짐 → 새로 발급
-  const renewTargets = async (key: string, photoId: string): Promise<IssuedTargets | null | undefined> => {
+  const renewTargets = async (key: string, photoId: string, displayBytes: number): Promise<IssuedTargets | null | undefined> => {
     try {
-      return remember(await deps.renewUpload(photoId))
+      return remember(await deps.renewUpload(photoId, { displayBytes }))
     } catch (error) {
       if (isKind(error, 'ALREADY_COMPLETE')) {
         update(key, { isDisplayUploaded: true, isOriginalUploaded: true })
@@ -121,13 +146,17 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     }
   }
 
-  // 발급받은 URL 이 아직 유효하면 이어서 쓰고, 아니면 갱신(기존 사진) 또는 새로 받아 처음부터 올린다
-  const ensureTargets = async (key: string, body: CreatePhotoUploadRequest): Promise<IssuedTargets | null> => {
+  // 아직 유효한 발급 URL(만료 30초 전까지)
+  const liveTargets = (item: UploadItem): IssuedTargets | undefined => {
+    const known = item.photoId ? issued[item.photoId] : undefined
+    return known && known.expiresAtMs - TARGET_SAFETY_MS > deps.now() ? known : undefined
+  }
+
+  // 갱신(기존 사진) 또는 새로 받아 처음부터 올린다 — 지금 만든 표시용 크기로 서명받는다
+  const issueTargets = async (key: string, body: CreatePhotoUploadRequest): Promise<IssuedTargets | null> => {
     const item = current(key)
-    const known = item?.photoId ? issued[item.photoId] : undefined
-    if (known && known.expiresAtMs - TARGET_SAFETY_MS > deps.now()) return known
     if (item?.photoId) {
-      const renewed = await renewTargets(key, item.photoId)
+      const renewed = await renewTargets(key, item.photoId, body.displayBytes)
       if (renewed !== undefined) return renewed
     }
     const response = await requestUpload(body)
@@ -146,14 +175,28 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     }
   }
 
-  const uploadDisplay = async (key: string, localUri: string, target: UploadTarget) => {
-    const display = await deps.prepareDisplay(localUri)
+  const uploadOriginal = async (key: string, localUri: string, target: UploadTarget) => {
+    await deps.putFile(localUri, target)
+    update(key, { isOriginalUploaded: true })
+  }
+
+  // 표시용까지 올렸고 URL 이 살아 있으면 원본만. 아니면 표시용 후보를 만들어 그 크기로 발급(갱신)받고 남은 단계를 올린다
+  const uploadMissing = async (key: string, item: UploadItem, asset: ResolvedAsset & { mime: NonNullable<ResolvedAsset['mime']> }) => {
+    const live = liveTargets(item)
+    if (live && item.isDisplayUploaded) return uploadOriginal(key, asset.localUri, live.original)
+    const display = await deps.prepareDisplay(asset.localUri)
     try {
-      await deps.putFile(display.uri, target)
+      if (display.bytes > MAX_DISPLAY_CANDIDATE_BYTES) throw new DisplayTooLargeError()
+      const targets = await issueTargets(key, buildRequest(item, asset, display.bytes))
+      if (!targets) return
+      if (!current(key)?.isDisplayUploaded) {
+        await deps.putFile(display.uri, targets.display)
+        update(key, { isDisplayUploaded: true })
+      }
+      if (!current(key)?.isOriginalUploaded) await uploadOriginal(key, asset.localUri, targets.original)
     } finally {
       deps.discardFile(display.uri)
     }
-    update(key, { isDisplayUploaded: true })
   }
 
   const isComplete = (item: UploadItem | undefined): boolean =>
@@ -166,17 +209,15 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     if (!mime) return update(key, { status: 'failed', failure: 'UNSUPPORTED' })
     const item = current(key)
     if (!item) return
-    if (!isComplete(item)) {
-      const targets = await ensureTargets(key, buildRequest(item, { ...asset, mime }))
-      if (targets && !current(key)?.isDisplayUploaded) await uploadDisplay(key, asset.localUri, targets.display)
-      if (targets && !current(key)?.isOriginalUploaded) {
-        await deps.putFile(asset.localUri, targets.original)
-        update(key, { isOriginalUploaded: true })
-      }
-    }
+    if (!isComplete(item)) await uploadMissing(key, item, { ...asset, mime })
     const photoId = current(key)?.photoId
     if (!photoId) return
-    const photo = await completeWithBackoff(photoId)
+    const photo = await completeWithBackoff(photoId).catch((error: unknown) => {
+      // 이번 실행에서 발급받지 않은(지난 시도·앱 재시작 전) 사진이 사라졌으면 새로 발급받아 처음부터 — 방금 받은 사진의 404 는 GONE
+      if (!isKind(error, 'NOT_FOUND') || issued[photoId]) throw error
+      return null
+    })
+    if (!photo) return update(key, { status: 'queued', photoId: null, isDisplayUploaded: false, isOriginalUploaded: false })
     update(key, { status: 'done', failure: null })
     deps.onPhotoReady(photo)
   }
@@ -186,7 +227,7 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     if (!current(key)) return
     if (isKind(error, 'UPLOAD_INCOMPLETE')) update(key, { isDisplayUploaded: false, isOriginalUploaded: false })
     // 백그라운드에서 끊긴 것은 실패가 아니다 — 대기로 두고 포그라운드에서 이어 간다
-    if (!isForeground) return update(key, { status: 'queued' })
+    if (!isForeground || (interrupted.has(key) && isConnectionFailure(error))) return update(key, { status: 'queued' })
     update(key, { status: 'failed', failure: toFailure(error) })
   }
 
@@ -195,13 +236,16 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
     return isForeground && isEnabled && state.hasHydrated && !state.isPaused
   }
 
+  // update 가 저장소 구독으로 pump 를 다시 부른다(재진입) → 바깥 반복이 보던 목록은 낡았으니 여기서 다시 확인한다
   const start = (key: string) => {
+    if (inFlight.has(key) || inFlight.size >= concurrency || current(key)?.status !== 'queued') return
     inFlight = new Set([...inFlight, key])
     update(key, { status: 'uploading' })
     processItem(key)
       .catch((error: unknown) => handleError(key, error))
       .finally(() => {
         inFlight = new Set([...inFlight].filter((item) => item !== key))
+        interrupted = new Set([...interrupted].filter((item) => item !== key))
         pump()
       })
   }
@@ -220,6 +264,7 @@ export const createUploadRunner = ({ store, deps, concurrency = UPLOAD_CONCURREN
   return {
     pump,
     setForeground: (next: boolean) => {
+      if (!next) interrupted = new Set([...interrupted, ...inFlight])
       isForeground = next
       pump()
     },

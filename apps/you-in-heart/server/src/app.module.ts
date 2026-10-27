@@ -18,6 +18,7 @@ import { NotificationsModule } from './notifications/notifications.module'
 import { PhotosModule } from './photos/photos.module'
 import { PlacesModule } from './places/places.module'
 import { PrismaModule } from './prisma/prisma.module'
+import { QuotesModule } from './quotes/quotes.module'
 import { UsersModule } from './users/users.module'
 
 const THROTTLE_TTL_MS = 60_000
@@ -49,6 +50,7 @@ const throttlerOptions = (config: ConfigService) => {
     PhotosModule,
     PlacesModule,
     BucketModule,
+    QuotesModule,
     ExportModule,
   ],
   // 순서대로 실행: IP throttle → CoupleGuard(기본 "커플 필수", @AllowWithoutCouple 예외) → 라우트 가드(@Authenticated 등)

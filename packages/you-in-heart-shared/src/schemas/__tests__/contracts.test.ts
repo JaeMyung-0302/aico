@@ -1,4 +1,8 @@
-import { anniversaryRangeQuerySchema, createCustomAnniversaryRequestSchema } from '../anniversary'
+import {
+  anniversaryRangeQuerySchema,
+  createCustomAnniversaryRequestSchema,
+  customAnniversaryListResponseSchema,
+} from '../anniversary'
 import { authProviderParamSchema } from '../auth'
 import { bucketItemTitleSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
@@ -52,6 +56,14 @@ describe('anniversary', () => {
   it('from > to는 거부', () => {
     expect(anniversaryRangeQuerySchema.safeParse({ from: '2024-01-01', to: '2024-12-31' }).success).toBe(true)
     expect(anniversaryRangeQuerySchema.safeParse({ from: '2024-12-31', to: '2024-01-01' }).success).toBe(false)
+  })
+
+  it('커스텀 목록 응답은 원래 날짜(YYYY-MM-DD)를 담는다', () => {
+    const item = { id: ENTRY_ID, title: '첫 여행', date: '2023-05-05' }
+    expect(customAnniversaryListResponseSchema.safeParse({ items: [item] }).success).toBe(true)
+    expect(customAnniversaryListResponseSchema.safeParse({ items: [{ ...item, date: '2023-5-5' }] }).success).toBe(
+      false,
+    )
   })
 })
 

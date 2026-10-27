@@ -25,6 +25,13 @@ export const customAnniversarySchema = z.object({
 })
 export type CustomAnniversary = z.infer<typeof customAnniversarySchema>
 
+// GET /anniversaries/custom — 수정 폼용 원래 날짜(목록 GET /anniversaries의 date는 해당 해의 날짜)
+export const customAnniversaryListResponseSchema = z.object({ items: z.array(customAnniversarySchema) })
+export type CustomAnniversaryListResponse = z.infer<typeof customAnniversaryListResponseSchema>
+
+// GET /anniversaries 조회 범위 상한(일)
+export const MAX_ANNIVERSARY_RANGE_DAYS = 3660
+
 // GET /anniversaries?from&to (양끝 포함)
 export const anniversaryRangeQuerySchema = z
   .object({ from: isoDateSchema, to: isoDateSchema })

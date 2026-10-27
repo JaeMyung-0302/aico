@@ -6,6 +6,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from './auth/auth.module'
 import { type ClientIpSource, resolveClientIp } from './common/throttle/client-ip'
 import { configuration } from './config/configuration'
+import { CoupleGuard } from './couples/couple.guard'
+import { CouplesModule } from './couples/couples.module'
+import { EventsModule } from './events/events.module'
 import { HealthModule } from './health/health.module'
 import { NotificationsModule } from './notifications/notifications.module'
 import { PrismaModule } from './prisma/prisma.module'
@@ -33,7 +36,13 @@ const throttlerOptions = (config: ConfigService) => {
     AuthModule,
     UsersModule,
     NotificationsModule,
+    CouplesModule,
+    EventsModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  // 순서대로 실행: IP throttle → CoupleGuard(기본 "커플 필수", @AllowWithoutCouple 예외) → 라우트 가드(@Authenticated 등)
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useExisting: CoupleGuard },
+  ],
 })
 export class AppModule {}

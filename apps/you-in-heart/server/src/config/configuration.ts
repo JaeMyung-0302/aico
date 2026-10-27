@@ -13,6 +13,8 @@ export const configuration = () => ({
   kakao: {
     // id_token aud 검증용 네이티브 앱 키
     nativeAppKey: process.env.KAKAO_NATIVE_APP_KEY ?? '',
+    // 카카오 로컬 API(장소 검색·좌표→주소) 서버 프록시용 REST 키(서버 전용)
+    restApiKey: process.env.KAKAO_REST_API_KEY ?? '',
     // 탈퇴 시 카카오 unlink용 Admin 키(서버 전용)
     adminKey: process.env.KAKAO_ADMIN_KEY ?? '',
   },

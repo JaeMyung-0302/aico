@@ -44,3 +44,10 @@ describe('configuration: 기본값', () => {
     withEnv({ PORT: undefined }, () => expect(configuration().port).toBe(4009))
   })
 })
+
+describe('configuration: KAKAO_REST_API_KEY', () => {
+  it('카카오 로컬 프록시 REST 키를 읽고, 없으면 빈 문자열', () => {
+    withEnv({ KAKAO_REST_API_KEY: 'rest-key' }, () => expect(configuration().kakao.restApiKey).toBe('rest-key'))
+    withEnv({ KAKAO_REST_API_KEY: undefined }, () => expect(configuration().kakao.restApiKey).toBe(''))
+  })
+})

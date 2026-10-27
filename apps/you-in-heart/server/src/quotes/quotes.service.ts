@@ -13,11 +13,16 @@ import {
 } from '@you-in-heart/shared'
 import { EventsService } from '../events/events.service'
 import type { Prisma } from '../generated/prisma'
-import { ImageSanitizer, InvalidImageError, SanitizerBusyError } from '../photos/image-sanitizer'
+import {
+  ImageSanitizer,
+  InvalidImageError,
+  SanitizerBusyError,
+  SCREENSHOT_MAX_INPUT_PIXELS,
+} from '../photos/image-sanitizer'
 import { invalidUpload, sanitizerBusy, uploadIncomplete } from '../photos/photo-errors'
 import { PUT_TTL_SECONDS, VIEW_TTL_SECONDS } from '../photos/photos.service'
 import { PrismaService } from '../prisma/prisma.service'
-import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage'
+import { OBJECT_STORAGE, type ObjectStorage, ObjectTooLargeError } from '../storage/object-storage'
 import { quoteScreenshotIncomingKey, quoteScreenshotKey, quoteScreenshotThumbKey } from '../storage/storage-keys'
 
 const QUOTE_SELECT = {
@@ -194,12 +199,17 @@ export class QuotesService {
 
   private async writeVariants(coupleId: string, id: string): Promise<void> {
     const incomingKey = quoteScreenshotIncomingKey(coupleId, id)
-    const head = await this.storage.head(incomingKey)
-    if (!head) throw uploadIncomplete()
-    if (head.size > MAX_SCREENSHOT_BYTES) throw invalidUpload('스크린샷이 너무 커요')
-    const input = await this.storage.getObject(incomingKey)
-    if (!input) throw uploadIncomplete()
-    const { display, thumb } = await this.sanitizer.sanitize(input).catch((error: unknown) => {
+    // 사진과 같이 재인코딩 슬롯을 잡은 뒤 상한+1바이트까지만 읽는다
+    const load = async (): Promise<Buffer> => {
+      const input = await this.storage.getObjectBounded(incomingKey, MAX_SCREENSHOT_BYTES).catch((error: unknown) => {
+        if (error instanceof ObjectTooLargeError) throw invalidUpload('스크린샷이 너무 커요')
+        throw error
+      })
+      if (!input) throw uploadIncomplete()
+      return input
+    }
+    const sanitized = this.sanitizer.sanitize(load, SCREENSHOT_MAX_INPUT_PIXELS)
+    const { display, thumb } = await sanitized.catch((error: unknown) => {
       if (error instanceof SanitizerBusyError) throw sanitizerBusy()
       if (error instanceof InvalidImageError) throw invalidUpload('스크린샷 이미지를 읽을 수 없어요')
       throw error

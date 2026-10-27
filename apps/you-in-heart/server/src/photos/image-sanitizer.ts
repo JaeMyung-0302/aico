@@ -7,11 +7,13 @@ import sharp from 'sharp'
 sharp.concurrency(1)
 sharp.cache(false)
 
-// 디코딩 폭탄 방지: 4천만 화소(약 8000x5000) 초과 입력은 거부
-const MAX_INPUT_PIXELS = 40_000_000
+// 디코딩 폭탄 방지(화소 상한). 사진 표시용 후보는 기기가 긴 변 2048로 줄여 보낸다(10% 여유),
+// 문구 스크린샷은 세로로 긴 캡처를 받도록 2048×8192까지
+export const PHOTO_MAX_INPUT_PIXELS = Math.floor(2048 * 2048 * 1.1)
+export const SCREENSHOT_MAX_INPUT_PIXELS = 2048 * 8192
 const JPEG_QUALITY = 82
 const MAX_CONCURRENT_JOBS = 2
-// 대기열 상한: 넘치면 503으로 바로 거절해 메모리(입력 버퍼)가 쌓이지 않게 한다
+// 대기열 상한: 넘치면 503으로 바로 거절한다. 입력은 슬롯을 잡은 뒤 읽으므로 대기 중 작업은 버퍼를 갖지 않는다
 const MAX_WAITING_JOBS = 10
 // 디코딩해 다시 인코딩할 입력 형식. HEIC·TIFF·GIF·SVG 등은 libvips 공격면을 줄이려고 받지 않는다(앱이 JPEG 후보를 만든다)
 const ALLOWED_INPUT_FORMATS: ReadonlySet<string> = new Set(['jpeg', 'png', 'webp'])
@@ -66,15 +68,15 @@ export const createConcurrencyLimiter = (max: number, maxWaiting = Number.POSITI
 }
 
 // 헤더만 읽어 형식을 먼저 확인한다(전체 디코딩 전)
-const assertAllowedFormat = async (input: Buffer): Promise<void> => {
-  const { format } = await sharp(input, { limitInputPixels: MAX_INPUT_PIXELS }).metadata()
+const assertAllowedFormat = async (input: Buffer, maxInputPixels: number): Promise<void> => {
+  const { format } = await sharp(input, { limitInputPixels: maxInputPixels }).metadata()
   if (!format || !ALLOWED_INPUT_FORMATS.has(format)) throw new Error(`허용되지 않은 형식(${format ?? 'unknown'})`)
 }
 
-const reencode = async (input: Buffer, edge: number): Promise<SanitizedVariant> => {
+const reencode = async (input: Buffer, edge: number, maxInputPixels: number): Promise<SanitizedVariant> => {
   // withMetadata/keepMetadata를 부르지 않으면 EXIF·GPS·ICC·XMP를 전부 버린다.
   // .rotate()(인자 없음)로 회전 태그를 픽셀에 먼저 반영해 태그가 사라져도 방향이 유지된다
-  const { data, info } = await sharp(input, { failOn: 'truncated', limitInputPixels: MAX_INPUT_PIXELS })
+  const { data, info } = await sharp(input, { failOn: 'truncated', limitInputPixels: maxInputPixels })
     .rotate()
     .resize({ width: edge, height: edge, fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
@@ -87,12 +89,14 @@ const reencode = async (input: Buffer, edge: number): Promise<SanitizedVariant> 
 export class ImageSanitizer {
   private readonly limit = createConcurrencyLimiter(MAX_CONCURRENT_JOBS, MAX_WAITING_JOBS)
 
-  sanitize(input: Buffer): Promise<SanitizedImage> {
+  // load()는 실행 슬롯을 잡은 뒤에 부른다(대기열이 가득 차면 읽지 않고 SanitizerBusyError). load 실패는 그대로 올린다
+  sanitize(load: () => Promise<Buffer>, maxInputPixels: number): Promise<SanitizedImage> {
     return this.limit(async () => {
+      const input = await load()
       try {
-        await assertAllowedFormat(input)
-        const display = await reencode(input, DISPLAY_LONG_EDGE)
-        const thumb = await reencode(display.buffer, THUMB_LONG_EDGE)
+        await assertAllowedFormat(input, maxInputPixels)
+        const display = await reencode(input, DISPLAY_LONG_EDGE, maxInputPixels)
+        const thumb = await reencode(display.buffer, THUMB_LONG_EDGE, maxInputPixels)
         return { display, thumb }
       } catch (error) {
         throw new InvalidImageError(error instanceof Error ? error.message : String(error))

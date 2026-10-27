@@ -5,6 +5,7 @@ import { MAX_QUOTE_REQUEST_BYTES, MAX_SCREENSHOT_BYTES } from '@you-in-heart/sha
 import sharp from 'sharp'
 import request from 'supertest'
 import { PurgeService } from '../../src/couples/purge.service'
+import { ImageSanitizer, PHOTO_MAX_INPUT_PIXELS } from '../../src/photos/image-sanitizer'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
 import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
@@ -324,6 +325,53 @@ describe('문구 보관함 (실DB + 메모리 스토리지)', () => {
       expect(invalid.body.code).toBe('INVALID_UPLOAD')
       const row = await prisma.quote.findFirstOrThrow({ where: { id: quoteId, coupleId: session.couple.id } })
       expect(row.screenshotThumbKey).toBeNull()
+    })
+
+    it('스크린샷이 상한을 넘으면 422 INVALID_UPLOAD. 통째 읽기(getObject) 없이 상한+1바이트까지만 읽는다', async () => {
+      const session = await newCouple()
+      const { quoteId } = await startScreenshot(session, fixture('no-exif.jpg'))
+      // 서명된 크기와 다르게 바꿔치기된 객체(HEAD 뒤 교체 포함)
+      await storage.putObject({
+        key: quoteScreenshotIncomingKey(session.couple.id, quoteId),
+        body: Buffer.alloc(MAX_SCREENSHOT_BYTES + 1),
+        contentType: 'image/jpeg',
+      })
+      const getObject = jest.spyOn(storage, 'getObject')
+      const bounded = jest.spyOn(storage, 'getObjectBounded')
+      expect((await complete(session, quoteId).expect(422)).body.code).toBe('INVALID_UPLOAD')
+      expect(getObject).not.toHaveBeenCalled()
+      expect(bounded).toHaveBeenCalledWith(quoteScreenshotIncomingKey(session.couple.id, quoteId), MAX_SCREENSHOT_BYTES)
+      getObject.mockRestore()
+      bounded.mockRestore()
+    })
+
+    it('세로로 긴 스크린샷(1290×8000)은 사진보다 큰 화소 상한으로 받는다', async () => {
+      const tall = await sharp({ create: { width: 1290, height: 8000, channels: 3, background: '#fff' } })
+        .jpeg({ quality: 10 })
+        .toBuffer()
+      const session = await newCouple()
+      const { quoteId } = await startScreenshot(session, tall)
+      await complete(session, quoteId).expect(200)
+    })
+
+    it('재인코딩 대기열이 가득 차면 스크린샷을 읽기 전에 503 BUSY', async () => {
+      const session = await newCouple()
+      const { quoteId } = await startScreenshot(session, fixture('no-exif.jpg'))
+      const sanitizer = app.get(ImageSanitizer)
+      let open: () => void = () => undefined
+      const gate = new Promise<void>((resolve) => {
+        open = resolve
+      })
+      const busy = Array.from({ length: 12 }, () =>
+        sanitizer.sanitize(() => gate.then(() => fixture('no-exif.jpg')), PHOTO_MAX_INPUT_PIXELS),
+      )
+      const bounded = jest.spyOn(storage, 'getObjectBounded')
+      expect((await complete(session, quoteId).expect(503)).body.code).toBe('BUSY')
+      expect(bounded).not.toHaveBeenCalled()
+      bounded.mockRestore()
+      open()
+      await Promise.all(busy)
+      await complete(session, quoteId).expect(200)
     })
 
     it.each([

@@ -4,6 +4,7 @@ import {
   type CreatePhotoUploadResponse,
   type CursorPage,
   type CursorQuery,
+  MAX_DISPLAY_CANDIDATE_BYTES,
   MAX_PHOTOS_PER_ENTRY,
   type OriginalMime,
   originalMimeSchema,
@@ -14,10 +15,10 @@ import { ENTRY_PHOTO_SELECT, type EntryPhotoRow, toPhoto } from '../diary/diary-
 import { lockEntry } from '../diary/entry-lock'
 import type { Prisma } from '../generated/prisma'
 import { PrismaService } from '../prisma/prisma.service'
-import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage'
+import { OBJECT_STORAGE, type ObjectStorage, ObjectTooLargeError } from '../storage/object-storage'
 import { photoDisplayKey, photoIncomingKey, photoOriginalKey, photoThumbKey } from '../storage/storage-keys'
 import { ConsentService } from '../users/consent.service'
-import { ImageSanitizer, InvalidImageError, SanitizerBusyError } from './image-sanitizer'
+import { ImageSanitizer, InvalidImageError, PHOTO_MAX_INPUT_PIXELS, SanitizerBusyError } from './image-sanitizer'
 import {
   alreadyComplete,
   entryNotFound,
@@ -41,8 +42,6 @@ export const VIEW_TTL_SECONDS = 3600
 export const ORIGINAL_TTL_SECONDS = 300
 // 원본은 디코딩하지 않으므로 메모리와 무관. 저장 비용 폭주만 막는다
 const MAX_ORIGINAL_BYTES = 200 * 1024 * 1024
-// 표시용 후보(기기에서 긴 변 2048 JPEG)는 통째로 읽어 재인코딩한다 → 메모리 상한
-const MAX_DISPLAY_CANDIDATE_BYTES = 15 * 1024 * 1024
 // 기기 시계 오차 허용
 const FUTURE_SKEW_MS = 10 * 60_000
 
@@ -231,12 +230,18 @@ export class PhotosService {
 
   private async writeVariants(coupleId: string, id: string): Promise<{ width: number; height: number }> {
     const incomingKey = photoIncomingKey(coupleId, id)
-    const head = await this.storage.head(incomingKey)
-    if (!head) throw uploadIncomplete()
-    if (head.size > MAX_DISPLAY_CANDIDATE_BYTES) throw invalidUpload('표시용 이미지가 너무 커요')
-    const input = await this.storage.getObject(incomingKey)
-    if (!input) throw uploadIncomplete()
-    const { display, thumb } = await this.sanitizer.sanitize(input).catch((error: unknown) => {
+    // 재인코딩 슬롯을 잡은 뒤에 읽는다(대기열이 차면 읽지 않고 503). 상한+1바이트까지만 받아 HEAD 뒤 바꿔치기도 막는다
+    const load = async (): Promise<Buffer> => {
+      const input = await this.storage
+        .getObjectBounded(incomingKey, MAX_DISPLAY_CANDIDATE_BYTES)
+        .catch((error: unknown) => {
+          if (error instanceof ObjectTooLargeError) throw invalidUpload('표시용 이미지가 너무 커요')
+          throw error
+        })
+      if (!input) throw uploadIncomplete()
+      return input
+    }
+    const { display, thumb } = await this.sanitizer.sanitize(load, PHOTO_MAX_INPUT_PIXELS).catch((error: unknown) => {
       if (error instanceof SanitizerBusyError) throw sanitizerBusy()
       if (error instanceof InvalidImageError) throw invalidUpload('표시용 이미지를 읽을 수 없어요')
       throw error

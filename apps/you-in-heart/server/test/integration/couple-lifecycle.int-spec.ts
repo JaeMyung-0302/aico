@@ -5,6 +5,8 @@ import { AllowDuringUnlinking } from '../../src/couples/decorators/allow-during-
 import { type CoupleContext, CurrentCouple } from '../../src/couples/decorators/current-couple.decorator'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
+import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
+import { OBJECT_STORAGE } from '../../src/storage/object-storage'
 import { KakaoUnlinkClient } from '../../src/users/kakao-unlink.client'
 import { bearer, tokenFor } from './auth-helpers'
 import { createEntry, createPairedCouple, createUser, type PairedCouple } from './factories'
@@ -89,7 +91,10 @@ describe('연결 해제·재연결·회원 탈퇴 (실DB)', () => {
           .overrideProvider(PUSH_SENDER)
           .useValue(push.sender)
           .overrideProvider(KakaoUnlinkClient)
-          .useValue(kakaoUnlink),
+          .useValue(kakaoUnlink)
+          // 해제·탈퇴가 R2 원장을 쓴다 → 네트워크 없이 메모리 스토리지로
+          .overrideProvider(OBJECT_STORAGE)
+          .useValue(new MemoryObjectStorage()),
       { controllers: [LifecycleProbeController, ExportProbeController] },
     )
     prisma = app.get(PrismaService)

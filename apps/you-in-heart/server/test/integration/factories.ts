@@ -13,6 +13,16 @@ export const createUser = (
     data: { displayName: `user_${shortId()}`, ...overrides },
   })
 
+// 커플 라우트에 필요한 필수 동의(TERMS·PRIVACY)를 넣는다(CoupleGuard 동의 게이트)
+export const grantRequiredConsents = async (prisma: PrismaClient, userIds: readonly string[]): Promise<void> => {
+  await prisma.consent.createMany({
+    data: userIds.flatMap((userId) => [
+      { userId, kind: 'TERMS' as const, version: 'test' },
+      { userId, kind: 'PRIVACY' as const, version: 'test' },
+    ]),
+  })
+}
+
 // 두 사용자를 만들고 slot 1·2로 연결한 ACTIVE 커플
 export const createPairedCouple = async (
   prisma: PrismaClient,

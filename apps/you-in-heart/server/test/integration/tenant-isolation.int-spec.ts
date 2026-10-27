@@ -3,6 +3,8 @@ import { DiscoveryModule } from '@nestjs/core'
 import request from 'supertest'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
+import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
+import { OBJECT_STORAGE } from '../../src/storage/object-storage'
 import { bearer, tokenFor } from './auth-helpers'
 import { snapshotCouple } from './couple-tables'
 import { createPairedCouple, createUser, seedCoupleData } from './factories'
@@ -71,9 +73,16 @@ describe('테넌트 격리 (실DB)', () => {
   }
 
   beforeAll(async () => {
-    app = await createTestApp((builder) => builder.overrideProvider(PUSH_SENDER).useValue(createFakePush().sender), {
-      imports: [DiscoveryModule],
-    })
+    // 해제 라우트가 R2 원장을 쓴다 → 메모리 스토리지
+    app = await createTestApp(
+      (builder) =>
+        builder
+          .overrideProvider(PUSH_SENDER)
+          .useValue(createFakePush().sender)
+          .overrideProvider(OBJECT_STORAGE)
+          .useValue(new MemoryObjectStorage()),
+      { imports: [DiscoveryModule] },
+    )
     prisma = app.get(PrismaService)
     routes = collectRoutes(app)
   })

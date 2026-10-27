@@ -69,4 +69,5 @@ const consentRequired = () =>
   new ForbiddenException({ code: 'CONSENT_REQUIRED', message: '약관과 개인정보 처리방침에 동의해 주세요' })
 const locationConsentRequired = () =>
   new ForbiddenException({ code: 'LOCATION_CONSENT_REQUIRED', message: '위치 정보 이용에 동의해 주세요' })
-const unlinking = () => new ConflictException('연결 해제 중에는 보기와 내보내기만 할 수 있어요')
+const unlinking = () =>
+  new ConflictException({ code: 'COUPLE_UNLINKING', message: '연결 해제 중에는 보기와 내보내기만 할 수 있어요' })

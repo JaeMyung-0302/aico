@@ -151,11 +151,12 @@ describe('연결 해제·재연결·회원 탈퇴 (실DB)', () => {
         .get('/api/v1/lifecycle-probe')
         .set(...bearer(second.token))
         .expect(200)
-      await http()
+      const patched = await http()
         .patch('/api/v1/couples/me')
         .set(...bearer(second.token))
         .send({ startedOn: '2024-01-01' })
         .expect(409)
+      expect(patched.body).toMatchObject({ code: 'COUPLE_UNLINKING', message: expect.any(String) })
       await http()
         .post('/api/v1/lifecycle-probe')
         .set(...bearer(second.token))
@@ -168,7 +169,7 @@ describe('연결 해제·재연결·회원 탈퇴 (실DB)', () => {
         .post('/api/v1/export')
         .set(...bearer(second.token))
         .expect(204)
-      await unlink(second).expect(409)
+      expect((await unlink(second).expect(409)).body.code).toBe('COUPLE_UNLINKING')
     })
 
     it('유예 중에는 두 사람 모두 새 초대 코드를 만들 수 없다(409)', async () => {

@@ -24,7 +24,8 @@ const UNLINK_REQUESTED: PartnerNotice = {
 const unlinkLedgerSchema = z.object({ purgeAfter: z.iso.datetime() })
 
 const conflict = (message: string) => new ConflictException(message)
-const alreadyUnlinking = () => conflict('이미 연결 해제 중이에요')
+// 가드를 통과한 뒤 동시 해제로 이미 UNLINKING이 된 경우. 앱은 가드의 409와 같은 code로 처리한다
+const alreadyUnlinking = () => new ConflictException({ code: 'COUPLE_UNLINKING', message: '이미 연결 해제 중이에요' })
 
 const errorName = (error: unknown): string => (error instanceof Error ? error.name : 'UnknownError')
 

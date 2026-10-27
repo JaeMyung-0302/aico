@@ -86,6 +86,16 @@ describe('CoupleGuard', () => {
     )
   })
 
+  it('UNLINKING 쓰기 409 본문에는 code COUPLE_UNLINKING과 기존 메시지가 담긴다', async () => {
+    prisma.coupleMember.findUnique.mockResolvedValue(membership('UNLINKING'))
+    const error: unknown = await guard.canActivate(contextFor(requestOf('POST'))).catch((caught: unknown) => caught)
+    expect(error).toBeInstanceOf(ConflictException)
+    expect(error instanceof ConflictException ? error.getResponse() : null).toEqual({
+      code: 'COUPLE_UNLINKING',
+      message: '연결 해제 중에는 보기와 내보내기만 할 수 있어요',
+    })
+  })
+
   it('UNLINKING이어도 @AllowDuringUnlinking 라우트(export·reconnect)는 통과', async () => {
     prisma.coupleMember.findUnique.mockResolvedValue(membership('UNLINKING'))
     const context = contextFor(requestOf('POST'), { [ALLOW_DURING_UNLINKING_KEY]: true })

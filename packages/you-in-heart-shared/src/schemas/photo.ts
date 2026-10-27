@@ -36,7 +36,8 @@ export type CreatePhotoUploadResponse = z.infer<typeof createPhotoUploadResponse
 export const photoSchema = z.object({
   id: idSchema,
   entryId: idSchema,
-  uploaderId: idSchema,
+  // 올린 사람이 탈퇴하면 null
+  uploaderId: idSchema.nullable(),
   status: photoStatusSchema,
   takenAt: isoDateTimeSchema.nullable(),
   width: z.number().int().nonnegative(),

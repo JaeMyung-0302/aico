@@ -6,7 +6,7 @@ import {
 import { authProviderParamSchema } from '../auth'
 import { bucketItemTitleSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
-import { createDiaryRequestSchema } from '../diary'
+import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
 import { createPhotoUploadRequestSchema } from '../photo'
 import { placeBboxQuerySchema } from '../place'
 import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema } from '../quote'
@@ -68,6 +68,33 @@ describe('anniversary', () => {
 })
 
 describe('diary', () => {
+  it('탈퇴한 작성자·업로더는 null로 내려간다(DB onDelete SetNull)', () => {
+    const photo = {
+      id: ENTRY_ID,
+      entryId: ENTRY_ID,
+      uploaderId: null,
+      status: 'READY',
+      takenAt: null,
+      width: 10,
+      height: 10,
+      thumbUrl: 'https://r2.example/t.jpg',
+      displayUrl: 'https://r2.example/d.jpg',
+    }
+    const entry = {
+      id: ENTRY_ID,
+      kind: 'MANUAL',
+      authorId: null,
+      happenedOn: '2024-03-01',
+      title: null,
+      body: '',
+      placeId: null,
+      photos: [photo],
+      createdAt: '2024-03-01T00:00:00.000Z',
+      updatedAt: '2024-03-01T00:00:00.000Z',
+    }
+    expect(diaryListResponseSchema.safeParse({ items: [entry], nextCursor: null }).success).toBe(true)
+  })
+
   it('본문 0~5,000자', () => {
     expect(createDiaryRequestSchema.safeParse({ happenedOn: '2024-03-01', body: '' }).success).toBe(true)
     expect(createDiaryRequestSchema.safeParse({ happenedOn: '2024-03-01', body: 'a'.repeat(5001) }).success).toBe(false)

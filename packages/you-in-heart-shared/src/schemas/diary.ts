@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { cursorQuerySchema, idSchema, isoDateSchema, isoDateTimeSchema, userTextSchema } from './common'
+import { cursorPage, cursorQuerySchema, idSchema, isoDateSchema, isoDateTimeSchema, userTextSchema } from './common'
 import { photoSchema } from './photo'
 
 export const diaryKindSchema = z.enum(['MANUAL', 'AUTO_DAY'])
@@ -46,7 +46,8 @@ export type CreateAutoDaysResponse = z.infer<typeof createAutoDaysResponseSchema
 export const diaryEntrySchema = z.object({
   id: idSchema,
   kind: diaryKindSchema,
-  authorId: idSchema,
+  // 작성자가 탈퇴하면 null(상대가 30일 동안 내보낼 수 있게 기록은 남긴다)
+  authorId: idSchema.nullable(),
   happenedOn: isoDateSchema,
   title: z.string().nullable(),
   body: z.string(),
@@ -56,3 +57,7 @@ export const diaryEntrySchema = z.object({
   updatedAt: isoDateTimeSchema,
 })
 export type DiaryEntry = z.infer<typeof diaryEntrySchema>
+
+// GET /diary 응답
+export const diaryListResponseSchema = cursorPage(diaryEntrySchema)
+export type DiaryListResponse = z.infer<typeof diaryListResponseSchema>

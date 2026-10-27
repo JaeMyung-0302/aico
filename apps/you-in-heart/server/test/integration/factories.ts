@@ -63,3 +63,54 @@ export const createPhoto = (
     },
   })
 }
+
+export type SeededCouple = {
+  anniversaryId: string
+  placeId: string
+  entryId: string
+  photoId: string
+  bucketItemId: string
+  quoteId: string
+  notificationLogId: string
+  exportJobId: string
+  eventLogId: string
+}
+
+// 커플 소유 테이블마다 행을 1개 이상 만든다. 새 커플 모델이 생기면 여기에 추가해야 purge 테스트가 통과한다
+export const seedCoupleData = async (
+  prisma: PrismaClient,
+  { couple, members }: PairedCouple,
+): Promise<SeededCouple> => {
+  const coupleId = couple.id
+  const authorId = members[0].id
+  const anniversary = await prisma.anniversary.create({
+    data: { coupleId, createdById: authorId, title: '첫 여행', date: new Date('2025-05-05') },
+  })
+  const place = await prisma.place.create({
+    data: { coupleId, createdById: authorId, name: '한강공원', lat: 37.52, lng: 126.93 },
+  })
+  const entry = await createEntry(prisma, coupleId, authorId, { placeId: place.id })
+  const photo = await createPhoto(prisma, coupleId, entry.id, members[1].id)
+  const bucketItem = await prisma.bucketItem.create({
+    data: { coupleId, createdById: authorId, title: '제주 가기', entryId: entry.id },
+  })
+  const quote = await prisma.quote.create({
+    data: { coupleId, createdById: authorId, source: 'SHARE', text: '보고 싶어' },
+  })
+  const notificationLog = await prisma.notificationLog.create({
+    data: { coupleId, kind: 'PARTNER_ENTRY', refKey: authorId, dueOn: new Date('2026-10-01') },
+  })
+  const exportJob = await prisma.exportJob.create({ data: { coupleId, requestedById: authorId } })
+  const eventLog = await prisma.eventLog.create({ data: { coupleId, userId: authorId, name: 'app_open' } })
+  return {
+    anniversaryId: anniversary.id,
+    placeId: place.id,
+    entryId: entry.id,
+    photoId: photo.id,
+    bucketItemId: bucketItem.id,
+    quoteId: quote.id,
+    notificationLogId: notificationLog.id,
+    exportJobId: exportJob.id,
+    eventLogId: eventLog.id,
+  }
+}

@@ -4,7 +4,7 @@ import request from 'supertest'
 import { PUSH_SENDER, type PushSender } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
 import { bearer, tokenFor } from './auth-helpers'
-import { createPairedCouple, createUser } from './factories'
+import { createPairedCouple, createUser, grantRequiredConsents } from './factories'
 import { createFakePush, type FakePush } from './fake-push'
 import { createTestApp } from './setup-app'
 import { truncateAll } from './truncate'
@@ -160,6 +160,10 @@ describe('커플 페어링 (실DB)', () => {
   describe('PATCH /couples/me · GET /couples/me · GET /me', () => {
     it('두 멤버 모두 사귄 날을 바꿀 수 있고, 바꾸면 상대에게 푸시(본문에 날짜 없음)', async () => {
       const { couple, members } = await createPairedCouple(prisma, { startedOn: null })
+      await grantRequiredConsents(
+        prisma,
+        members.map((member) => member.id),
+      )
       const first: Login = { userId: members[0].id, token: await tokenFor(app, members[0].id) }
       const second: Login = { userId: members[1].id, token: await tokenFor(app, members[1].id) }
       await prisma.pushToken.create({
@@ -193,6 +197,7 @@ describe('커플 페어링 (실DB)', () => {
 
     it('잘못된 날짜는 400', async () => {
       const { members } = await createPairedCouple(prisma)
+      await grantRequiredConsents(prisma, [members[0].id])
       const token = await tokenFor(app, members[0].id)
       await request(app.getHttpServer())
         .patch('/api/v1/couples/me')

@@ -9,7 +9,7 @@ import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
 import { OBJECT_STORAGE } from '../../src/storage/object-storage'
 import { KakaoUnlinkClient } from '../../src/users/kakao-unlink.client'
 import { bearer, tokenFor } from './auth-helpers'
-import { createEntry, createPairedCouple, createUser, type PairedCouple } from './factories'
+import { createEntry, createPairedCouple, createUser, grantRequiredConsents, type PairedCouple } from './factories'
 import { createFakePush } from './fake-push'
 import { createTestApp } from './setup-app'
 import { truncateAll } from './truncate'
@@ -53,6 +53,10 @@ describe('연결 해제·재연결·회원 탈퇴 (실DB)', () => {
   const http = () => request(app.getHttpServer())
   const pairWithTokens = async (): Promise<{ paired: PairedCouple; first: Member; second: Member }> => {
     const paired = await createPairedCouple(prisma)
+    await grantRequiredConsents(
+      prisma,
+      paired.members.map((member) => member.id),
+    )
     const [first, second] = await Promise.all(
       paired.members.map(async (member) => ({ userId: member.id, token: await tokenFor(app, member.id) })),
     )
@@ -224,12 +228,18 @@ describe('연결 해제·재연결·회원 탈퇴 (실DB)', () => {
     const kakaoUser = async (sub: string) => {
       const user = await createUser(prisma)
       await prisma.authAccount.create({ data: { userId: user.id, provider: 'KAKAO', providerSub: sub } })
+      await grantRequiredConsents(prisma, [user.id])
+      return user
+    }
+    const consentedUser = async () => {
+      const user = await createUser(prisma)
+      await grantRequiredConsents(prisma, [user.id])
       return user
     }
 
     it('커플이면 UNLINKING으로 바꾸고 User는 DELETED(계정·세션·푸시 토큰 삭제), 카카오 unlink 1회', async () => {
       const deleting = await kakaoUser('4100000001')
-      const partner = await createUser(prisma)
+      const partner = await consentedUser()
       const couple = await prisma.couple.create({
         data: {
           members: {
@@ -277,7 +287,7 @@ describe('연결 해제·재연결·회원 탈퇴 (실DB)', () => {
 
     it('탈퇴한 사람이 있으면 상대 혼자 재연결을 확인해도 UNLINKING 유지', async () => {
       const deleting = await kakaoUser('4100000002')
-      const partner = await createUser(prisma)
+      const partner = await consentedUser()
       await prisma.couple.create({
         data: {
           members: {

@@ -7,7 +7,7 @@ import {
   MAX_PHOTOS_PER_ENTRY,
   originalMimeSchema,
   type Photo,
-  type SignedUrlResponse,
+  type PhotoOriginalResponse,
 } from '@you-in-heart/shared'
 import { ENTRY_PHOTO_SELECT, type EntryPhotoRow, toPhoto } from '../diary/diary-mapper'
 import { lockEntry } from '../diary/entry-lock'
@@ -140,12 +140,14 @@ export class PhotosService {
   }
 
   // 원본은 목록·뷰어에서 서명하지 않는다. "원본 저장"만 5분 URL
-  async originalUrl(coupleId: string, id: string): Promise<SignedUrlResponse> {
+  async originalUrl(coupleId: string, id: string): Promise<PhotoOriginalResponse> {
     const photo = await this.findPhoto(coupleId, id)
     if (photo.status !== 'READY') throw photoNotFound()
+    const mime = originalMimeSchema.parse(photo.originalMime)
     return {
       url: await this.storage.presignGet(photo.originalKey, ORIGINAL_TTL_SECONDS),
       expiresIn: ORIGINAL_TTL_SECONDS,
+      mime,
     }
   }
 

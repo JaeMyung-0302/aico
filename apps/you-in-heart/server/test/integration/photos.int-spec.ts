@@ -284,6 +284,7 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       expect(res.body.expiresIn).toBe(300)
       expect(expiresOf(res.body.url)).toBe(300)
       expect(res.body.url).toContain(photoOriginalKey(session.couple.id, photoId))
+      expect(res.body.mime).toBe('image/jpeg')
     })
 
     it('커플 B photoId로 complete·original을 부르면 404이고 presign 호출 0회', async () => {

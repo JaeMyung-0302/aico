@@ -8,7 +8,7 @@ import {
   cursorQuerySchema,
   idSchema,
   type Photo,
-  type SignedUrlResponse,
+  type PhotoOriginalResponse,
 } from '@you-in-heart/shared'
 import { Authenticated } from '../auth/decorators/authenticated.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
@@ -54,7 +54,7 @@ export class PhotosController {
   }
 
   @Get(':id/original')
-  original(@CurrentCouple() couple: CoupleContext, @Param('id', idPipe) id: string): Promise<SignedUrlResponse> {
+  original(@CurrentCouple() couple: CoupleContext, @Param('id', idPipe) id: string): Promise<PhotoOriginalResponse> {
     return this.photos.originalUrl(couple.id, id)
   }
 }

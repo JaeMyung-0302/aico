@@ -78,7 +78,8 @@ export const createApiClient = ({
 
   client.interceptors.response.use(undefined, async (error: unknown) => {
     if (isAxiosError(error) && error.response?.status === CONFLICT) {
-      onCoupleUnlinking?.()
+      // code 가 붙은 409(UPLOAD_INCOMPLETE·PURGE_IMMINENT)는 연결 해제가 아니다
+      if (!hasServerCode(error.response.data)) onCoupleUnlinking?.()
       throw error
     }
     if (!isAxiosError(error) || !shouldRefresh(error)) throw error
@@ -97,6 +98,9 @@ export const createApiClient = ({
 
   return client
 }
+
+const hasServerCode = (data: unknown): boolean =>
+  typeof data === 'object' && data !== null && 'code' in data && typeof data.code === 'string'
 
 const shouldRefresh = (error: AxiosError): boolean =>
   error.response?.status === 401 && error.config?.hasRetriedAuth !== true && !AUTH_PATH.test(error.config?.url ?? '')

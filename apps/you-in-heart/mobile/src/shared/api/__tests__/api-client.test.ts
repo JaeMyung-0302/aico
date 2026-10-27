@@ -169,6 +169,24 @@ describe('createApiClient 401 인터셉터', () => {
     expect(server.calls.refresh).toBe(0)
   })
 
+  it('서버 code 가 붙은 409(UPLOAD_INCOMPLETE·PURGE_IMMINENT)는 연결 해제로 보지 않는다', async () => {
+    const onCoupleUnlinking = jest.fn()
+    const adapter: AxiosAdapter = async (config) => {
+      const response = { data: { statusCode: 409, code: 'UPLOAD_INCOMPLETE', message: 'x' }, status: 409, statusText: '', headers: {}, config }
+      throw new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, response)
+    }
+    const client = createApiClient({
+      baseURL: BASE_URL,
+      adapter,
+      tokenStore: createMemoryTokenStore(NEW),
+      onAuthFailure: jest.fn(),
+      onCoupleUnlinking,
+    })
+
+    await expect(client.post('/photos/x/complete')).rejects.toMatchObject({ response: { status: 409 } })
+    expect(onCoupleUnlinking).not.toHaveBeenCalled()
+  })
+
   it('유예 중에도 GET은 통과하고 onCoupleUnlinking을 부르지 않는다', async () => {
     const { client, onCoupleUnlinking } = setup({ refreshStatus: 200, isUnlinking: true }, NEW)
 

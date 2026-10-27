@@ -5,8 +5,9 @@ import {
   cursorPage,
   type CursorPage,
   type Photo,
+  type PhotoOriginalResponse,
+  photoOriginalResponseSchema,
   photoSchema,
-  signedUrlResponseSchema,
   type UploadTarget,
 } from '@you-in-heart/shared'
 import { File } from 'expo-file-system'
@@ -17,6 +18,14 @@ const photoPageSchema = cursorPage(photoSchema)
 // POST /photos/uploads — 원본·표시용 PUT URL(각 300초). 좌표는 위치 동의가 켜져 있을 때만 싣는다(호출 쪽 책임)
 export const createPhotoUpload = (body: CreatePhotoUploadRequest): Promise<CreatePhotoUploadResponse> =>
   requestApi({ method: 'POST', url: '/photos/uploads', data: body, schema: createPhotoUploadResponseSchema })
+
+// 서명 URL 이 만료된 내 PENDING 사진: 같은 사진에 새 URL(응답 모양은 발급과 같다). 409 ALREADY_COMPLETE·403 NOT_AUTHOR·404
+export const renewPhotoUpload = (photoId: string): Promise<CreatePhotoUploadResponse> =>
+  requestApi({
+    method: 'POST',
+    url: `/photos/${encodeURIComponent(photoId)}/uploads/renew`,
+    schema: createPhotoUploadResponseSchema,
+  })
 
 // 원본·표시용이 모두 올라간 뒤 부른다(멱등). 409 UPLOAD_INCOMPLETE·422 INVALID_UPLOAD·503 BUSY
 export const completePhoto = (photoId: string): Promise<Photo> =>
@@ -29,15 +38,13 @@ export const fetchPhotoPage = ({ cursor }: { cursor?: string }): Promise<CursorP
 export const fetchPhoto = (photoId: string): Promise<Photo> =>
   requestApi({ method: 'GET', url: `/photos/${encodeURIComponent(photoId)}`, schema: photoSchema })
 
-// 원본(촬영 위치 포함) 5분 URL — 뷰어에서 위치 고지를 확인한 뒤에만 부른다
-export const fetchPhotoOriginalUrl = async (photoId: string): Promise<string> => {
-  const { url } = await requestApi({
+// 원본(촬영 위치 포함) 5분 URL + 원본 형식(mime) — 뷰어에서 위치 고지를 확인한 뒤에만 부른다
+export const fetchPhotoOriginal = (photoId: string): Promise<PhotoOriginalResponse> =>
+  requestApi({
     method: 'GET',
     url: `/photos/${encodeURIComponent(photoId)}/original`,
-    schema: signedUrlResponseSchema,
+    schema: photoOriginalResponseSchema,
   })
-  return url
-}
 
 export class UploadPutError extends Error {
   readonly status: number

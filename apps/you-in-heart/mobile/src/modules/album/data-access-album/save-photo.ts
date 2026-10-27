@@ -1,7 +1,7 @@
 import type { Photo } from '@you-in-heart/shared'
 import { File, Paths } from 'expo-file-system'
 import * as MediaLibrary from 'expo-media-library/legacy'
-import { fetchPhotoOriginalUrl } from '@/modules/media/data-access-media/media-api'
+import { fetchPhotoOriginal } from '@/modules/media/data-access-media/media-api'
 import { discardFile } from '@/modules/media/data-access-media/prepare-display-image'
 import { ensureSavePermission } from '@/modules/media/util-pick-assets/pick-assets'
 
@@ -18,7 +18,17 @@ const MAGIC_LENGTH = 16
 const startsWith = (bytes: Uint8Array, signature: readonly number[], offset = 0): boolean =>
   signature.every((value, index) => bytes[offset + index] === value)
 
-// 원본 객체 키에는 확장자가 없다 → 앞 16바이트(매직 넘버)로 정한다. 보관함 저장에는 확장자가 필요하다
+const EXTENSION_BY_MIME: ReadonlyMap<string, ImageExtension> = new Map([
+  ['image/jpeg', 'jpg'],
+  ['image/png', 'png'],
+  ['image/heic', 'heic'],
+  ['image/heif', 'heic'],
+])
+
+// 원본 객체 키에는 확장자가 없다 → 서버가 준 mime 으로 정한다. 모르는 값이면 앞 16바이트로 정한다
+const extensionForMime = (mime: string): ImageExtension | undefined => EXTENSION_BY_MIME.get(mime)
+
+// 보관함 저장에는 확장자가 필요하다
 export const sniffImageExtension = (bytes: Uint8Array): ImageExtension => {
   if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47])) return 'png'
   // ISO BMFF: 4..8 = 'ftyp' (HEIC·HEIF)
@@ -51,8 +61,8 @@ const saveDownloaded = async (url: string, name: string, extension?: ImageExtens
 // SCR-09 "원본 저장": 위치 고지를 확인한 뒤에만 부른다 → 5분 원본 URL(촬영 위치 EXIF 포함)
 export const saveOriginalToLibrary = async (photoId: string): Promise<void> => {
   if (!(await ensureSavePermission())) throw new SavePermissionError()
-  const url = await fetchPhotoOriginalUrl(photoId)
-  await saveDownloaded(url, `${photoId}-original`)
+  const { url, mime } = await fetchPhotoOriginal(photoId)
+  await saveDownloaded(url, `${photoId}-original`, extensionForMime(mime))
 }
 
 // "화면용 저장": 서버가 EXIF(위치)를 지운 표시용 JPEG

@@ -100,6 +100,55 @@ describe('일기 (실DB)', () => {
     })
   })
 
+  describe('상대 새 기록 푸시 (PARTNER_ENTRY, 1시간 1회)', () => {
+    // KST 시간 버킷 'YYYY-MM-DDTHH'
+    const kstHourBucket = (now: Date) => new Date(now.getTime() + 9 * 3_600_000).toISOString().slice(0, 13)
+
+    it('일기를 쓰면 상대 멤버에게만 푸시 1건(본문·날짜 없음, data는 type·entryId), 같은 시간에 또 쓰면 0건', async () => {
+      const session = await newCouple()
+      await prisma.pushToken.createMany({
+        data: [
+          { userId: session.members[0].id, expoToken: 'ExponentPushToken[author]', platform: 'IOS' },
+          { userId: session.members[1].id, expoToken: 'ExponentPushToken[partner]', platform: 'ANDROID' },
+        ],
+      })
+      const first = await post(session, 0, { happenedOn: '2026-10-01', title: '성수', body: '비밀 이야기' }).expect(201)
+      await post(session, 0, { happenedOn: '2026-10-02', body: '두 번째' }).expect(201)
+
+      expect(push.sent().map((message) => [message.to, message.data])).toEqual([
+        ['ExponentPushToken[partner]', { type: 'PARTNER_ENTRY', entryId: first.body.id }],
+      ])
+      const text = `${push.sent()[0]?.title} ${push.sent()[0]?.body}`
+      expect(text).not.toMatch(/비밀|성수|2026|10월/)
+      const logs = await prisma.notificationLog.findMany({ where: { coupleId: session.couple.id } })
+      expect(logs.map((log) => [log.kind, log.refKey])).toEqual([
+        ['PARTNER_ENTRY', `${session.members[0].id}:${kstHourBucket(new Date())}`],
+      ])
+      expect(await prisma.eventLog.count({ where: { name: 'notification_sent', userId: session.members[1].id } })).toBe(
+        1,
+      )
+    })
+
+    it('다음 시간 버킷이면(로그가 없으면) 다시 보내고, 상대가 쓰면 나에게 보낸다', async () => {
+      const session = await newCouple()
+      await prisma.pushToken.createMany({
+        data: [
+          { userId: session.members[0].id, expoToken: 'ExponentPushToken[a]', platform: 'IOS' },
+          { userId: session.members[1].id, expoToken: 'ExponentPushToken[b]', platform: 'IOS' },
+        ],
+      })
+      await post(session, 0, { happenedOn: '2026-10-01', body: '' }).expect(201)
+      await prisma.notificationLog.deleteMany({ where: { coupleId: session.couple.id } })
+      await post(session, 0, { happenedOn: '2026-10-01', body: '' }).expect(201)
+      await post(session, 1, { happenedOn: '2026-10-01', body: '' }).expect(201)
+      expect(push.sent().map((message) => message.to)).toEqual([
+        'ExponentPushToken[b]',
+        'ExponentPushToken[b]',
+        'ExponentPushToken[a]',
+      ])
+    })
+  })
+
   describe('GET /diary', () => {
     it('happenedOn desc, id desc로 20건씩, nextCursor로 이어 받고 마지막 페이지는 null', async () => {
       const session = await newCouple()

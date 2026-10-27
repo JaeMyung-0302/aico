@@ -1,20 +1,37 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
-import type {
-  CreateAutoDaysRequest,
-  CreateAutoDaysResponse,
-  CreateDiaryRequest,
-  DiaryEntry,
-  DiaryListQuery,
-  DiaryListResponse,
-  UpdateDiaryRequest,
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import {
+  type CreateAutoDaysRequest,
+  type CreateAutoDaysResponse,
+  type CreateDiaryRequest,
+  type DiaryEntry,
+  type DiaryListQuery,
+  type DiaryListResponse,
+  toKstDate,
+  type UpdateDiaryRequest,
 } from '@you-in-heart/shared'
 import { fromDbDate, toDbDate } from '../common/dates/db-date'
+import { isUniqueViolation } from '../common/prisma/prisma-errors'
+import { CouplesService, type PartnerNotice } from '../couples/couples.service'
 import { EventsService } from '../events/events.service'
 import type { Prisma } from '../generated/prisma'
 import { photoObjectKeys, PhotosService } from '../photos/photos.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { ENTRY_SELECT, type EntryRow, toDiaryEntry } from './diary-mapper'
 import { lockEntry } from './entry-lock'
+
+const KST_OFFSET_MS = 9 * 3_600_000
+
+// 잠금 화면에 보이므로 일기 제목·본문·날짜는 넣지 않는다
+const PARTNER_ENTRY: PartnerNotice = {
+  title: '새 기록이 올라왔어요',
+  body: '앱에서 확인해 보세요',
+  type: 'PARTNER_ENTRY',
+}
+
+// KST 정시 버킷 'YYYY-MM-DDTHH'. 작성자당 버킷 하나에 푸시 1건(0C 규칙: refKey에 시간 버킷 포함)
+const kstHourBucket = (now: Date): string => new Date(now.getTime() + KST_OFFSET_MS).toISOString().slice(0, 13)
+
+const errorName = (error: unknown): string => (error instanceof Error ? error.name : 'UnknownError')
 
 const notFound = () => new NotFoundException('일기를 찾을 수 없어요')
 const notAuthor = () => new ForbiddenException({ code: 'NOT_AUTHOR', message: '작성자만 수정·삭제할 수 있어요' })
@@ -35,10 +52,13 @@ const toUpdateData = ({
 // 작성자 권한(US-003)은 테넌트 위의 2차 조건: 다른 커플 404 → 같은 커플의 상대 403
 @Injectable()
 export class DiaryService {
+  private readonly logger = new Logger(DiaryService.name)
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventsService,
     private readonly photos: PhotosService,
+    private readonly couples: CouplesService,
   ) {}
 
   async create(
@@ -51,6 +71,7 @@ export class DiaryService {
       select: ENTRY_SELECT,
     })
     await this.events.record(coupleId, actorId, 'memory_created', { type: 'diary' })
+    await this.notifyPartnerOnce(coupleId, actorId, row.id, new Date())
     return this.toResponse(row)
   }
 
@@ -122,6 +143,25 @@ export class DiaryService {
       orderBy: { happenedOn: 'asc' },
     })
     return { entries: rows.map(({ id, happenedOn }) => ({ id, happenedOn: fromDbDate(happenedOn) })) }
+  }
+
+  // NotificationLog(PARTNER_ENTRY, coupleId, '{작성자}:{KST 시간 버킷}', KST 날짜) insert 성공 = 이번 시간의 첫 기록.
+  // 알림 실패로 일기 저장을 실패시키지 않는다(재시도가 중복 일기를 만든다)
+  private async notifyPartnerOnce(coupleId: string, actorId: string, entryId: string, now: Date): Promise<void> {
+    try {
+      await this.prisma.notificationLog.create({
+        data: {
+          coupleId,
+          kind: 'PARTNER_ENTRY',
+          refKey: `${actorId}:${kstHourBucket(now)}`,
+          dueOn: toDbDate(toKstDate(now)),
+        },
+      })
+      await this.couples.notifyPartner(coupleId, actorId, { ...PARTNER_ENTRY, data: { entryId } })
+    } catch (error) {
+      if (isUniqueViolation(error)) return
+      this.logger.warn(`[diary] partner notify failed (${errorName(error)})`)
+    }
   }
 
   private async findCursor(coupleId: string, cursor: string): Promise<{ id: string; happenedOn: Date }> {

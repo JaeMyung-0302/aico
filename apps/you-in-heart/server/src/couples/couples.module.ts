@@ -12,11 +12,12 @@ import { PurgeCron } from './purge.cron'
 import { PurgeService } from './purge.service'
 import { UnlinkService } from './unlink.service'
 
-// CoupleGuard는 AppModule이 전역 APP_GUARD로 등록한다(동의 게이트에 ConsentModule). UnlinkService는 회원 탈퇴(UsersModule)가 쓴다
+// CoupleGuard는 AppModule이 전역 APP_GUARD로 등록한다(동의 게이트에 ConsentModule). UnlinkService는 회원 탈퇴(UsersModule)가,
+// CouplesService.notifyPartner는 일기(상대 새 기록 푸시)가 쓴다
 @Module({
   imports: [AuthModule, NotificationsModule, EventsModule, StorageModule, ConsentModule],
   controllers: [CouplesController],
   providers: [CoupleGuard, CouplesService, InviteService, UnlinkService, PurgeService, PurgeCron],
-  exports: [CoupleGuard, UnlinkService, PurgeService],
+  exports: [CoupleGuard, CouplesService, UnlinkService, PurgeService],
 })
 export class CouplesModule {}

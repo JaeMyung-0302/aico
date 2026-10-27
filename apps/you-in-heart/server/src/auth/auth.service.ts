@@ -8,7 +8,7 @@ import { SessionService } from './session.service'
 type LoginUser = { id: string; status: string }
 
 // dev 계정은 KAKAO AuthAccount에 'dev:' 접두 sub로 둔다. 실제 카카오 sub는 숫자라 겹치지 않는다
-// TODO(0E): 탈퇴 시 카카오 unlink는 'dev:' sub를 건너뛸 것
+// 탈퇴 시 카카오 unlink는 'dev:' sub를 건너뛴다(AccountDeletionService)
 export const DEV_SUB_PREFIX = 'dev:'
 
 const USER_SELECT = { id: true, status: true } as const

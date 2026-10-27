@@ -7,6 +7,7 @@ export { ApiError } from './api-error'
 const errorBodySchema = z
   .object({
     message: z.string().optional(),
+    code: z.string().optional(),
     issues: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
     requestId: z.string().optional(),
   })
@@ -38,6 +39,7 @@ const toApiError = (error: unknown): ApiError => {
     message: body.message ?? '요청을 처리하지 못했어요',
     issues: body.issues,
     requestId: body.requestId,
+    serverCode: body.code,
   })
 }
 

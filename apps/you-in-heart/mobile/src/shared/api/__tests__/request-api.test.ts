@@ -93,6 +93,13 @@ describe('requestApi', () => {
     await expect(requestApi({ method: 'POST', url: '/couples/invites' })).rejects.toMatchObject({ status, kind })
   })
 
+  it('403 + code CONSENT_REQUIRED 는 kind = CONSENT_REQUIRED, 그 외 403은 UNKNOWN', async () => {
+    const consent = makeRequestApi(respondWith(403, { statusCode: 403, code: 'CONSENT_REQUIRED', message: 'x' }))
+    await expect(consent({ method: 'GET', url: '/couples/me' })).rejects.toMatchObject({ kind: 'CONSENT_REQUIRED' })
+    const forbidden = makeRequestApi(respondWith(403, { statusCode: 403, message: 'x' }))
+    await expect(forbidden({ method: 'GET', url: '/couples/me' })).rejects.toMatchObject({ kind: 'UNKNOWN' })
+  })
+
   it('네트워크 에러의 kind는 UNKNOWN', async () => {
     await expect(makeRequestApi(failNetwork)({ method: 'GET', url: '/me' })).rejects.toMatchObject({ kind: 'UNKNOWN' })
   })

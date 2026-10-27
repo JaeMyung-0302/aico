@@ -9,10 +9,11 @@ import {
   S3Client,
   S3ServiceException,
 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import type { AppConfig } from '../config/configuration'
-import { assertDeletablePrefix, type ObjectStorage, type PutObjectInput } from './object-storage'
+import { assertDeletablePrefix, type ObjectStorage, type PresignPutInput, type PutObjectInput } from './object-storage'
 
 type R2Config = AppConfig['r2']
 
@@ -117,6 +118,35 @@ export class R2ObjectStorage implements ObjectStorage {
       return loop(deleted + keys.length)
     }
     return loop(0)
+  }
+
+  // Content-Type(+Content-Length)을 서명에 넣는다 → 앱은 응답 headers를 그대로 붙여 PUT해야 한다
+  presignPut({ key, contentType, contentLength, expiresIn }: PresignPutInput): Promise<string> {
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+      ContentType: contentType,
+      ...(contentLength !== undefined ? { ContentLength: contentLength } : {}),
+    })
+    const signableHeaders = new Set(contentLength !== undefined ? ['content-type', 'content-length'] : ['content-type'])
+    return getSignedUrl(this.client, command, { expiresIn, signableHeaders })
+  }
+
+  presignGet(key: string, expiresIn: number): Promise<string> {
+    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket, Key: key }), { expiresIn })
+  }
+
+  async getObjectRange(key: string, length: number): Promise<Buffer | null> {
+    try {
+      const response = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key, Range: `bytes=0-${length - 1}` }),
+      )
+      const bytes = await response.Body?.transformToByteArray()
+      return Buffer.from(bytes ?? [])
+    } catch (error) {
+      if (isNotFound(error)) return null
+      throw error
+    }
   }
 
   private async listPage(prefix: string, token: string | undefined): Promise<{ keys: string[]; nextToken?: string }> {

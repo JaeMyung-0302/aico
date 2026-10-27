@@ -45,4 +45,15 @@ describe('MemoryObjectStorage', () => {
     storage.clear()
     await expect(storage.listKeys('')).resolves.toEqual([])
   })
+
+  it('presign URL은 키와 X-Amz-Expires를 담고, getObjectRange는 앞 N바이트', async () => {
+    const storage = new MemoryObjectStorage()
+    await put(storage, 'c/a/o', 'abcdef')
+    const putUrl = new URL(await storage.presignPut({ key: 'c/a/o', contentType: 'image/jpeg', expiresIn: 300 }))
+    expect([putUrl.pathname, putUrl.searchParams.get('X-Amz-Expires')]).toEqual(['/c/a/o', '300'])
+    const getUrl = new URL(await storage.presignGet('c/a/o', 3600))
+    expect(getUrl.searchParams.get('X-Amz-Expires')).toBe('3600')
+    await expect(storage.getObjectRange('c/a/o', 3)).resolves.toEqual(Buffer.from('abc'))
+    await expect(storage.getObjectRange('c/a/x', 3)).resolves.toBeNull()
+  })
 })

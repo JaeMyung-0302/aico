@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { assertDeletablePrefix, type ObjectStorage, type PutObjectInput } from './object-storage'
+import { assertDeletablePrefix, type ObjectStorage, type PresignPutInput, type PutObjectInput } from './object-storage'
+
+// presigned URL 모양만 흉내 낸다(만료는 X-Amz-Expires 쿼리로 확인)
+const MEMORY_ORIGIN = 'https://storage.test'
 
 // 통합 테스트용 메모리 구현(OBJECT_STORAGE override)
 @Injectable()
@@ -33,6 +36,18 @@ export class MemoryObjectStorage implements ObjectStorage {
     const keys = await this.listKeys(prefix)
     await this.deleteObjects(keys)
     return keys.length
+  }
+
+  async presignPut({ key, expiresIn }: PresignPutInput): Promise<string> {
+    return `${MEMORY_ORIGIN}/${key}?X-Amz-Expires=${expiresIn}&x-id=PutObject`
+  }
+
+  async presignGet(key: string, expiresIn: number): Promise<string> {
+    return `${MEMORY_ORIGIN}/${key}?X-Amz-Expires=${expiresIn}&x-id=GetObject`
+  }
+
+  async getObjectRange(key: string, length: number): Promise<Buffer | null> {
+    return this.objects.get(key)?.subarray(0, length) ?? null
   }
 
   clear(): void {

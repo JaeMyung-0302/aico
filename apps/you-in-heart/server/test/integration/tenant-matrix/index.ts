@@ -5,6 +5,7 @@ import { diaryMatrix } from './diary.matrix'
 import { eventsMatrix } from './events.matrix'
 import { exportMatrix } from './export.matrix'
 import { photosMatrix } from './photos.matrix'
+import { placesMatrix } from './places.matrix'
 import { publicMatrix } from './public.matrix'
 import { usersMatrix } from './users.matrix'
 
@@ -43,6 +44,7 @@ const MATRICES: readonly DomainMatrix[] = [
   anniversariesMatrix,
   diaryMatrix,
   photosMatrix,
+  placesMatrix,
   exportMatrix,
 ]
 

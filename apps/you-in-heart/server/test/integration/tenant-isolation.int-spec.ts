@@ -2,12 +2,14 @@ import type { INestApplication } from '@nestjs/common'
 import { DiscoveryModule } from '@nestjs/core'
 import request from 'supertest'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
+import { KakaoLocalClient } from '../../src/places/kakao-local.client'
 import { PrismaService } from '../../src/prisma/prisma.service'
 import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
 import { OBJECT_STORAGE } from '../../src/storage/object-storage'
 import { bearer, tokenFor } from './auth-helpers'
 import { snapshotCouple } from './couple-tables'
 import { createPairedCouple, createUser, grantRequiredConsents, seedCoupleData } from './factories'
+import { createFakeKakaoLocal } from './fake-kakao-local'
 import { createFakePush } from './fake-push'
 import { collectRoutes, type RouteInfo } from './route-inventory'
 import { createTestApp } from './setup-app'
@@ -58,6 +60,10 @@ describe('테넌트 격리 (실DB)', () => {
       prisma,
       paired.members.map((member) => member.id),
     )
+    // 좌표 라우트(@RequiresLocationConsent)도 테넌트 404까지 닿게 위치 동의를 준다(동의 게이트 자체는 각 도메인 spec이 검사)
+    await prisma.consent.createMany({
+      data: paired.members.map((member) => ({ userId: member.id, kind: 'LOCATION' as const, version: 'test' })),
+    })
     const tokens = await Promise.all(paired.members.map((member) => tokenFor(app, member.id)))
     return {
       coupleId: paired.couple.id,
@@ -77,14 +83,16 @@ describe('테넌트 격리 (실DB)', () => {
   }
 
   beforeAll(async () => {
-    // 해제 라우트가 R2 원장을 쓴다 → 메모리 스토리지
+    // 해제 라우트가 R2 원장을 쓴다 → 메모리 스토리지. 장소 검색은 카카오 대역
     app = await createTestApp(
       (builder) =>
         builder
           .overrideProvider(PUSH_SENDER)
           .useValue(createFakePush().sender)
           .overrideProvider(OBJECT_STORAGE)
-          .useValue(new MemoryObjectStorage()),
+          .useValue(new MemoryObjectStorage())
+          .overrideProvider(KakaoLocalClient)
+          .useValue(createFakeKakaoLocal()),
       { imports: [DiscoveryModule] },
     )
     prisma = app.get(PrismaService)

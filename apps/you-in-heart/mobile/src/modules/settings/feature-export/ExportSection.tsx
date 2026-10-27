@@ -9,6 +9,7 @@ import { RADIUS } from '@/design-system/tokens/radius'
 import { SPACING } from '@/design-system/tokens/spacing'
 import { isApiErrorKind } from '@/shared/api/api-error'
 import { useNow } from '@/shared/hooks/use-now'
+import { fetchExportJob } from './export-api'
 import { useLatestExport, useRequestExport } from './useExport'
 
 const MINUTE_MS = 60_000
@@ -46,6 +47,12 @@ const RunningCard = () => (
   </View>
 )
 
+// 서명 URL 은 10분이라 화면에 오래 둔 링크는 만료됐을 수 있다 → 누를 때 새로 받아 연다
+const openDownload = async (jobId: string): Promise<void> => {
+  const fresh = await fetchExportJob(jobId)
+  if (fresh.downloadUrl) await Linking.openURL(fresh.downloadUrl)
+}
+
 const ReadyCard = ({ job }: { job: ExportJob }) => (
   <View style={styles.card}>
     <AppText variant="labelStrong">내보내기가 준비됐어요</AppText>
@@ -59,7 +66,7 @@ const ReadyCard = ({ job }: { job: ExportJob }) => (
       variant="dark"
       size="md"
       onPress={() => {
-        if (job.downloadUrl) Linking.openURL(job.downloadUrl).catch(() => undefined)
+        openDownload(job.id).catch(() => undefined)
       }}
       style={styles.download}
     />

@@ -5,10 +5,10 @@ import { ApiError } from '@/shared/api/api-error'
 import { session } from '@/shared/auth/session'
 import { FIXED_NOW_MS, mockClockAt } from '@/test-utils/fixtures'
 import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
-import { fetchLatestExport, requestExport } from '../export-api'
+import { fetchExportJob, fetchLatestExport, requestExport } from '../export-api'
 import ExportSection from '../ExportSection'
 
-jest.mock('../export-api', () => ({ fetchLatestExport: jest.fn(), requestExport: jest.fn() }))
+jest.mock('../export-api', () => ({ fetchLatestExport: jest.fn(), fetchExportJob: jest.fn(), requestExport: jest.fn() }))
 jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
 }))
@@ -59,17 +59,19 @@ describe('ExportSection (SCR-16 내보내기)', () => {
     expect(screen.queryByRole('button', { name: /모든 기록 내보내기/ })).toBeNull()
   })
 
-  it('완료되면 다운로드 링크(만료 시각 안내)를 연다', async () => {
-    jest.mocked(fetchLatestExport).mockResolvedValue(
-      job({ status: 'READY', downloadUrl: 'https://r2.test/export.zip?sig=24h', expiresAt: '2026-10-28T03:00:00.000Z' }),
-    )
+  it('완료되면 만료 시각을 안내하고, 누르는 순간 GET /export/:jobId 로 새 링크(10분 서명)를 받아 연다', async () => {
+    const ready = { status: 'READY' as const, expiresAt: '2026-10-28T03:00:00.000Z' }
+    jest.mocked(fetchLatestExport).mockResolvedValue(job({ ...ready, downloadUrl: 'https://r2.test/export.zip?sig=old' }))
+    jest.mocked(fetchExportJob).mockResolvedValue(job({ ...ready, downloadUrl: 'https://r2.test/export.zip?sig=fresh' }))
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true)
     await renderSection()
 
     expect(await screen.findByText('내보내기가 준비됐어요')).toBeOnTheScreen()
     expect(screen.getByText('2026. 10. 28 12:00까지 받을 수 있어요')).toBeOnTheScreen()
     await fireEvent.press(screen.getByRole('button', { name: 'zip 내려받기' }))
-    expect(openURL).toHaveBeenCalledWith('https://r2.test/export.zip?sig=24h')
+    await waitFor(() => expect(openURL).toHaveBeenCalledWith('https://r2.test/export.zip?sig=fresh'))
+    expect(fetchExportJob).toHaveBeenCalledWith(JOB_ID)
+    expect(openURL).toHaveBeenCalledTimes(1)
   })
 
   it('링크가 만료됐거나 실패한 작업이면 다시 요청할 수 있다', async () => {

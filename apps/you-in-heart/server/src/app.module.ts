@@ -9,6 +9,7 @@ import { type ClientIpSource, resolveClientIp } from './common/throttle/client-i
 import { configuration } from './config/configuration'
 import { CoupleGuard } from './couples/couple.guard'
 import { CouplesModule } from './couples/couples.module'
+import { DiaryModule } from './diary/diary.module'
 import { EventsModule } from './events/events.module'
 import { HealthModule } from './health/health.module'
 import { NotificationsModule } from './notifications/notifications.module'
@@ -40,6 +41,7 @@ const throttlerOptions = (config: ConfigService) => {
     CouplesModule,
     EventsModule,
     AnniversariesModule,
+    DiaryModule,
   ],
   // 순서대로 실행: IP throttle → CoupleGuard(기본 "커플 필수", @AllowWithoutCouple 예외) → 라우트 가드(@Authenticated 등)
   providers: [

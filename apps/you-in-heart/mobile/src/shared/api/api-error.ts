@@ -12,6 +12,10 @@ const SERVER_CODE_KINDS = [
   'INVALID_UPLOAD',
   'BUSY',
   'PURGE_IMMINENT',
+  // POST /photos/:id/uploads/renew — 이미 complete 된 사진(갱신 대신 complete 로 마무리)
+  'ALREADY_COMPLETE',
+  // POST /quotes/screenshots/uploads — 15MB 초과
+  'SCREENSHOT_TOO_LARGE',
 ] as const
 type ServerCodeKind = (typeof SERVER_CODE_KINDS)[number]
 
@@ -38,8 +42,12 @@ const KIND_BY_STATUS: Readonly<Record<number, ApiErrorKind>> = {
 
 const SERVER_CODE_KIND: ReadonlyMap<string, ServerCodeKind> = new Map(SERVER_CODE_KINDS.map((kind) => [kind, kind]))
 
+// 유예 중 쓰기 409 는 code COUPLE_UNLINKING 을 싣는다(이전 서버는 code 없이 보냈다 → 409 기본값으로 같은 분류)
+export const COUPLE_UNLINKING_CODE = 'COUPLE_UNLINKING'
+
 // 서버 code 가 우선이다 — 409 UPLOAD_INCOMPLETE·PURGE_IMMINENT 는 연결 해제가 아니다
 export const toApiErrorKind = (status: number | null, serverCode?: string): ApiErrorKind => {
+  if (status !== null && serverCode === COUPLE_UNLINKING_CODE) return 'COUPLE_UNLINKING'
   const byCode = serverCode ? SERVER_CODE_KIND.get(serverCode) : undefined
   if (status !== null && byCode) return byCode
   return status === null ? 'UNKNOWN' : (KIND_BY_STATUS[status] ?? 'UNKNOWN')

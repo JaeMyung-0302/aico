@@ -1,5 +1,6 @@
 import axios, { isAxiosError, type AxiosAdapter, type AxiosError, type AxiosInstance } from 'axios'
 import { authTokensSchema } from '@you-in-heart/shared'
+import { COUPLE_UNLINKING_CODE } from './api-error'
 import type { TokenPair } from './token-store'
 
 // 재시도 1회 제한 표식 (axios 설정 객체에 실어 보낸다)
@@ -78,8 +79,8 @@ export const createApiClient = ({
 
   client.interceptors.response.use(undefined, async (error: unknown) => {
     if (isAxiosError(error) && error.response?.status === CONFLICT) {
-      // code 가 붙은 409(UPLOAD_INCOMPLETE·PURGE_IMMINENT)는 연결 해제가 아니다
-      if (!hasServerCode(error.response.data)) onCoupleUnlinking?.()
+      // code 가 붙은 409(UPLOAD_INCOMPLETE·PURGE_IMMINENT)는 연결 해제가 아니다. code 없음 = 이전 서버의 유예 409
+      if (isUnlinkingConflict(error.response.data)) onCoupleUnlinking?.()
       throw error
     }
     if (!isAxiosError(error) || !shouldRefresh(error)) throw error
@@ -99,8 +100,13 @@ export const createApiClient = ({
   return client
 }
 
-const hasServerCode = (data: unknown): boolean =>
-  typeof data === 'object' && data !== null && 'code' in data && typeof data.code === 'string'
+const serverCodeOf = (data: unknown): string | null =>
+  typeof data === 'object' && data !== null && 'code' in data && typeof data.code === 'string' ? data.code : null
+
+const isUnlinkingConflict = (data: unknown): boolean => {
+  const code = serverCodeOf(data)
+  return code === null || code === COUPLE_UNLINKING_CODE
+}
 
 const shouldRefresh = (error: AxiosError): boolean =>
   error.response?.status === 401 && error.config?.hasRetriedAuth !== true && !AUTH_PATH.test(error.config?.url ?? '')

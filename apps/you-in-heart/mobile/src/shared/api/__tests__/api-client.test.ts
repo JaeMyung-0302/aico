@@ -187,6 +187,25 @@ describe('createApiClient 401 인터셉터', () => {
     expect(onCoupleUnlinking).not.toHaveBeenCalled()
   })
 
+  it('code COUPLE_UNLINKING 이 붙은 409 도 연결 해제로 보고 onCoupleUnlinking 을 부른다', async () => {
+    const onCoupleUnlinking = jest.fn()
+    const adapter: AxiosAdapter = async (config) => {
+      const data = { statusCode: 409, code: 'COUPLE_UNLINKING', message: 'x' }
+      const response = { data, status: 409, statusText: '', headers: {}, config }
+      throw new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, response)
+    }
+    const client = createApiClient({
+      baseURL: BASE_URL,
+      adapter,
+      tokenStore: createMemoryTokenStore(NEW),
+      onAuthFailure: jest.fn(),
+      onCoupleUnlinking,
+    })
+
+    await expect(client.post('/bucket')).rejects.toMatchObject({ response: { status: 409 } })
+    expect(onCoupleUnlinking).toHaveBeenCalledTimes(1)
+  })
+
   it('유예 중에도 GET은 통과하고 onCoupleUnlinking을 부르지 않는다', async () => {
     const { client, onCoupleUnlinking } = setup({ refreshStatus: 200, isUnlinking: true }, NEW)
 

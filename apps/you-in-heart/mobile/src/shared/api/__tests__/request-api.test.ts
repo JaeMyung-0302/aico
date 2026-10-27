@@ -115,6 +115,20 @@ describe('requestApi', () => {
     await expect(requestApi({ method: 'POST', url: '/photos/uploads' })).rejects.toMatchObject({ status, kind })
   })
 
+  it('409 + code COUPLE_UNLINKING 은 연결 해제 유예로 분류한다 (code 없는 409 도 그대로)', async () => {
+    const coded = makeRequestApi(respondWith(409, { statusCode: 409, code: 'COUPLE_UNLINKING', message: 'x' }))
+    await expect(coded({ method: 'POST', url: '/bucket' })).rejects.toMatchObject({ kind: 'COUPLE_UNLINKING' })
+    const bare = makeRequestApi(respondWith(409, { statusCode: 409, message: 'x' }))
+    await expect(bare({ method: 'POST', url: '/bucket' })).rejects.toMatchObject({ kind: 'COUPLE_UNLINKING' })
+  })
+
+  it('409 ALREADY_COMPLETE(이미 끝난 사진 업로드 갱신)는 연결 해제가 아니다', async () => {
+    const requestApi = makeRequestApi(respondWith(409, { statusCode: 409, code: 'ALREADY_COMPLETE', message: 'x' }))
+    await expect(requestApi({ method: 'POST', url: '/photos/p/uploads/renew' })).rejects.toMatchObject({
+      kind: 'ALREADY_COMPLETE',
+    })
+  })
+
   it('모르는 code 는 상태 코드로 분류한다 (프로토타입 키도 무시)', async () => {
     const unknown = makeRequestApi(respondWith(409, { statusCode: 409, code: 'constructor', message: 'x' }))
     await expect(unknown({ method: 'POST', url: '/diary' })).rejects.toMatchObject({ kind: 'COUPLE_UNLINKING' })

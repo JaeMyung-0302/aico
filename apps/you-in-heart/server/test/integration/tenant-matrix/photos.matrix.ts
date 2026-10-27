@@ -8,7 +8,7 @@ export const photosMatrix: DomainMatrix = {
       route: 'POST /photos/uploads',
       request: ({ b }) => ({
         path: '/photos/uploads',
-        body: { entryId: b.seeded.entryId, originalMime: 'image/jpeg', originalBytes: 1000 },
+        body: { entryId: b.seeded.entryId, originalMime: 'image/jpeg', originalBytes: 1000, displayBytes: 1000 },
       }),
       expectsNotFound: true,
     },
@@ -20,7 +20,7 @@ export const photosMatrix: DomainMatrix = {
     },
     {
       route: 'POST /photos/:id/uploads/renew',
-      request: ({ b }) => ({ path: `/photos/${b.seeded.photoId}/uploads/renew` }),
+      request: ({ b }) => ({ path: `/photos/${b.seeded.photoId}/uploads/renew`, body: { displayBytes: 1000 } }),
       expectsNotFound: true,
     },
     {

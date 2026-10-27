@@ -10,6 +10,7 @@ import {
   originalMimeSchema,
   type Photo,
   type PhotoOriginalResponse,
+  type RenewPhotoUploadRequest,
 } from '@you-in-heart/shared'
 import { ENTRY_PHOTO_SELECT, type EntryPhotoRow, toPhoto } from '../diary/diary-mapper'
 import { lockEntry } from '../diary/entry-lock'
@@ -80,15 +81,21 @@ export class PhotosService {
     if (body.takenAt && Date.parse(body.takenAt) > Date.now() + FUTURE_SKEW_MS) throw takenAtInFuture()
     if (body.lat !== undefined && !(await this.consents.hasLocationConsent(actorId))) throw locationConsentRequired()
     const photoId = await this.prisma.$transaction((tx) => this.insertPending(tx, coupleId, actorId, body))
-    return this.presignUploads(coupleId, photoId, body.originalMime, body.originalBytes)
+    return this.presignUploads(coupleId, photoId, body.originalMime, body.originalBytes, body.displayBytes)
   }
 
-  // PUT URL이 만료된 PENDING 사진을 이어 올린다. 서명 헤더는 처음 선언(저장된 mime·바이트 수) 그대로
-  async renewUpload(coupleId: string, actorId: string, id: string): Promise<CreatePhotoUploadResponse> {
+  // PUT URL이 만료된 PENDING 사진을 이어 올린다. 원본 서명 헤더는 처음 선언(저장된 mime·바이트 수) 그대로, 표시용 후보는 새 displayBytes
+  async renewUpload(
+    coupleId: string,
+    actorId: string,
+    id: string,
+    { displayBytes }: RenewPhotoUploadRequest,
+  ): Promise<CreatePhotoUploadResponse> {
     const photo = await this.findPhoto(coupleId, id)
     if (photo.uploaderId !== actorId) throw notPhotoUploader()
     if (photo.status === 'READY') throw alreadyComplete()
-    return this.presignUploads(coupleId, id, originalMimeSchema.parse(photo.originalMime), photo.originalBytes)
+    const mime = originalMimeSchema.parse(photo.originalMime)
+    return this.presignUploads(coupleId, id, mime, photo.originalBytes, displayBytes)
   }
 
   // 원본: HEAD 크기 + 매직 넘버만. 표시용 후보: 재인코딩(EXIF 제거) → d.jpg·t.jpg → incoming 삭제 → READY. 다시 불러도 같은 결과
@@ -195,6 +202,7 @@ export class PhotosService {
     photoId: string,
     mime: OriginalMime,
     bytes: number,
+    displayBytes: number,
   ): Promise<CreatePhotoUploadResponse> {
     const [original, display] = await Promise.all([
       this.storage.presignPut({
@@ -206,17 +214,20 @@ export class PhotosService {
       this.storage.presignPut({
         key: photoIncomingKey(coupleId, photoId),
         contentType: 'image/jpeg',
+        contentLength: displayBytes,
         expiresIn: PUT_TTL_SECONDS,
       }),
     ])
     return {
       photoId,
       original: { url: original, headers: { 'Content-Type': mime, 'Content-Length': String(bytes) } },
-      display: { url: display, headers: { 'Content-Type': 'image/jpeg' } },
+      display: { url: display, headers: { 'Content-Type': 'image/jpeg', 'Content-Length': String(displayBytes) } },
       expiresIn: PUT_TTL_SECONDS,
     }
   }
 
+  // TODO(원본 교체): complete 뒤에도 PUT URL 만료(5분) 전이면 원본을 다른 바이트로 덮어쓸 수 있다.
+  // 같은 커플 멤버(신뢰 경계 안)만 URL을 받으므로 지금은 막지 않는다
   private async verifyOriginal(photo: PhotoRow): Promise<void> {
     const head = await this.storage.head(photo.originalKey)
     if (!head) throw uploadIncomplete()

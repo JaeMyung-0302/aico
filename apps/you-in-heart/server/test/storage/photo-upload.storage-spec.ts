@@ -54,8 +54,14 @@ describe('사진 업로드 (실DB + S3 호환 저장소)', () => {
     const { body: upload } = await http()
       .post('/api/v1/photos/uploads')
       .set(...bearer(session.tokens[0]))
-      .send({ entryId: entry.id, originalMime: 'image/jpeg', originalBytes: original.length })
+      .send({
+        entryId: entry.id,
+        originalMime: 'image/jpeg',
+        originalBytes: original.length,
+        displayBytes: original.length,
+      })
       .expect(201)
+    expect(upload.display.headers['Content-Length']).toBe(String(original.length))
     expect((await putTo(upload.original, original)).status).toBe(200)
     expect((await putTo(upload.display, fixture('gps-exif.jpg'))).status).toBe(200)
 

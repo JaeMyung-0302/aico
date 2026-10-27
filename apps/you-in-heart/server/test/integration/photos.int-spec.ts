@@ -2,10 +2,11 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { INestApplication } from '@nestjs/common'
-import { MAX_PHOTOS_PER_ENTRY } from '@you-in-heart/shared'
+import { MAX_DISPLAY_CANDIDATE_BYTES, MAX_PHOTOS_PER_ENTRY } from '@you-in-heart/shared'
 import sharp from 'sharp'
 import request from 'supertest'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
+import { ImageSanitizer, PHOTO_MAX_INPUT_PIXELS } from '../../src/photos/image-sanitizer'
 import { PhotoCleanupCron } from '../../src/photos/photo-cleanup.cron'
 import { PrismaService } from '../../src/prisma/prisma.service'
 import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
@@ -19,6 +20,8 @@ import { createTestApp } from './setup-app'
 import { truncateAll } from './truncate'
 
 const API = '/api/v1/photos'
+// 기기가 만든 표시용 후보 JPEG의 바이트 수(요청에 넣지 않은 테스트의 기본값)
+const DISPLAY_BYTES = 1000
 const fixture = (name: string): Buffer => readFileSync(resolve(__dirname, '../fixtures', name))
 const sha256 = (body: Buffer): string => createHash('sha256').update(body).digest('hex')
 const expiresOf = (url: string): number => Number(new URL(url).searchParams.get('X-Amz-Expires'))
@@ -40,7 +43,7 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
     http()
       .post(`${API}/uploads`)
       .set(...bearer(session.tokens[who]))
-      .send(body)
+      .send({ displayBytes: DISPLAY_BYTES, ...body })
   const complete = (token: string, photoId: string) =>
     http()
       .post(`${API}/${photoId}/complete`)
@@ -101,7 +104,7 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
         'Content-Type': 'image/jpeg',
         'Content-Length': String(original.length),
       })
-      expect(body.display.headers).toEqual({ 'Content-Type': 'image/jpeg' })
+      expect(body.display.headers).toEqual({ 'Content-Type': 'image/jpeg', 'Content-Length': String(DISPLAY_BYTES) })
       const row = await prisma.photo.findFirstOrThrow({ where: { id: photoId } })
       expect(row).toMatchObject({ status: 'PENDING', uploaderId: session.members[0].id, lat: 37.5665, lng: 126.978 })
       expect(row.takenAt?.toISOString()).toBe('2026-10-01T00:30:00.000Z')
@@ -134,6 +137,9 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       ['지원하지 않는 형식', { originalMime: 'image/gif' }],
       ['0바이트', { originalBytes: 0 }],
       ['200MB 초과', { originalBytes: 200 * 1024 * 1024 + 1 }],
+      ['displayBytes 0', { displayBytes: 0 }],
+      ['displayBytes 상한 초과', { displayBytes: MAX_DISPLAY_CANDIDATE_BYTES + 1 }],
+      ['displayBytes 없음', { displayBytes: undefined }],
     ])('%s → 400', async (_label, extra) => {
       const session = await newCouple()
       await grantLocation(session.members[0].id)
@@ -141,6 +147,18 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       await upload(session, 0, { entryId: entry.id, originalMime: 'image/jpeg', originalBytes: 100, ...extra }).expect(
         400,
       )
+    })
+
+    it('표시용 후보 PUT도 displayBytes를 Content-Length로 서명한다', async () => {
+      const session = await newCouple()
+      const presignPut = jest.spyOn(storage, 'presignPut')
+      const { photoId } = await startUpload(session, fixture('gps-exif.jpg'), { displayBytes: 4321 })
+      expect(presignPut).toHaveBeenCalledWith({
+        key: photoIncomingKey(session.couple.id, photoId),
+        contentType: 'image/jpeg',
+        contentLength: 4321,
+        expiresIn: 300,
+      })
     })
 
     it('다른 커플의 entryId는 404(presign 0회), 상대의 일반 일기는 403, 상대의 AUTO_DAY에는 올릴 수 있다', async () => {
@@ -230,6 +248,39 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       expect((await prisma.photo.findFirstOrThrow({ where: { id: res.body.photoId } })).status).toBe('PENDING')
     })
 
+    it('표시용 후보가 상한을 넘으면 422 INVALID_UPLOAD. 통째 읽기(getObject) 없이 상한+1바이트까지만 읽는다', async () => {
+      const session = await newCouple()
+      const original = fixture('gps-exif.jpg')
+      const { photoId } = await startUpload(session, original)
+      await putUploads(session.couple.id, photoId, original, Buffer.alloc(MAX_DISPLAY_CANDIDATE_BYTES + 1))
+      const getObject = jest.spyOn(storage, 'getObject')
+      const bounded = jest.spyOn(storage, 'getObjectBounded')
+      expect((await complete(session.tokens[0], photoId).expect(422)).body.code).toBe('INVALID_UPLOAD')
+      expect(getObject).not.toHaveBeenCalled()
+      expect(bounded).toHaveBeenCalledWith(photoIncomingKey(session.couple.id, photoId), MAX_DISPLAY_CANDIDATE_BYTES)
+    })
+
+    it('재인코딩 대기열이 가득 차면 표시용 후보를 읽기 전에 503 BUSY', async () => {
+      const session = await newCouple()
+      const original = fixture('gps-exif.jpg')
+      const { photoId } = await startUpload(session, original)
+      await putUploads(session.couple.id, photoId, original, fixture('no-exif.jpg'))
+      const sanitizer = app.get(ImageSanitizer)
+      let open: () => void = () => undefined
+      const gate = new Promise<void>((resolve) => {
+        open = resolve
+      })
+      const busy = Array.from({ length: 12 }, () =>
+        sanitizer.sanitize(() => gate.then(() => fixture('no-exif.jpg')), PHOTO_MAX_INPUT_PIXELS),
+      )
+      const bounded = jest.spyOn(storage, 'getObjectBounded')
+      expect((await complete(session.tokens[0], photoId).expect(503)).body.code).toBe('BUSY')
+      expect(bounded).not.toHaveBeenCalled()
+      open()
+      await Promise.all(busy)
+      await complete(session.tokens[0], photoId).expect(200)
+    })
+
     it('원본 크기가 선언과 다르면 422, 아직 올리지 않았으면 409', async () => {
       const session = await newCouple()
       const original = fixture('gps-exif.jpg')
@@ -241,16 +292,17 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
   })
 
   describe('POST /photos/:id/uploads/renew', () => {
-    const renew = (token: string, photoId: string) =>
+    const renew = (token: string, photoId: string, body: object = { displayBytes: DISPLAY_BYTES }) =>
       http()
         .post(`${API}/${photoId}/uploads/renew`)
         .set(...bearer(token))
+        .send(body)
 
-    it('내 PENDING 사진: 같은 photoId로 새 300초 PUT URL 2개, 원본 헤더는 저장된 mime·바이트 수', async () => {
+    it('내 PENDING 사진: 같은 photoId로 새 300초 PUT URL 2개, 원본 헤더는 저장된 mime·바이트 수, 표시용은 새 displayBytes', async () => {
       const session = await newCouple()
       const heic = fixture('sample.heic')
       const { photoId } = await startUpload(session, heic, { originalMime: 'image/heic' })
-      const res = await renew(session.tokens[0], photoId).expect(200)
+      const res = await renew(session.tokens[0], photoId, { displayBytes: 2048 }).expect(200)
       expect(res.body).toEqual({
         photoId,
         original: {
@@ -259,7 +311,7 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
         },
         display: {
           url: expect.stringContaining(photoIncomingKey(session.couple.id, photoId)),
-          headers: { 'Content-Type': 'image/jpeg' },
+          headers: { 'Content-Type': 'image/jpeg', 'Content-Length': '2048' },
         },
         expiresIn: 300,
       })
@@ -267,6 +319,16 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
       // 새 URL로 올린 뒤 complete가 그대로 이어진다
       await putUploads(session.couple.id, photoId, heic, fixture('no-exif.jpg'))
       await complete(session.tokens[0], photoId).expect(200)
+    })
+
+    it.each([
+      ['본문 없음', {}],
+      ['displayBytes 0', { displayBytes: 0 }],
+      ['displayBytes 상한 초과', { displayBytes: MAX_DISPLAY_CANDIDATE_BYTES + 1 }],
+    ])('renew %s → 400', async (_label, body) => {
+      const session = await newCouple()
+      const { photoId } = await startUpload(session, fixture('gps-exif.jpg'))
+      await renew(session.tokens[0], photoId, body).expect(400)
     })
 
     it('READY는 409 ALREADY_COMPLETE, 상대가 올린 PENDING은 403 NOT_AUTHOR, 없는 id는 404', async () => {

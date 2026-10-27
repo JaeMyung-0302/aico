@@ -9,6 +9,8 @@ import {
   idSchema,
   type Photo,
   type PhotoOriginalResponse,
+  type RenewPhotoUploadRequest,
+  renewPhotoUploadRequestSchema,
 } from '@you-in-heart/shared'
 import { Authenticated } from '../auth/decorators/authenticated.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
@@ -59,8 +61,9 @@ export class PhotosController {
     @CurrentCouple() couple: CoupleContext,
     @CurrentUser() me: AuthUser,
     @Param('id', idPipe) id: string,
+    @Body(new ZodValidationPipe(renewPhotoUploadRequestSchema)) body: RenewPhotoUploadRequest,
   ): Promise<CreatePhotoUploadResponse> {
-    return this.photos.renewUpload(couple.id, me.id, id)
+    return this.photos.renewUpload(couple.id, me.id, id, body)
   }
 
   @Get(':id/original')

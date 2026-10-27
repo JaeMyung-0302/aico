@@ -159,6 +159,19 @@ describe('기념일 (실DB)', () => {
         .expect(400)
     })
 
+    it('빈 본문 PATCH({})는 바꾸지 않고 현재 값(200), 다른 커플 id는 404', async () => {
+      const session = await newCouple()
+      const other = await newCouple()
+      const { body: created } = await addCustom(session, 0, { title: '첫 여행', date: '2025-05-05' }).expect(201)
+      const patchEmpty = (token: string) =>
+        http()
+          .patch(`${API}/${created.id}`)
+          .set(...bearer(token))
+          .send({})
+      expect((await patchEmpty(session.tokens[1]).expect(200)).body).toEqual(created)
+      await patchEmpty(other.tokens[0]).expect(404)
+    })
+
     it('다른 커플의 커스텀 id는 PATCH·DELETE 모두 404이고 그 커플 행은 그대로', async () => {
       const mine = await newCouple()
       const theirs = await newCouple()

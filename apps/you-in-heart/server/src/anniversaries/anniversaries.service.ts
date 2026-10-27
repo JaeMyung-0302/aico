@@ -59,21 +59,26 @@ export class AnniversariesService {
     return toCustomAnniversary(row)
   }
 
-  // 두 멤버 모두 수정할 수 있다. 다른 커플의 id는 404
+  // 두 멤버 모두 수정할 수 있다. 다른 커플의 id는 404. 빈 본문이면 바꾸지 않고 현재 값(빈 data의 updateMany는 0건으로 센다)
   async update(coupleId: string, id: string, { title, date }: UpdateCustomAnniversaryRequest) {
+    if (title === undefined && date === undefined) return this.findCustom(coupleId, id)
     const { count } = await this.prisma.anniversary.updateMany({
       where: { id, coupleId },
       data: { ...(title !== undefined ? { title } : {}), ...(date !== undefined ? { date: toDbDate(date) } : {}) },
     })
     if (count === 0) throw notFound()
-    const row = await this.prisma.anniversary.findFirst({ where: { id, coupleId }, select: CUSTOM_SELECT })
-    if (!row) throw notFound()
-    return toCustomAnniversary(row)
+    return this.findCustom(coupleId, id)
   }
 
   async remove(coupleId: string, id: string): Promise<void> {
     const { count } = await this.prisma.anniversary.deleteMany({ where: { id, coupleId } })
     if (count === 0) throw notFound()
+  }
+
+  private async findCustom(coupleId: string, id: string): Promise<CustomAnniversary> {
+    const row = await this.prisma.anniversary.findFirst({ where: { id, coupleId }, select: CUSTOM_SELECT })
+    if (!row) throw notFound()
+    return toCustomAnniversary(row)
   }
 
   private async findCustoms(coupleId: string): Promise<CustomAnniversary[]> {

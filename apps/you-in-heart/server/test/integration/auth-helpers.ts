@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common'
 import type { AuthTokens } from '@you-in-heart/shared'
 import request from 'supertest'
+import { SessionService } from '../../src/auth/session.service'
 
 // ENABLE_DEV_LOGIN=true로 띄운 앱에서 devKey로 로그인한다(같은 devKey = 같은 사용자)
 export const devLogin = async (app: INestApplication, devKey: string): Promise<AuthTokens & { userId: string }> => {
@@ -41,4 +42,10 @@ export const withEnv = (values: Record<string, string | undefined>): (() => void
     })
   apply(values)
   return () => apply(previous)
+}
+
+// HTTP 로그인 없이 세션을 발급한다(throttle·dev-login과 무관하게 여러 사용자를 만들 때)
+export const tokenFor = async (app: INestApplication, userId: string): Promise<string> => {
+  const { accessToken } = await app.get(SessionService).issue(userId)
+  return accessToken
 }

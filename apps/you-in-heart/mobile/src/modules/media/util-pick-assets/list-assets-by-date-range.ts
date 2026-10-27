@@ -43,10 +43,14 @@ export const groupAssetsByKstDate = (
   const dated = assets
     .filter((asset) => asset.creationTime > 0)
     .sort((left, right) => left.creationTime - right.creationTime)
-  const byDate = dated.reduce<ReadonlyMap<string, readonly string[]>>((map, asset) => {
+  // 수만 장을 날짜마다 복사하지 않도록 함수 안의 Map 에만 모은다(밖으로는 새 groups 만 나간다)
+  const byDate = new Map<string, string[]>()
+  dated.forEach((asset) => {
     const date = toKstDate(asset.creationTime)
-    return new Map([...map, [date, [...(map.get(date) ?? []), asset.id]]])
-  }, new Map())
+    const ids = byDate.get(date)
+    if (ids) ids.push(asset.id)
+    else byDate.set(date, [asset.id])
+  })
   // 촬영 순으로 넣었으므로 Map 순서가 곧 날짜 오름차순이다
   const groups = [...byDate.entries()].map(([date, assetIds]) => ({ date, assetIds: assetIds.slice(0, maxPerDate) }))
   const kept = groups.reduce((sum, group) => sum + group.assetIds.length, 0)

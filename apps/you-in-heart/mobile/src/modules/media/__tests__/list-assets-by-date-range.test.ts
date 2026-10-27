@@ -85,4 +85,13 @@ describe('list-assets-by-date-range', () => {
     expect(groups[0]?.assetIds[19]).toBe('p19')
     expect(skipped).toBe(3)
   })
+  it('2만 장·1600여 일(전체 기간)도 날짜 수에 비례해 느려지지 않고 금방 묶는다', () => {
+    const start = Date.parse('2022-04-01T03:00:00Z')
+    const twoHoursMs = 2 * 60 * 60 * 1000
+    const assets = Array.from({ length: 20_000 }, (_, index) => ({ id: `p${index}`, creationTime: start + index * twoHoursMs }))
+    const startedAt = performance.now()
+    const { groups } = groupAssetsByKstDate(assets)
+    expect(performance.now() - startedAt).toBeLessThan(200)
+    expect(groups.length).toBeGreaterThan(1600)
+  })
 })

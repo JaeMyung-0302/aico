@@ -1,0 +1,138 @@
+import type { INestApplication } from '@nestjs/common'
+import { DiscoveryModule } from '@nestjs/core'
+import request from 'supertest'
+import { PUSH_SENDER } from '../../src/notifications/push.service'
+import { PrismaService } from '../../src/prisma/prisma.service'
+import { bearer, tokenFor } from './auth-helpers'
+import { snapshotCouple } from './couple-tables'
+import { createPairedCouple, createUser, seedCoupleData } from './factories'
+import { createFakePush } from './fake-push'
+import { collectRoutes, type RouteInfo } from './route-inventory'
+import { createTestApp } from './setup-app'
+import {
+  COUPLE_ROUTE_CASES,
+  type CoupleFixture,
+  type CoupleRouteCase,
+  type TenantFixture,
+  WITHOUT_COUPLE_ROUTES,
+} from './tenant-matrix'
+import { truncateAll } from './truncate'
+
+const API = '/api/v1'
+
+const send = (app: INestApplication, routeCase: CoupleRouteCase, fixture: TenantFixture, token: string) => {
+  const [method] = routeCase.route.split(' ')
+  const { path, body } = routeCase.request(fixture)
+  const server = request(app.getHttpServer())
+  const url = `${API}${path}`
+  const req =
+    method === 'GET'
+      ? server.get(url)
+      : method === 'POST'
+        ? server.post(url)
+        : method === 'PATCH'
+          ? server.patch(url)
+          : method === 'PUT'
+            ? server.put(url)
+            : server.delete(url)
+  return req.set(...bearer(token)).send(body ?? {})
+}
+
+const idsOf = (fixture: CoupleFixture): string[] => [
+  fixture.coupleId,
+  ...fixture.members.map((member) => member.userId),
+  ...Object.values(fixture.seeded),
+]
+
+describe('테넌트 격리 (실DB)', () => {
+  let app: INestApplication
+  let prisma: PrismaService
+  let routes: RouteInfo[]
+
+  const createCoupleFixture = async (): Promise<CoupleFixture> => {
+    const paired = await createPairedCouple(prisma)
+    const seeded = await seedCoupleData(prisma, paired)
+    const tokens = await Promise.all(paired.members.map((member) => tokenFor(app, member.id)))
+    return {
+      coupleId: paired.couple.id,
+      members: [
+        { userId: paired.members[0].id, token: tokens[0] ?? '' },
+        { userId: paired.members[1].id, token: tokens[1] ?? '' },
+      ],
+      seeded,
+    }
+  }
+
+  const createFixture = async (): Promise<TenantFixture> => {
+    await truncateAll(prisma)
+    const [a, b] = [await createCoupleFixture(), await createCoupleFixture()]
+    const outsider = await createUser(prisma)
+    return { a, b, outsider: { userId: outsider.id, token: await tokenFor(app, outsider.id) } }
+  }
+
+  beforeAll(async () => {
+    app = await createTestApp((builder) => builder.overrideProvider(PUSH_SENDER).useValue(createFakePush().sender), {
+      imports: [DiscoveryModule],
+    })
+    prisma = app.get(PrismaService)
+    routes = collectRoutes(app)
+  })
+
+  afterAll(async () => {
+    await app.close()
+  })
+
+  it('@AllowWithoutCouple가 아닌 모든 라우트가 테넌트 매트릭스에 있다', () => {
+    const coupleRoutes = routes.filter((route) => !route.isWithoutCouple).map((route) => route.route)
+    const withoutRoutes = routes.filter((route) => route.isWithoutCouple).map((route) => route.route)
+    const caseNames: string[] = COUPLE_ROUTE_CASES.map((routeCase) => routeCase.route)
+    const declaredWithout: string[] = WITHOUT_COUPLE_ROUTES.map((route) => route.route)
+
+    process.stdout.write(`routes checked: ${coupleRoutes.length}\n${coupleRoutes.map((r) => `  - ${r}`).join('\n')}\n`)
+
+    expect({ missingFromMatrix: coupleRoutes.filter((route) => !caseNames.includes(route)) }).toEqual({
+      missingFromMatrix: [],
+    })
+    expect({ notCoupleRoute: caseNames.filter((route) => !coupleRoutes.includes(route)) }).toEqual({
+      notCoupleRoute: [],
+    })
+    expect({ undeclaredWithoutCouple: withoutRoutes.filter((route) => !declaredWithout.includes(route)) }).toEqual({
+      undeclaredWithoutCouple: [],
+    })
+    expect({ staleWithoutCouple: declaredWithout.filter((route) => !withoutRoutes.includes(route)) }).toEqual({
+      staleWithoutCouple: [],
+    })
+    expect(coupleRoutes.length).toBeGreaterThan(0)
+  })
+
+  const cases = COUPLE_ROUTE_CASES.map((routeCase) => [routeCase.route, routeCase] as const)
+
+  it.each(cases)(
+    '%s: 커플 A 토큰 + 커플 B의 실제 id → B 비노출·B 무변경(:id 라우트는 404)',
+    async (_name, routeCase) => {
+      const fixture = await createFixture()
+      const before = await snapshotCouple(prisma, fixture.b.coupleId)
+      const res = await send(app, routeCase, fixture, fixture.a.members[0].token)
+
+      expect(res.status).toBeLessThan(500)
+      if (routeCase.expectsNotFound) expect(res.status).toBe(404)
+      const text = JSON.stringify(res.body)
+      expect(idsOf(fixture.b).filter((id) => text.includes(id))).toEqual([])
+      expect(await snapshotCouple(prisma, fixture.b.coupleId)).toBe(before)
+    },
+  )
+
+  it.each(cases)('%s: 커플 미연결 사용자는 403', async (_name, routeCase) => {
+    const fixture = await createFixture()
+    const before = await snapshotCouple(prisma, fixture.b.coupleId)
+    const res = await send(app, routeCase, fixture, fixture.outsider.token)
+    expect(res.status).toBe(403)
+    expect(await snapshotCouple(prisma, fixture.b.coupleId)).toBe(before)
+  })
+
+  it.each(cases)('%s: 토큰 없이 호출하면 401', async (_name, routeCase) => {
+    const fixture = await createFixture()
+    const res = await send(app, routeCase, fixture, '')
+    expect(res.status).toBe(401)
+  })
+})

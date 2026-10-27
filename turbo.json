@@ -45,6 +45,7 @@
         "TRUST_PROXY_HOPS",
         "KAKAO_NATIVE_APP_KEY",
         "KAKAO_ADMIN_KEY",
+        "KAKAO_REST_API_KEY",
         "GOOGLE_WEB_CLIENT_ID",
         "GOOGLE_IOS_CLIENT_ID",
         "GOOGLE_ANDROID_CLIENT_ID",

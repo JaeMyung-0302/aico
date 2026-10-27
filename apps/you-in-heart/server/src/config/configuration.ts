@@ -17,6 +17,15 @@ export const configuration = () => ({
     adminKey: process.env.KAKAO_ADMIN_KEY ?? '',
   },
   expoAccessToken: process.env.EXPO_ACCESS_TOKEN ?? '',
+  // Cloudflare R2 private 버킷 하나(접두사 c/ · incoming/ · exports/ · system/purge-ledger/)
+  r2: {
+    accountId: process.env.R2_ACCOUNT_ID ?? '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+    privateBucket: process.env.R2_PRIVATE_BUCKET || 'youinheart-private',
+    // 로컬 개발 전용(SeaweedFS). 비우면 R2 계정 엔드포인트
+    endpoint: process.env.R2_ENDPOINT ?? '',
+  },
 })
 
 export type AppConfig = ReturnType<typeof configuration>

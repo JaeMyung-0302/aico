@@ -12,6 +12,9 @@ import {
   photoThumbKey,
   PURGE_LEDGER_PREFIX,
   purgeLedgerKey,
+  quoteScreenshotIncomingKey,
+  quoteScreenshotKey,
+  quoteScreenshotThumbKey,
   UNLINKED_COUPLE_LEDGER_PREFIX,
   unlinkedCoupleLedgerKey,
   userIdFromDeletedLedgerKey,
@@ -20,6 +23,7 @@ import {
 const COUPLE_ID = '0199e3a0-0000-7000-8000-0000000000c1'
 const USER_ID = '0199e3a0-0000-7000-8000-0000000000a1'
 const PHOTO_ID = '0199e3a0-0000-7000-8000-0000000000f1'
+const QUOTE_ID = '0199e3a0-0000-7000-8000-0000000000e1'
 
 describe('storage-keys', () => {
   it('couplePrefixes: 커플당 접두사 3개(c/·incoming/·exports/)', () => {
@@ -102,4 +106,21 @@ describe('storage-keys', () => {
     expect(exportZipKey(COUPLE_ID, PHOTO_ID).startsWith(couplePrefixes(COUPLE_ID)[2])).toBe(true)
     expect(() => exportZipKey(COUPLE_ID, 'x/../y')).toThrow()
   })
+
+  it('문구 스크린샷은 c/{coupleId}/q/{quoteId}/s.jpg·st.jpg, 업로드 후보는 incoming/{coupleId}/q/{quoteId} (purge 접두사 안)', () => {
+    const [cPrefix, incomingPrefix] = couplePrefixes(COUPLE_ID)
+    expect(quoteScreenshotKey(COUPLE_ID, QUOTE_ID)).toBe(`c/${COUPLE_ID}/q/${QUOTE_ID}/s.jpg`)
+    expect(quoteScreenshotThumbKey(COUPLE_ID, QUOTE_ID)).toBe(`c/${COUPLE_ID}/q/${QUOTE_ID}/st.jpg`)
+    expect(quoteScreenshotIncomingKey(COUPLE_ID, QUOTE_ID)).toBe(`incoming/${COUPLE_ID}/q/${QUOTE_ID}`)
+    expect(quoteScreenshotKey(COUPLE_ID, QUOTE_ID).startsWith(cPrefix)).toBe(true)
+    expect(quoteScreenshotIncomingKey(COUPLE_ID, QUOTE_ID).startsWith(incomingPrefix)).toBe(true)
+  })
+
+  it.each([quoteScreenshotKey, quoteScreenshotThumbKey, quoteScreenshotIncomingKey])(
+    '문구 스크린샷 키 생성기는 uuid가 아닌 id를 거부한다 (%#)',
+    (toKey) => {
+      expect(() => toKey('../x', QUOTE_ID)).toThrow()
+      expect(() => toKey(COUPLE_ID, '../../s.jpg')).toThrow()
+    },
+  )
 })

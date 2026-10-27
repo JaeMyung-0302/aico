@@ -18,6 +18,7 @@ import type { AppConfig } from '../config/configuration'
 import {
   assertDeletablePrefix,
   type ObjectStorage,
+  ObjectTooLargeError,
   type PresignPutInput,
   type PutObjectInput,
   type UploadStreamInput,
@@ -30,6 +31,10 @@ const PAGE_SIZE = 1000
 // 스트림 업로드(내보내기 zip): 파트 8MB × 동시 2개 → 메모리 상한 약 16MB(architecture §5.3)
 const UPLOAD_PART_SIZE = 8 * 1024 * 1024
 const UPLOAD_QUEUE_SIZE = 2
+
+// 빈 객체에 Range를 보내면 416(InvalidRange)
+const isEmptyRange = (error: unknown): boolean =>
+  error instanceof S3ServiceException && error.$metadata.httpStatusCode === 416
 
 const isNotFound = (error: unknown): boolean =>
   error instanceof NotFound ||
@@ -79,6 +84,28 @@ export class R2ObjectStorage implements ObjectStorage {
       return Buffer.from(bytes ?? [])
     } catch (error) {
       if (isNotFound(error)) return null
+      throw error
+    }
+  }
+
+  // Range bytes=0-max → 최대 max+1바이트. 받은 바이트가 max를 넘으면 거절한다. Range를 무시한 응답도 본문을 읽기 전에 끊는다
+  async getObjectBounded(key: string, maxBytes: number): Promise<Buffer | null> {
+    try {
+      const response = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key, Range: `bytes=0-${maxBytes}` }),
+      )
+      if ((response.ContentLength ?? 0) > maxBytes) {
+        if (response.Body instanceof Readable) response.Body.destroy()
+        throw new ObjectTooLargeError(maxBytes)
+      }
+      const bytes = await response.Body?.transformToByteArray()
+      if (!bytes) return Buffer.alloc(0)
+      if (bytes.byteLength > maxBytes) throw new ObjectTooLargeError(maxBytes)
+      // 복사 없이 같은 메모리를 Buffer로 본다
+      return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+    } catch (error) {
+      if (isNotFound(error)) return null
+      if (isEmptyRange(error)) return Buffer.alloc(0)
       throw error
     }
   }

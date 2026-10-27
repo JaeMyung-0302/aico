@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream'
 import { MemoryObjectStorage } from './memory-object-storage'
+import { ObjectTooLargeError } from './object-storage'
 
 const put = (storage: MemoryObjectStorage, key: string, body = 'x') =>
   storage.putObject({ key, body: Buffer.from(body), contentType: 'text/plain' })
@@ -56,6 +57,14 @@ describe('MemoryObjectStorage', () => {
     expect(getUrl.searchParams.get('X-Amz-Expires')).toBe('3600')
     await expect(storage.getObjectRange('c/a/o', 3)).resolves.toEqual(Buffer.from('abc'))
     await expect(storage.getObjectRange('c/a/x', 3)).resolves.toBeNull()
+  })
+
+  it('getObjectBounded는 maxBytes 이하면 본문, 넘으면 ObjectTooLargeError, 없으면 null', async () => {
+    const storage = new MemoryObjectStorage()
+    await put(storage, 'incoming/a/1', 'abcdef')
+    await expect(storage.getObjectBounded('incoming/a/1', 6)).resolves.toEqual(Buffer.from('abcdef'))
+    await expect(storage.getObjectBounded('incoming/a/1', 5)).rejects.toBeInstanceOf(ObjectTooLargeError)
+    await expect(storage.getObjectBounded('incoming/a/x', 5)).resolves.toBeNull()
   })
 
   it('getObjectStream은 본문 스트림(없으면 null), uploadStream은 스트림을 모아 저장한다', async () => {

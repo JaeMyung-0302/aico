@@ -25,11 +25,20 @@ export type ObjectStorage = {
   deletePrefix: (prefix: string) => Promise<number>
   presignPut: (input: PresignPutInput) => Promise<string>
   presignGet: (key: string, expiresIn: number) => Promise<string>
+  // 통째로 읽되 maxBytes를 넘으면 ObjectTooLargeError(Range로 max+1바이트까지만 받는다 → HEAD 뒤 바꿔치기해도 메모리 상한 유지). 없으면 null
+  getObjectBounded: (key: string, maxBytes: number) => Promise<Buffer | null>
   // 앞 length바이트(Range 요청, 매직 넘버 검사용). 없으면 null
   getObjectRange: (key: string, length: number) => Promise<Buffer | null>
   // 큰 객체(원본 사진)를 버퍼에 올리지 않고 읽는다. 없으면 null
   getObjectStream: (key: string) => Promise<Readable | null>
   uploadStream: (input: UploadStreamInput) => Promise<void>
+}
+
+export class ObjectTooLargeError extends Error {
+  constructor(maxBytes: number) {
+    super(`객체가 ${maxBytes}바이트를 넘습니다`)
+    this.name = 'ObjectTooLargeError'
+  }
 }
 
 export const assertDeletablePrefix = (prefix: string): void => {

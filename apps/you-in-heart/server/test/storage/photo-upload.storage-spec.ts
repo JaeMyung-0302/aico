@@ -6,7 +6,7 @@ import sharp from 'sharp'
 import request from 'supertest'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
-import { OBJECT_STORAGE, type ObjectStorage } from '../../src/storage/object-storage'
+import { OBJECT_STORAGE, type ObjectStorage, ObjectTooLargeError } from '../../src/storage/object-storage'
 import { couplePrefixes, photoDisplayKey, photoOriginalKey, photoThumbKey } from '../../src/storage/storage-keys'
 import { bearer } from '../integration/auth-helpers'
 import { createCoupleSession } from '../integration/couple-session'
@@ -94,5 +94,16 @@ describe('사진 업로드 (실DB + S3 호환 저장소)', () => {
       .expect(200)
     const downloaded = Buffer.from(await (await fetch(signed.url)).arrayBuffer())
     expect(sha256(downloaded)).toBe(sha256(original))
+  })
+
+  it('getObjectBounded: Range로 max+1바이트까지만 읽어 넘으면 ObjectTooLargeError, 빈 객체는 빈 버퍼, 없으면 null', async () => {
+    const key = 'incoming/bounded-test/o'
+    cleanupPrefixes = [...cleanupPrefixes, 'incoming/bounded-test/']
+    await storage.putObject({ key, body: Buffer.from('0123456789'), contentType: 'application/octet-stream' })
+    await expect(storage.getObjectBounded(key, 10)).resolves.toEqual(Buffer.from('0123456789'))
+    await expect(storage.getObjectBounded(key, 9)).rejects.toBeInstanceOf(ObjectTooLargeError)
+    await storage.putObject({ key: `${key}-empty`, body: Buffer.alloc(0), contentType: 'application/octet-stream' })
+    await expect(storage.getObjectBounded(`${key}-empty`, 9)).resolves.toEqual(Buffer.alloc(0))
+    await expect(storage.getObjectBounded(`${key}-missing`, 9)).resolves.toBeNull()
   })
 })

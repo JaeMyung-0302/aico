@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common'
 import {
   assertDeletablePrefix,
   type ObjectStorage,
+  ObjectTooLargeError,
   type PresignPutInput,
   type PutObjectInput,
   type UploadStreamInput,
@@ -22,6 +23,12 @@ export class MemoryObjectStorage implements ObjectStorage {
 
   async getObject(key: string): Promise<Buffer | null> {
     return this.objects.get(key) ?? null
+  }
+
+  async getObjectBounded(key: string, maxBytes: number): Promise<Buffer | null> {
+    const body = this.objects.get(key)
+    if (body && body.length > maxBytes) throw new ObjectTooLargeError(maxBytes)
+    return body ?? null
   }
 
   async head(key: string): Promise<{ size: number } | null> {

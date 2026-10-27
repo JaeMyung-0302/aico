@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import type { Couple, UpdateCoupleRequest } from '@you-in-heart/shared'
 import { fromDbDate, toDbDate } from '../common/dates/db-date'
-import type { Prisma } from '../generated/prisma'
-import { PushService } from '../notifications/push.service'
+import type { NotificationLogKind, Prisma } from '../generated/prisma'
+import { CoupleNotifier } from '../notifications/couple-notifier'
 import { PrismaService } from '../prisma/prisma.service'
 
 const COUPLE_SELECT = {
@@ -21,7 +21,7 @@ const COUPLE_SELECT = {
 type CoupleRow = Prisma.CoupleGetPayload<{ select: typeof COUPLE_SELECT }>
 
 // 잠금 화면에 보이므로 날짜·이름 등 내용은 넣지 않는다
-export type PartnerNotice = { title: string; body: string; type: string }
+export type PartnerNotice = { title: string; body: string; type: NotificationLogKind; data?: Record<string, string> }
 
 const STARTED_ON_CHANGED: PartnerNotice = {
   title: '사귄 날이 바뀌었어요',
@@ -49,7 +49,7 @@ const toCoupleResponse = (row: CoupleRow): Couple => ({
 export class CouplesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly push: PushService,
+    private readonly notifier: CoupleNotifier,
   ) {}
 
   async getCouple(coupleId: string): Promise<Couple> {
@@ -65,11 +65,13 @@ export class CouplesService {
     return this.getCouple(coupleId)
   }
 
-  async notifyPartner(coupleId: string, actorId: string, { title, body, type }: PartnerNotice): Promise<void> {
+  // 상대 멤버(actor 제외)에게 알린다. data에는 type과 id만
+  async notifyPartner(coupleId: string, actorId: string, { title, body, type, data }: PartnerNotice): Promise<void> {
     const partners = await this.prisma.coupleMember.findMany({
       where: { coupleId, userId: { not: actorId } },
       select: { userId: true },
     })
-    await this.push.sendToUsers(partners.map(({ userId }) => ({ userId, title, body, data: { type } })))
+    const notices = partners.map(({ userId }) => ({ userId, title, body, data: { ...data, type } }))
+    await this.notifier.notify(coupleId, type, notices)
   }
 }

@@ -195,6 +195,33 @@ describe('커플 페어링 (실DB)', () => {
       expect(me.body.couple).toEqual({ id: couple.id, status: 'ACTIVE', startedOn: '2024-03-01', purgeAfter: null })
     })
 
+    it('사귄 날을 바꾸면 상대 멤버에게만 푸시 1건(data는 type만) + 수신자 기준 notification_sent 1건', async () => {
+      const { couple, members } = await createPairedCouple(prisma, { startedOn: null })
+      await grantRequiredConsents(
+        prisma,
+        members.map((member) => member.id),
+      )
+      await prisma.pushToken.createMany({
+        data: [
+          { userId: members[0].id, expoToken: 'ExponentPushToken[actor]', platform: 'IOS' },
+          { userId: members[1].id, expoToken: 'ExponentPushToken[partner]', platform: 'ANDROID' },
+        ],
+      })
+      await request(app.getHttpServer())
+        .patch('/api/v1/couples/me')
+        .set(...bearer(await tokenFor(app, members[0].id)))
+        .send({ startedOn: '2024-05-05' })
+        .expect(200)
+
+      expect(push.sent().map((message) => [message.to, message.data])).toEqual([
+        ['ExponentPushToken[partner]', { type: 'STARTED_ON_CHANGED' }],
+      ])
+      const events = await prisma.eventLog.findMany({ where: { name: 'notification_sent' } })
+      expect(events.map((event) => [event.coupleId, event.userId, event.props])).toEqual([
+        [couple.id, members[1].id, { kind: 'STARTED_ON_CHANGED' }],
+      ])
+    })
+
     it('잘못된 날짜는 400', async () => {
       const { members } = await createPairedCouple(prisma)
       await grantRequiredConsents(prisma, [members[0].id])

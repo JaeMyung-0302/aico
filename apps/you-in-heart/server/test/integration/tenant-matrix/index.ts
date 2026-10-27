@@ -3,6 +3,7 @@ import { anniversariesMatrix } from './anniversaries.matrix'
 import { couplesMatrix } from './couples.matrix'
 import { diaryMatrix } from './diary.matrix'
 import { eventsMatrix } from './events.matrix'
+import { exportMatrix } from './export.matrix'
 import { photosMatrix } from './photos.matrix'
 import { publicMatrix } from './public.matrix'
 import { usersMatrix } from './users.matrix'
@@ -42,6 +43,7 @@ const MATRICES: readonly DomainMatrix[] = [
   anniversariesMatrix,
   diaryMatrix,
   photosMatrix,
+  exportMatrix,
 ]
 
 export const COUPLE_ROUTE_CASES: readonly CoupleRouteCase[] = MATRICES.flatMap((matrix) => matrix.coupleRoutes)

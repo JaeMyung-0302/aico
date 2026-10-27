@@ -8,7 +8,7 @@ import { bucketItemTitleSchema, bucketListResponseSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
 import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
 import { latestExportResponseSchema } from '../export'
-import { createPhotoUploadRequestSchema } from '../photo'
+import { createPhotoUploadRequestSchema, photoOriginalResponseSchema } from '../photo'
 import { placeBboxQuerySchema, placeListResponseSchema } from '../place'
 import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema, quoteListResponseSchema } from '../quote'
 import { putConsentsRequestSchema, updateMeRequestSchema } from '../user'
@@ -114,6 +114,16 @@ describe('photo', () => {
 
   it('지원하지 않는 MIME은 거부', () => {
     expect(createPhotoUploadRequestSchema.safeParse({ ...base, originalMime: 'image/gif' }).success).toBe(false)
+  })
+
+  it('원본 URL 응답은 url·expiresIn에 저장된 원본 mime을 더한다', () => {
+    const original = { url: 'https://r2.example.com/c/1/p/2/o?X-Amz-Expires=300', expiresIn: 300 }
+    expect(photoOriginalResponseSchema.parse({ ...original, mime: 'image/heic' })).toEqual({
+      ...original,
+      mime: 'image/heic',
+    })
+    expect(photoOriginalResponseSchema.safeParse(original).success).toBe(false)
+    expect(photoOriginalResponseSchema.safeParse({ ...original, mime: 'image/gif' }).success).toBe(false)
   })
 })
 

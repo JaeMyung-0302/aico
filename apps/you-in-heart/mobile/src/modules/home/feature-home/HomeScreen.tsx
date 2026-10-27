@@ -10,10 +10,12 @@ import { findNextAnniversary } from '@/modules/anniversary/util-anniversary/anni
 import { isUnlinkingBannerVisible } from '@/modules/auth/util-auth-gate/resolve-auth-redirect'
 import { useCouple } from '@/modules/couple/data-access-couple/useCouple'
 import { findPartnerName } from '@/modules/couple/util-pairing/partner-name'
+import { pickDailyQuote, useHomeQuotes } from '@/modules/quote/data-access-quote/useQuotes'
 import { useMe } from '@/modules/user/data-access-me/useMe'
 import { useNow } from '@/shared/hooks/use-now'
 import DdayHero from '../ui-dday-hero/DdayHero'
 import HomeHeader from './HomeHeader'
+import HomeShortcuts from './HomeShortcuts'
 import NextAnniversaryCard from './NextAnniversaryCard'
 import QuoteCard from './QuoteCard'
 import StartedOnPrompt from './StartedOnPrompt'
@@ -23,7 +25,7 @@ import WidgetHint from './WidgetHint'
 const MINUTE_MS = 60_000
 
 // SCR-03 홈 (D-day). 유예 중(읽기 전용)에는 배너 + D-day + 최근 기록만 보인다
-// TODO(1D): 최근 기록·기록 쓰기 FAB, TODO(3C·4C): 버킷리스트·문구 보관함 바로가기
+// TODO(1D): 최근 기록·기록 쓰기 FAB
 const HomeScreen = () => {
   const insets = useSafeAreaInsets()
   const me = useMe()
@@ -32,6 +34,7 @@ const HomeScreen = () => {
   const hasCouple = Boolean(me.data?.couple)
   const couple = useCouple({ isEnabled: hasCouple })
   const anniversaries = useAnniversaries({ isEnabled: hasCouple })
+  const quotes = useHomeQuotes({ isEnabled: hasCouple })
 
   if (!me.data) {
     return me.isError ? (
@@ -53,7 +56,7 @@ const HomeScreen = () => {
       {isUnlinking ? <UnlinkingBanner purgeAfter={me.data.couple?.purgeAfter ?? null} /> : null}
       {startedOn ? <DdayHero startedOn={startedOn} nowMs={now} /> : <StartedOnPrompt />}
       {!isUnlinking && next ? <NextAnniversaryCard anniversary={next} nowMs={now} /> : null}
-      {isUnlinking ? null : <QuoteCard />}
+      {isUnlinking ? null : <QuoteCard quote={pickDailyQuote(quotes.data ?? [], now)} />}
       {isUnlinking ? null : <WidgetHint />}
       <View style={styles.recent}>
         <AppText variant="bodyStrong">최근 기록</AppText>
@@ -63,6 +66,7 @@ const HomeScreen = () => {
           </AppText>
         </View>
       </View>
+      {isUnlinking ? null : <HomeShortcuts />}
     </ScrollView>
   )
 }

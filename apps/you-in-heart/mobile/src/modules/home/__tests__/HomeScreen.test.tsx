@@ -3,7 +3,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { computeDday } from '@you-in-heart/shared'
 import { router } from 'expo-router'
 import { fetchAnniversaries } from '@/modules/anniversary/data-access-anniversary/anniversary-api'
+import { fetchBucketItems } from '@/modules/bucket/data-access-bucket/bucket-api'
 import { fetchCouple } from '@/modules/couple/data-access-couple/couple-api'
+import { fetchQuotePage } from '@/modules/quote/data-access-quote/quote-api'
 import { fetchMe } from '@/modules/user/data-access-me/me-api'
 import { session } from '@/shared/auth/session'
 import { ACTIVE_COUPLE, ANNIVERSARY_ITEMS, FIXED_NOW_MS, mockClockAt, ME, toSummary } from '@/test-utils/fixtures'
@@ -15,6 +17,8 @@ jest.mock('expo-router', () => ({ router: { push: jest.fn() } }))
 jest.mock('@/modules/user/data-access-me/me-api', () => ({ fetchMe: jest.fn() }))
 jest.mock('@/modules/couple/data-access-couple/couple-api', () => ({ fetchCouple: jest.fn() }))
 jest.mock('@/modules/anniversary/data-access-anniversary/anniversary-api', () => ({ fetchAnniversaries: jest.fn() }))
+jest.mock('@/modules/bucket/data-access-bucket/bucket-api', () => ({ fetchBucketItems: jest.fn() }))
+jest.mock('@/modules/quote/data-access-quote/quote-api', () => ({ fetchQuotePage: jest.fn() }))
 jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
 }))
@@ -36,6 +40,28 @@ beforeEach(async () => {
   jest.mocked(fetchMe).mockResolvedValue(ME)
   jest.mocked(fetchCouple).mockResolvedValue(ACTIVE_COUPLE)
   jest.mocked(fetchAnniversaries).mockResolvedValue(ANNIVERSARY_ITEMS)
+  jest.mocked(fetchBucketItems).mockResolvedValue([])
+  jest.mocked(fetchQuotePage).mockResolvedValue({ items: [], nextCursor: null })
+})
+
+const SAVED_QUOTE = {
+  id: '01890a5d-ac96-774b-bcce-b302099a8601',
+  source: 'SHARE' as const,
+  text: '오늘 하루도 고생 많았어.',
+  speakerLabel: '지은',
+  saidAt: '2026-03-14T23:42:00+09:00',
+  memo: null,
+  screenshotUrl: null,
+  screenshotThumbUrl: null,
+  createdAt: '2026-03-15T03:00:00.000Z',
+}
+
+const bucketItem = (id: string, doneAt: string | null) => ({
+  id: `01890a5d-ac96-774b-bcce-b302099a85${id}`,
+  title: `버킷 ${id}`,
+  doneAt,
+  entryId: null,
+  createdAt: '2026-10-01T03:00:00.000Z',
 })
 
 afterEach(() => {
@@ -76,6 +102,29 @@ describe('HomeScreen', () => {
     expect(screen.getByText('카톡에서 마음에 남은 말을 문구 보관함에 담아 두세요')).toBeOnTheScreen()
   })
 
+  it('간직한 문구 카드는 보관함에서 저장한 문구 하나와 보낸 사람·날짜를 보여주고, 누르면 보관함으로 간다', async () => {
+    jest.mocked(fetchQuotePage).mockResolvedValue({ items: [SAVED_QUOTE], nextCursor: null })
+    await renderHome()
+    expect(await screen.findByText('오늘 하루도 고생 많았어.')).toBeOnTheScreen()
+    expect(screen.getByText('지은 · 2026. 03. 14')).toBeOnTheScreen()
+    expect(screen.queryByText('아직 간직한 문구가 없어요')).toBeNull()
+    await fireEvent.press(screen.getByRole('button', { name: /^간직한 문구/ }))
+    expect(router.push).toHaveBeenCalledWith('/quotes')
+  })
+
+  it('버킷리스트(진행률)·문구 보관함 바로가기', async () => {
+    jest.mocked(fetchBucketItems).mockResolvedValue([
+      bucketItem('01', '2026-05-10T03:00:00.000Z'),
+      bucketItem('02', null),
+      bucketItem('03', null),
+    ])
+    await renderHome()
+    await fireEvent.press(await screen.findByRole('button', { name: '버킷리스트 1/3' }))
+    expect(router.push).toHaveBeenCalledWith('/bucket')
+    await fireEvent.press(screen.getByRole('button', { name: '문구 보관함' }))
+    expect(router.push).toHaveBeenCalledWith('/quotes')
+  })
+
   it('위젯 추가 안내는 닫으면 다시 보이지 않는다', async () => {
     await renderHome()
     expect(await screen.findByText('홈 화면에 D-day 위젯 추가')).toBeOnTheScreen()
@@ -101,6 +150,7 @@ describe('HomeScreen', () => {
     // 시안 SCR-03 유예 중: 배너 + D-day + 최근 기록만 (쓰기로 이어지는 카드는 숨긴다)
     expect(screen.getByLabelText('함께한 지 413일')).toBeOnTheScreen()
     expect(screen.queryByText('홈 화면에 D-day 위젯 추가')).toBeNull()
+    expect(screen.queryByRole('button', { name: /^버킷리스트/ })).toBeNull()
     await fireEvent.press(screen.getByRole('button', { name: '다시 연결하기' }))
     expect(router.push).toHaveBeenCalledWith('/settings')
   })

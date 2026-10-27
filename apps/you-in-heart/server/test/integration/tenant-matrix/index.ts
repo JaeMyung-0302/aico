@@ -1,4 +1,5 @@
 import type { SeededCouple } from '../factories'
+import { anniversariesMatrix } from './anniversaries.matrix'
 import { couplesMatrix } from './couples.matrix'
 import { eventsMatrix } from './events.matrix'
 import { publicMatrix } from './public.matrix'
@@ -31,7 +32,7 @@ export type DomainMatrix = {
   withoutCoupleRoutes: readonly WithoutCoupleRoute[]
 }
 
-const MATRICES: readonly DomainMatrix[] = [publicMatrix, usersMatrix, couplesMatrix, eventsMatrix]
+const MATRICES: readonly DomainMatrix[] = [publicMatrix, usersMatrix, couplesMatrix, eventsMatrix, anniversariesMatrix]
 
 export const COUPLE_ROUTE_CASES: readonly CoupleRouteCase[] = MATRICES.flatMap((matrix) => matrix.coupleRoutes)
 export const WITHOUT_COUPLE_ROUTES: readonly WithoutCoupleRoute[] = MATRICES.flatMap(

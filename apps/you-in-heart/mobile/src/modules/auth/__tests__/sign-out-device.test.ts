@@ -1,4 +1,5 @@
 import { waitFor } from '@testing-library/react-native'
+import { pendingShare } from '@/modules/quote/util-share/pending-share'
 import { clearWidgetSnapshot } from '@/modules/widget/data-access-widget/widget-storage'
 import { session } from '@/shared/auth/session'
 import { forgetPushToken, unregisterPushToken } from '@/shared/notifications/register-push-token'
@@ -57,6 +58,12 @@ describe('signOutDevice', () => {
     await waitFor(() => expect(signOutKakao).toHaveBeenCalledTimes(1))
     expect(unregisterPushToken).not.toHaveBeenCalled()
     expect(logoutSession).not.toHaveBeenCalled()
+  })
+
+  it('로그인 전에 기억해 둔 공유를 지워 다음 계정이 이어받지 않는다', async () => {
+    pendingShare.getState().set({ kind: 'text', text: '보고 싶어' })
+    await signOutDevice()
+    expect(pendingShare.getState().payload).toBeNull()
   })
 
   it('위젯 비우기가 실패해도 로그아웃된다', async () => {

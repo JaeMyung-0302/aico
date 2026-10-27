@@ -8,6 +8,7 @@ import {
   INVITE_TTL_HOURS,
 } from '@you-in-heart/shared'
 import { isUniqueViolation } from '../common/prisma/prisma-errors'
+import { lockUsers } from '../common/prisma/user-lock'
 import { EventsService } from '../events/events.service'
 import type { Prisma } from '../generated/prisma'
 import { PrismaService } from '../prisma/prisma.service'
@@ -29,6 +30,21 @@ export const generateInviteCode = (): string =>
 
 const isUsable = (invite: LockedInvite, joinerId: string, now: Date): boolean =>
   invite.usedAt === null && invite.revokedAt === null && invite.expiresAt > now && invite.creatorId !== joinerId
+
+// 잠금 순서 User → CoupleInvite(회원 탈퇴의 User 잠금 + Cascade와 같은 순서라 교착이 없다).
+// 두 사용자가 모두 ACTIVE로 남아 있을 때만 잠근 초대를 돌려준다. 잠금을 쥔 동안 탈퇴의 hard delete가 끼어들지 못한다
+const lockJoinTargets = async (tx: Prisma.TransactionClient, code: string, joinerId: string): Promise<LockedInvite> => {
+  const [found] = await tx.$queryRaw<Array<{ creatorId: string }>>`
+    SELECT "creatorId" FROM "CoupleInvite" WHERE code = ${code}`
+  if (!found) throw inviteNotFound()
+  const userIds = [found.creatorId, joinerId]
+  const users = await lockUsers(tx, userIds)
+  if (users.length !== new Set(userIds).size || users.some((user) => user.status !== 'ACTIVE')) throw inviteNotFound()
+  const [invite] = await tx.$queryRaw<LockedInvite[]>`
+    SELECT id, "creatorId", "expiresAt", "usedAt", "revokedAt" FROM "CoupleInvite" WHERE code = ${code} FOR UPDATE`
+  if (!invite || !isUsable(invite, joinerId, new Date())) throw inviteNotFound()
+  return invite
+}
 
 const revokeActiveInvites = (tx: Prisma.TransactionClient, creatorIds: string[], now: Date) =>
   tx.coupleInvite.updateMany({
@@ -71,14 +87,13 @@ export class InviteService {
     }
   }
 
-  // invite 행을 FOR UPDATE로 잠가 같은 코드의 동시 join 중 1명만 통과. 1인 1커플은 CoupleMember.userId unique가 최종 보장
+  // 두 User 행과 invite 행을 FOR UPDATE로 잠가 같은 코드의 동시 join 중 1명만 통과하고, 탈퇴와 겹쳐도 한쪽만 이긴다.
+  // 1인 1커플은 CoupleMember.userId unique가 최종 보장
   async join(userId: string, code: string): Promise<Couple> {
     const coupleId = await this.prisma
       .$transaction(async (tx) => {
-        const [invite] = await tx.$queryRaw<LockedInvite[]>`
-          SELECT id, "creatorId", "expiresAt", "usedAt", "revokedAt" FROM "CoupleInvite" WHERE code = ${code} FOR UPDATE`
+        const invite = await lockJoinTargets(tx, code, userId)
         const now = new Date()
-        if (!invite || !isUsable(invite, userId, now)) throw inviteNotFound()
         const userIds = [invite.creatorId, userId]
         if ((await tx.coupleMember.count({ where: { userId: { in: userIds } } })) > 0) throw inviteNotFound()
         const couple = await tx.couple.create({

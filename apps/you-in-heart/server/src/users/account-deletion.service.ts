@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { DEV_SUB_PREFIX } from '../auth/auth.service'
 import { sequentially } from '../common/async/sequentially'
+import { lockUsers } from '../common/prisma/user-lock'
 import { UnlinkService } from '../couples/unlink.service'
 import type { AuthProvider } from '../generated/prisma'
 import { PrismaService } from '../prisma/prisma.service'
@@ -58,9 +59,22 @@ export class AccountDeletionService {
   }
 
   private async applyDeletion(userId: string, shouldNotify: boolean): Promise<void> {
+    if (await this.deleteIfSolo(userId)) return
     const coupleId = await this.unlinks.unlinkForAccountDeletion(userId, { shouldNotify })
     if (coupleId) await this.markDeleted(userId)
-    else await this.prisma.user.deleteMany({ where: { id: userId } })
+    // 그 사이 커플이 purge됐으면 혼자 남은 것 → 바로 지운다
+    else await this.deleteIfSolo(userId)
+  }
+
+  // 커플이 없을 때만 User를 지운다(Cascade). join과 같은 User 행 잠금을 쥔 채 확인·삭제해 그 사이 커플이 생기지 않는다
+  private deleteIfSolo(userId: string): Promise<boolean> {
+    return this.prisma.$transaction(async (tx) => {
+      await lockUsers(tx, [userId])
+      const member = await tx.coupleMember.findUnique({ where: { userId }, select: { id: true } })
+      if (member) return false
+      await tx.user.deleteMany({ where: { id: userId } })
+      return true
+    })
   }
 
   // 이미 DELETED면 deletedAt을 다시 찍지 않는다(replay 멱등)

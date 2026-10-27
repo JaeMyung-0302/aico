@@ -50,7 +50,7 @@ export class AccountDeletionService {
       return id ? [id] : []
     })
     await sequentially(userIds, async (userId) => {
-      const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+      const user = await this.prisma.user.findFirst({ where: { id: userId }, select: { id: true } })
       if (!user) return
       await this.applyDeletion(userId, false)
       this.logger.log(`[purge-replay] user ${userId} deletion re-applied`)

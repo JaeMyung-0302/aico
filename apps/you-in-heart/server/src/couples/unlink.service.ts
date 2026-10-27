@@ -73,7 +73,7 @@ export class UnlinkService {
   ) {}
 
   async requestUnlink(coupleId: string, userId: string): Promise<Couple> {
-    const couple = await this.prisma.couple.findUnique({ where: { id: coupleId }, select: { status: true } })
+    const couple = await this.prisma.couple.findFirst({ where: { id: coupleId }, select: { status: true } })
     if (couple?.status !== 'ACTIVE') throw alreadyUnlinking()
     const now = new Date()
     await this.writeLedger(coupleId, now)

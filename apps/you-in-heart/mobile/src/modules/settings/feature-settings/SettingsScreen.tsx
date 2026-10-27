@@ -11,6 +11,7 @@ import { useLogout } from '@/modules/auth/data-access-auth/useLogout'
 import { useCouple } from '@/modules/couple/data-access-couple/useCouple'
 import { formatDotDate } from '@/modules/couple/util-pairing/started-on-input'
 import { useDeleteMe, useMe } from '@/modules/user/data-access-me/useMe'
+import ExportSection from '../feature-export/ExportSection'
 import UnlinkSection from '../feature-unlink/UnlinkSection'
 import WithdrawDialog from '../ui-withdraw-dialog/WithdrawDialog'
 
@@ -24,7 +25,7 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
 )
 
 // SCR-16 설정. 로그아웃·탈퇴 후 이동은 인증 게이트가 맡는다
-// TODO(1B~2C): 위젯 대표 사진, 앱 잠금·사진 위치·알림 토글, 모든 기록 내보내기
+// TODO(1B~2C): 위젯 대표 사진, 앱 잠금·사진 위치·알림 토글
 const SettingsScreen = () => {
   const insets = useSafeAreaInsets()
   const me = useMe()
@@ -53,6 +54,7 @@ const SettingsScreen = () => {
         </Section>
         {couple.data && me.data ? (
           <Section title="데이터">
+            <ExportSection />
             <UnlinkSection couple={couple.data} myUserId={me.data.id} />
           </Section>
         ) : null}

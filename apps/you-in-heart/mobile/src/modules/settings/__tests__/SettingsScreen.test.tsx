@@ -13,6 +13,7 @@ jest.mock('expo-router', () => ({
 }))
 jest.mock('@/modules/user/data-access-me/me-api', () => ({ fetchMe: jest.fn(), deleteMe: jest.fn() }))
 jest.mock('@/modules/couple/data-access-couple/couple-api', () => ({ fetchCouple: jest.fn() }))
+jest.mock('../feature-export/export-api', () => ({ fetchLatestExport: jest.fn(async () => null), requestExport: jest.fn() }))
 jest.mock('@/modules/auth/data-access-auth/auth-api', () => ({ logoutSession: jest.fn(async () => undefined) }))
 jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
@@ -43,9 +44,16 @@ describe('SettingsScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/pairing/started-on')
   })
 
-  it('연결 해제 행이 있다 (ACTIVE)', async () => {
+  it('데이터: 내보내기·연결 해제 행이 있다 (ACTIVE)', async () => {
     await renderSettings()
     expect(await screen.findByRole('button', { name: '커플 연결 해제' })).toBeOnTheScreen()
+    expect(await screen.findByRole('button', { name: '모든 기록 내보내기 사진 원본 포함 · zip' })).toBeOnTheScreen()
+  })
+
+  it('연결 해제 유예 중에도 내보내기를 할 수 있다', async () => {
+    jest.mocked(fetchCouple).mockResolvedValue({ ...ACTIVE_COUPLE, status: 'UNLINKING', purgeAfter: '2026-11-26T03:00:00.000Z' })
+    await renderSettings()
+    expect(await screen.findByRole('button', { name: '모든 기록 내보내기 사진 원본 포함 · zip' })).toBeOnTheScreen()
   })
 
   it('회원 탈퇴는 확인 창의 "탈퇴"를 누르기 전에는 DELETE /me 를 보내지 않는다', async () => {

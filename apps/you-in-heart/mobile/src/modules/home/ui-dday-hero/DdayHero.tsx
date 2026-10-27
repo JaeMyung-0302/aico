@@ -4,7 +4,7 @@ import AppText from '@/design-system/components/AppText'
 import { formatDotDate } from '@/modules/couple/util-pairing/started-on-input'
 
 // SCR-03 "함께한 지 413일 / 2025. 09. 10부터" (세리프 display). 사귄 날 당일 = 1일
-const DdayBlock = ({ startedOn, nowMs }: { startedOn: string; nowMs: number }) => {
+const DdayHero = ({ startedOn, nowMs }: { startedOn: string; nowMs: number }) => {
   const { days } = computeDday(startedOn, nowMs)
   return (
     <View style={styles.wrap}>
@@ -30,4 +30,4 @@ const styles = StyleSheet.create({
   unit: { fontSize: 28 },
 })
 
-export default DdayBlock
+export default DdayHero

@@ -1,0 +1,424 @@
+// You-In-Heart 데이터 모델 — architecture-decision §5, implementation-plan 0C.8 (ADR-001: 전 Phase 모델을 여기서 한 번에 고정)
+// ID는 uuid v7(시간순). 커플 소유 테이블은 모두 coupleId + @@unique([coupleId, id]), 자식은 (coupleId, parentId) 복합 FK로
+// 다른 커플 행을 참조할 수 없게 한다. 인덱스 첫 컬럼은 coupleId
+// Prisma로 표현하지 못하는 제약(slot CHECK, AUTO_DAY 부분 유니크)은 마이그레이션 SQL에 있다
+// purge 테스트는 coupleId 필드가 있는 모델을 모두 검사한다 → purge 이후에도 남는 원장(PurgedCouple·PurgeFailure)은 coupleId 이름을 쓰지 않는다
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── 사용자·인증 ─────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  DELETED
+}
+
+// Apple은 공개 직전에 추가 (architecture §4.2)
+enum AuthProvider {
+  KAKAO
+}
+
+enum ConsentKind {
+  TERMS
+  PRIVACY
+  LOCATION
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+}
+
+model User {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  displayName String? // 카카오 프로필은 받지 않고 사용자가 직접 입력. 탈퇴 시 null
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime   @updatedAt @db.Timestamptz(3)
+  deletedAt   DateTime?  @db.Timestamptz(3)
+
+  authAccounts  AuthAccount[]
+  sessions      Session[]
+  pushTokens    PushToken[]
+  consents      Consent[]
+  invites       CoupleInvite[] @relation("InviteCreator")
+  membership    CoupleMember?
+  diaryEntries  DiaryEntry[]
+  photos        Photo[]
+  places        Place[]
+  bucketItems   BucketItem[]
+  quotes        Quote[]
+  anniversaries Anniversary[]
+  exportJobs    ExportJob[]
+  eventLogs     EventLog[]
+}
+
+model AuthAccount {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  userId      String       @db.Uuid
+  provider    AuthProvider
+  providerSub String
+  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSub])
+  @@index([userId])
+}
+
+model Session {
+  id               String    @id @default(uuid(7)) @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String    @unique // SHA-256 해시만 저장
+  expiresAt        DateTime  @db.Timestamptz(3)
+  revokedAt        DateTime? @db.Timestamptz(3)
+  rotatedAt        DateTime? @db.Timestamptz(3) // 회전 후 10초 재사용 유예 판정
+  deviceLabel      String?
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PushToken {
+  id         String         @id @default(uuid(7)) @db.Uuid
+  userId     String         @db.Uuid
+  expoToken  String         @unique
+  platform   DevicePlatform
+  lastSeenAt DateTime       @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Consent {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  userId      String      @db.Uuid
+  kind        ConsentKind
+  version     String
+  agreedAt    DateTime    @default(now()) @db.Timestamptz(3)
+  withdrawnAt DateTime?   @db.Timestamptz(3) // 선택 동의(위치) 철회
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+// ─── 커플·페어링 ─────────────────────────────────────────
+
+enum CoupleStatus {
+  ACTIVE
+  UNLINKING // 연결 해제 유예 30일: 보기·내보내기만 가능
+}
+
+model CoupleInvite {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  creatorId String    @db.Uuid
+  code      String    @unique // 6자, 혼동 문자 제외 알파벳
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3) // 재발급 시 이전 코드 무효
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  creator User @relation("InviteCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+}
+
+model Couple {
+  id                String       @id @default(uuid(7)) @db.Uuid
+  status            CoupleStatus @default(ACTIVE)
+  startedOn         DateTime?    @db.Date // 사귄 날. D-day·100일·N주년의 유일한 기준
+  unlinkRequestedAt DateTime?    @db.Timestamptz(3)
+  unlinkRequestedBy String?      @db.Uuid // 요청자가 탈퇴해도 남도록 FK 없음
+  purgeAfter        DateTime?    @db.Timestamptz(3)
+  createdAt         DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @db.Timestamptz(3)
+
+  members          CoupleMember[]
+  anniversaries    Anniversary[]
+  diaryEntries     DiaryEntry[]
+  photos           Photo[]
+  places           Place[]
+  bucketItems      BucketItem[]
+  quotes           Quote[]
+  notificationLogs NotificationLog[]
+  exportJobs       ExportJob[]
+  eventLogs        EventLog[]
+
+  @@index([status, purgeAfter]) // purge cron 대상 조회
+}
+
+model CoupleMember {
+  id                   String    @id @default(uuid(7)) @db.Uuid
+  coupleId             String    @db.Uuid
+  userId               String    @unique @db.Uuid // 1인 1커플을 DB가 강제
+  slot                 Int // 1 또는 2 (CHECK는 마이그레이션 SQL)
+  reconnectConfirmedAt DateTime? @db.Timestamptz(3) // 유예 중 두 사람 모두 확인하면 ACTIVE 복귀
+  joinedAt             DateTime  @default(now()) @db.Timestamptz(3)
+
+  couple Couple @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([coupleId, slot])
+  @@unique([coupleId, id])
+}
+
+// ─── 기념일·일기·사진 ────────────────────────────────────
+
+// 100일·N주년은 Couple.startedOn에서 계산하므로 저장하지 않는다. 여기는 사용자가 추가한 기념일만
+model Anniversary {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  coupleId     String   @db.Uuid
+  createdById  String?  @db.Uuid
+  title        String
+  date         DateTime @db.Date
+  repeatYearly Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  couple    Couple @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([coupleId, id])
+  @@index([coupleId, date])
+  @@index([createdById])
+}
+
+enum DiaryEntryKind {
+  MANUAL
+  AUTO_DAY // 과거 사진 일괄 등록 시 날짜별 자동 생성("그날의 사진"), 커플당 하루 1개(부분 유니크)
+}
+
+model DiaryEntry {
+  id         String         @id @default(uuid(7)) @db.Uuid
+  coupleId   String         @db.Uuid
+  kind       DiaryEntryKind @default(MANUAL)
+  authorId   String?        @db.Uuid // 탈퇴해도 상대가 30일간 내보낼 수 있게 기록은 남긴다
+  happenedOn DateTime       @db.Date
+  title      String?
+  body       String         @default("")
+  placeId    String?        @db.Uuid
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime       @updatedAt @db.Timestamptz(3)
+
+  couple      Couple       @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  author      User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  // 복합 FK의 SetNull은 coupleId까지 비우려 하므로 NoAction(문장 끝 검사 → 커플 Cascade 삭제와 충돌하지 않음)
+  place       Place?       @relation(fields: [coupleId, placeId], references: [coupleId, id], onDelete: NoAction)
+  photos      Photo[]
+  bucketItems BucketItem[]
+
+  @@unique([coupleId, id])
+  @@index([coupleId, happenedOn(sort: Desc), id(sort: Desc)]) // 타임라인 커서 (happenedOn, id) <
+  @@index([authorId])
+  @@index([coupleId, placeId])
+}
+
+enum PhotoStatus {
+  PENDING // presigned PUT 발급 후 complete 전
+  READY
+}
+
+model Photo {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  coupleId           String      @db.Uuid
+  entryId            String      @db.Uuid
+  uploaderId         String?     @db.Uuid
+  status             PhotoStatus @default(PENDING)
+  originalKey        String // EXIF 포함 원본 바이트 그대로. 목록·뷰어에서는 서명하지 않는다
+  displayKey         String? // 긴 변 2048, EXIF 제거 (complete 후)
+  thumbKey           String? // 긴 변 400, EXIF 제거 (complete 후)
+  takenAt            DateTime?   @db.Timestamptz(3)
+  takenOffsetMinutes Int? // EXIF OffsetTimeOriginal(없으면 null). AUTO_DAY 날짜를 촬영지 현지 날짜로 계산
+  lat                Float?
+  lng                Float?
+  width              Int? // 표시용 재인코딩 때 확정
+  height             Int?
+  originalBytes      Int
+  originalMime       String
+  createdAt          DateTime    @default(now()) @db.Timestamptz(3)
+
+  couple   Couple     @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  entry    DiaryEntry @relation(fields: [coupleId, entryId], references: [coupleId, id], onDelete: Cascade)
+  uploader User?      @relation(fields: [uploaderId], references: [id], onDelete: SetNull)
+
+  @@unique([coupleId, id])
+  @@index([coupleId, entryId])
+  @@index([uploaderId])
+  @@index([status, createdAt]) // PENDING 고아 정리 cron (전 커플 대상이라 coupleId가 첫 컬럼이 아님)
+}
+
+// ─── 지도·버킷리스트·문구 ────────────────────────────────
+
+model Place {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  coupleId     String   @db.Uuid
+  createdById  String?  @db.Uuid
+  name         String
+  lat          Float
+  lng          Float
+  kakaoPlaceId String?
+  address      String?
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  couple    Couple       @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdBy User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  entries   DiaryEntry[]
+
+  @@unique([coupleId, id])
+  @@index([coupleId, createdAt])
+  @@index([createdById])
+}
+
+model BucketItem {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  coupleId    String    @db.Uuid
+  createdById String?   @db.Uuid
+  title       String
+  doneAt      DateTime? @db.Timestamptz(3)
+  entryId     String?   @db.Uuid // 이룬 날의 일기
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+
+  couple    Couple      @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdBy User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  entry     DiaryEntry? @relation(fields: [coupleId, entryId], references: [coupleId, id], onDelete: NoAction)
+
+  @@unique([coupleId, id])
+  @@index([coupleId, doneAt])
+  @@index([coupleId, entryId])
+  @@index([createdById])
+}
+
+enum QuoteSource {
+  SHARE // 카톡 공유하기로 받은 텍스트
+  TXT // 대화 내보내기 txt에서 고른 문구
+  SCREENSHOT
+}
+
+model Quote {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  coupleId           String      @db.Uuid
+  createdById        String?     @db.Uuid
+  source             QuoteSource
+  text               String?
+  speakerLabel       String? // 대화 속 이름 그대로 (사용자 계정과 연결하지 않음)
+  saidAt             DateTime?   @db.Timestamptz(3)
+  screenshotKey      String?
+  screenshotThumbKey String?
+  memo               String?
+  createdAt          DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime    @updatedAt @db.Timestamptz(3)
+
+  couple    Couple @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([coupleId, id])
+  @@index([coupleId, createdAt(sort: Desc)])
+  @@index([createdById])
+}
+
+// ─── 알림·내보내기·이벤트 ────────────────────────────────
+
+enum NotificationLogKind {
+  ANNIVERSARY_D0
+  ANNIVERSARY_D3
+  PARTNER_ENTRY // 상대 새 기록, 1시간에 1회
+  STARTED_ON_CHANGED
+  UNLINK_REQUESTED
+  EXPORT_READY
+}
+
+// 같은 알림을 두 번 보내지 않기 위한 기록 (cron 재실행·부팅 보충 실행 대비)
+model NotificationLog {
+  id        String              @id @default(uuid(7)) @db.Uuid
+  coupleId  String              @db.Uuid
+  kind      NotificationLogKind
+  refKey    String // 기념일 키·작성자 id 등 kind별 식별자
+  dueOn     DateTime            @db.Date
+  createdAt DateTime            @default(now()) @db.Timestamptz(3)
+
+  couple Couple @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+
+  @@unique([kind, coupleId, refKey, dueOn])
+  @@unique([coupleId, id])
+  @@index([coupleId, createdAt])
+}
+
+enum ExportJobStatus {
+  PENDING
+  RUNNING
+  READY
+  FAILED
+}
+
+model ExportJob {
+  id            String          @id @default(uuid(7)) @db.Uuid
+  coupleId      String          @db.Uuid
+  requestedById String?         @db.Uuid
+  status        ExportJobStatus @default(PENDING)
+  objectKey     String? // exports/{coupleId}/{jobId}.zip
+  expiresAt     DateTime?       @db.Timestamptz(3)
+  failureReason String?
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  completedAt   DateTime?       @db.Timestamptz(3)
+
+  couple      Couple @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  requestedBy User?  @relation(fields: [requestedById], references: [id], onDelete: SetNull)
+
+  @@unique([coupleId, id])
+  @@index([coupleId, createdAt])
+  @@index([requestedById])
+}
+
+// 지표용 자체 이벤트 로그. props에 본문·좌표·URL을 넣지 않는다(shared event 스키마가 거부)
+model EventLog {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  coupleId  String?  @db.Uuid // 페어링 전 이벤트(app_open, invite_created)는 null
+  userId    String?  @db.Uuid
+  name      String
+  props     Json     @default("{}")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  couple Couple? @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([coupleId, name, createdAt])
+  @@index([name, createdAt])
+  @@index([userId])
+}
+
+// ─── purge 원장 (커플 삭제 후에도 남는다) ─────────────────
+
+// id = 삭제된 커플 id. R2 system/purge-ledger/{id}와 짝
+model PurgedCouple {
+  id                String   @id @db.Uuid
+  purgedAt          DateTime @default(now()) @db.Timestamptz(3)
+  objectCountBefore Int?
+}
+
+// DB 삭제는 끝났지만 R2 접두사 삭제가 남은 경우. 다음 날 재시도
+model PurgeFailure {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  purgedCoupleId String    @db.Uuid
+  remainingKeys  Int
+  detail         String?
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  resolvedAt     DateTime? @db.Timestamptz(3)
+
+  @@index([resolvedAt, createdAt])
+}

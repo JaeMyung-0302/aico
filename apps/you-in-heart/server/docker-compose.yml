@@ -1,0 +1,36 @@
+name: you-in-heart
+
+services:
+  you-in-heart-db:
+    image: postgres:16-alpine
+    container_name: you-in-heart-db
+    environment:
+      POSTGRES_USER: youinheart
+      POSTGRES_PASSWORD: youinheart
+      POSTGRES_DB: youinheart_dev
+    ports:
+      - '5440:5432'
+    volumes:
+      - you_in_heart_pgdata:/var/lib/postgresql/data
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U youinheart -d youinheart_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # 로컬 개발 전용 S3 호환 저장소 (운영은 Cloudflare R2 private 버킷). 실기기가 presigned URL로 직접 올리므로 LAN에서 접근 가능해야 한다
+  # 키는 로컬 전용 고정값(docker/s3-dev.json). 사적 사진만 다루므로 익명 읽기는 두지 않는다
+  you-in-heart-storage:
+    image: chrislusf/seaweedfs:3.97
+    container_name: you-in-heart-storage
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0
+    ports:
+      - '9440:8333'
+    volumes:
+      - you_in_heart_storage:/data
+      - ./docker/s3-dev.json:/etc/seaweedfs/s3.json:ro
+
+volumes:
+  you_in_heart_pgdata:
+  you_in_heart_storage:

@@ -1,0 +1,198 @@
+name: Deploy You-In-Heart Server
+
+# PR: 테스트만 / main push·수동 실행: 테스트 → 이미지 빌드 → Lightsail 배포
+# 필요한 GitHub 설정 (Environment `you-in-heart`):
+#   secrets: SERVER_HOST, SERVER_SSH_KEY, YOU_IN_HEART_DB_PASSWORD(URL-safe, `openssl rand -hex 24`),
+#            JWT_SECRET(`openssl rand -base64 48`), KAKAO_NATIVE_APP_KEY, KAKAO_REST_API_KEY, KAKAO_ADMIN_KEY,
+#            R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, EXPO_ACCESS_TOKEN, SENTRY_DSN
+#   vars:    R2_PRIVATE_BUCKET, PURGE_ENABLED
+# 비어 있는 선택 값(SENTRY_DSN)은 서버에서 no-op 처리된다. PURGE_ENABLED는 운영 검증 전까지 비워 둔다(false)
+# 배포 스위치: 저장소 변수 YOU_IN_HEART_DEPLOY_ENABLED=true 일 때만 deploy 잡이 돈다
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/you-in-heart/server/**'
+      - 'packages/you-in-heart-shared/**'
+      - '.github/workflows/deploy-you-in-heart.yml'
+  pull_request:
+    paths:
+      - 'apps/you-in-heart/server/**'
+      - 'packages/you-in-heart-shared/**'
+      - '.github/workflows/deploy-you-in-heart.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-you-in-heart-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: youinheart
+          POSTGRES_PASSWORD: youinheart
+          POSTGRES_DB: youinheart_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U youinheart -d youinheart_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # CI 전용 일회성 DB (비밀값 아님)
+      DATABASE_URL_TEST: postgresql://youinheart:youinheart@localhost:5432/youinheart_test?schema=public
+      DATABASE_URL: postgresql://youinheart:youinheart@localhost:5432/youinheart_test?schema=public
+      R2_ENDPOINT: http://localhost:9440
+      R2_ACCESS_KEY_ID: youinheart
+      R2_SECRET_ACCESS_KEY: youinheart-dev-storage
+      R2_PRIVATE_BUCKET: youinheart-private
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter @you-in-heart/server...
+
+      - name: Build shared package
+        run: pnpm --filter @you-in-heart/shared build
+
+      - name: Lint
+        run: pnpm --filter @you-in-heart/server lint
+
+      - name: Typecheck
+        run: pnpm --filter @you-in-heart/server check-types
+
+      - name: Unit tests
+        run: pnpm --filter @you-in-heart/server test
+
+      - name: Integration tests (real Postgres)
+        run: pnpm --filter @you-in-heart/server test:int
+
+      - name: Start S3-compatible storage (SeaweedFS)
+        run: |
+          docker run -d --name seaweedfs -p 9440:8333 \
+            -v "$PWD/apps/you-in-heart/server/docker/s3-dev.json:/etc/seaweedfs/s3.json:ro" \
+            chrislusf/seaweedfs:3.97 server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -ip.bind=0.0.0.0
+          for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:9440 && break; sleep 2; done
+          node apps/you-in-heart/server/scripts/dev-storage-init.mjs
+
+      - name: Storage tests (purge against real S3 API)
+        run: pnpm --filter @you-in-heart/server test:storage
+
+  deploy:
+    needs: test
+    # 서버·secrets 준비 전에는 저장소 변수 YOU_IN_HEART_DEPLOY_ENABLED를 두지 않는다(테스트만 실행)
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.YOU_IN_HEART_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: you-in-heart
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set lowercase owner
+        run: echo "OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/you-in-heart/server/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.OWNER }}/you-in-heart-server:latest
+            ghcr.io/${{ env.OWNER }}/you-in-heart-server:${{ github.sha }}
+          cache-from: type=gha,scope=you-in-heart-server
+          cache-to: type=gha,mode=max,scope=you-in-heart-server
+
+      - name: Deploy to Lightsail
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: YOU_IN_HEART_DB_PASSWORD,JWT_SECRET,KAKAO_NATIVE_APP_KEY,KAKAO_REST_API_KEY,KAKAO_ADMIN_KEY,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_PRIVATE_BUCKET,EXPO_ACCESS_TOKEN,SENTRY_DSN,SENTRY_RELEASE,PURGE_ENABLED
+          script: |
+            set -e
+            cd /app
+            umask 077
+            printf '%s\n' \
+              "POSTGRES_USER=youinheart" \
+              "POSTGRES_PASSWORD=${YOU_IN_HEART_DB_PASSWORD}" \
+              "POSTGRES_DB=youinheart" > .env.you-in-heart-db
+            printf '%s\n' \
+              "DATABASE_URL=postgresql://youinheart:${YOU_IN_HEART_DB_PASSWORD}@you-in-heart-db:5432/youinheart?schema=public" \
+              "JWT_SECRET=${JWT_SECRET}" \
+              "KAKAO_NATIVE_APP_KEY=${KAKAO_NATIVE_APP_KEY}" \
+              "KAKAO_REST_API_KEY=${KAKAO_REST_API_KEY}" \
+              "KAKAO_ADMIN_KEY=${KAKAO_ADMIN_KEY}" \
+              "R2_ACCOUNT_ID=${R2_ACCOUNT_ID}" \
+              "R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}" \
+              "R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}" \
+              "R2_PRIVATE_BUCKET=${R2_PRIVATE_BUCKET:-youinheart-private}" \
+              "EXPO_ACCESS_TOKEN=${EXPO_ACCESS_TOKEN}" \
+              "SENTRY_DSN=${SENTRY_DSN}" \
+              "SENTRY_RELEASE=${SENTRY_RELEASE}" \
+              "PURGE_ENABLED=${PURGE_ENABLED:-false}" > .env.you-in-heart
+            docker compose pull you-in-heart-server
+            docker compose up -d you-in-heart-db
+            docker compose up -d --force-recreate you-in-heart-server
+            for i in $(seq 1 30); do
+              status=$(docker inspect --format '{{.State.Health.Status}}' you-in-heart-server)
+              [ "$status" = "healthy" ] && break
+              sleep 5
+            done
+            if [ "$status" != "healthy" ]; then
+              docker logs --tail 100 you-in-heart-server
+              exit 1
+            fi
+            docker image prune -f
+        env:
+          YOU_IN_HEART_DB_PASSWORD: ${{ secrets.YOU_IN_HEART_DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          KAKAO_NATIVE_APP_KEY: ${{ secrets.KAKAO_NATIVE_APP_KEY }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          KAKAO_ADMIN_KEY: ${{ secrets.KAKAO_ADMIN_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_PRIVATE_BUCKET: ${{ vars.R2_PRIVATE_BUCKET }}
+          EXPO_ACCESS_TOKEN: ${{ secrets.EXPO_ACCESS_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_RELEASE: ${{ github.sha }}
+          PURGE_ENABLED: ${{ vars.PURGE_ENABLED }}

@@ -172,6 +172,56 @@ services:
     networks:
       - aico-network
 
+  # You-In-Heart: 비밀값은 배포 워크플로가 /app/.env.you-in-heart(서버), /app/.env.you-in-heart-db(POSTGRES_*)에 쓴다
+  # 호스트 리버스 프록시만 붙도록 localhost 바인딩
+  you-in-heart-server:
+    image: ghcr.io/jaemyung-0302/you-in-heart-server:latest
+    container_name: you-in-heart-server
+    restart: unless-stopped
+    init: true
+    mem_limit: 512m
+    ports:
+      - "127.0.0.1:4009:4009"
+    env_file:
+      # 파일이 없어도 다른 앱의 compose 명령이 실패하지 않게 한다(배포 워크플로가 생성)
+      - path: .env.you-in-heart
+        required: false
+    environment:
+      - NODE_ENV=production
+      - PORT=4009
+      - TRUST_PROXY_HOPS=2
+    depends_on:
+      you-in-heart-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - aico-network
+
+  you-in-heart-db:
+    image: postgres:16-alpine
+    container_name: you-in-heart-db
+    restart: unless-stopped
+    mem_limit: 384m
+    ports:
+      - "127.0.0.1:5440:5432"
+    env_file:
+      # 파일이 없어도 다른 앱의 compose 명령이 실패하지 않게 한다(배포 워크플로가 생성)
+      - path: .env.you-in-heart-db
+        required: false
+    volumes:
+      - you-in-heart-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - aico-network
+
 networks:
   aico-network:
     driver: bridge
@@ -183,3 +233,4 @@ volumes:
   alphadeck-data:
   onboard-data:
   miri-pet-data:
+  you-in-heart-data:

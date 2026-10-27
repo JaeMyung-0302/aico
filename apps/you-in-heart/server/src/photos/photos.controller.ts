@@ -1,0 +1,82 @@
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common'
+import {
+  type CreatePhotoUploadRequest,
+  createPhotoUploadRequestSchema,
+  type CreatePhotoUploadResponse,
+  type CursorPage,
+  type CursorQuery,
+  cursorQuerySchema,
+  idSchema,
+  type Photo,
+  type PhotoOriginalResponse,
+  type RenewPhotoUploadRequest,
+  renewPhotoUploadRequestSchema,
+} from '@you-in-heart/shared'
+import { Authenticated } from '../auth/decorators/authenticated.decorator'
+import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import type { AuthUser } from '../auth/guards/jwt-auth.guard'
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
+import { UserThrottle } from '../common/throttle/user-throttle.guard'
+import { type CoupleContext, CurrentCouple } from '../couples/decorators/current-couple.decorator'
+import { PhotosService } from './photos.service'
+
+const idPipe = new ZodValidationPipe(idSchema)
+
+// complete는 표시용 후보를 읽어 재인코딩한다(메모리·CPU) → 사용자당 60회/분. 넘으면 429 RATE_LIMITED
+const PHOTO_COMPLETE_THROTTLE = { name: 'photo-complete', ttl: 60_000, limit: 60 }
+
+// 좌표는 업로드 요청에서만 받고 응답에는 돌려주지 않는다. 위치 동의는 좌표가 있을 때만 서비스가 검사한다
+@Controller('photos')
+@Authenticated()
+export class PhotosController {
+  constructor(private readonly photos: PhotosService) {}
+
+  @Get()
+  list(
+    @CurrentCouple() couple: CoupleContext,
+    @Query(new ZodValidationPipe(cursorQuerySchema)) query: CursorQuery,
+  ): Promise<CursorPage<Photo>> {
+    return this.photos.list(couple.id, query)
+  }
+
+  @Post('uploads')
+  createUpload(
+    @CurrentCouple() couple: CoupleContext,
+    @CurrentUser() me: AuthUser,
+    @Body(new ZodValidationPipe(createPhotoUploadRequestSchema)) body: CreatePhotoUploadRequest,
+  ): Promise<CreatePhotoUploadResponse> {
+    return this.photos.createUpload(couple.id, me.id, body)
+  }
+
+  @Get(':id')
+  get(@CurrentCouple() couple: CoupleContext, @Param('id', idPipe) id: string): Promise<Photo> {
+    return this.photos.get(couple.id, id)
+  }
+
+  @Post(':id/complete')
+  @HttpCode(HttpStatus.OK)
+  @UserThrottle(PHOTO_COMPLETE_THROTTLE)
+  complete(
+    @CurrentCouple() couple: CoupleContext,
+    @CurrentUser() me: AuthUser,
+    @Param('id', idPipe) id: string,
+  ): Promise<Photo> {
+    return this.photos.complete(couple.id, me.id, id)
+  }
+
+  @Post(':id/uploads/renew')
+  @HttpCode(HttpStatus.OK)
+  renewUpload(
+    @CurrentCouple() couple: CoupleContext,
+    @CurrentUser() me: AuthUser,
+    @Param('id', idPipe) id: string,
+    @Body(new ZodValidationPipe(renewPhotoUploadRequestSchema)) body: RenewPhotoUploadRequest,
+  ): Promise<CreatePhotoUploadResponse> {
+    return this.photos.renewUpload(couple.id, me.id, id, body)
+  }
+
+  @Get(':id/original')
+  original(@CurrentCouple() couple: CoupleContext, @Param('id', idPipe) id: string): Promise<PhotoOriginalResponse> {
+    return this.photos.originalUrl(couple.id, id)
+  }
+}

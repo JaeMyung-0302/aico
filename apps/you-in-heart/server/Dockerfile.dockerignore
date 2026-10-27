@@ -1,0 +1,20 @@
+# apps/you-in-heart/server/Dockerfile 전용 빌드 컨텍스트 필터 (컨텍스트 = 레포 루트, 경로도 루트 기준)
+# BuildKit은 <Dockerfile>.dockerignore 를 루트 .dockerignore 보다 우선 사용한다
+**
+
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!packages/typescript-config/**
+!packages/eslint-config/**
+!packages/you-in-heart-shared/**
+!apps/you-in-heart/server/**
+
+**/node_modules
+**/dist
+**/coverage
+**/.turbo
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+apps/you-in-heart/server/src/generated

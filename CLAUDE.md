@@ -15,6 +15,7 @@
 | Onboard    | 5180     | 4005    | 5438        |
 | neurex-viz | 5181     | 4006    | -           |
 | MiriPet    | 8082 (Expo) | 4008  | 5439        |
+| You-In-Heart | 8083 (Expo) | 4009 | 5440       |
 
 ### 규칙
 
@@ -22,4 +23,5 @@
 - Frontend: 5173부터 순차 할당
 - Backend: 4000부터 순차 할당
 - DB (Docker): 5434부터 순차 할당 (5433은 외부 프로젝트와 충돌하여 skip)
-- 새 앱 추가 시 다음 번호 사용 (Frontend: 5184, Backend: 4009, DB: 5440)
+- 새 앱 추가 시 다음 번호 사용 (Frontend: 5184, Backend: 4010, DB: 5441, Expo: 8084)
+- 로컬 S3(SeaweedFS): MiriPet 9439, You-In-Heart 9440 (다음 9441)

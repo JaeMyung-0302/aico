@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "youinheart-dev",
+      "credentials": [{ "accessKey": "youinheart", "secretKey": "youinheart-dev-storage" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

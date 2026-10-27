@@ -41,6 +41,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         photosPermission: PHOTO_PERMISSION,
         savePhotosPermission: '원본 사진을 기기에 저장하기 위해 사용해요.',
         isAccessMediaLocationEnabled: true,
+        // 사진만 읽는다 — Android 13+ 영상·오디오 권한은 요청하지 않는다
+        granularPermissions: ['photo'],
       },
     ],
     [

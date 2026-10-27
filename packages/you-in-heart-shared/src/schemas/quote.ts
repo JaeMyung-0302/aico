@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { MAX_QUOTES_PER_BULK } from '../constants/limits'
-import { idSchema, isoDateTimeSchema, uploadTargetSchema, userTextSchema } from './common'
+import { cursorPage, idSchema, isoDateTimeSchema, uploadTargetSchema, userTextSchema } from './common'
 
 export const quoteSourceSchema = z.enum(['SHARE', 'TXT', 'SCREENSHOT'])
 export type QuoteSource = z.infer<typeof quoteSourceSchema>
@@ -68,3 +68,7 @@ export const quoteSchema = z.object({
   createdAt: isoDateTimeSchema,
 })
 export type Quote = z.infer<typeof quoteSchema>
+
+// GET /quotes?cursor&limit 응답(최신순). 업로드가 끝나지 않은 스크린샷 문구는 빠진다
+export const quoteListResponseSchema = cursorPage(quoteSchema)
+export type QuoteListResponse = z.infer<typeof quoteListResponseSchema>

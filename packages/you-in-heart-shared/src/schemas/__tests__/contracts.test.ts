@@ -10,7 +10,7 @@ import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
 import { latestExportResponseSchema } from '../export'
 import { createPhotoUploadRequestSchema } from '../photo'
 import { placeBboxQuerySchema, placeListResponseSchema } from '../place'
-import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema } from '../quote'
+import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema, quoteListResponseSchema } from '../quote'
 import { putConsentsRequestSchema, updateMeRequestSchema } from '../user'
 
 const ENTRY_ID = '0192f1a4-7c3e-7a1b-9c2d-1e2f3a4b5c6d'
@@ -173,6 +173,24 @@ describe('quote', () => {
       false,
     )
     expect(bulkCreateQuotesRequestSchema.safeParse({ items: [] }).success).toBe(false)
+  })
+
+  it('목록 응답은 커서 페이지, 스크린샷 URL은 nullable', () => {
+    const quote = {
+      id: ENTRY_ID,
+      source: 'TXT',
+      text: '보고 싶어',
+      speakerLabel: 'A',
+      saidAt: '2026-10-18T21:00:00+09:00',
+      memo: null,
+      screenshotUrl: null,
+      screenshotThumbUrl: null,
+      createdAt: '2026-10-27T00:00:00Z',
+    }
+    expect(quoteListResponseSchema.safeParse({ items: [quote], nextCursor: null }).success).toBe(true)
+    expect(quoteListResponseSchema.safeParse({ items: [{ ...quote, source: 'PDF' }], nextCursor: null }).success).toBe(
+      false,
+    )
   })
 })
 

@@ -5,6 +5,7 @@ import {
   type CursorPage,
   type CursorQuery,
   MAX_PHOTOS_PER_ENTRY,
+  type OriginalMime,
   originalMimeSchema,
   type Photo,
   type PhotoOriginalResponse,
@@ -78,28 +79,7 @@ export class PhotosService {
     if (body.takenAt && Date.parse(body.takenAt) > Date.now() + FUTURE_SKEW_MS) throw takenAtInFuture()
     if (body.lat !== undefined && !(await this.consents.hasLocationConsent(actorId))) throw locationConsentRequired()
     const photoId = await this.prisma.$transaction((tx) => this.insertPending(tx, coupleId, actorId, body))
-    const [original, display] = await Promise.all([
-      this.storage.presignPut({
-        key: photoOriginalKey(coupleId, photoId),
-        contentType: body.originalMime,
-        contentLength: body.originalBytes,
-        expiresIn: PUT_TTL_SECONDS,
-      }),
-      this.storage.presignPut({
-        key: photoIncomingKey(coupleId, photoId),
-        contentType: 'image/jpeg',
-        expiresIn: PUT_TTL_SECONDS,
-      }),
-    ])
-    return {
-      photoId,
-      original: {
-        url: original,
-        headers: { 'Content-Type': body.originalMime, 'Content-Length': String(body.originalBytes) },
-      },
-      display: { url: display, headers: { 'Content-Type': 'image/jpeg' } },
-      expiresIn: PUT_TTL_SECONDS,
-    }
+    return this.presignUploads(coupleId, photoId, body.originalMime, body.originalBytes)
   }
 
   // 원본: HEAD 크기 + 매직 넘버만. 표시용 후보: 재인코딩(EXIF 제거) → d.jpg·t.jpg → incoming 삭제 → READY. 다시 불러도 같은 결과
@@ -199,6 +179,33 @@ export class PhotosService {
     })
     await tx.photo.updateMany({ where: { id, coupleId }, data: { originalKey: photoOriginalKey(coupleId, id) } })
     return id
+  }
+
+  private async presignUploads(
+    coupleId: string,
+    photoId: string,
+    mime: OriginalMime,
+    bytes: number,
+  ): Promise<CreatePhotoUploadResponse> {
+    const [original, display] = await Promise.all([
+      this.storage.presignPut({
+        key: photoOriginalKey(coupleId, photoId),
+        contentType: mime,
+        contentLength: bytes,
+        expiresIn: PUT_TTL_SECONDS,
+      }),
+      this.storage.presignPut({
+        key: photoIncomingKey(coupleId, photoId),
+        contentType: 'image/jpeg',
+        expiresIn: PUT_TTL_SECONDS,
+      }),
+    ])
+    return {
+      photoId,
+      original: { url: original, headers: { 'Content-Type': mime, 'Content-Length': String(bytes) } },
+      display: { url: display, headers: { 'Content-Type': 'image/jpeg' } },
+      expiresIn: PUT_TTL_SECONDS,
+    }
   }
 
   private async verifyOriginal(photo: PhotoRow): Promise<void> {

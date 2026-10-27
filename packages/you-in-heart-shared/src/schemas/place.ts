@@ -15,6 +15,10 @@ export const placeSchema = z.object({
 })
 export type Place = z.infer<typeof placeSchema>
 
+// GET /places?bbox= 응답. 커플당 핀은 수백 개라 페이지 없이 bbox 안 전체(architecture §10)
+export const placeListResponseSchema = z.object({ items: z.array(placeSchema) })
+export type PlaceListResponse = z.infer<typeof placeListResponseSchema>
+
 // POST /places — 사용자가 핀 제안을 확인한 뒤에만 호출
 export const createPlaceRequestSchema = z.object({
   name: userTextSchema().min(1).max(MAX_PLACE_NAME_LENGTH),

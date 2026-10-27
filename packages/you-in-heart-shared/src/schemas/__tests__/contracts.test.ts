@@ -9,7 +9,7 @@ import { joinCoupleRequestSchema } from '../couple'
 import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
 import { latestExportResponseSchema } from '../export'
 import { createPhotoUploadRequestSchema } from '../photo'
-import { placeBboxQuerySchema } from '../place'
+import { placeBboxQuerySchema, placeListResponseSchema } from '../place'
 import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema } from '../quote'
 import { putConsentsRequestSchema, updateMeRequestSchema } from '../user'
 
@@ -127,6 +127,20 @@ describe('place', () => {
     })
     expect(placeBboxQuerySchema.safeParse({ bbox: '126.9,37.4,127.1' }).success).toBe(false)
     expect(placeBboxQuerySchema.safeParse({ bbox: '127.1,37.4,126.9,37.6' }).success).toBe(false)
+  })
+
+  it('목록 응답은 items 배열(좌표 범위 검사)', () => {
+    const place = {
+      id: ENTRY_ID,
+      name: '한강',
+      lat: 37.5,
+      lng: 126.9,
+      kakaoPlaceId: null,
+      address: null,
+      createdAt: '2026-10-27T00:00:00Z',
+    }
+    expect(placeListResponseSchema.safeParse({ items: [place] }).success).toBe(true)
+    expect(placeListResponseSchema.safeParse({ items: [{ ...place, lat: 91 }] }).success).toBe(false)
   })
 })
 

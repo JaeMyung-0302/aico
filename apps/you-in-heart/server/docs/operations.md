@@ -14,8 +14,20 @@
    | `backups/db/` | 15일 후 삭제 (pg-backup.sh 14일 정리의 안전망) |
 3. GitHub Environment `you-in-heart`에 secrets 등록: `SERVER_HOST`, `SERVER_SSH_KEY`, `YOU_IN_HEART_DB_PASSWORD`(`openssl rand -hex 24`), `JWT_SECRET`(`openssl rand -base64 48`), `KAKAO_NATIVE_APP_KEY`, `KAKAO_REST_API_KEY`, `KAKAO_ADMIN_KEY`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `EXPO_ACCESS_TOKEN`, `SENTRY_DSN`(선택). vars: `R2_PRIVATE_BUCKET=youinheart-private`
 4. Cloudflare DNS `youinheart-api` → Lightsail 고정 IP (프록시 켬)
-5. 저장소 변수 `YOU_IN_HEART_DEPLOY_ENABLED=true` → main 머지 시 배포 잡 실행
-6. 배포 후 확인: `curl -s -o /dev/null -w '%{http_code}' https://youinheart-api.aico-app.com/api/v1/health` → `200`
+5. **원본(Lightsail) 직접 접근 차단 — IP 위조 방지 (필수)**: 운영은 `TRUST_PROXY_HOPS=2`라 서버가 `CF-Connecting-IP` 헤더와 `X-Forwarded-For`의 끝 2홉을 클라이언트 IP로 믿는다(rate limit·초대 코드 IP 제한의 키). Cloudflare를 거치지 않고 고정 IP로 직접 들어오면 이 헤더를 마음대로 넣어 제한을 우회할 수 있으므로 아래를 모두 한다
+   - Lightsail 네트워킹 방화벽에서 80/443을 [Cloudflare IP 대역](https://www.cloudflare.com/ips/)(IPv4·IPv6)만 허용한다. 대역이 바뀌면 갱신한다. 대안: Cloudflare Tunnel(`cloudflared`)로 80/443을 아예 닫거나, Authenticated Origin Pulls(mTLS)로 Cloudflare가 보낸 요청만 받는다
+   - 호스트 리버스 프록시에서 직전 피어가 Cloudflare 주소가 아니면 `CF-Connecting-IP`를 지우고 `X-Forwarded-For`를 피어 주소로 덮어쓴다. nginx 예:
+     ```
+     # /etc/nginx/conf.d/cloudflare-peers.conf (Cloudflare IP 대역마다 한 줄)
+     geo $remote_addr $is_cloudflare { default 0; 173.245.48.0/20 1; ... }
+     map $is_cloudflare $cf_connecting_ip { 1 $http_cf_connecting_ip; default ""; }
+     # server { location / { ... } } 안
+     proxy_set_header CF-Connecting-IP $cf_connecting_ip;
+     proxy_set_header X-Forwarded-For $remote_addr;
+     ```
+   - 확인: Cloudflare 밖에서 `curl -sk --resolve youinheart-api.aico-app.com:443:<고정 IP> https://youinheart-api.aico-app.com/api/v1/health -H 'CF-Connecting-IP: 1.2.3.4'` → 연결이 막혀야 한다(방화벽). 막히지 않으면 배포하지 않는다
+6. 저장소 변수 `YOU_IN_HEART_DEPLOY_ENABLED=true` → main 머지 시 배포 잡 실행
+7. 배포 후 확인: `curl -s -o /dev/null -w '%{http_code}' https://youinheart-api.aico-app.com/api/v1/health` → `200`
 
 `.env.you-in-heart`, `.env.you-in-heart-db`는 배포 워크플로가 `umask 077`로 만든다. 직접 편집하지 않는다.
 

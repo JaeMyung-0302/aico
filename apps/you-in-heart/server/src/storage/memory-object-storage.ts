@@ -10,6 +10,10 @@ export class MemoryObjectStorage implements ObjectStorage {
     this.objects = new Map([...this.objects, [key, body]])
   }
 
+  async getObject(key: string): Promise<Buffer | null> {
+    return this.objects.get(key) ?? null
+  }
+
   async head(key: string): Promise<{ size: number } | null> {
     const body = this.objects.get(key)
     return body ? { size: body.length } : null

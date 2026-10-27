@@ -3,7 +3,7 @@ import { PurgeService } from '../../src/couples/purge.service'
 import { PUSH_SENDER } from '../../src/notifications/push.service'
 import { PrismaService } from '../../src/prisma/prisma.service'
 import { OBJECT_STORAGE, type ObjectStorage } from '../../src/storage/object-storage'
-import { couplePrefixes, purgeLedgerKey } from '../../src/storage/storage-keys'
+import { couplePrefixes, purgeLedgerKey, unlinkedCoupleLedgerKey } from '../../src/storage/storage-keys'
 import { createPairedCouple, type PairedCouple } from '../integration/factories'
 import { createFakePush } from '../integration/fake-push'
 import { createTestApp } from '../integration/setup-app'
@@ -61,6 +61,19 @@ describe('커플 purge (실DB + S3 호환 저장소)', () => {
     expect(await storage.listKeys(prefix ?? '')).toHaveLength(PAGINATION_OBJECTS)
     await expect(storage.deletePrefix(prefix ?? '')).resolves.toBe(PAGINATION_OBJECTS)
     expect(await storage.listKeys(prefix ?? '')).toHaveLength(0)
+  })
+
+  it('getObject: 원장 본문(JSON)을 그대로 돌려주고, 없는 키는 null', async () => {
+    const { couple } = await createPairedCouple(prisma)
+    const key = unlinkedCoupleLedgerKey(couple.id)
+    const body = JSON.stringify({ purgeAfter: '2026-12-01T03:00:00.000Z' })
+    try {
+      await storage.putObject({ key, body: Buffer.from(body), contentType: 'application/json' })
+      expect((await storage.getObject(key))?.toString('utf8')).toBe(body)
+      expect(await storage.getObject(`${key}-missing`)).toBeNull()
+    } finally {
+      await storage.deleteObjects([key])
+    }
   })
 
   it('A(1,100개 포함)의 접두사 3개는 0건, B 객체 수는 그대로, 원장 키와 PurgedCouple이 남는다', async () => {

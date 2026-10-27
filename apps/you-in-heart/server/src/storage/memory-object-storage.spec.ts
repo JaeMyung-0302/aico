@@ -11,6 +11,13 @@ describe('MemoryObjectStorage', () => {
     await expect(storage.head('c/a/2')).resolves.toBeNull()
   })
 
+  it('getObject는 본문을, 없으면 null', async () => {
+    const storage = new MemoryObjectStorage()
+    await put(storage, 'system/x', '{"a":1}')
+    await expect(storage.getObject('system/x')).resolves.toEqual(Buffer.from('{"a":1}'))
+    await expect(storage.getObject('system/y')).resolves.toBeNull()
+  })
+
   it('listKeys는 접두사로 시작하는 키만 정렬해 돌려준다', async () => {
     const storage = new MemoryObjectStorage()
     await Promise.all(['c/a/2', 'c/a/1', 'c/b/1', 'incoming/a/1'].map((key) => put(storage, key)))

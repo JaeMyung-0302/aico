@@ -1,7 +1,9 @@
 import {
   DeleteObjectsCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
+  NoSuchKey,
   NotFound,
   PutObjectCommand,
   S3Client,
@@ -18,7 +20,9 @@ type R2Config = AppConfig['r2']
 const PAGE_SIZE = 1000
 
 const isNotFound = (error: unknown): boolean =>
-  error instanceof NotFound || (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)
+  error instanceof NotFound ||
+  error instanceof NoSuchKey ||
+  (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)
 
 // 운영: Cloudflare R2 계정 엔드포인트. 로컬: R2_ENDPOINT(SeaweedFS 9440)로 바꾸고 path-style로 접속
 export const s3ClientOptions = (r2: R2Config) => {
@@ -54,6 +58,17 @@ export class R2ObjectStorage implements ObjectStorage {
     await this.client.send(
       new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: body, ContentType: contentType }),
     )
+  }
+
+  async getObject(key: string): Promise<Buffer | null> {
+    try {
+      const response = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }))
+      const bytes = await response.Body?.transformToByteArray()
+      return Buffer.from(bytes ?? [])
+    } catch (error) {
+      if (isNotFound(error)) return null
+      throw error
+    }
   }
 
   async head(key: string): Promise<{ size: number } | null> {

@@ -6,6 +6,8 @@ export type PutObjectInput = { key: string; body: Buffer; contentType: string }
 
 export type ObjectStorage = {
   putObject: (input: PutObjectInput) => Promise<void>
+  // 본문 전체. 없으면 null(원장처럼 작은 객체만 읽는다)
+  getObject: (key: string) => Promise<Buffer | null>
   // 없으면 null
   head: (key: string) => Promise<{ size: number } | null>
   // 접두사 아래 전체 키(페이지를 끝까지 따라간다)

@@ -1,4 +1,5 @@
 import { FlexWidget, TextWidget } from 'react-native-android-widget'
+import { COLORS } from '@/design-system/tokens/colors'
 
 // 스파이크(0B.4): AsyncStorage `widget:snapshot` 문자열을 그대로 보여준다. Phase 1B에서 D-day 계산 위젯으로 바꾼다
 interface DdayWidgetProps {
@@ -17,11 +18,11 @@ const DdayWidget = ({ text }: DdayWidgetProps) => (
       width: 'match_parent',
       justifyContent: 'center',
       padding: 16,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: COLORS.bg,
       borderRadius: 20,
     }}
   >
-    <TextWidget text={text} style={{ fontSize: 16, color: '#17171A' }} />
+    <TextWidget text={text} style={{ fontSize: 16, color: COLORS.ink }} />
   </FlexWidget>
 )
 

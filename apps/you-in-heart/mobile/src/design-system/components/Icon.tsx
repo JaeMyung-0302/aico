@@ -1,7 +1,7 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg'
 import { COLORS, type ColorToken } from '../tokens/colors'
 
-// 시안(SCR-01·02·03·16·18)의 stroke 아이콘 (viewBox 24, 선 1.7)
+// 시안(SCR-01·02·03·05~09·16·18)의 stroke 아이콘 (viewBox 24, 선 1.7)
 export type IconName =
   | 'home'
   | 'timeline'
@@ -18,6 +18,12 @@ export type IconName =
   | 'calendar'
   | 'share'
   | 'close'
+  | 'check'
+  | 'retry'
+  | 'more'
+  | 'download'
+  | 'chevronDown'
+  | 'image'
 
 type IconProps = {
   name: IconName
@@ -91,6 +97,24 @@ const Icon = ({ name, size = 22, color = 'ink', strokeWidth = 1.7 }: IconProps) 
       ) : null}
       {name === 'share' ? <Path d="M12 15V3M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" {...common} /> : null}
       {name === 'close' ? <Path d="M6 6l12 12M18 6 6 18" {...common} /> : null}
+      {name === 'check' ? <Path d="m5 12.5 4.5 4.5L19 7.5" {...common} /> : null}
+      {name === 'retry' ? <Path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" {...common} /> : null}
+      {name === 'more' ? (
+        <>
+          <Circle cx={5} cy={12} r={1.2} {...common} />
+          <Circle cx={12} cy={12} r={1.2} {...common} />
+          <Circle cx={19} cy={12} r={1.2} {...common} />
+        </>
+      ) : null}
+      {name === 'download' ? <Path d="M12 3v12M7 10l5 5 5-5M5 21h14" {...common} /> : null}
+      {name === 'chevronDown' ? <Path d="m6 9 6 6 6-6" {...common} /> : null}
+      {name === 'image' ? (
+        <>
+          <Rect x={3} y={4} width={18} height={16} rx={2} {...common} />
+          <Circle cx={8.5} cy={9.5} r={1.5} {...common} />
+          <Path d="m21 16-5-5-9 9" {...common} />
+        </>
+      ) : null}
     </Svg>
   )
 }

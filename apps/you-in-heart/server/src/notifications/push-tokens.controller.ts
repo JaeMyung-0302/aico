@@ -4,12 +4,14 @@ import { Authenticated } from '../auth/decorators/authenticated.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import type { AuthUser } from '../auth/guards/jwt-auth.guard'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
+import { AllowWithoutCouple } from '../couples/decorators/allow-without-couple.decorator'
 import { PushService } from './push.service'
 
 const pushTokenParamSchema = registerPushTokenRequestSchema.shape.token
 
 @Controller('me/push-tokens')
 @Authenticated()
+@AllowWithoutCouple()
 export class PushTokensController {
   constructor(private readonly push: PushService) {}
 

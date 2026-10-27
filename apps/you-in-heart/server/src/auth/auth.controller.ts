@@ -13,6 +13,7 @@ import {
   socialLoginRequestSchema,
 } from '@you-in-heart/shared'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
+import { AllowWithoutCouple } from '../couples/decorators/allow-without-couple.decorator'
 import { AuthService } from './auth.service'
 import { DevLoginGuard } from './guards/dev-login.guard'
 import { SessionService } from './session.service'
@@ -24,6 +25,7 @@ const PROVIDER_BY_PARAM: Record<AuthProviderParam, AuthProvider> = { kakao: 'KAK
 
 // 고정 경로(refresh·logout·dev-login)를 :provider보다 먼저 선언해야 Express가 먼저 매칭한다
 @Controller('auth')
+@AllowWithoutCouple()
 @Throttle({ default: AUTH_THROTTLE })
 export class AuthController {
   constructor(

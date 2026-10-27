@@ -7,7 +7,7 @@ import { authProviderParamSchema } from '../auth'
 import { bucketItemTitleSchema, bucketListResponseSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
 import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
-import { latestExportResponseSchema } from '../export'
+import { exportManifestV1Schema, latestExportResponseSchema } from '../export'
 import { createPhotoUploadRequestSchema, photoOriginalResponseSchema } from '../photo'
 import { placeBboxQuerySchema, placeListResponseSchema } from '../place'
 import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema, quoteListResponseSchema } from '../quote'
@@ -216,5 +216,26 @@ describe('export', () => {
     }
     expect(latestExportResponseSchema.safeParse({ job }).success).toBe(true)
     expect(latestExportResponseSchema.safeParse({}).success).toBe(false)
+  })
+
+  it('manifest의 장소 좌표는 생략할 수 있다(요청자에게 위치 동의가 없을 때), 있으면 범위 검사', () => {
+    const manifest = {
+      v: 1,
+      exportedAt: '2026-10-27T00:00:00.000Z',
+      couple: { startedOn: null, names: [] },
+      diary: [],
+      anniversaries: [],
+      bucket: [],
+      quotes: [],
+    }
+    const createdAt = '2026-10-27T00:00:00.000Z'
+    const place = { id: ENTRY_ID, name: '한강', kakaoPlaceId: null, address: null, createdAt }
+    expect(exportManifestV1Schema.safeParse({ ...manifest, places: [place] }).success).toBe(true)
+    expect(exportManifestV1Schema.safeParse({ ...manifest, places: [{ ...place, lat: 37.5, lng: 127 }] }).success).toBe(
+      true,
+    )
+    expect(exportManifestV1Schema.safeParse({ ...manifest, places: [{ ...place, lat: 91, lng: 127 }] }).success).toBe(
+      false,
+    )
   })
 })

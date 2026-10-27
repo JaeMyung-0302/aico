@@ -6,6 +6,7 @@ import { ConsentService } from './consent.service'
 import { UsersService } from './users.service'
 
 const USER_ID = '0199e3a0-0000-7000-8000-0000000000a1'
+const COUPLE_ID = '0199e3a0-0000-7000-8000-0000000000c1'
 const CONSENTS = { terms: true, privacy: true, location: false }
 
 describe('UsersService', () => {
@@ -28,9 +29,9 @@ describe('UsersService', () => {
   })
 
   describe('getMe (GET /me)', () => {
-    it('displayName·동의 상태를 돌려주고 couple은 아직 null(0E에서 연결)', async () => {
+    it('displayName·동의 상태를 돌려주고, 커플이 없으면 couple null', async () => {
       prisma.user.findUnique.mockResolvedValue({ id: USER_ID, displayName: '하늘' })
-
+      prisma.coupleMember.findUnique.mockResolvedValue(null)
       await expect(service.getMe(USER_ID)).resolves.toEqual({
         id: USER_ID,
         displayName: '하늘',
@@ -42,6 +43,25 @@ describe('UsersService', () => {
         select: { id: true, displayName: true },
       })
       expect(consents.status).toHaveBeenCalledWith(USER_ID)
+    })
+
+    it('커플이 있으면 CoupleMember에서 찾은 요약(id·status·startedOn·purgeAfter)', async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: USER_ID, displayName: '하늘' })
+      prisma.coupleMember.findUnique.mockResolvedValue({
+        couple: {
+          id: COUPLE_ID,
+          status: 'UNLINKING',
+          startedOn: new Date('2024-02-29T00:00:00.000Z'),
+          purgeAfter: new Date('2026-12-01T03:00:00.000Z'),
+        },
+      })
+      await expect(service.getMe(USER_ID)).resolves.toMatchObject({
+        couple: { id: COUPLE_ID, status: 'UNLINKING', startedOn: '2024-02-29', purgeAfter: '2026-12-01T03:00:00.000Z' },
+      })
+      expect(prisma.coupleMember.findUnique).toHaveBeenCalledWith({
+        where: { userId: USER_ID },
+        select: { couple: { select: { id: true, status: true, startedOn: true, purgeAfter: true } } },
+      })
     })
 
     it('온보딩 전(displayName 미입력)은 null 그대로', async () => {

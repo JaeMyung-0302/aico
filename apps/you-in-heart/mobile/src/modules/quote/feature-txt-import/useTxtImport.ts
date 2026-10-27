@@ -19,6 +19,9 @@ export type ImportStep =
 
 export const rawKey = (lineNo: number) => `raw-${lineNo}`
 
+const selectionKey = (selection: ImportSelection): string =>
+  selection.kind === 'message' ? selection.id : rawKey(selection.lineNo)
+
 // 파싱 결과에서 고른 것만, 파일 순서대로 (메시지·못 읽은 줄)
 const toSelections = (result: KakaoExportParseResult, keys: ReadonlySet<string>): ImportSelection[] => {
   const messages = result.messages
@@ -39,30 +42,37 @@ const readExport = async (file: ImportFile): Promise<KakaoExportParseResult> => 
   }
 }
 
-// 200건·64KB 로 나눠 차례로 보낸다. 실패하면 보낸 묶음 수를 기억해 다시 시도할 때 이어서 보낸다
+// 200건·64KB 로 나눠 차례로 보낸다. 실패하면 이미 보낸 항목 key 를 기억해, 다시 시도할 때(선택이 바뀌어도) 그것만 빼고 보낸다
 const useBulkSave = () => {
   const queryClient = useQueryClient()
-  const sentBatches = useRef(0)
+  const sentKeys = useRef<ReadonlySet<string>>(new Set())
   const [progress, setProgress] = useState({ sent: 0, total: 0 })
   const mutation = useMutation({
     mutationFn: async (selections: readonly ImportSelection[]) => {
-      const batches = chunkQuoteBatches(selections.map(toQuoteItem))
-      setProgress({ sent: sentBatches.current, total: batches.length })
-      await batches.slice(sentBatches.current).reduce(async (previous, batch) => {
-        await previous
+      const pending = selections.filter((selection) => !sentKeys.current.has(selectionKey(selection)))
+      const batches = chunkQuoteBatches(pending.map(toQuoteItem))
+      setProgress({ sent: 0, total: batches.length })
+      await batches.reduce(async (previous, batch, index) => {
+        const offset = await previous
         await bulkCreateQuotes(batch)
-        sentBatches.current += 1
-        setProgress({ sent: sentBatches.current, total: batches.length })
-      }, Promise.resolve())
+        const sent = pending.slice(offset, offset + batch.length).map(selectionKey)
+        sentKeys.current = new Set([...sentKeys.current, ...sent])
+        setProgress({ sent: index + 1, total: batches.length })
+        return offset + batch.length
+      }, Promise.resolve(0))
     },
     onSuccess: async () => {
-      sentBatches.current = 0
+      sentKeys.current = new Set()
       await queryClient.invalidateQueries({ queryKey: QUOTES_QUERY_KEY })
       router.replace('/quotes')
     },
+    // 앞 묶음은 이미 저장됐다 → 문구함이 따라오도록 새로 받는다
+    onError: () => {
+      if (sentKeys.current.size > 0) queryClient.invalidateQueries({ queryKey: QUOTES_QUERY_KEY }).catch(() => undefined)
+    },
   })
   const resetSent = () => {
-    sentBatches.current = 0
+    sentKeys.current = new Set()
   }
   return { mutation, progress, resetSent }
 }
@@ -101,16 +111,20 @@ export const useTxtImport = (initialFile: ImportFile | null) => {
   }, [])
 
   const result = state.step === 'select' ? state.result : null
-  const allKeys = useMemo(
-    () => (result ? [...result.messages.map((message) => message.id), ...result.unparsed.map((line) => rawKey(line.lineNo))] : []),
-    [result],
-  )
+  // "모두 선택"은 읽은 메시지만 — 못 읽은 줄(대부분 화면에 접혀 있다)은 하나씩 고른다
+  const messageKeys = useMemo(() => (result ? result.messages.map((message) => message.id) : []), [result])
+  const isAllSelected = messageKeys.length > 0 && messageKeys.every((key) => keys.has(key))
   const toggle = (key: string) =>
     setKeys((current) => (current.has(key) ? new Set([...current].filter((item) => item !== key)) : new Set([...current, key])))
-  const toggleAll = () => setKeys((current) => (current.size === allKeys.length ? new Set() : new Set(allKeys)))
+  const toggleAll = () => {
+    const messageSet = new Set(messageKeys)
+    setKeys((current) =>
+      isAllSelected ? new Set([...current].filter((key) => !messageSet.has(key))) : new Set([...current, ...messageKeys]),
+    )
+  }
   const submit = () => {
     if (result && keys.size > 0) save.mutation.mutate(toSelections(result, keys))
   }
 
-  return { state, keys, toggle, toggleAll, isAllSelected: allKeys.length > 0 && keys.size === allKeys.length, pick, submit, save }
+  return { state, keys, toggle, toggleAll, isAllSelected, pick, submit, save }
 }

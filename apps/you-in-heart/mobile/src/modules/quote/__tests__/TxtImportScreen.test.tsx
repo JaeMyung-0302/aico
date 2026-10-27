@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native'
 import { MAX_QUOTE_REQUEST_BYTES } from '@you-in-heart/shared'
 import * as DocumentPicker from 'expo-document-picker'
@@ -116,6 +117,53 @@ describe('TxtImportScreen (SCR-15)', () => {
     sentBodies().forEach((items) =>
       expect(utf8ByteLength(JSON.stringify({ items }))).toBeLessThanOrEqual(MAX_QUOTE_REQUEST_BYTES),
     )
+  })
+
+  const manyMessages = (count: number) =>
+    Array.from(
+      { length: count },
+      (_, index) => `2026년 3월 14일 오후 ${(index % 12) + 1}:${String(index % 60).padStart(2, '0')}, A : 문구 ${index}`,
+    ).join('\n')
+
+  it('중간 묶음이 실패한 뒤 선택을 바꿔 다시 보내도, 이미 보낸 것만 빼고 남은 선택을 모두 보낸다', async () => {
+    const invalidate = jest.spyOn(QueryClient.prototype, 'invalidateQueries')
+    jest.mocked(readTextFile).mockResolvedValue(manyMessages(450))
+    jest
+      .mocked(bulkCreateQuotes)
+      .mockImplementationOnce(async (items) => ({ created: items.length }))
+      .mockRejectedValueOnce(new Error('network'))
+    await renderImport()
+    await openFile()
+
+    await fireEvent.press(await screen.findByRole('button', { name: '모두 선택' }))
+    await fireEvent.press(screen.getByRole('button', { name: '450개 간직하기' }))
+    expect(await screen.findByRole('alert')).toBeOnTheScreen()
+    // 첫 묶음은 저장됐으니 문구함을 새로 받는다
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['quotes'] })
+
+    // 이미 보낸 첫 묶음의 문구 하나를 해제하고 다시 누른다
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'A 문구 0' }))
+    await fireEvent.press(screen.getByRole('button', { name: '449개 간직하기' }))
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/quotes'))
+    const saved = [sentBodies()[0], ...sentBodies().slice(2)].flat().map((item) => item.text)
+    expect(saved).toHaveLength(450)
+    expect(new Set(saved).size).toBe(450)
+  })
+
+  it('"모두 선택"은 읽은 메시지만 고르고, 못 읽은 줄은 하나씩 고른다', async () => {
+    jest.mocked(readTextFile).mockResolvedValue(`${ORPHAN}\n${EXPORT}`)
+    await renderImport()
+    await openFile()
+
+    await fireEvent.press(await screen.findByRole('button', { name: '모두 선택' }))
+    expect(screen.getByRole('button', { name: '3개 간직하기' })).toBeOnTheScreen()
+    expect(screen.getByRole('checkbox', { name: ORPHAN })).not.toBeChecked()
+
+    await fireEvent.press(screen.getByRole('checkbox', { name: ORPHAN }))
+    expect(screen.getByRole('button', { name: '4개 간직하기' })).toBeOnTheScreen()
+    await fireEvent.press(screen.getByRole('button', { name: '선택 해제' }))
+    expect(screen.getByRole('button', { name: '1개 간직하기' })).toBeOnTheScreen()
   })
 
   it('카톡 형식이 아니거나 빈 파일이면 다른 파일을 고르게 한다', async () => {

@@ -20,6 +20,11 @@ describe('resolveAuthRedirect', () => {
     ['displayName 없음 → /onboarding/profile', { me: { displayName: null, couple: null } }, '/onboarding/profile'],
     ['displayName 빈 문자열도 없음으로 본다', { me: { displayName: '', couple: null } }, '/onboarding/profile'],
     ['이름은 있고 미연결 → /pairing', { me: { displayName: '재명', couple: null } }, '/pairing'],
+    [
+      '필수 동의(약관·개인정보)가 빠지면 이름이 있어도 → /onboarding/profile(동의 후 저장)',
+      { me: { displayName: '재명', couple: ACTIVE, consents: { terms: true, privacy: false } } },
+      '/onboarding/profile',
+    ],
     ['UNLINKING → /(tabs)', { me: { displayName: '재명', couple: UNLINKING } }, '/(tabs)'],
     ['ACTIVE → /(tabs)', {}, '/(tabs)'],
     [

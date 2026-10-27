@@ -2,7 +2,14 @@ import type { CoupleStatus } from '@you-in-heart/shared'
 import type { SessionStatus } from '@/shared/auth/session-store'
 
 // 게이트가 보는 /me 의 일부 (GET /me — displayName 미입력 null, 미연결 couple null)
-export type GateMe = { displayName: string | null; couple: { status: CoupleStatus } | null }
+export type GateMe = {
+  displayName: string | null
+  couple: { status: CoupleStatus } | null
+  consents?: { terms: boolean; privacy: boolean }
+}
+
+// 서버는 필수 동의가 없으면 커플 라우트를 403 CONSENT_REQUIRED로 막는다 → 프로필 화면이 동의를 다시 보낸다
+const hasRequiredConsents = (me: GateMe): boolean => !me.consents || (me.consents.terms && me.consents.privacy)
 
 export type AuthGateInput = {
   sessionStatus: SessionStatus
@@ -20,7 +27,7 @@ export const resolveAuthRedirect = ({ sessionStatus, me, isMeError }: AuthGateIn
   if (sessionStatus === 'signedOut') return '/login'
   // /me 실패 + 캐시 없음: 앱을 막지 않는다 (탭 화면이 오류·다시 시도를 보여준다)
   if (!me) return isMeError ? '/(tabs)' : null
-  if (!me.displayName) return '/onboarding/profile'
+  if (!me.displayName || !hasRequiredConsents(me)) return '/onboarding/profile'
   if (!me.couple) return '/pairing'
   return '/(tabs)'
 }

@@ -224,6 +224,21 @@ describe('일기 (실DB)', () => {
       expect(res.body).toMatchObject({ body: '내가 고침', title: null, happenedOn: '2026-09-30' })
     })
 
+    it('빈 본문 PATCH({})는 바꾸지 않고 현재 값(200). 상대는 403, 다른 커플은 404 그대로', async () => {
+      const session = await newCouple()
+      const other = await newCouple()
+      const entry = await createEntry(prisma, session.couple.id, session.members[0].id)
+      const patchEmpty = (token: string) =>
+        http()
+          .patch(`${API}/${entry.id}`)
+          .set(...bearer(token))
+          .send({})
+      const res = await patchEmpty(session.tokens[0]).expect(200)
+      expect(res.body).toMatchObject({ id: entry.id, body: '성수동 산책' })
+      await patchEmpty(session.tokens[1]).expect(403)
+      await patchEmpty(other.tokens[0]).expect(404)
+    })
+
     it('placeId: 같은 커플 장소는 연결, null이면 해제, 다른 커플 장소는 404', async () => {
       const session = await newCouple()
       const other = await newCouple()

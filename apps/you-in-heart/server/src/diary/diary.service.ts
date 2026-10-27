@@ -107,10 +107,13 @@ export class DiaryService {
 
   async update(coupleId: string, actorId: string, id: string, body: UpdateDiaryRequest): Promise<DiaryEntry> {
     await this.assertAuthor(coupleId, actorId, id)
+    const data = toUpdateData(body)
+    // 빈 본문이면 바꾸지 않고 현재 값(빈 data의 updateMany는 0건으로 센다)
+    if (Object.keys(data).length === 0) return this.get(coupleId, id)
     if (body.placeId) await this.assertPlace(coupleId, body.placeId)
     // 확인과 저장 사이에 핀이 지워지면 FK 위반 → 장소 404
     const { count } = await this.prisma.diaryEntry
-      .updateMany({ where: { id, coupleId, authorId: actorId }, data: toUpdateData(body) })
+      .updateMany({ where: { id, coupleId, authorId: actorId }, data })
       .catch((error: unknown) => {
         if (isForeignKeyViolation(error)) throw new NotFoundException('장소를 찾을 수 없어요')
         throw error

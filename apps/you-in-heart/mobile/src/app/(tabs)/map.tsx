@@ -1,12 +1,4 @@
-import EmptyLayout from '@/design-system/components/EmptyLayout'
+import MemoryMapScreen from '@/modules/map/feature-memory-map/MemoryMapScreen'
 
-// SCR-03 탭 자리 표시 — 추억 지도는 이후 단계에서 채운다
-const MapTab = () => (
-  <EmptyLayout
-    icon="map"
-    title="아직 다녀온 곳이 없어요"
-    description="사진의 촬영 위치로 둘이 다녀온 곳을 보여드려요."
-  />
-)
-
-export default MapTab
+// SCR-10 추억 지도 탭. 지도 SDK 가 크래시하면 EmptyLayout 으로 되돌리는 핫픽스를 낸다(plan 2B Rollback)
+export default MemoryMapScreen

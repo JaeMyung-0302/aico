@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module'
 import { type ClientIpSource, resolveClientIp } from './common/throttle/client-ip'
 import { configuration } from './config/configuration'
 import { HealthModule } from './health/health.module'
+import { NotificationsModule } from './notifications/notifications.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { UsersModule } from './users/users.module'
 
@@ -31,6 +32,7 @@ const throttlerOptions = (config: ConfigService) => {
     HealthModule,
     AuthModule,
     UsersModule,
+    NotificationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

@@ -86,6 +86,23 @@ describe('TimelineScreen (SCR-07)', () => {
     await waitFor(() => expect(fetchDiaryPage).toHaveBeenLastCalledWith({ cursor: undefined, before: '2026-10-01' }))
   })
 
+  it('스크롤로 바뀐 헤더 달은 월 점프 뒤 새 목록의 첫 카드 달로 돌아간다', async () => {
+    jest.mocked(fetchDiaryPage).mockImplementation(async ({ before }) =>
+      before ? { items: [OLDER_ENTRY], nextCursor: null } : { items: [DIARY_ENTRY, SECOND_ENTRY], nextCursor: null },
+    )
+    await renderTimeline()
+    await screen.findByText('한강 피크닉')
+    await fireEvent(screen.getByTestId('timeline-list'), 'onViewableItemsChanged', {
+      viewableItems: [{ item: SECOND_ENTRY, key: SECOND_ENTRY.id, index: 1, isViewable: true }],
+      changed: [],
+    })
+    await fireEvent.press(screen.getByRole('button', { name: '2026년 9월' }))
+    await fireEvent.press(screen.getByRole('button', { name: '8월' }))
+
+    expect(await screen.findByText('첫 여행')).toBeOnTheScreen()
+    expect(screen.getByRole('button', { name: '2026년 8월' })).toBeOnTheScreen()
+  })
+
   it('카드를 누르면 상세, + 를 누르면 작성', async () => {
     await renderTimeline()
     await fireEvent.press(await screen.findByRole('button', { name: /^성수동 산책/ }))

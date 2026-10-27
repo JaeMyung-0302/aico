@@ -31,7 +31,7 @@ const useAuthorNames = () => {
   }
 }
 
-// 화면 맨 위 카드의 달을 헤더에 보여준다 (스크롤하면 바뀐다)
+// 화면 맨 위 카드의 달을 헤더에 보여준다 (스크롤하면 바뀐다). 월 점프하면 지우고 새 목록의 첫 카드 달로
 const useVisibleMonth = () => {
   const [visibleMonth, setVisibleMonth] = useState<string | null>(null)
   // FlatList 는 이 콜백이 바뀌면 안 된다 → 의존성 없이 한 번만 만든다
@@ -39,7 +39,7 @@ const useVisibleMonth = () => {
     const first = viewableItems[0]?.item
     if (first) setVisibleMonth(toYearMonth(first.happenedOn))
   }, [])
-  return { visibleMonth, onViewableItemsChanged }
+  return { visibleMonth, onViewableItemsChanged, resetVisibleMonth: () => setVisibleMonth(null) }
 }
 
 const EmptyTimeline = () => (
@@ -63,7 +63,7 @@ const TimelineScreen = () => {
   const [isMonthSheetVisible, setIsMonthSheetVisible] = useState(false)
   const timeline = useTimeline(before)
   const authorName = useAuthorNames()
-  const { visibleMonth, onViewableItemsChanged } = useVisibleMonth()
+  const { visibleMonth, onViewableItemsChanged, resetVisibleMonth } = useVisibleMonth()
   const entries = timeline.data?.pages.flatMap((page) => page.items) ?? []
   const headerMonth = visibleMonth ?? (entries[0] ? toYearMonth(entries[0].happenedOn) : toYearMonth(toKstDate(nowMs)))
   const isEmpty = timeline.isSuccess && entries.length === 0 && before === null
@@ -130,6 +130,7 @@ const TimelineScreen = () => {
           onClose={() => setIsMonthSheetVisible(false)}
           onSelect={(year, month) => {
             setBefore(monthJumpBefore(year, month))
+            resetVisibleMonth()
             setIsMonthSheetVisible(false)
           }}
         />

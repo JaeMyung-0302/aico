@@ -8,6 +8,7 @@ import { exportMatrix } from './export.matrix'
 import { photosMatrix } from './photos.matrix'
 import { placesMatrix } from './places.matrix'
 import { publicMatrix } from './public.matrix'
+import { quotesMatrix } from './quotes.matrix'
 import { usersMatrix } from './users.matrix'
 
 // 테넌트 매트릭스: 커플 데이터 라우트를 추가하는 Step은 tenant-matrix/<domain>.matrix.ts를 만들고 아래 MATRICES에 넣는다.
@@ -47,6 +48,7 @@ const MATRICES: readonly DomainMatrix[] = [
   photosMatrix,
   placesMatrix,
   bucketMatrix,
+  quotesMatrix,
   exportMatrix,
 ]
 

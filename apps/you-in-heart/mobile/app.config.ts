@@ -94,12 +94,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-share-intent',
       {
-        // 카톡 메시지 텍스트 공유 + 스크린샷 1장 (Phase 4D)
+        // 카톡 메시지 텍스트 공유 + 대화 내보내기 .txt 1개 + 스크린샷 1장 (Phase 4D)
         iosActivationRules: {
           NSExtensionActivationSupportsText: true,
+          NSExtensionActivationSupportsFileWithMaxCount: 1,
           NSExtensionActivationSupportsImageWithMaxCount: 1,
         },
         androidIntentFilters: ['text/*', 'image/*'],
+        // 공유 확장이 받은 것을 앱으로 넘기는 App Group — 위젯 snapshot 과 같은 그룹을 쓴다
+        iosAppGroupIdentifier: APP_GROUP,
       },
     ],
     [

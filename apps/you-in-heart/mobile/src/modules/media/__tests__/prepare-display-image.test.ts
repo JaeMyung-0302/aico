@@ -13,6 +13,17 @@ type FakeContext = { source: unknown; resize: jest.Mock; renderAsync: jest.Mock 
 
 let mockContexts: FakeContext[] = []
 const mockManipulate = jest.fn<FakeContext, [unknown]>()
+// 저장한 JPEG 의 크기(발급 요청의 displayBytes)
+const DISPLAY_FILE_BYTES = 482_133
+jest.mock('expo-file-system', () => ({
+  File: class {
+    readonly uri: string
+    readonly size = 482_133
+    constructor(uri: string) {
+      this.uri = uri
+    }
+  },
+}))
 jest.mock('expo-image-manipulator', () => ({
   SaveFormat: { JPEG: 'jpeg', PNG: 'png' },
   ImageManipulator: { manipulate: (source: unknown) => mockManipulate(source) },
@@ -46,6 +57,7 @@ describe('prepareDisplayImage (표시용 후보: 긴 변 2048 이하 JPEG q0.85)
       uri: 'file:///cache/display.jpg',
       width: 2048,
       height: 1536,
+      bytes: DISPLAY_FILE_BYTES,
     })
     expect(mockContexts[1]?.resize).toHaveBeenCalledWith({ width: 2048 })
     expect(resized.saveAsync).toHaveBeenCalledWith({ format: 'jpeg', compress: DISPLAY_JPEG_QUALITY })

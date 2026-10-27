@@ -13,12 +13,16 @@ const resizeFor = ({ width, height }: Size): { width: number } | { height: numbe
 }
 
 // 서버로 보낼 표시용 후보: 회전을 적용해 디코드한 실제 크기 기준으로 줄이고 JPEG q0.85 로 다시 저장한다.
-// 서버가 이 후보를 다시 인코딩(EXIF 제거)해 d.jpg·t.jpg 를 만든다. 원본 바이트는 건드리지 않는다
-export const prepareDisplayImage = async (uri: string): Promise<{ uri: string; width: number; height: number }> => {
+// 서버가 이 후보를 다시 인코딩(EXIF 제거)해 d.jpg·t.jpg 를 만든다. 원본 바이트는 건드리지 않는다.
+// bytes 는 발급 요청에 싣는다(서버가 15MB 상한을 보고 PUT Content-Length 로 서명한다)
+export const prepareDisplayImage = async (
+  uri: string,
+): Promise<{ uri: string; width: number; height: number; bytes: number }> => {
   const decoded = await ImageManipulator.manipulate(uri).renderAsync()
   const resize = resizeFor(decoded)
   const image = resize ? await ImageManipulator.manipulate(decoded).resize(resize).renderAsync() : decoded
-  return image.saveAsync({ format: SaveFormat.JPEG, compress: DISPLAY_JPEG_QUALITY })
+  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: DISPLAY_JPEG_QUALITY })
+  return { ...saved, bytes: new File(saved.uri).size }
 }
 
 // 올린 뒤 캐시에 남은 표시용 후보를 지운다(실패해도 OS 가 캐시를 정리한다)

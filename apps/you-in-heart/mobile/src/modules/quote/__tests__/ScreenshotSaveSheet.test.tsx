@@ -57,7 +57,7 @@ const renderSheet = async (initialUri: string | null = 'file:///shared/shot.png'
 beforeEach(async () => {
   jest.clearAllMocks()
   await session.signIn({ accessToken: 'a', refreshToken: 'r' })
-  jest.mocked(prepareDisplayImage).mockResolvedValue({ uri: 'file:///cache/display.jpg', width: 946, height: 2048 })
+  jest.mocked(prepareDisplayImage).mockResolvedValue({ uri: 'file:///cache/display.jpg', width: 946, height: 2048, bytes: 2048 })
   jest.mocked(readFileSize).mockReturnValue(2048)
   jest.mocked(createScreenshotUpload).mockResolvedValue({ quoteId: QUOTE_ID, upload: UPLOAD, expiresIn: 300 })
   jest.mocked(putFileToTarget).mockResolvedValue(undefined)

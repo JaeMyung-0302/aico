@@ -1,5 +1,6 @@
 import type { SeededCouple } from '../factories'
 import { anniversariesMatrix } from './anniversaries.matrix'
+import { bucketMatrix } from './bucket.matrix'
 import { couplesMatrix } from './couples.matrix'
 import { diaryMatrix } from './diary.matrix'
 import { eventsMatrix } from './events.matrix'
@@ -45,6 +46,7 @@ const MATRICES: readonly DomainMatrix[] = [
   diaryMatrix,
   photosMatrix,
   placesMatrix,
+  bucketMatrix,
   exportMatrix,
 ]
 

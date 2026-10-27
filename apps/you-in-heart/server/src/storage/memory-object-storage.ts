@@ -1,5 +1,12 @@
+import { Readable } from 'node:stream'
 import { Injectable } from '@nestjs/common'
-import { assertDeletablePrefix, type ObjectStorage, type PresignPutInput, type PutObjectInput } from './object-storage'
+import {
+  assertDeletablePrefix,
+  type ObjectStorage,
+  type PresignPutInput,
+  type PutObjectInput,
+  type UploadStreamInput,
+} from './object-storage'
 
 // presigned URL 모양만 흉내 낸다(만료는 X-Amz-Expires 쿼리로 확인)
 const MEMORY_ORIGIN = 'https://storage.test'
@@ -48,6 +55,17 @@ export class MemoryObjectStorage implements ObjectStorage {
 
   async getObjectRange(key: string, length: number): Promise<Buffer | null> {
     return this.objects.get(key)?.subarray(0, length) ?? null
+  }
+
+  async getObjectStream(key: string): Promise<Readable | null> {
+    const body = this.objects.get(key)
+    return body ? Readable.from([body]) : null
+  }
+
+  async uploadStream({ key, body, contentType }: UploadStreamInput): Promise<void> {
+    const chunks = await body.toArray()
+    const buffer = Buffer.concat(chunks.filter((chunk): chunk is Buffer => Buffer.isBuffer(chunk)))
+    await this.putObject({ key, body: buffer, contentType })
   }
 
   clear(): void {

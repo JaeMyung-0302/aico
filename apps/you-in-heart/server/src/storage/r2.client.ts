@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream'
 import {
   DeleteObjectsCommand,
   GetObjectCommand,
@@ -9,16 +10,26 @@ import {
   S3Client,
   S3ServiceException,
 } from '@aws-sdk/client-s3'
+import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import type { AppConfig } from '../config/configuration'
-import { assertDeletablePrefix, type ObjectStorage, type PresignPutInput, type PutObjectInput } from './object-storage'
+import {
+  assertDeletablePrefix,
+  type ObjectStorage,
+  type PresignPutInput,
+  type PutObjectInput,
+  type UploadStreamInput,
+} from './object-storage'
 
 type R2Config = AppConfig['r2']
 
 // S3 ListObjectsV2·DeleteObjects 1회 최대 키 수
 const PAGE_SIZE = 1000
+// 스트림 업로드(내보내기 zip): 파트 8MB × 동시 2개 → 메모리 상한 약 16MB(architecture §5.3)
+const UPLOAD_PART_SIZE = 8 * 1024 * 1024
+const UPLOAD_QUEUE_SIZE = 2
 
 const isNotFound = (error: unknown): boolean =>
   error instanceof NotFound ||
@@ -147,6 +158,27 @@ export class R2ObjectStorage implements ObjectStorage {
       if (isNotFound(error)) return null
       throw error
     }
+  }
+
+  async getObjectStream(key: string): Promise<Readable | null> {
+    try {
+      const response = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }))
+      // Node에서 SDK 응답 본문은 Readable(IncomingMessage)
+      return response.Body instanceof Readable ? response.Body : null
+    } catch (error) {
+      if (isNotFound(error)) return null
+      throw error
+    }
+  }
+
+  async uploadStream({ key, body, contentType }: UploadStreamInput): Promise<void> {
+    const upload = new Upload({
+      client: this.client,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: contentType },
+      partSize: UPLOAD_PART_SIZE,
+      queueSize: UPLOAD_QUEUE_SIZE,
+    })
+    await upload.done()
   }
 
   private async listPage(prefix: string, token: string | undefined): Promise<{ keys: string[]; nextToken?: string }> {

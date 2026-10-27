@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream'
 import { MemoryObjectStorage } from './memory-object-storage'
 
 const put = (storage: MemoryObjectStorage, key: string, body = 'x') =>
@@ -55,5 +56,18 @@ describe('MemoryObjectStorage', () => {
     expect(getUrl.searchParams.get('X-Amz-Expires')).toBe('3600')
     await expect(storage.getObjectRange('c/a/o', 3)).resolves.toEqual(Buffer.from('abc'))
     await expect(storage.getObjectRange('c/a/x', 3)).resolves.toBeNull()
+  })
+
+  it('getObjectStream은 본문 스트림(없으면 null), uploadStream은 스트림을 모아 저장한다', async () => {
+    const storage = new MemoryObjectStorage()
+    await storage.uploadStream({
+      key: 'exports/a/j.zip',
+      body: Readable.from([Buffer.from('ab'), Buffer.from('cd')]),
+      contentType: 'application/zip',
+    })
+    await expect(storage.getObject('exports/a/j.zip')).resolves.toEqual(Buffer.from('abcd'))
+    const stream = await storage.getObjectStream('exports/a/j.zip')
+    expect(Buffer.concat((await stream?.toArray()) ?? [])).toEqual(Buffer.from('abcd'))
+    await expect(storage.getObjectStream('exports/a/x')).resolves.toBeNull()
   })
 })

@@ -7,8 +7,13 @@ import { authProviderParamSchema } from '../auth'
 import { bucketItemTitleSchema, bucketListResponseSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
 import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
+import { MAX_DISPLAY_CANDIDATE_BYTES } from '../../constants/limits'
 import { exportManifestV1Schema, latestExportResponseSchema } from '../export'
-import { createPhotoUploadRequestSchema, photoOriginalResponseSchema } from '../photo'
+import {
+  createPhotoUploadRequestSchema,
+  photoOriginalResponseSchema,
+  renewPhotoUploadRequestSchema,
+} from '../photo'
 import { placeBboxQuerySchema, placeListResponseSchema } from '../place'
 import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema, quoteListResponseSchema } from '../quote'
 import { putConsentsRequestSchema, updateMeRequestSchema } from '../user'
@@ -103,7 +108,28 @@ describe('diary', () => {
 })
 
 describe('photo', () => {
-  const base = { entryId: ENTRY_ID, originalMime: 'image/heic', originalBytes: 2_500_000 }
+  const base = { entryId: ENTRY_ID, originalMime: 'image/heic', originalBytes: 2_500_000, displayBytes: 800_000 }
+
+  it('표시용 후보 바이트 수(displayBytes)는 필수, 1~MAX_DISPLAY_CANDIDATE_BYTES 정수', () => {
+    const { displayBytes: _omitted, ...withoutDisplay } = base
+    expect(createPhotoUploadRequestSchema.safeParse(withoutDisplay).success).toBe(false)
+    expect(createPhotoUploadRequestSchema.safeParse({ ...base, displayBytes: 0 }).success).toBe(false)
+    expect(createPhotoUploadRequestSchema.safeParse({ ...base, displayBytes: 1.5 }).success).toBe(false)
+    expect(
+      createPhotoUploadRequestSchema.safeParse({ ...base, displayBytes: MAX_DISPLAY_CANDIDATE_BYTES }).success,
+    ).toBe(true)
+    expect(
+      createPhotoUploadRequestSchema.safeParse({ ...base, displayBytes: MAX_DISPLAY_CANDIDATE_BYTES + 1 }).success,
+    ).toBe(false)
+  })
+
+  it('renew 요청은 displayBytes만 받는다(같은 범위)', () => {
+    expect(renewPhotoUploadRequestSchema.parse({ displayBytes: 1 })).toEqual({ displayBytes: 1 })
+    expect(renewPhotoUploadRequestSchema.safeParse({}).success).toBe(false)
+    expect(renewPhotoUploadRequestSchema.safeParse({ displayBytes: MAX_DISPLAY_CANDIDATE_BYTES + 1 }).success).toBe(
+      false,
+    )
+  })
 
   it('좌표 범위 밖은 거부, 좌표는 둘 다 있거나 둘 다 없어야 한다', () => {
     expect(createPhotoUploadRequestSchema.safeParse({ ...base, lat: 37.5, lng: 127 }).success).toBe(true)

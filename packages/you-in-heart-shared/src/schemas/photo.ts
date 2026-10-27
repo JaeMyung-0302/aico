@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MAX_DISPLAY_CANDIDATE_BYTES } from '../constants/limits'
 import {
   idSchema,
   isoDateTimeSchema,
@@ -15,12 +16,16 @@ export type OriginalMime = z.infer<typeof originalMimeSchema>
 export const photoStatusSchema = z.enum(['PENDING', 'READY'])
 export type PhotoStatus = z.infer<typeof photoStatusSchema>
 
+// 표시용 후보 PUT의 Content-Length(서명에 들어간다). 기기가 만든 JPEG의 실제 바이트 수
+const displayBytesSchema = z.number().int().min(1).max(MAX_DISPLAY_CANDIDATE_BYTES)
+
 // POST /photos/uploads — takenAt 미래 여부·엔트리당 장수(MAX_PHOTOS_PER_ENTRY)는 서버가 검사
 export const createPhotoUploadRequestSchema = z
   .object({
     entryId: idSchema,
     originalMime: originalMimeSchema,
     originalBytes: z.number().int().positive(),
+    displayBytes: displayBytesSchema,
     takenAt: isoDateTimeSchema.optional(),
     lat: latSchema.optional(),
     lng: lngSchema.optional(),
@@ -31,6 +36,11 @@ export const createPhotoUploadRequestSchema = z
   })
 export type CreatePhotoUploadRequest = z.infer<typeof createPhotoUploadRequestSchema>
 
+// POST /photos/:id/uploads/renew — 표시용 후보는 다시 만들 수 있어 바이트 수를 새로 받는다(원본은 처음 선언 그대로)
+export const renewPhotoUploadRequestSchema = z.object({ displayBytes: displayBytesSchema })
+export type RenewPhotoUploadRequest = z.infer<typeof renewPhotoUploadRequestSchema>
+
+// original·display 모두 headers(Content-Type·Content-Length)를 그대로 붙여 PUT해야 한다
 export const createPhotoUploadResponseSchema = z.object({
   photoId: idSchema,
   original: uploadTargetSchema,

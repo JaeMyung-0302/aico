@@ -18,3 +18,5 @@ export const MAX_QUOTES_PER_BULK = 200
 export const MAX_QUOTE_REQUEST_BYTES = 64 * 1024
 // 스크린샷 업로드(기기에서 줄인 JPEG/PNG/WebP) 상한. 서버가 통째로 읽어 재인코딩한다
 export const MAX_SCREENSHOT_BYTES = 15 * 1024 * 1024
+// 사진 표시용 후보(기기에서 긴 변 2048 JPEG) 상한. presigned PUT이 이 범위의 displayBytes를 Content-Length로 서명하고 서버가 통째로 읽어 재인코딩한다
+export const MAX_DISPLAY_CANDIDATE_BYTES = 15 * 1024 * 1024

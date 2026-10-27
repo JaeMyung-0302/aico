@@ -374,6 +374,16 @@ describe('문구 보관함 (실DB + 메모리 스토리지)', () => {
       await complete(session, quoteId).expect(200)
     })
 
+    it('screenshot/complete는 사용자당 1분에 60회, 넘으면 429 RATE_LIMITED', async () => {
+      const session = await newCouple()
+      const missing = '0199e3a0-0000-7000-8000-00000000fffe'
+      for (let index = 0; index < 60; index += 1) {
+        await complete(session, missing).expect(404)
+      }
+      expect((await complete(session, missing).expect(429)).body.code).toBe('RATE_LIMITED')
+      await complete(session, missing, 1).expect(404)
+    })
+
     it.each([
       ['지원하지 않는 형식', { mime: 'image/gif', bytes: 100 }],
       ['0바이트', { mime: 'image/jpeg', bytes: 0 }],

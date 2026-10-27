@@ -20,10 +20,14 @@ import { Authenticated } from '../auth/decorators/authenticated.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import type { AuthUser } from '../auth/guards/jwt-auth.guard'
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe'
+import { UserThrottle } from '../common/throttle/user-throttle.guard'
 import { type CoupleContext, CurrentCouple } from '../couples/decorators/current-couple.decorator'
 import { QuotesService } from './quotes.service'
 
 const idPipe = new ZodValidationPipe(idSchema)
+
+// screenshot/complete는 스크린샷을 읽어 재인코딩한다(메모리·CPU) → 사용자당 60회/분. 넘으면 429 RATE_LIMITED
+const SCREENSHOT_COMPLETE_THROTTLE = { name: 'screenshot-complete', ttl: 60_000, limit: 60 }
 
 // 모든 /quotes 요청 본문은 64KB 상한(QuoteBodyLimitMiddleware, 413)
 @Controller('quotes')
@@ -88,6 +92,7 @@ export class QuotesController {
 
   @Post(':id/screenshot/complete')
   @HttpCode(HttpStatus.OK)
+  @UserThrottle(SCREENSHOT_COMPLETE_THROTTLE)
   completeScreenshot(
     @CurrentCouple() couple: CoupleContext,
     @CurrentUser() me: AuthUser,

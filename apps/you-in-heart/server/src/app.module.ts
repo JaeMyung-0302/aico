@@ -15,6 +15,7 @@ import { ExportModule } from './export/export.module'
 import { HealthModule } from './health/health.module'
 import { NotificationsModule } from './notifications/notifications.module'
 import { PhotosModule } from './photos/photos.module'
+import { PlacesModule } from './places/places.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { UsersModule } from './users/users.module'
 
@@ -45,6 +46,7 @@ const throttlerOptions = (config: ConfigService) => {
     AnniversariesModule,
     DiaryModule,
     PhotosModule,
+    PlacesModule,
     ExportModule,
   ],
   // 순서대로 실행: IP throttle → CoupleGuard(기본 "커플 필수", @AllowWithoutCouple 예외) → 라우트 가드(@Authenticated 등)

@@ -1,4 +1,4 @@
-// R2 키는 이 파일에서만 만든다(ADR-002). 사진 키는 1D에서 추가
+// R2 키는 이 파일에서만 만든다(ADR-002)
 // c/{coupleId}/… 원본·표시용·썸네일·스크린샷, incoming/{coupleId}/… 표시용 후보(수명 주기 1일), exports/{coupleId}/… zip(7일)
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
@@ -40,6 +40,32 @@ export const userIdFromDeletedLedgerKey = (key: string): string | null =>
 export const unlinkedCoupleLedgerKey = (coupleId: string): string => ledgerKey(UNLINKED_COUPLE_LEDGER_PREFIX, coupleId)
 export const coupleIdFromUnlinkedLedgerKey = (key: string): string | null =>
   idFromLedgerKey(UNLINKED_COUPLE_LEDGER_PREFIX, key)
+
+const assertUuid = (...ids: readonly string[]): void => {
+  if (!ids.every((id) => UUID_PATTERN.test(id))) throw new Error('키에는 uuid만 쓸 수 있습니다')
+}
+
+const photoKey = (coupleId: string, photoId: string, name: string): string => {
+  assertUuid(coupleId, photoId)
+  return `c/${coupleId}/p/${photoId}/${name}`
+}
+
+// 사진(architecture §6.2): o = EXIF 포함 원본 바이트 그대로, d.jpg·t.jpg = 서버 재인코딩(EXIF 없음)
+export const photoOriginalKey = (coupleId: string, photoId: string): string => photoKey(coupleId, photoId, 'o')
+export const photoDisplayKey = (coupleId: string, photoId: string): string => photoKey(coupleId, photoId, 'd.jpg')
+export const photoThumbKey = (coupleId: string, photoId: string): string => photoKey(coupleId, photoId, 't.jpg')
+
+// 기기가 만든 표시용 후보. complete가 재인코딩 후 지운다(수명 주기 1일 백업)
+export const photoIncomingKey = (coupleId: string, photoId: string): string => {
+  assertUuid(coupleId, photoId)
+  return `incoming/${coupleId}/${photoId}`
+}
+
+// 내보내기 zip(수명 주기 7일)
+export const exportZipKey = (coupleId: string, jobId: string): string => {
+  assertUuid(coupleId, jobId)
+  return `exports/${coupleId}/${jobId}.zip`
+}
 
 export const assertCouplePrefix = (prefix: string): void => {
   if (!COUPLE_PREFIX_PATTERN.test(prefix)) throw new Error('허용되지 않은 삭제 접두사입니다')

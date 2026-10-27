@@ -5,6 +5,11 @@ import {
   coupleIdFromUnlinkedLedgerKey,
   DELETED_USER_LEDGER_PREFIX,
   deletedUserLedgerKey,
+  exportZipKey,
+  photoDisplayKey,
+  photoIncomingKey,
+  photoOriginalKey,
+  photoThumbKey,
   PURGE_LEDGER_PREFIX,
   purgeLedgerKey,
   UNLINKED_COUPLE_LEDGER_PREFIX,
@@ -14,6 +19,7 @@ import {
 
 const COUPLE_ID = '0199e3a0-0000-7000-8000-0000000000c1'
 const USER_ID = '0199e3a0-0000-7000-8000-0000000000a1'
+const PHOTO_ID = '0199e3a0-0000-7000-8000-0000000000f1'
 
 describe('storage-keys', () => {
   it('couplePrefixes: 커플당 접두사 3개(c/·incoming/·exports/)', () => {
@@ -63,5 +69,37 @@ describe('storage-keys', () => {
     ['하위 경로', `c/${COUPLE_ID}/p/`],
   ])('assertCouplePrefix: %s는 throw', (_label, prefix) => {
     expect(() => assertCouplePrefix(prefix)).toThrow()
+  })
+
+  it('사진 원본·표시용·썸네일은 c/{coupleId}/p/{photoId}/ 아래, 표시용 후보는 incoming/{coupleId}/{photoId}', () => {
+    const photoPrefix = `c/${COUPLE_ID}/p/${PHOTO_ID}/`
+    expect(photoOriginalKey(COUPLE_ID, PHOTO_ID)).toBe(`${photoPrefix}o`)
+    expect(photoDisplayKey(COUPLE_ID, PHOTO_ID)).toBe(`${photoPrefix}d.jpg`)
+    expect(photoThumbKey(COUPLE_ID, PHOTO_ID)).toBe(`${photoPrefix}t.jpg`)
+    expect(photoIncomingKey(COUPLE_ID, PHOTO_ID)).toBe(`incoming/${COUPLE_ID}/${PHOTO_ID}`)
+    const [cPrefix, incomingPrefix] = couplePrefixes(COUPLE_ID)
+    expect(
+      [photoOriginalKey, photoDisplayKey, photoThumbKey].every((toKey) =>
+        toKey(COUPLE_ID, PHOTO_ID).startsWith(cPrefix),
+      ),
+    ).toBe(true)
+    expect(photoIncomingKey(COUPLE_ID, PHOTO_ID).startsWith(incomingPrefix)).toBe(true)
+  })
+
+  it.each([photoOriginalKey, photoDisplayKey, photoThumbKey, photoIncomingKey])(
+    '사진 키 생성기는 uuid가 아닌 coupleId·photoId를 거부한다 (%#)',
+    (toKey) => {
+      expect(toKey(COUPLE_ID, PHOTO_ID)).toContain(PHOTO_ID)
+      expect(() => toKey('../x', PHOTO_ID)).toThrow()
+      expect(() => toKey(COUPLE_ID, '../../o')).toThrow()
+      expect(() => toKey('', '')).toThrow()
+      expect(() => toKey(COUPLE_ID.toUpperCase(), PHOTO_ID)).toThrow()
+    },
+  )
+
+  it('내보내기 zip은 exports/{coupleId}/{jobId}.zip, uuid가 아니면 throw', () => {
+    expect(exportZipKey(COUPLE_ID, PHOTO_ID)).toBe(`exports/${COUPLE_ID}/${PHOTO_ID}.zip`)
+    expect(exportZipKey(COUPLE_ID, PHOTO_ID).startsWith(couplePrefixes(COUPLE_ID)[2])).toBe(true)
+    expect(() => exportZipKey(COUPLE_ID, 'x/../y')).toThrow()
   })
 })

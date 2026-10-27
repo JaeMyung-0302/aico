@@ -5,6 +5,7 @@ import {
   EVENT_NAMES,
   exportManifestV1Schema,
   MAX_PHOTOS_PER_ENTRY,
+  parseKakaoExport,
   updateBucketItemRequestSchema,
   WidgetSnapshotV1,
 } from '../index'
@@ -19,6 +20,7 @@ describe('index barrel', () => {
     )
     expect(EVENT_NAMES).toHaveLength(8)
     expect(MAX_PHOTOS_PER_ENTRY).toBe(20)
+    expect(parseKakaoExport('')).toEqual({ messages: [], unparsed: [] })
   })
 })
 

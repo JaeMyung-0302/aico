@@ -9,6 +9,13 @@ import { signOutKakao } from '../util-social-login/kakao'
 
 jest.mock('../data-access-auth/auth-api', () => ({ logoutSession: jest.fn(async () => undefined) }))
 jest.mock('../util-social-login/kakao', () => ({ signOutKakao: jest.fn(async () => undefined) }))
+jest.mock('@/shared/notifications/register-push-token', () => ({
+  unregisterPushToken: jest.fn(async () => undefined),
+  forgetPushToken: jest.fn(),
+}))
+jest.mock('@/modules/widget/data-access-widget/widget-storage', () => ({
+  clearWidgetSnapshot: jest.fn(async () => undefined),
+}))
 jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
 }))

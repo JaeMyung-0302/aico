@@ -46,6 +46,8 @@ export type SignedUrlResponse = z.infer<typeof signedUrlResponseSchema>
 export const apiErrorBodySchema = z.object({
   statusCode: z.number().int(),
   message: z.string(),
+  // 상태 코드만으로 구분이 안 되는 경우의 분류 (예: 403 CONSENT_REQUIRED, LOCATION_CONSENT_REQUIRED)
+  code: z.string().optional(),
   issues: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
   requestId: z.string().optional(),
 })

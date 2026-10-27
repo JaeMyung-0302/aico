@@ -20,6 +20,8 @@ import { writeExportZip } from './export-zip'
 
 // 완료 후 24시간 동안 내려받을 수 있다(zip 자체는 R2 수명 주기 7일)
 const DOWNLOAD_TTL_SECONDS = 86_400
+// 내려받기 URL 자체는 10분만 유효하다(조회할 때마다 다시 서명). 새어 나가도 오래 쓰이지 않게 한다
+const DOWNLOAD_URL_TTL_SECONDS = 600
 // purge 직전에는 받지 않는다: 처리 중 purge가 접두사를 지우면 zip이 고아로 남거나 중간에 사라진다
 const PURGE_MARGIN_MS = 60 * 60_000
 
@@ -187,7 +189,7 @@ export class ExportService implements OnApplicationBootstrap, OnModuleDestroy {
     const isDownloadable = job.status === 'READY' && job.objectKey !== null && secondsLeft > 0
     const downloadUrl =
       isDownloadable && job.objectKey
-        ? await this.storage.presignGet(job.objectKey, Math.min(DOWNLOAD_TTL_SECONDS, secondsLeft))
+        ? await this.storage.presignGet(job.objectKey, Math.min(DOWNLOAD_URL_TTL_SECONDS, secondsLeft))
         : null
     return {
       id: job.id,

@@ -102,7 +102,7 @@ describe('내보내기 (실DB + 메모리 스토리지)', () => {
     await app.close()
   })
 
-  it('POST /export → 202 PENDING, 처리 후 READY: zip(entries.json + photos/{happenedOn}/{photoId}.{ext} 원본) + 24시간 URL + 요청자 푸시', async () => {
+  it('POST /export → 202 PENDING, 처리 후 READY: zip(entries.json + photos/{happenedOn}/{photoId}.{ext} 원본) + 24시간 동안 받을 수 있는 10분 URL + 요청자 푸시', async () => {
     const session = await newCouple()
     await prisma.pushToken.create({
       data: { userId: session.members[0].id, expoToken: 'ExponentPushToken[requester]', platform: 'IOS' },
@@ -114,8 +114,7 @@ describe('내보내기 (실DB + 메모리 스토리지)', () => {
     const done = await waitDone(session, res.body.id)
     expect(done.status).toBe('READY')
     expect(done.downloadUrl).toContain(exportZipKey(session.couple.id, res.body.id))
-    expect(expiresOf(done.downloadUrl ?? '')).toBeGreaterThan(DAY_S - 60)
-    expect(expiresOf(done.downloadUrl ?? '')).toBeLessThanOrEqual(DAY_S)
+    expect(expiresOf(done.downloadUrl ?? '')).toBe(600)
     expect(Date.parse(done.expiresAt ?? '') - Date.now()).toBeGreaterThan((DAY_S - 60) * 1000)
 
     const zip = await storage.getObject(exportZipKey(session.couple.id, res.body.id))
@@ -172,6 +171,26 @@ describe('내보내기 (실DB + 메모리 스토리지)', () => {
     expect(withoutConsent.raw).not.toMatch(/"(lat|lng)"/)
     const withConsent = await placesOf(1)
     expect(withConsent.places).toEqual([expect.objectContaining({ name: '한강', lat: 37.5, lng: 127 })])
+  })
+
+  it('downloadUrl은 조회할 때마다 10분(600초)으로 다시 서명하고, expiresAt(완료 후 24시간)은 그대로', async () => {
+    const session = await newCouple()
+    const job = await prisma.exportJob.create({
+      data: {
+        coupleId: session.couple.id,
+        status: 'READY',
+        objectKey: exportZipKey(session.couple.id, '0199e3a0-0000-7000-8000-0000000000e2'),
+        expiresAt: new Date(Date.now() + DAY_S * 1000),
+        completedAt: new Date(),
+      },
+    })
+    const presignGet = jest.spyOn(storage, 'presignGet')
+    const first = await getJob(session, job.id).expect(200)
+    const second = await getJob(session, job.id).expect(200)
+    expect([expiresOf(first.body.downloadUrl), expiresOf(second.body.downloadUrl)]).toEqual([600, 600])
+    expect(presignGet).toHaveBeenCalledTimes(2)
+    presignGet.mockRestore()
+    expect(Date.parse(first.body.expiresAt) - Date.now()).toBeGreaterThan((DAY_S - 60) * 1000)
   })
 
   it('연결 해제 유예(UNLINKING) 중에도 내보내기를 요청·완료할 수 있다', async () => {

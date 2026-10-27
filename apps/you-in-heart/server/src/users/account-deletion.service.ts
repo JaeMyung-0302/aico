@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { DEV_SUB_PREFIX } from '../auth/auth.service'
+import { sequentially } from '../common/async/sequentially'
 import { UnlinkService } from '../couples/unlink.service'
 import type { AuthProvider } from '../generated/prisma'
 import { PrismaService } from '../prisma/prisma.service'
+import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage'
+import { DELETED_USER_LEDGER_PREFIX, deletedUserLedgerKey, userIdFromDeletedLedgerKey } from '../storage/storage-keys'
 import { KakaoUnlinkClient } from './kakao-unlink.client'
 
 type LinkedAccount = { provider: AuthProvider; providerSub: string }
@@ -11,7 +14,7 @@ type LinkedAccount = { provider: AuthProvider; providerSub: string }
 // - 커플이 없으면 User 행을 바로 지운다(Cascade: 계정·세션·푸시 토큰·동의·초대)
 // - 커플이 있으면 커플을 UNLINKING으로 바꾸고 User는 DELETED + 이름 null로 남긴 채 계정·세션·푸시 토큰·초대를 지운다.
 //   상대가 30일간 두 사람 기록을 보고 내보낼 수 있게 CoupleMember·작성 기록을 유지하고, purge가 커플과 함께 User 행을 지운다
-// TODO(ADR-003): 커플 없는 hard delete는 purge 원장에 없어 백업 복원 시 되살아난다 → 운영 런북에서 사용자 원장 여부 결정
+// DB를 바꾸기 전에 R2 원장(system/deleted-users/)을 쓴다 → 백업 복원 후 purge:replay가 탈퇴를 다시 적용한다(ADR-003)
 @Injectable()
 export class AccountDeletionService {
   private readonly logger = new Logger(AccountDeletionService.name)
@@ -20,27 +23,55 @@ export class AccountDeletionService {
     private readonly prisma: PrismaService,
     private readonly unlinks: UnlinkService,
     private readonly kakao: KakaoUnlinkClient,
+    @Inject(OBJECT_STORAGE) private readonly storage: ObjectStorage,
   ) {}
 
+  // 원장 쓰기가 실패하면 DB는 그대로 두고 5xx
   async deleteAccount(userId: string): Promise<void> {
     const accounts = await this.prisma.authAccount.findMany({
       where: { userId },
       select: { provider: true, providerSub: true },
     })
-    const coupleId = await this.unlinks.unlinkForAccountDeletion(userId)
-    if (coupleId) await this.markDeleted(userId)
-    else await this.prisma.user.delete({ where: { id: userId } })
+    await this.storage.putObject({
+      key: deletedUserLedgerKey(userId),
+      body: Buffer.alloc(0),
+      contentType: 'application/octet-stream',
+    })
+    await this.applyDeletion(userId, true)
     await Promise.all(accounts.map((account) => this.unlinkProvider(userId, account)))
   }
 
+  // 백업 복원 직후: 원장에 있는데 DB에 남아 있는 사용자에게 탈퇴를 다시 적용한다(멱등, 알림·제공자 unlink 없음). 원장 항목 수
+  async replayLedger(): Promise<number> {
+    const keys = await this.storage.listKeys(DELETED_USER_LEDGER_PREFIX)
+    const userIds = keys.flatMap((key) => {
+      const id = userIdFromDeletedLedgerKey(key)
+      return id ? [id] : []
+    })
+    await sequentially(userIds, async (userId) => {
+      const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+      if (!user) return
+      await this.applyDeletion(userId, false)
+      this.logger.log(`[purge-replay] user ${userId} deletion re-applied`)
+    })
+    return userIds.length
+  }
+
+  private async applyDeletion(userId: string, shouldNotify: boolean): Promise<void> {
+    const coupleId = await this.unlinks.unlinkForAccountDeletion(userId, { shouldNotify })
+    if (coupleId) await this.markDeleted(userId)
+    else await this.prisma.user.deleteMany({ where: { id: userId } })
+  }
+
+  // 이미 DELETED면 deletedAt을 다시 찍지 않는다(replay 멱등)
   private async markDeleted(userId: string): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.authAccount.deleteMany({ where: { userId } }),
       this.prisma.session.deleteMany({ where: { userId } }),
       this.prisma.pushToken.deleteMany({ where: { userId } }),
       this.prisma.coupleInvite.deleteMany({ where: { creatorId: userId } }),
-      this.prisma.user.update({
-        where: { id: userId },
+      this.prisma.user.updateMany({
+        where: { id: userId, status: 'ACTIVE' },
         data: { status: 'DELETED', deletedAt: new Date(), displayName: null },
       }),
     ])

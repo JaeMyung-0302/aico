@@ -61,17 +61,29 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'react-native-android-widget',
       {
+        // 이름은 src/modules/widget/android/DdayWidget.tsx WIDGET_NAMES 와 같아야 한다.
+        // 30분(안드로이드 최소)마다 다시 그린다. D-day 계산은 위젯이 스냅샷의 사귄 날로 직접 한다 → 자정 후 30분 안에 바뀐다
         widgets: [
           {
             name: 'DdayWidget',
             label: 'D-day',
-            description: '함께한 날과 다음 기념일을 보여줘요',
+            description: '함께한 날을 보여줘요',
             minWidth: '110dp',
             minHeight: '40dp',
             targetCellWidth: 2,
             targetCellHeight: 1,
             resizeMode: 'horizontal|vertical',
-            // 30분마다 다시 그린다. D-day 계산은 위젯이 스냅샷의 사귄 날로 직접 한다
+            updatePeriodMillis: 1800000,
+          },
+          {
+            name: 'DdayWidgetWide',
+            label: 'D-day (넓게)',
+            description: '함께한 날과 다음 기념일을 보여줘요',
+            minWidth: '250dp',
+            minHeight: '110dp',
+            targetCellWidth: 4,
+            targetCellHeight: 2,
+            resizeMode: 'horizontal|vertical',
             updatePeriodMillis: 1800000,
           },
         ],
@@ -105,6 +117,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:4009/api/v1',
     appGroup: APP_GROUP,
-    // EAS 프로젝트 ID는 실기기 확인 단계에서 `eas init`으로 채운다
+    // EAS 프로젝트 ID는 실기기 확인 단계에서 `eas init`으로 채운다(EAS_PROJECT_ID). 없으면 푸시 토큰 등록을 건너뛴다
+    ...(process.env.EAS_PROJECT_ID ? { eas: { projectId: process.env.EAS_PROJECT_ID } } : {}),
   },
 })

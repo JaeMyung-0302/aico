@@ -5,7 +5,7 @@ import { fetchMe } from '@/modules/user/data-access-me/me-api'
 import { ApiError } from '@/shared/api/api-error'
 import { session } from '@/shared/auth/session'
 import { ACTIVE_COUPLE, DIARY_ENTRY, ENTRY_ID, FIXED_NOW_MS, mockClockAt, ME, PARTNER_ID, PHOTO_IDS } from '@/test-utils/fixtures'
-import { QueryTestProvider } from '@/test-utils/QueryTestProvider'
+import { createTestQueryClient, QueryTestProvider } from '@/test-utils/QueryTestProvider'
 import { SafeAreaTestProvider } from '@/test-utils/SafeAreaTestProvider'
 import { deleteDiary, fetchDiaryEntry, trackMemoryViewed } from '../data-access-diary/diary-api'
 import DiaryDetailScreen from '../feature-diary-detail/DiaryDetailScreen'
@@ -24,10 +24,10 @@ jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
 }))
 
-const renderDetail = () =>
+const renderDetail = (client = createTestQueryClient()) =>
   render(
     <SafeAreaTestProvider>
-      <QueryTestProvider>
+      <QueryTestProvider client={client}>
         <DiaryDetailScreen entryId={ENTRY_ID} />
       </QueryTestProvider>
     </SafeAreaTestProvider>,
@@ -90,6 +90,19 @@ describe('DiaryDetailScreen (SCR-06)', () => {
 
     await waitFor(() => expect(deleteDiary).toHaveBeenCalledWith(ENTRY_ID))
     await waitFor(() => expect(router.back).toHaveBeenCalled())
+  })
+
+  it('지우면 그 기록이 걸려 있던 지도 장소·버킷 완료 표시도 다시 받는다', async () => {
+    const client = createTestQueryClient()
+    const invalidate = jest.spyOn(client, 'invalidateQueries')
+    await renderDetail(client)
+    await fireEvent.press(await screen.findByRole('button', { name: '더보기' }))
+    await fireEvent.press(screen.getByRole('button', { name: '삭제하기' }))
+    await fireEvent.press(screen.getByRole('button', { name: '삭제' }))
+
+    await waitFor(() => expect(router.back).toHaveBeenCalled())
+    const keys = invalidate.mock.calls.map(([filters]) => filters?.queryKey)
+    expect(keys).toEqual(expect.arrayContaining([['diary'], ['photos'], ['places'], ['bucket']]))
   })
 
   it('작성자는 수정하기로 작성 화면을 연다', async () => {

@@ -9,9 +9,22 @@ import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { FONT_FAMILY } from '@/design-system/tokens/typography'
 import { useAuthGate } from '@/modules/auth/feature-auth-gate/useAuthGate'
+import { useMe } from '@/modules/user/data-access-me/useMe'
+import { useWidgetSync } from '@/modules/widget/feature-widget-sync/useWidgetSync'
+import { useSessionStatus } from '@/shared/auth/session'
+import { usePushTokenRegistration } from '@/shared/notifications/register-push-token'
 import { queryClient } from '@/shared/query-client'
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined)
+
+// 화면과 무관한 기기 동기화: 홈 위젯 스냅샷(1B), 로그인 후 푸시 토큰 등록(1A.8)
+const DeviceSync = () => {
+  useWidgetSync()
+  const isSignedIn = useSessionStatus() === 'signedIn'
+  const me = useMe()
+  usePushTokenRegistration(isSignedIn ? (me.data?.id ?? null) : null)
+  return null
+}
 
 // 인증 게이트: 갈 곳(resolve-auth-redirect.ts)별로 Stack.Protected 그룹만 연다.
 // 단계가 바뀌면 허용되지 않은 화면은 스택에서 통째로 빠지고(계정 전환 잔상·뒤로 되돌이 없음),
@@ -21,6 +34,8 @@ const RootNavigator = () => {
     [FONT_FAMILY.regular]: require('pretendard/dist/public/static/Pretendard-Regular.otf'),
     [FONT_FAMILY.medium]: require('pretendard/dist/public/static/Pretendard-Medium.otf'),
     [FONT_FAMILY.bold]: require('pretendard/dist/public/static/Pretendard-Bold.otf'),
+    [FONT_FAMILY.serifMedium]: require('@expo-google-fonts/noto-serif-kr/500Medium/NotoSerifKR_500Medium.ttf'),
+    [FONT_FAMILY.serifBold]: require('@expo-google-fonts/noto-serif-kr/700Bold/NotoSerifKR_700Bold.ttf'),
   })
   // 폰트 로드에 실패해도 시스템 폰트로 앱은 떠야 한다
   const areFontsReady = areFontsLoaded || fontError !== null
@@ -54,6 +69,7 @@ const RootNavigator = () => {
         <Stack.Protected guard={destination === '/(tabs)'}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="settings/index" />
+          <Stack.Screen name="anniversaries/index" />
           <Stack.Screen name="pairing/started-on" />
         </Stack.Protected>
       </Stack>
@@ -65,6 +81,7 @@ const RootLayout = () => (
   <SafeAreaProvider>
     <QueryClientProvider client={queryClient}>
       <ShareIntentProvider>
+        <DeviceSync />
         <RootNavigator />
       </ShareIntentProvider>
     </QueryClientProvider>

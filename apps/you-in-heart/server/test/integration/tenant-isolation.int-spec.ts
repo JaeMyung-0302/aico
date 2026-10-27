@@ -7,7 +7,7 @@ import { MemoryObjectStorage } from '../../src/storage/memory-object-storage'
 import { OBJECT_STORAGE } from '../../src/storage/object-storage'
 import { bearer, tokenFor } from './auth-helpers'
 import { snapshotCouple } from './couple-tables'
-import { createPairedCouple, createUser, seedCoupleData } from './factories'
+import { createPairedCouple, createUser, grantRequiredConsents, seedCoupleData } from './factories'
 import { createFakePush } from './fake-push'
 import { collectRoutes, type RouteInfo } from './route-inventory'
 import { createTestApp } from './setup-app'
@@ -54,6 +54,10 @@ describe('테넌트 격리 (실DB)', () => {
   const createCoupleFixture = async (): Promise<CoupleFixture> => {
     const paired = await createPairedCouple(prisma)
     const seeded = await seedCoupleData(prisma, paired)
+    await grantRequiredConsents(
+      prisma,
+      paired.members.map((member) => member.id),
+    )
     const tokens = await Promise.all(paired.members.map((member) => tokenFor(app, member.id)))
     return {
       coupleId: paired.couple.id,
@@ -137,6 +141,16 @@ describe('테넌트 격리 (실DB)', () => {
     const res = await send(app, routeCase, fixture, fixture.outsider.token)
     expect(res.status).toBe(403)
     expect(await snapshotCouple(prisma, fixture.b.coupleId)).toBe(before)
+  })
+
+  it.each(cases)('%s: 필수 동의가 없는 커플 멤버는 403 CONSENT_REQUIRED·무변경', async (_name, routeCase) => {
+    const fixture = await createFixture()
+    await prisma.consent.deleteMany({ where: { userId: fixture.a.members[0].userId } })
+    const before = await snapshotCouple(prisma, fixture.a.coupleId)
+    const res = await send(app, routeCase, fixture, fixture.a.members[0].token)
+    expect(res.status).toBe(403)
+    expect(res.body.code).toBe('CONSENT_REQUIRED')
+    expect(await snapshotCouple(prisma, fixture.a.coupleId)).toBe(before)
   })
 
   it.each(cases)('%s: 토큰 없이 호출하면 401', async (_name, routeCase) => {

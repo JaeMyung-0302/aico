@@ -4,6 +4,8 @@ import { Test } from '@nestjs/testing'
 import { createFakePrisma, type FakePrisma } from '../../test/helpers/fake-prisma'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { PrismaService } from '../prisma/prisma.service'
+import { ConsentService } from '../users/consent.service'
+import { REQUIRES_LOCATION_CONSENT_KEY } from '../users/decorators/requires-location-consent.decorator'
 import { CoupleGuard, type CoupleRequest } from './couple.guard'
 import { ALLOW_DURING_UNLINKING_KEY } from './decorators/allow-during-unlinking.decorator'
 import { ALLOW_WITHOUT_COUPLE_KEY } from './decorators/allow-without-couple.decorator'
@@ -25,6 +27,7 @@ const requestOf = (method: string, isAuthed = true): Partial<CoupleRequest> =>
 describe('CoupleGuard', () => {
   let prisma: FakePrisma
   let jwt: { canActivate: jest.Mock }
+  let consents: { status: jest.Mock }
   let guard: CoupleGuard
 
   const membership = (status: 'ACTIVE' | 'UNLINKING') => ({ couple: { id: COUPLE_ID, status } })
@@ -32,8 +35,14 @@ describe('CoupleGuard', () => {
   beforeEach(async () => {
     prisma = createFakePrisma()
     jwt = { canActivate: jest.fn() }
+    consents = { status: jest.fn().mockResolvedValue({ terms: true, privacy: true, location: false }) }
     const moduleRef = await Test.createTestingModule({
-      providers: [CoupleGuard, { provide: JwtAuthGuard, useValue: jwt }, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        CoupleGuard,
+        { provide: JwtAuthGuard, useValue: jwt },
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConsentService, useValue: consents },
+      ],
     }).compile()
     guard = moduleRef.get(CoupleGuard)
   })
@@ -92,5 +101,57 @@ describe('CoupleGuard', () => {
     }
     await guard.canActivate(contextFor(req))
     expect(req.couple?.id).toBe(COUPLE_ID)
+  })
+
+  describe('동의 게이트', () => {
+    const forbiddenBody = async (context: ExecutionContext) => {
+      const error: unknown = await guard.canActivate(context).catch((caught: unknown) => caught)
+      expect(error).toBeInstanceOf(ForbiddenException)
+      return error instanceof ForbiddenException ? error.getResponse() : null
+    }
+
+    it.each([
+      [{ terms: false, privacy: true, location: true }],
+      [{ terms: true, privacy: false, location: false }],
+      [{ terms: false, privacy: false, location: false }],
+    ])('필수 동의(TERMS·PRIVACY)가 없으면 403 CONSENT_REQUIRED (%j)', async (status) => {
+      prisma.coupleMember.findUnique.mockResolvedValue(membership('ACTIVE'))
+      consents.status.mockResolvedValue(status)
+      await expect(forbiddenBody(contextFor(requestOf('GET')))).resolves.toMatchObject({ code: 'CONSENT_REQUIRED' })
+      expect(consents.status).toHaveBeenCalledWith(USER_ID)
+    })
+
+    it('UNLINKING 중의 읽기·재연결도 동의가 없으면 403(409보다 먼저)', async () => {
+      prisma.coupleMember.findUnique.mockResolvedValue(membership('UNLINKING'))
+      consents.status.mockResolvedValue({ terms: false, privacy: false, location: false })
+      await expect(forbiddenBody(contextFor(requestOf('POST')))).resolves.toMatchObject({ code: 'CONSENT_REQUIRED' })
+    })
+
+    it('커플이 없으면 동의를 조회하지 않고 커플 403', async () => {
+      prisma.coupleMember.findUnique.mockResolvedValue(null)
+      const body = await forbiddenBody(contextFor(requestOf('GET')))
+      expect(body).not.toMatchObject({ code: 'CONSENT_REQUIRED' })
+      expect(consents.status).not.toHaveBeenCalled()
+    })
+
+    it('@AllowWithoutCouple 라우트는 동의 없이도 통과(/me·/me/consents·/me/push-tokens·auth·health)', async () => {
+      consents.status.mockResolvedValue({ terms: false, privacy: false, location: false })
+      const context = contextFor(requestOf('PUT'), { [ALLOW_WITHOUT_COUPLE_KEY]: true })
+      await expect(guard.canActivate(context)).resolves.toBe(true)
+      expect(consents.status).not.toHaveBeenCalled()
+    })
+
+    it('@RequiresLocationConsent 라우트는 위치 동의가 없으면 403 LOCATION_CONSENT_REQUIRED, 있으면 통과', async () => {
+      prisma.coupleMember.findUnique.mockResolvedValue(membership('ACTIVE'))
+      const context = () => contextFor(requestOf('POST'), { [REQUIRES_LOCATION_CONSENT_KEY]: true })
+      await expect(forbiddenBody(context())).resolves.toMatchObject({ code: 'LOCATION_CONSENT_REQUIRED' })
+      consents.status.mockResolvedValue({ terms: true, privacy: true, location: true })
+      await expect(guard.canActivate(context())).resolves.toBe(true)
+    })
+
+    it('@RequiresLocationConsent가 없는 라우트는 위치 동의 없이 통과', async () => {
+      prisma.coupleMember.findUnique.mockResolvedValue(membership('ACTIVE'))
+      await expect(guard.canActivate(contextFor(requestOf('POST')))).resolves.toBe(true)
+    })
   })
 })

@@ -3,10 +3,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { AuthModule } from './auth/auth.module'
 import { type ClientIpSource, resolveClientIp } from './common/throttle/client-ip'
 import { configuration } from './config/configuration'
 import { HealthModule } from './health/health.module'
 import { PrismaModule } from './prisma/prisma.module'
+import { UsersModule } from './users/users.module'
 
 const THROTTLE_TTL_MS = 60_000
 const THROTTLE_LIMIT = 120
@@ -27,6 +29,8 @@ const throttlerOptions = (config: ConfigService) => {
     ThrottlerModule.forRootAsync({ inject: [ConfigService], useFactory: throttlerOptions }),
     PrismaModule,
     HealthModule,
+    AuthModule,
+    UsersModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

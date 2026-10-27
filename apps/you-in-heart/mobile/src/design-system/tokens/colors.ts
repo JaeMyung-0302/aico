@@ -13,6 +13,10 @@ export const COLORS = {
   scrim: 'rgba(23,23,26,0.45)',
   // tokens.json 에는 없고 시안 HTML 에만 쓰인 선 색 (토글 꺼짐·시트 손잡이·점선 테두리)
   line: '#D6D6D1',
+  // 시안 HTML 에만 있는 색: SCR-09 사진 뷰어 바탕, 사진 위 반투명 배지·덮개(SCR-05 업로드 상태)
+  night: '#0E0E10',
+  photoBadge: 'rgba(23,23,26,0.55)',
+  photoVeil: 'rgba(255,255,255,0.55)',
 } as const
 
 // tokens.json colors.photoPlaceholder — 사진 자리표시 톤 (돌려가며 쓴다)

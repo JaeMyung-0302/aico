@@ -53,6 +53,16 @@ export class PhotosController {
     return this.photos.complete(couple.id, id)
   }
 
+  @Post(':id/uploads/renew')
+  @HttpCode(HttpStatus.OK)
+  renewUpload(
+    @CurrentCouple() couple: CoupleContext,
+    @CurrentUser() me: AuthUser,
+    @Param('id', idPipe) id: string,
+  ): Promise<CreatePhotoUploadResponse> {
+    return this.photos.renewUpload(couple.id, me.id, id)
+  }
+
   @Get(':id/original')
   original(@CurrentCouple() couple: CoupleContext, @Param('id', idPipe) id: string): Promise<PhotoOriginalResponse> {
     return this.photos.originalUrl(couple.id, id)

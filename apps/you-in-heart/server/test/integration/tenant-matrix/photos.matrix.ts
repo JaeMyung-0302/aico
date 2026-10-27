@@ -19,6 +19,11 @@ export const photosMatrix: DomainMatrix = {
       expectsNotFound: true,
     },
     {
+      route: 'POST /photos/:id/uploads/renew',
+      request: ({ b }) => ({ path: `/photos/${b.seeded.photoId}/uploads/renew` }),
+      expectsNotFound: true,
+    },
+    {
       route: 'GET /photos/:id/original',
       request: ({ b }) => ({ path: `/photos/${b.seeded.photoId}/original` }),
       expectsNotFound: true,

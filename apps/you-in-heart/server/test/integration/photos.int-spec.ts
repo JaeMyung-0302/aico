@@ -240,6 +240,67 @@ describe('사진 파이프라인 (실DB + 메모리 스토리지)', () => {
     })
   })
 
+  describe('POST /photos/:id/uploads/renew', () => {
+    const renew = (token: string, photoId: string) =>
+      http()
+        .post(`${API}/${photoId}/uploads/renew`)
+        .set(...bearer(token))
+
+    it('내 PENDING 사진: 같은 photoId로 새 300초 PUT URL 2개, 원본 헤더는 저장된 mime·바이트 수', async () => {
+      const session = await newCouple()
+      const heic = fixture('sample.heic')
+      const { photoId } = await startUpload(session, heic, { originalMime: 'image/heic' })
+      const res = await renew(session.tokens[0], photoId).expect(200)
+      expect(res.body).toEqual({
+        photoId,
+        original: {
+          url: expect.stringContaining(photoOriginalKey(session.couple.id, photoId)),
+          headers: { 'Content-Type': 'image/heic', 'Content-Length': String(heic.length) },
+        },
+        display: {
+          url: expect.stringContaining(photoIncomingKey(session.couple.id, photoId)),
+          headers: { 'Content-Type': 'image/jpeg' },
+        },
+        expiresIn: 300,
+      })
+      expect([expiresOf(res.body.original.url), expiresOf(res.body.display.url)]).toEqual([300, 300])
+      // 새 URL로 올린 뒤 complete가 그대로 이어진다
+      await putUploads(session.couple.id, photoId, heic, fixture('no-exif.jpg'))
+      await complete(session.tokens[0], photoId).expect(200)
+    })
+
+    it('READY는 409 ALREADY_COMPLETE, 상대가 올린 PENDING은 403 NOT_AUTHOR, 없는 id는 404', async () => {
+      const session = await newCouple()
+      const original = fixture('gps-exif.jpg')
+      const { photoId, entry } = await startUpload(session, original)
+      await putUploads(session.couple.id, photoId, original, fixture('no-exif.jpg'))
+      await complete(session.tokens[0], photoId).expect(200)
+      expect((await renew(session.tokens[0], photoId).expect(409)).body.code).toBe('ALREADY_COMPLETE')
+      const pending = await createPhoto(prisma, session.couple.id, entry.id, session.members[0].id)
+      expect((await renew(session.tokens[1], pending.id).expect(403)).body.code).toBe('NOT_AUTHOR')
+      await renew(session.tokens[0], '0199e3a0-0000-7000-8000-00000000ffff').expect(404)
+    })
+
+    it('다른 커플의 photoId는 404이고 presign 호출 0회', async () => {
+      const session = await newCouple()
+      const other = await newCouple()
+      const { photoId } = await startUpload(other, fixture('gps-exif.jpg'))
+      const presignPut = jest.spyOn(storage, 'presignPut')
+      await renew(session.tokens[0], photoId).expect(404)
+      expect(presignPut).not.toHaveBeenCalled()
+    })
+
+    it('연결 해제 유예 중에는 409 COUPLE_UNLINKING', async () => {
+      const session = await newCouple()
+      const { photoId } = await startUpload(session, fixture('gps-exif.jpg'))
+      await prisma.couple.update({
+        where: { id: session.couple.id },
+        data: { status: 'UNLINKING', purgeAfter: new Date(Date.now() + 86_400_000) },
+      })
+      expect((await renew(session.tokens[0], photoId).expect(409)).body.code).toBe('COUPLE_UNLINKING')
+    })
+  })
+
   describe('조회와 원본 URL', () => {
     const readyPhoto = async (session: CoupleSession) => {
       const original = fixture('gps-exif.jpg')

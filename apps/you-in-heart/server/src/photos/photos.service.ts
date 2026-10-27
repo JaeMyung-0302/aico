@@ -19,11 +19,13 @@ import { photoDisplayKey, photoIncomingKey, photoOriginalKey, photoThumbKey } fr
 import { ConsentService } from '../users/consent.service'
 import { ImageSanitizer, InvalidImageError, SanitizerBusyError } from './image-sanitizer'
 import {
+  alreadyComplete,
   entryNotFound,
   invalidCursor,
   invalidUpload,
   locationConsentRequired,
   notEntryAuthor,
+  notPhotoUploader,
   originalTooLarge,
   photoLimitReached,
   photoNotFound,
@@ -80,6 +82,14 @@ export class PhotosService {
     if (body.lat !== undefined && !(await this.consents.hasLocationConsent(actorId))) throw locationConsentRequired()
     const photoId = await this.prisma.$transaction((tx) => this.insertPending(tx, coupleId, actorId, body))
     return this.presignUploads(coupleId, photoId, body.originalMime, body.originalBytes)
+  }
+
+  // PUT URL이 만료된 PENDING 사진을 이어 올린다. 서명 헤더는 처음 선언(저장된 mime·바이트 수) 그대로
+  async renewUpload(coupleId: string, actorId: string, id: string): Promise<CreatePhotoUploadResponse> {
+    const photo = await this.findPhoto(coupleId, id)
+    if (photo.uploaderId !== actorId) throw notPhotoUploader()
+    if (photo.status === 'READY') throw alreadyComplete()
+    return this.presignUploads(coupleId, id, originalMimeSchema.parse(photo.originalMime), photo.originalBytes)
   }
 
   // 원본: HEAD 크기 + 매직 넘버만. 표시용 후보: 재인코딩(EXIF 제거) → d.jpg·t.jpg → incoming 삭제 → READY. 다시 불러도 같은 결과

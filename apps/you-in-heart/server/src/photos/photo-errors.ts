@@ -22,6 +22,10 @@ export const originalTooLarge = () =>
   new BadRequestException({ code: 'ORIGINAL_TOO_LARGE', message: '원본 파일이 너무 커요' })
 export const uploadIncomplete = () =>
   new ConflictException({ code: 'UPLOAD_INCOMPLETE', message: '아직 업로드가 끝나지 않았어요' })
+export const notPhotoUploader = () =>
+  new ForbiddenException({ code: 'NOT_AUTHOR', message: '사진을 올린 사람만 업로드를 이어갈 수 있어요' })
+export const alreadyComplete = () =>
+  new ConflictException({ code: 'ALREADY_COMPLETE', message: '이미 업로드가 끝난 사진이에요' })
 export const invalidCursor = () => new BadRequestException('잘못된 커서예요')
 export const invalidUpload = (message: string) => new UnprocessableEntityException({ code: 'INVALID_UPLOAD', message })
 export const sanitizerBusy = () =>

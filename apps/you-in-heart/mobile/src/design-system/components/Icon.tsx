@@ -1,7 +1,7 @@
 import Svg, { Circle, Path, Rect } from 'react-native-svg'
 import { COLORS, type ColorToken } from '../tokens/colors'
 
-// 시안(SCR-01·02·03·05~09·16·18)의 stroke 아이콘 (viewBox 24, 선 1.7)
+// 시안(SCR-01·02·03·05~10·12~16·18)의 stroke 아이콘 (viewBox 24, 선 1.7)
 export type IconName =
   | 'home'
   | 'timeline'
@@ -24,6 +24,9 @@ export type IconName =
   | 'download'
   | 'chevronDown'
   | 'image'
+  | 'search'
+  | 'quote'
+  | 'trash'
 
 type IconProps = {
   name: IconName
@@ -115,6 +118,16 @@ const Icon = ({ name, size = 22, color = 'ink', strokeWidth = 1.7 }: IconProps) 
           <Path d="m21 16-5-5-9 9" {...common} />
         </>
       ) : null}
+      {name === 'search' ? (
+        <>
+          <Circle cx={11} cy={11} r={7} {...common} />
+          <Path d="m20 20-3.5-3.5" {...common} />
+        </>
+      ) : null}
+      {name === 'quote' ? (
+        <Path d="M10 7H6a2 2 0 0 0-2 2v3h5v5H4M20 7h-4a2 2 0 0 0-2 2v3h5v5h-5" {...common} />
+      ) : null}
+      {name === 'trash' ? <Path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" {...common} /> : null}
     </Svg>
   )
 }

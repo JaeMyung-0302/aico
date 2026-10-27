@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import type {
   CreateAutoDaysRequest,
   CreateAutoDaysResponse,
@@ -6,21 +6,18 @@ import type {
   DiaryEntry,
   DiaryListQuery,
   DiaryListResponse,
-  Photo,
   UpdateDiaryRequest,
 } from '@you-in-heart/shared'
 import { fromDbDate, toDbDate } from '../common/dates/db-date'
 import { EventsService } from '../events/events.service'
 import type { Prisma } from '../generated/prisma'
+import { photoObjectKeys, PhotosService } from '../photos/photos.service'
 import { PrismaService } from '../prisma/prisma.service'
-import { OBJECT_STORAGE, type ObjectStorage } from '../storage/object-storage'
-import { ENTRY_SELECT, type EntryRow, toDiaryEntry, toPhoto } from './diary-mapper'
+import { ENTRY_SELECT, type EntryRow, toDiaryEntry } from './diary-mapper'
 import { lockEntry } from './entry-lock'
 
 const notFound = () => new NotFoundException('일기를 찾을 수 없어요')
 const notAuthor = () => new ForbiddenException({ code: 'NOT_AUTHOR', message: '작성자만 수정·삭제할 수 있어요' })
-
-const errorName = (error: unknown): string => (error instanceof Error ? error.name : 'UnknownError')
 
 const toUpdateData = ({
   happenedOn,
@@ -38,12 +35,10 @@ const toUpdateData = ({
 // 작성자 권한(US-003)은 테넌트 위의 2차 조건: 다른 커플 404 → 같은 커플의 상대 403
 @Injectable()
 export class DiaryService {
-  private readonly logger = new Logger(DiaryService.name)
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventsService,
-    @Inject(OBJECT_STORAGE) private readonly storage: ObjectStorage,
+    private readonly photos: PhotosService,
   ) {}
 
   async create(
@@ -96,23 +91,18 @@ export class DiaryService {
     return this.get(coupleId, id)
   }
 
-  // FK NO ACTION인 BucketItem.entryId를 먼저 비우고 지운다(사진 행은 Cascade). R2 객체는 커밋 뒤에 지운다
+  // FK NO ACTION인 BucketItem.entryId를 먼저 비우고 지운다(사진 행은 Cascade). 사진 객체(o·incoming·d·t)는 커밋 뒤에 지운다
   async remove(coupleId: string, actorId: string, id: string): Promise<void> {
     await this.assertAuthor(coupleId, actorId, id)
     const keys = await this.prisma.$transaction(async (tx) => {
       if (!(await lockEntry(tx, coupleId, id))) throw notFound()
-      const photos = await tx.photo.findMany({
-        where: { coupleId, entryId: id },
-        select: { originalKey: true, displayKey: true, thumbKey: true },
-      })
+      const photos = await tx.photo.findMany({ where: { coupleId, entryId: id }, select: { id: true } })
       await tx.bucketItem.updateMany({ where: { coupleId, entryId: id }, data: { entryId: null } })
       const { count } = await tx.diaryEntry.deleteMany({ where: { id, coupleId, authorId: actorId } })
       if (count === 0) throw notFound()
-      return photos.flatMap(({ originalKey, displayKey, thumbKey }) =>
-        [originalKey, displayKey, thumbKey].filter((key): key is string => key !== null),
-      )
+      return photos.flatMap((photo) => photoObjectKeys(coupleId, photo.id))
     })
-    await this.deleteObjects(keys)
+    await this.photos.deleteObjects(keys)
   }
 
   // 날짜별 AUTO_DAY("그날의 사진") 멱등 생성: 부분 유니크(coupleId, happenedOn) WHERE kind='AUTO_DAY' + ON CONFLICT DO NOTHING
@@ -154,17 +144,8 @@ export class DiaryService {
     if (!place) throw new NotFoundException('장소를 찾을 수 없어요')
   }
 
-  // 객체 삭제 실패는 요청을 실패시키지 않는다(행은 이미 지워짐). 남은 객체는 커플 purge가 접두사째 지운다
-  private async deleteObjects(keys: readonly string[]): Promise<void> {
-    try {
-      await this.storage.deleteObjects(keys)
-    } catch (error) {
-      this.logger.error(`[diary] object delete failed (${keys.length}건, ${errorName(error)})`)
-    }
-  }
-
+  // 사진은 READY만, 썸네일·표시용 1시간 서명(원본 URL 없음)
   private async toResponse(row: EntryRow): Promise<DiaryEntry> {
-    const photos: Photo[] = row.photos.map((photo) => toPhoto(photo, { thumbUrl: null, displayUrl: null }))
-    return toDiaryEntry(row, photos)
+    return toDiaryEntry(row, await this.photos.toPhotos(row.photos))
   }
 }

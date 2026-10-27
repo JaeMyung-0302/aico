@@ -7,6 +7,7 @@ import { authProviderParamSchema } from '../auth'
 import { bucketItemTitleSchema } from '../bucket'
 import { joinCoupleRequestSchema } from '../couple'
 import { createDiaryRequestSchema, diaryListResponseSchema } from '../diary'
+import { latestExportResponseSchema } from '../export'
 import { createPhotoUploadRequestSchema } from '../photo'
 import { placeBboxQuerySchema } from '../place'
 import { bulkCreateQuotesRequestSchema, createQuoteRequestSchema } from '../quote'
@@ -152,5 +153,20 @@ describe('quote', () => {
       false,
     )
     expect(bulkCreateQuotesRequestSchema.safeParse({ items: [] }).success).toBe(false)
+  })
+})
+
+describe('export', () => {
+  it('최근 작업 응답은 job 또는 null', () => {
+    expect(latestExportResponseSchema.safeParse({ job: null }).success).toBe(true)
+    const job = {
+      id: ENTRY_ID,
+      status: 'READY',
+      createdAt: '2026-10-27T00:00:00.000Z',
+      downloadUrl: 'https://r2.example/x.zip',
+      expiresAt: '2026-10-28T00:00:00.000Z',
+    }
+    expect(latestExportResponseSchema.safeParse({ job }).success).toBe(true)
+    expect(latestExportResponseSchema.safeParse({}).success).toBe(false)
   })
 })

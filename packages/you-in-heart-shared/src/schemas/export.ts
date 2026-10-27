@@ -18,6 +18,10 @@ export const exportJobSchema = z.object({
 })
 export type ExportJob = z.infer<typeof exportJobSchema>
 
+// GET /export — 가장 최근 작업(앱 재시작 뒤 진행 상태 복원용). 없으면 null
+export const latestExportResponseSchema = z.object({ job: exportJobSchema.nullable() })
+export type LatestExportResponse = z.infer<typeof latestExportResponseSchema>
+
 // zip 안의 entries.json. 사진 원본은 photos/{happenedOn}/{photoId}.{ext}
 export const exportManifestV1Schema = z.object({
   v: z.literal(1),

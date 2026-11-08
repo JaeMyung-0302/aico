@@ -9,6 +9,8 @@ import { useAnniversaries } from '@/modules/anniversary/data-access-anniversary/
 import { findNextAnniversary } from '@/modules/anniversary/util-anniversary/anniversary-view'
 import { isUnlinkingBannerVisible } from '@/modules/auth/util-auth-gate/resolve-auth-redirect'
 import { useCouple } from '@/modules/couple/data-access-couple/useCouple'
+import { usePuzzles } from '@/modules/puzzle/data-access-puzzle/usePuzzles'
+import PuzzleHomeHero, { PuzzleStartCard } from '@/modules/puzzle/feature-puzzle-home/PuzzleHomeHero'
 import { findPartnerName } from '@/modules/couple/util-pairing/partner-name'
 import { pickDailyQuote, useHomeQuotes } from '@/modules/quote/data-access-quote/useQuotes'
 import { useMe } from '@/modules/user/data-access-me/useMe'
@@ -24,7 +26,8 @@ import WidgetHint from './WidgetHint'
 
 const MINUTE_MS = 60_000
 
-// SCR-03 홈 (D-day). 유예 중(읽기 전용)에는 배너 + D-day + 최근 기록만 보인다
+// SCR-03 홈 (D-day). 맞추는 중인 퍼즐이 있으면 퍼즐판이 첫 화면(SCR-19a), 없으면 시작 카드.
+// 유예 중(읽기 전용)에는 배너 + D-day + 최근 기록만 보인다(퍼즐판은 보이고 시작 카드는 숨긴다)
 // TODO(1D): 최근 기록·기록 쓰기 FAB
 const HomeScreen = () => {
   const insets = useSafeAreaInsets()
@@ -35,6 +38,7 @@ const HomeScreen = () => {
   const couple = useCouple({ isEnabled: hasCouple })
   const anniversaries = useAnniversaries({ isEnabled: hasCouple })
   const quotes = useHomeQuotes({ isEnabled: hasCouple })
+  const puzzles = usePuzzles({ isEnabled: hasCouple })
 
   if (!me.data) {
     return me.isError ? (
@@ -50,30 +54,37 @@ const HomeScreen = () => {
   const startedOn = me.data.couple?.startedOn ?? null
   const isUnlinking = isUnlinkingBannerVisible(me.data)
   const next = anniversaries.data ? findNextAnniversary(anniversaries.data, now) : null
+  const puzzle = puzzles.data?.current ?? null
+  const header = <HomeHeader title={`${me.data.displayName ?? ''} · ${findPartnerName(couple.data, me.data.id)}`} />
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={[styles.body, { paddingTop: insets.top + SPACING[2] }]}>
-      <HomeHeader title={`${me.data.displayName ?? ''} · ${findPartnerName(couple.data, me.data.id)}`} />
-      {isUnlinking ? <UnlinkingBanner purgeAfter={me.data.couple?.purgeAfter ?? null} /> : null}
-      {startedOn ? <DdayHero startedOn={startedOn} nowMs={now} /> : <StartedOnPrompt />}
-      {!isUnlinking && next ? <NextAnniversaryCard anniversary={next} nowMs={now} /> : null}
-      {isUnlinking ? null : <QuoteCard quote={pickDailyQuote(quotes.data ?? [], now)} />}
-      {isUnlinking ? null : <WidgetHint />}
-      <View style={styles.recent}>
-        <AppText variant="bodyStrong">최근 기록</AppText>
-        <View style={styles.emptyRecent}>
-          <AppText variant="label" color="ink2">
-            아직 남긴 기록이 없어요
-          </AppText>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      {puzzle ? <PuzzleHomeHero puzzle={puzzle} nowMs={now} topInset={insets.top} header={header} /> : null}
+      <View style={[styles.body, { paddingTop: puzzle ? SPACING[2] : insets.top + SPACING[2] }]}>
+        {puzzle ? null : header}
+        {isUnlinking ? <UnlinkingBanner purgeAfter={me.data.couple?.purgeAfter ?? null} /> : null}
+        {!puzzle && !isUnlinking && puzzles.isSuccess ? <PuzzleStartCard /> : null}
+        {startedOn ? <DdayHero startedOn={startedOn} nowMs={now} /> : <StartedOnPrompt />}
+        {!isUnlinking && next ? <NextAnniversaryCard anniversary={next} nowMs={now} /> : null}
+        {isUnlinking ? null : <QuoteCard quote={pickDailyQuote(quotes.data ?? [], now)} />}
+        {isUnlinking ? null : <WidgetHint />}
+        <View style={styles.recent}>
+          <AppText variant="bodyStrong">최근 기록</AppText>
+          <View style={styles.emptyRecent}>
+            <AppText variant="label" color="ink2">
+              아직 남긴 기록이 없어요
+            </AppText>
+          </View>
         </View>
+        {isUnlinking ? null : <HomeShortcuts />}
       </View>
-      {isUnlinking ? null : <HomeShortcuts />}
     </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.bg },
-  body: { paddingHorizontal: SPACING.screen, paddingBottom: SPACING[8], gap: SPACING[5] },
+  content: { paddingBottom: SPACING[8] },
+  body: { paddingHorizontal: SPACING.screen, gap: SPACING[5] },
   recent: { gap: 10 },
   emptyRecent: { alignItems: 'center', paddingVertical: 28, borderRadius: RADIUS.lg, backgroundColor: COLORS.surface },
 })

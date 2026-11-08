@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import AppFrame from '@/design-system/components/AppFrame'
 import { FONT_FAMILY } from '@/design-system/tokens/typography'
 import { useAuthGate } from '@/modules/auth/feature-auth-gate/useAuthGate'
 import { useShareRouting } from '@/modules/quote/feature-share-receive/useShareRouting'
@@ -102,7 +103,9 @@ const RootLayout = () => (
     <QueryClientProvider client={queryClient}>
       <ShareIntentProvider>
         <DeviceSync />
-        <RootNavigator />
+        <AppFrame>
+          <RootNavigator />
+        </AppFrame>
       </ShareIntentProvider>
     </QueryClientProvider>
   </SafeAreaProvider>

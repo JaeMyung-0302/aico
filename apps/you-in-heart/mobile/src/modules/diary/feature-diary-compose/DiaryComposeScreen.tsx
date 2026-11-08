@@ -27,6 +27,8 @@ import { useDiaryComposer } from './useDiaryComposer'
 type DiaryComposeScreenProps = {
   // 있으면 수정(작성자만 — 상세의 더보기 메뉴에서 온다)
   entryId?: string
+  // 새 기록의 처음 날짜(퍼즐 지난 날 채우기). 없으면 오늘
+  initialDate?: string
 }
 
 type Sheet = 'none' | 'picker' | 'date'
@@ -104,9 +106,9 @@ const ComposeFields = ({ hasLocationConsent, title, body, onTitleChange, onBodyC
 )
 
 // SCR-05 일기 작성·수정. 사진이 있으면 저장 뒤 핀 제안 시트(SCR-10)를 띄운다
-const DiaryComposeScreen = ({ entryId }: DiaryComposeScreenProps) => {
+const DiaryComposeScreen = ({ entryId, initialDate }: DiaryComposeScreenProps) => {
   const insets = useSafeAreaInsets()
-  const composer = useDiaryComposer(entryId)
+  const composer = useDiaryComposer(entryId, initialDate)
   const { form, setForm, assets, savedEntryId, summary, save, pins } = composer
   const me = useMe()
   const [sheet, setSheet] = useState<Sheet>('none')

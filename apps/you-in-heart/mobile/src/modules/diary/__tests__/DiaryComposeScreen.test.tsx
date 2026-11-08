@@ -47,11 +47,11 @@ const asset = (index: number): LibraryAsset => ({
 })
 const LIBRARY = Array.from({ length: 21 }, (_, index) => asset(index + 1))
 
-const renderCompose = (entryId?: string) =>
+const renderCompose = (entryId?: string, initialDate?: string) =>
   render(
     <SafeAreaTestProvider>
       <QueryTestProvider>
-        <DiaryComposeScreen entryId={entryId} />
+        <DiaryComposeScreen entryId={entryId} initialDate={initialDate} />
       </QueryTestProvider>
     </SafeAreaTestProvider>,
   )
@@ -85,6 +85,11 @@ describe('DiaryComposeScreen (SCR-05)', () => {
     await renderCompose()
     expect(screen.getByRole('button', { name: '날짜 2026. 10. 27 (화)' })).toBeOnTheScreen()
     expect(screen.getByRole('button', { name: '저장' })).toBeDisabled()
+  })
+
+  it('퍼즐의 지난 날 채우기로 오면 그 날짜로 시작한다', async () => {
+    await renderCompose(undefined, '2026-10-03')
+    expect(screen.getByRole('button', { name: '날짜 2026. 10. 03 (토)' })).toBeOnTheScreen()
   })
 
   it('21번째 사진은 안내 후 막고 20장까지만 담는다', async () => {

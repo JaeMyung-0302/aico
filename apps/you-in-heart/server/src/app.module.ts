@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AnniversariesModule } from './anniversaries/anniversaries.module'
 import { AuthModule } from './auth/auth.module'
 import { BucketModule } from './bucket/bucket.module'
+import { PuzzlesModule } from './puzzles/puzzles.module'
 import { type ClientIpSource, resolveClientIp } from './common/throttle/client-ip'
 import { configuration } from './config/configuration'
 import { CoupleGuard } from './couples/couple.guard'
@@ -50,6 +51,7 @@ const throttlerOptions = (config: ConfigService) => {
     PhotosModule,
     PlacesModule,
     BucketModule,
+    PuzzlesModule,
     QuotesModule,
     ExportModule,
   ],

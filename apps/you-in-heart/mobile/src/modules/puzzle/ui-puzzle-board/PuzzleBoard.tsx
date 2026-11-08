@@ -20,6 +20,8 @@ type PuzzleBoardProps = {
 // 볼록한 부분까지 덮도록 조각 사진을 칸보다 넉넉하게 놓는다
 const PIECE_BLEED = 0.25
 const VEIL_OPACITY = 0.45
+// 채운 칸: 덮개를 걷은 배경 사진 위에 그날 사진을 겹친다. 배경이 비쳐 보여야 한 장의 사진이 완성되어 간다
+export const PIECE_PHOTO_OPACITY = 0.5
 const FUTURE_VEIL_OPACITY = 0.5
 
 type BoxOrigin = { left: number; top: number }
@@ -43,6 +45,7 @@ const pressPoint = (event: GestureResponderEvent): { x: number; y: number } => {
 }
 
 // SCR-19 공용 퍼즐판: 퍼즐판 사진(배경) 위에 하루 한 조각씩 그 날의 사진이 놓인다.
+// 채운 칸은 배경이 선명하게 드러나고 그날 사진이 반투명하게 겹친다(배경을 가리지 않는다).
 // 빈 지난 날은 분홍 점, 오늘(또는 고른 날)은 분홍 테두리, 아직 오지 않은 날은 더 옅게.
 // 완성하면 덮개를 걷어 빈 날은 퍼즐판 사진 그대로 보인다(SCR-19d)
 const PuzzleBoard = ({
@@ -117,8 +120,25 @@ const PuzzleBoard = ({
           const cell = layout.cells[piece.dayIndex]
           const bleed = PIECE_BLEED * Math.min(cell.w, cell.h)
           return (
-            <G key={piece.dayIndex} clipPath={`url(#${idPrefix}-${piece.dayIndex})`}>
+            <G
+              key={piece.dayIndex}
+              testID={`puzzle-piece-${piece.dayIndex}`}
+              clipPath={`url(#${idPrefix}-${piece.dayIndex})`}
+            >
+              {backgroundUrl ? (
+                <SvgImage
+                  testID={`puzzle-piece-${piece.dayIndex}-background`}
+                  href={backgroundUrl}
+                  x={0}
+                  y={0}
+                  width={width}
+                  height={height}
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              ) : null}
               <SvgImage
+                testID={`puzzle-piece-${piece.dayIndex}-photo`}
+                opacity={backgroundUrl ? PIECE_PHOTO_OPACITY : 1}
                 href={piece.thumbUrl}
                 x={cell.x - bleed}
                 y={cell.y - bleed}

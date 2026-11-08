@@ -1,8 +1,9 @@
 import { Image } from 'expo-image'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { FlatList, Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import AppFrame, { useFrameWidth } from '@/design-system/components/AppFrame'
 import AppText from '@/design-system/components/AppText'
 import Button from '@/design-system/components/Button'
 import Icon from '@/design-system/components/Icon'
@@ -49,7 +50,7 @@ const useLibraryPages = () => {
 // SCR-05 사진 고르기: 3열 그리드, 고른 순서 번호. 상한을 넘기면 안내만 하고 담지 않는다
 const PhotoGridPicker = ({ selected, maxCount, onClose, onConfirm }: PhotoGridPickerProps) => {
   const insets = useSafeAreaInsets()
-  const { width } = useWindowDimensions()
+  const width = useFrameWidth()
   const size = (width - GAP * (COLUMNS - 1)) / COLUMNS
   const { assets, loadMore } = useLibraryPages()
   const [picked, setPicked] = useState<LibraryAsset[]>(() => [...selected])
@@ -69,55 +70,57 @@ const PhotoGridPicker = ({ selected, maxCount, onClose, onConfirm }: PhotoGridPi
 
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" accessibilityLabel="닫기" onPress={onClose} style={styles.icon}>
-            <Icon name="close" />
-          </Pressable>
-          <AppText variant="bodyStrong">사진 선택</AppText>
-          <Button
-            label={`추가 ${picked.length}`}
-            size="md"
-            disabled={picked.length === 0}
-            onPress={() => onConfirm(picked)}
-            style={styles.confirm}
+      <AppFrame>
+        <View style={[styles.screen, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <Pressable accessibilityRole="button" accessibilityLabel="닫기" onPress={onClose} style={styles.icon}>
+              <Icon name="close" />
+            </Pressable>
+            <AppText variant="bodyStrong">사진 선택</AppText>
+            <Button
+              label={`추가 ${picked.length}`}
+              size="md"
+              disabled={picked.length === 0}
+              onPress={() => onConfirm(picked)}
+              style={styles.confirm}
+            />
+          </View>
+          <FlatList
+            data={assets}
+            keyExtractor={(asset) => asset.id}
+            numColumns={COLUMNS}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + SPACING[6] }]}
+            onEndReached={loadMore}
+            renderItem={({ item, index }) => {
+              const order = picked.findIndex((asset) => asset.id === item.id)
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`사진 ${index + 1}`}
+                  accessibilityState={{ selected: order >= 0 }}
+                  onPress={() => handleCellPress(item)}
+                  style={{ width: size, height: size }}
+                >
+                  <Image
+                    source={{ uri: item.uri }}
+                    style={[styles.fill, { backgroundColor: PHOTO_PLACEHOLDER[index % PHOTO_PLACEHOLDER.length] }]}
+                    contentFit="cover"
+                  />
+                  <View style={[styles.badge, order >= 0 ? styles.badgeOn : null]}>
+                    {order >= 0 ? (
+                      <AppText variant="micro" color="bg">
+                        {String(order + 1)}
+                      </AppText>
+                    ) : null}
+                  </View>
+                </Pressable>
+              )
+            }}
           />
+          <Toast message={toast.message} />
         </View>
-        <FlatList
-          data={assets}
-          keyExtractor={(asset) => asset.id}
-          numColumns={COLUMNS}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + SPACING[6] }]}
-          onEndReached={loadMore}
-          renderItem={({ item, index }) => {
-            const order = picked.findIndex((asset) => asset.id === item.id)
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`사진 ${index + 1}`}
-                accessibilityState={{ selected: order >= 0 }}
-                onPress={() => handleCellPress(item)}
-                style={{ width: size, height: size }}
-              >
-                <Image
-                  source={{ uri: item.uri }}
-                  style={[styles.fill, { backgroundColor: PHOTO_PLACEHOLDER[index % PHOTO_PLACEHOLDER.length] }]}
-                  contentFit="cover"
-                />
-                <View style={[styles.badge, order >= 0 ? styles.badgeOn : null]}>
-                  {order >= 0 ? (
-                    <AppText variant="micro" color="bg">
-                      {String(order + 1)}
-                    </AppText>
-                  ) : null}
-                </View>
-              </Pressable>
-            )
-          }}
-        />
-        <Toast message={toast.message} />
-      </View>
+      </AppFrame>
     </Modal>
   )
 }

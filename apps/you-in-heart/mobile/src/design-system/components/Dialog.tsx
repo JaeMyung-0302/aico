@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native'
 import { COLORS } from '../tokens/colors'
 import { RADIUS } from '../tokens/radius'
 import { SPACING } from '../tokens/spacing'
+import AppFrame from './AppFrame'
 import AppText from './AppText'
 
 type DialogProps = {
@@ -18,26 +19,28 @@ type DialogProps = {
 // 화면 가운데 확인 창 (연결 해제 1단계·회원 탈퇴 확인)
 const Dialog = ({ isVisible, onClose, title, description, children, actions }: DialogProps) => (
   <Modal transparent visible={isVisible} animationType="fade" onRequestClose={onClose}>
-    <View style={styles.backdrop}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="닫기"
-        style={StyleSheet.absoluteFill}
-        onPress={onClose}
-      />
-      <View accessibilityViewIsModal style={styles.card}>
-        <AppText variant="heading" accessibilityRole="header">
-          {title}
-        </AppText>
-        {description ? (
-          <AppText variant="label" color="ink2">
-            {description}
+    <AppFrame isTransparent>
+      <View style={styles.backdrop}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="닫기"
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
+        <View accessibilityViewIsModal style={styles.card}>
+          <AppText variant="heading" accessibilityRole="header">
+            {title}
           </AppText>
-        ) : null}
-        {children}
-        <View style={styles.actions}>{actions}</View>
+          {description ? (
+            <AppText variant="label" color="ink2">
+              {description}
+            </AppText>
+          ) : null}
+          {children}
+          <View style={styles.actions}>{actions}</View>
+        </View>
       </View>
-    </View>
+    </AppFrame>
   </Modal>
 )
 

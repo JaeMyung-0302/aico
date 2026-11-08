@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal, StyleSheet, View } from 'react-native'
+import AppFrame from '@/design-system/components/AppFrame'
 import AppHeader from '@/design-system/components/AppHeader'
 import AppText from '@/design-system/components/AppText'
 import Button from '@/design-system/components/Button'
@@ -42,40 +43,42 @@ const UnlinkConfirmModal = ({
 
   return (
     <Modal visible={isVisible} animationType="slide" onRequestClose={onClose}>
-      <View style={styles.screen}>
-        <AppHeader onBackPress={onClose} />
-        <View style={styles.body}>
-          <AppText variant="captionStrong" color="accent">
-            2 / 2
-          </AppText>
-          <AppText variant="title" accessibilityRole="header">
-            {'정말 연결을\n해제할까요?'}
-          </AppText>
-          <View style={styles.steps}>
-            {steps.map((text, index) => (
-              <View key={text} style={styles.step}>
-                <AppText variant="labelStrong" style={styles.stepNumber}>
-                  {String(index + 1)}
-                </AppText>
-                <AppText variant="label" style={styles.stepText}>
-                  {text}
-                </AppText>
-              </View>
-            ))}
+      <AppFrame>
+        <View style={styles.screen}>
+          <AppHeader onBackPress={onClose} />
+          <View style={styles.body}>
+            <AppText variant="captionStrong" color="accent">
+              2 / 2
+            </AppText>
+            <AppText variant="title" accessibilityRole="header">
+              {'정말 연결을\n해제할까요?'}
+            </AppText>
+            <View style={styles.steps}>
+              {steps.map((text, index) => (
+                <View key={text} style={styles.step}>
+                  <AppText variant="labelStrong" style={styles.stepNumber}>
+                    {String(index + 1)}
+                  </AppText>
+                  <AppText variant="label" style={styles.stepText}>
+                    {text}
+                  </AppText>
+                </View>
+              ))}
+            </View>
+            <TextField label={CONFIRM_LABEL} value={typed} onChangeText={setTyped} errorMessage={errorMessage} />
           </View>
-          <TextField label={CONFIRM_LABEL} value={typed} onChangeText={setTyped} errorMessage={errorMessage} />
+          <View style={styles.footer}>
+            <Button
+              label="연결 해제"
+              variant="danger"
+              disabled={!isConfirmed}
+              isLoading={isSubmitting}
+              onPress={onConfirm}
+            />
+            <Button label="취소" variant="text" size="md" onPress={onClose} />
+          </View>
         </View>
-        <View style={styles.footer}>
-          <Button
-            label="연결 해제"
-            variant="danger"
-            disabled={!isConfirmed}
-            isLoading={isSubmitting}
-            onPress={onConfirm}
-          />
-          <Button label="취소" variant="text" size="md" onPress={onClose} />
-        </View>
-      </View>
+      </AppFrame>
     </Modal>
   )
 }

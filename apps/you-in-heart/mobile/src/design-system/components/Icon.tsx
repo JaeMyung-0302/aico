@@ -1,3 +1,4 @@
+import { Platform } from 'react-native'
 import Svg, { Circle, Path, Rect } from 'react-native-svg'
 import { COLORS, type ColorToken } from '../tokens/colors'
 
@@ -35,6 +36,12 @@ type IconProps = {
   strokeWidth?: number
 }
 
+// 장식용 SVG를 화면 낭독기에서 숨긴다. 웹은 react-native-svg가 props를 <svg>에 그대로 넘기므로 aria-hidden을 쓴다
+export const HIDDEN_SVG_A11Y_PROPS =
+  Platform.OS === 'web'
+    ? ({ 'aria-hidden': true } as const)
+    : ({ accessibilityElementsHidden: true, importantForAccessibility: 'no' } as const)
+
 const HEART =
   'M12 20s-7.5-4.6-9.2-9.4C1.6 7.2 3.9 4 7.2 4c2 0 3.6 1.1 4.8 2.8C13.2 5.1 14.8 4 16.8 4c3.3 0 5.6 3.2 4.4 6.6C19.5 15.4 12 20 12 20z'
 const SETTINGS = 'M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1'
@@ -48,7 +55,7 @@ const Icon = ({ name, size = 22, color = 'ink', strokeWidth = 1.7 }: IconProps) 
     fill: 'none',
   }
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no">
+    <Svg width={size} height={size} viewBox="0 0 24 24" {...HIDDEN_SVG_A11Y_PROPS}>
       {name === 'home' ? (
         <Path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" {...common} />
       ) : null}

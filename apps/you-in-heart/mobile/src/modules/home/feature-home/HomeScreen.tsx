@@ -58,10 +58,10 @@ const HomeScreen = () => {
   const header = <HomeHeader title={`${me.data.displayName ?? ''} · ${findPartnerName(couple.data, me.data.id)}`} />
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      {puzzle ? <PuzzleHomeHero puzzle={puzzle} nowMs={now} topInset={insets.top} header={header} /> : null}
-      <View style={[styles.body, { paddingTop: puzzle ? SPACING[2] : insets.top + SPACING[2] }]}>
-        {puzzle ? null : header}
+      <View style={[styles.body, { paddingTop: insets.top + SPACING[2] }]}>
+        {header}
         {isUnlinking ? <UnlinkingBanner purgeAfter={me.data.couple?.purgeAfter ?? null} /> : null}
+        {puzzle ? <PuzzleHomeHero puzzle={puzzle} nowMs={now} /> : null}
         {!puzzle && !isUnlinking && puzzles.isSuccess ? <PuzzleStartCard /> : null}
         {startedOn ? <DdayHero startedOn={startedOn} nowMs={now} /> : <StartedOnPrompt />}
         {!isUnlinking && next ? <NextAnniversaryCard anniversary={next} nowMs={now} /> : null}

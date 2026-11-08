@@ -1,6 +1,5 @@
 import { type PuzzleDetail, toKstDate } from '@you-in-heart/shared'
 import { router } from 'expo-router'
-import type { ReactNode } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useFrameWidth } from '@/design-system/components/AppFrame'
 import AppText from '@/design-system/components/AppText'
@@ -12,66 +11,55 @@ import { formatDotDate } from '@/modules/couple/util-pairing/started-on-input'
 import PuzzleBoard from '../ui-puzzle-board/PuzzleBoard'
 import { describePuzzle } from '../util-puzzle/puzzle-view'
 
-// 시안 SCR-19a 390×480 비율
-const HERO_RATIO = 480 / 390
+type PuzzleHomeHeroProps = { puzzle: PuzzleDetail; nowMs: number }
 
-type PuzzleHomeHeroProps = {
-  puzzle: PuzzleDetail
-  nowMs: number
-  topInset: number
-  // 퍼즐판 위에 겹치는 상단(이름 · 설정)
-  header: ReactNode
-}
-
-// SCR-19a 홈 첫 화면: 맞추는 중인 퍼즐판이 화면 폭 가득, 아래에 기간 카드와 지난 날 채우기 안내
-const PuzzleHomeHero = ({ puzzle, nowMs, topInset, header }: PuzzleHomeHeroProps) => {
-  const width = useFrameWidth()
+// SCR-19a 홈 첫 화면: 맞추는 중인 퍼즐판(여백 안 정사각 카드 — 화면 폭 가득은 너무 커서 줄였다),
+// 아래에 기간 카드와 지난 날 채우기 안내
+const PuzzleHomeHero = ({ puzzle, nowMs }: PuzzleHomeHeroProps) => {
+  const width = useFrameWidth() - SPACING.screen * 2
   const view = describePuzzle(puzzle, toKstDate(nowMs))
   const openPuzzle = () => router.push({ pathname: '/puzzle/[puzzleId]', params: { puzzleId: puzzle.id } })
   return (
-    <View>
-      <PuzzleBoard
-        pieceCount={puzzle.pieceCount}
-        backgroundUrl={puzzle.backgroundUrl}
-        view={view}
-        width={width}
-        height={Math.round(width * HERO_RATIO)}
-        onCellPress={openPuzzle}
-      />
-      <View style={[styles.header, { paddingTop: topInset + SPACING[2] }]} pointerEvents="box-none">
-        {header}
+    <View style={styles.hero}>
+      <View style={styles.board}>
+        <PuzzleBoard
+          pieceCount={puzzle.pieceCount}
+          backgroundUrl={puzzle.backgroundUrl}
+          view={view}
+          width={width}
+          height={width}
+          onCellPress={openPuzzle}
+        />
       </View>
-      <View style={styles.cards}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${view.title} ${view.ddayLabel}, ${formatDotDate(puzzle.endsOn)} 완성`}
+        onPress={() => router.push('/puzzle')}
+        style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      >
+        <View style={styles.texts}>
+          <AppText variant="micro" color="ink3">
+            {view.title} · {puzzle.filledCount} / {puzzle.pieceCount}조각
+          </AppText>
+          <AppText variant="bodyStrong">{formatDotDate(puzzle.endsOn)} 완성</AppText>
+        </View>
+        <AppText variant="title" color="accent">
+          {view.ddayLabel}
+        </AppText>
+      </Pressable>
+      {view.emptyPastCount > 0 ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${view.title} ${view.ddayLabel}, ${formatDotDate(puzzle.endsOn)} 완성`}
-          onPress={() => router.push('/puzzle')}
-          style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+          onPress={openPuzzle}
+          style={({ pressed }) => [styles.fill, pressed && styles.pressed]}
         >
-          <View style={styles.texts}>
-            <AppText variant="micro" color="ink3">
-              {view.title} · {puzzle.filledCount} / {puzzle.pieceCount}조각
-            </AppText>
-            <AppText variant="bodyStrong">{formatDotDate(puzzle.endsOn)} 완성</AppText>
-          </View>
-          <AppText variant="title" color="accent">
-            {view.ddayLabel}
+          <View style={styles.dot} />
+          <AppText variant="label" color="ink2" style={styles.fillText}>
+            비어 있는 지난 날 <AppText variant="labelStrong">{view.emptyPastCount}일</AppText> · 그날 사진으로 채우기
           </AppText>
+          <Icon name="chevronRight" size={16} color="ink3" />
         </Pressable>
-        {view.emptyPastCount > 0 ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={openPuzzle}
-            style={({ pressed }) => [styles.fill, pressed && styles.pressed]}
-          >
-            <View style={styles.dot} />
-            <AppText variant="label" color="ink2" style={styles.fillText}>
-              비어 있는 지난 날 <AppText variant="labelStrong">{view.emptyPastCount}일</AppText> · 그날 사진으로 채우기
-            </AppText>
-            <Icon name="chevronRight" size={16} color="ink3" />
-          </Pressable>
-        ) : null}
-      </View>
+      ) : null}
     </View>
   )
 }
@@ -94,16 +82,8 @@ export const PuzzleStartCard = () => (
 )
 
 const styles = StyleSheet.create({
-  // 퍼즐판 위에서도 이름·설정이 읽히도록 옅은 덮개
-  header: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    paddingHorizontal: SPACING.screen,
-    backgroundColor: COLORS.photoVeil,
-  },
-  cards: { paddingHorizontal: SPACING.screen, paddingTop: SPACING[4], gap: SPACING[3] },
+  hero: { gap: SPACING[3] },
+  board: { borderRadius: RADIUS.lg, overflow: 'hidden' },
   card: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -16,6 +16,8 @@ const SERVER_CODE_KINDS = [
   'ALREADY_COMPLETE',
   // POST /quotes/screenshots/uploads — 15MB 초과
   'SCREENSHOT_TOO_LARGE',
+  // POST /puzzles — 맞추는 중인 퍼즐이 이미 있다(409지만 연결 해제가 아니다)
+  'PUZZLE_ALREADY_ACTIVE',
 ] as const
 type ServerCodeKind = (typeof SERVER_CODE_KINDS)[number]
 

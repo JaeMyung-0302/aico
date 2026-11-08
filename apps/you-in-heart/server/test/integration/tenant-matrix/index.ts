@@ -8,6 +8,7 @@ import { exportMatrix } from './export.matrix'
 import { photosMatrix } from './photos.matrix'
 import { placesMatrix } from './places.matrix'
 import { publicMatrix } from './public.matrix'
+import { puzzlesMatrix } from './puzzles.matrix'
 import { quotesMatrix } from './quotes.matrix'
 import { usersMatrix } from './users.matrix'
 
@@ -48,6 +49,7 @@ const MATRICES: readonly DomainMatrix[] = [
   photosMatrix,
   placesMatrix,
   bucketMatrix,
+  puzzlesMatrix,
   quotesMatrix,
   exportMatrix,
 ]

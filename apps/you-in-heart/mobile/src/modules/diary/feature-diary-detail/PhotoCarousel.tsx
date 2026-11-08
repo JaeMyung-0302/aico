@@ -2,7 +2,8 @@ import type { Photo } from '@you-in-heart/shared'
 import { router } from 'expo-router'
 import { Image } from 'expo-image'
 import { useState } from 'react'
-import { FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { FlatList, Pressable, StyleSheet, View } from 'react-native'
+import { useFrameWidth } from '@/design-system/components/AppFrame'
 import { COLORS, PHOTO_PLACEHOLDER } from '@/design-system/tokens/colors'
 import { SPACING } from '@/design-system/tokens/spacing'
 
@@ -10,7 +11,7 @@ export const CAROUSEL_HEIGHT = 440
 
 // SCR-06 위쪽 사진 캐러셀(440): 표시용 이미지 + 점 표시. 누르면 SCR-09 뷰어
 const PhotoCarousel = ({ photos }: { photos: readonly Photo[] }) => {
-  const { width } = useWindowDimensions()
+  const width = useFrameWidth()
   const [index, setIndex] = useState(0)
   return (
     <View style={styles.wrap}>

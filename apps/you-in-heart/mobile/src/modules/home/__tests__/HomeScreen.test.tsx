@@ -5,6 +5,7 @@ import { router } from 'expo-router'
 import { fetchAnniversaries } from '@/modules/anniversary/data-access-anniversary/anniversary-api'
 import { fetchBucketItems } from '@/modules/bucket/data-access-bucket/bucket-api'
 import { fetchCouple } from '@/modules/couple/data-access-couple/couple-api'
+import { fetchPuzzles } from '@/modules/puzzle/data-access-puzzle/puzzle-api'
 import { fetchQuotePage } from '@/modules/quote/data-access-quote/quote-api'
 import { fetchMe } from '@/modules/user/data-access-me/me-api'
 import { session } from '@/shared/auth/session'
@@ -19,6 +20,7 @@ jest.mock('@/modules/couple/data-access-couple/couple-api', () => ({ fetchCouple
 jest.mock('@/modules/anniversary/data-access-anniversary/anniversary-api', () => ({ fetchAnniversaries: jest.fn() }))
 jest.mock('@/modules/bucket/data-access-bucket/bucket-api', () => ({ fetchBucketItems: jest.fn() }))
 jest.mock('@/modules/quote/data-access-quote/quote-api', () => ({ fetchQuotePage: jest.fn() }))
+jest.mock('@/modules/puzzle/data-access-puzzle/puzzle-api', () => ({ fetchPuzzles: jest.fn() }))
 jest.mock('@/shared/api/token-store', () => ({
   tokenStore: jest.requireActual('@/test-utils/memory-token-store').createMemoryTokenStore(),
 }))
@@ -42,6 +44,7 @@ beforeEach(async () => {
   jest.mocked(fetchAnniversaries).mockResolvedValue(ANNIVERSARY_ITEMS)
   jest.mocked(fetchBucketItems).mockResolvedValue([])
   jest.mocked(fetchQuotePage).mockResolvedValue({ items: [], nextCursor: null })
+  jest.mocked(fetchPuzzles).mockResolvedValue({ current: null, completed: [] })
 })
 
 const SAVED_QUOTE = {
@@ -113,11 +116,9 @@ describe('HomeScreen', () => {
   })
 
   it('버킷리스트(진행률)·문구 보관함 바로가기', async () => {
-    jest.mocked(fetchBucketItems).mockResolvedValue([
-      bucketItem('01', '2026-05-10T03:00:00.000Z'),
-      bucketItem('02', null),
-      bucketItem('03', null),
-    ])
+    jest
+      .mocked(fetchBucketItems)
+      .mockResolvedValue([bucketItem('01', '2026-05-10T03:00:00.000Z'), bucketItem('02', null), bucketItem('03', null)])
     await renderHome()
     await fireEvent.press(await screen.findByRole('button', { name: '버킷리스트 1/3' }))
     expect(router.push).toHaveBeenCalledWith('/bucket')
@@ -172,5 +173,43 @@ describe('HomeScreen', () => {
     jest.mocked(fetchMe).mockResolvedValue(ME)
     await fireEvent.press(screen.getByRole('button', { name: '다시 시도' }))
     expect(await screen.findByText('재명 · 지은')).toBeOnTheScreen()
+  })
+
+  describe('우리 퍼즐 (SCR-19a)', () => {
+    const PUZZLE_ID = '01890a5d-ac96-774b-bcce-b302099a8701'
+    const ENTRY = '01890a5d-ac96-774b-bcce-b302099a8702'
+    const piece = (dayIndex: number, date: string) => ({ dayIndex, date, entryId: ENTRY, thumbUrl: 'https://x/t.jpg' })
+    // 오늘(2026-10-27 KST) = 7번째 칸. 0·7번만 채워져 있다
+    const current = {
+      id: PUZZLE_ID,
+      startsOn: '2026-10-20',
+      endsOn: '2027-01-27',
+      pieceCount: 100,
+      filledCount: 2,
+      status: 'ACTIVE' as const,
+      backgroundUrl: 'https://x/d.jpg',
+      createdAt: '2026-10-20T03:00:00.000Z',
+      pieces: [piece(0, '2026-10-20'), piece(7, '2026-10-27')],
+    }
+
+    it('퍼즐이 없으면 시작 카드가 보이고 새 퍼즐 화면으로 간다', async () => {
+      await renderHome()
+      await fireEvent.press(await screen.findByRole('button', { name: /우리 퍼즐 시작하기/ }))
+      expect(router.push).toHaveBeenCalledWith('/puzzle/new')
+    })
+
+    it('맞추는 중이면 퍼즐판이 첫 화면, 남은 날·빈 지난 날을 알려준다', async () => {
+      jest.mocked(fetchPuzzles).mockResolvedValue({ current, completed: [] })
+      await renderHome()
+      expect(await screen.findByLabelText('100조각 중 2조각이 놓인 퍼즐')).toBeOnTheScreen()
+      expect(screen.getByText('재명 · 지은')).toBeOnTheScreen()
+      expect(screen.queryByText(/우리 퍼즐 시작하기/)).toBeNull()
+      expect(screen.getByText(/비어 있는 지난 날/)).toHaveTextContent('비어 있는 지난 날 6일 · 그날 사진으로 채우기')
+
+      await fireEvent.press(screen.getByRole('button', { name: '100일 퍼즐 D-92, 2027. 01. 27 완성' }))
+      expect(router.push).toHaveBeenCalledWith('/puzzle')
+      await fireEvent.press(screen.getByText(/비어 있는 지난 날/))
+      expect(router.push).toHaveBeenLastCalledWith({ pathname: '/puzzle/[puzzleId]', params: { puzzleId: PUZZLE_ID } })
+    })
   })
 })

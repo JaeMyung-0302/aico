@@ -19,12 +19,17 @@ const toSaveInput = (entryId: string | undefined, { happenedOn, title, body }: D
 // SCR-05 작성·수정 상태. 저장 → (사진이 있으면) 업로드 큐에 넣고 진행을 보여주다가 모두 올라가면 상세로 간다.
 // 사진이 있으면 저장 뒤 핀 제안(2B.3)을 띄우고, 시트를 닫을 때까지는 상세로 넘어가지 않는다.
 // 화면을 닫아도 큐는 루트의 실행기가 이어서 올린다
-export const useDiaryComposer = (entryId: string | undefined) => {
+// initialDate: 퍼즐의 지난 날 채우기(SCR-19h)에서 온 날짜. 없으면 오늘(KST)
+export const useDiaryComposer = (entryId: string | undefined, initialDate?: string) => {
   const isEdit = entryId !== undefined
   const existing = useDiaryEntry(entryId ?? null)
   const save = useSaveDiary()
   const pins = usePinSuggestionFlow()
-  const [form, setForm] = useState<DiaryForm>(() => ({ happenedOn: toKstDate(Date.now()), title: '', body: '' }))
+  const [form, setForm] = useState<DiaryForm>(() => ({
+    happenedOn: initialDate ?? toKstDate(Date.now()),
+    title: '',
+    body: '',
+  }))
   const [assets, setAssets] = useState<LibraryAsset[]>([])
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
   const isPrefilled = useRef(false)

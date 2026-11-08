@@ -17,6 +17,8 @@ export const COLORS = {
   night: '#0E0E10',
   photoBadge: 'rgba(23,23,26,0.55)',
   photoVeil: 'rgba(255,255,255,0.55)',
+  // 웹·넓은 화면에서 휴대폰 폭 틀(AppFrame) 바깥 여백
+  frameGutter: '#EDEDEA',
 } as const
 
 // tokens.json colors.photoPlaceholder — 사진 자리표시 톤 (돌려가며 쓴다)

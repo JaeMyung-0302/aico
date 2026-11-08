@@ -20,3 +20,7 @@ export const MAX_QUOTE_REQUEST_BYTES = 64 * 1024
 export const MAX_SCREENSHOT_BYTES = 15 * 1024 * 1024
 // 사진 표시용 후보(기기에서 긴 변 2048 JPEG) 상한. presigned PUT이 이 범위의 displayBytes를 Content-Length로 서명하고 서버가 통째로 읽어 재인코딩한다
 export const MAX_DISPLAY_CANDIDATE_BYTES = 15 * 1024 * 1024
+
+// 우리 퍼즐: 하루 = 한 조각. 일주일부터 400일(1년 + 다음 기념일 여유)까지
+export const MIN_PUZZLE_PIECES = 7
+export const MAX_PUZZLE_PIECES = 400

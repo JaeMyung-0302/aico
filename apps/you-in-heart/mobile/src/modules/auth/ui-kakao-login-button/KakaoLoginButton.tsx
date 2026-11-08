@@ -1,5 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
+import { HIDDEN_SVG_A11Y_PROPS } from '@/design-system/components/Icon'
 import { KAKAO_COLORS } from '@/design-system/tokens/colors'
 import { RADIUS } from '@/design-system/tokens/radius'
 import { SPACING } from '@/design-system/tokens/spacing'
@@ -27,7 +28,7 @@ const KakaoLoginButton = ({ label, isPending, onPress }: KakaoLoginButtonProps) 
     {isPending ? (
       <ActivityIndicator color={KAKAO_COLORS.symbol} />
     ) : (
-      <Svg width={20} height={20} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no">
+      <Svg width={20} height={20} viewBox="0 0 24 24" {...HIDDEN_SVG_A11Y_PROPS}>
         <Path d={KAKAO_BUBBLE} fill={KAKAO_COLORS.symbol} />
       </Svg>
     )}

@@ -1,8 +1,9 @@
 import { router } from 'expo-router'
 import { Image } from 'expo-image'
 import { useMemo } from 'react'
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useFrameWidth } from '@/design-system/components/AppFrame'
 import AppText from '@/design-system/components/AppText'
 import Button from '@/design-system/components/Button'
 import EmptyLayout from '@/design-system/components/EmptyLayout'
@@ -69,7 +70,7 @@ const PhotoRow = ({ row, size }: { row: Extract<AlbumRow, { type: 'photos' }>; s
 // SCR-08 앨범: 촬영 달별 3열 그리드(간격 2), 끝까지 내리면 다음 쪽. 사진을 누르면 SCR-09 뷰어
 const AlbumScreen = () => {
   const insets = useSafeAreaInsets()
-  const { width } = useWindowDimensions()
+  const width = useFrameWidth()
   const size = (width - GAP * (COLUMNS - 1)) / COLUMNS
   const photos = usePhotos()
   const items = useMemo(() => photos.data?.pages.flatMap((page) => page.items) ?? [], [photos.data])

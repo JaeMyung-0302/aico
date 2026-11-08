@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import AppFrame from '@/design-system/components/AppFrame'
 import { FONT_FAMILY } from '@/design-system/tokens/typography'
 import { useAuthGate } from '@/modules/auth/feature-auth-gate/useAuthGate'
 import { useShareRouting } from '@/modules/quote/feature-share-receive/useShareRouting'
@@ -86,6 +87,9 @@ const RootNavigator = () => {
           <Stack.Screen name="places/[placeId]" />
           <Stack.Screen name="bucket/index" />
           <Stack.Screen name="quotes/index" />
+          <Stack.Screen name="puzzle/index" />
+          <Stack.Screen name="puzzle/new" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="puzzle/[puzzleId]" />
           <Stack.Screen name="quotes/import" />
         </Stack.Protected>
         {/* 공유로 받기(SCR-14): 미연결이면 "먼저 상대와 연결해 주세요"를 보여야 해서 페어링 단계에도 연다. 착지 화면이 되지 않게 마지막에 둔다 */}
@@ -102,7 +106,9 @@ const RootLayout = () => (
     <QueryClientProvider client={queryClient}>
       <ShareIntentProvider>
         <DeviceSync />
-        <RootNavigator />
+        <AppFrame>
+          <RootNavigator />
+        </AppFrame>
       </ShareIntentProvider>
     </QueryClientProvider>
   </SafeAreaProvider>

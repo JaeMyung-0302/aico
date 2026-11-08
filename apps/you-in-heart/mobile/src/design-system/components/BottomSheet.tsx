@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { COLORS } from '../tokens/colors'
 import { RADIUS } from '../tokens/radius'
 import { SPACING } from '../tokens/spacing'
+import AppFrame from './AppFrame'
 
 type BottomSheetProps = {
   isVisible: boolean
@@ -16,11 +17,13 @@ const BottomSheet = ({ isVisible, onClose, children }: BottomSheetProps) => {
   const insets = useSafeAreaInsets()
   return (
     <Modal transparent visible={isVisible} animationType="slide" onRequestClose={onClose}>
-      <Pressable accessibilityRole="button" accessibilityLabel="닫기" style={styles.scrim} onPress={onClose} />
-      <View accessibilityViewIsModal style={[styles.sheet, { paddingBottom: insets.bottom + SPACING[6] }]}>
-        <View style={styles.handle} />
-        {children}
-      </View>
+      <AppFrame isTransparent>
+        <Pressable accessibilityRole="button" accessibilityLabel="닫기" style={styles.scrim} onPress={onClose} />
+        <View accessibilityViewIsModal style={[styles.sheet, { paddingBottom: insets.bottom + SPACING[6] }]}>
+          <View style={styles.handle} />
+          {children}
+        </View>
+      </AppFrame>
     </Modal>
   )
 }

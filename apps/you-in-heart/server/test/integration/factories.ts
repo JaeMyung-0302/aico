@@ -84,6 +84,7 @@ export type SeededCouple = {
   notificationLogId: string
   exportJobId: string
   eventLogId: string
+  puzzleId: string
 }
 
 // 커플 소유 테이블마다 행을 1개 이상 만든다. 새 커플 모델이 생기면 여기에 추가해야 purge 테스트가 통과한다
@@ -112,6 +113,16 @@ export const seedCoupleData = async (
   })
   const exportJob = await prisma.exportJob.create({ data: { coupleId, requestedById: authorId } })
   const eventLog = await prisma.eventLog.create({ data: { coupleId, userId: authorId, name: 'app_open' } })
+  const puzzle = await prisma.puzzle.create({
+    data: {
+      coupleId,
+      createdById: authorId,
+      backgroundPhotoId: photo.id,
+      startsOn: new Date('2026-10-01'),
+      endsOn: new Date('2027-01-08'),
+      pieceCount: 100,
+    },
+  })
   return {
     anniversaryId: anniversary.id,
     placeId: place.id,
@@ -122,5 +133,6 @@ export const seedCoupleData = async (
     notificationLogId: notificationLog.id,
     exportJobId: exportJob.id,
     eventLogId: eventLog.id,
+    puzzleId: puzzle.id,
   }
 }

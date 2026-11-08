@@ -87,6 +87,9 @@ const RootNavigator = () => {
           <Stack.Screen name="places/[placeId]" />
           <Stack.Screen name="bucket/index" />
           <Stack.Screen name="quotes/index" />
+          <Stack.Screen name="puzzle/index" />
+          <Stack.Screen name="puzzle/new" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="puzzle/[puzzleId]" />
           <Stack.Screen name="quotes/import" />
         </Stack.Protected>
         {/* 공유로 받기(SCR-14): 미연결이면 "먼저 상대와 연결해 주세요"를 보여야 해서 페어링 단계에도 연다. 착지 화면이 되지 않게 마지막에 둔다 */}
